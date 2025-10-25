@@ -1,0 +1,43 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: flashcards-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: flashcards
+      POSTGRES_PASSWORD: flashcards_password
+      POSTGRES_DB: flashcards
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - flashcards-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: flashcards-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://flashcards:flashcards_password@postgres:5432/flashcards
+      NODE_ENV: development
+    depends_on:
+      - postgres
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    networks:
+      - flashcards-network
+
+volumes:
+  postgres_data:
+
+networks:
+  flashcards-network:
+    driver: bridge
+

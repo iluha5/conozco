@@ -1,0 +1,41 @@
+# GitLab CI/CD конфигурация для будущего использования
+# Раскомментируйте и настройте при необходимости
+
+# stages:
+#   - build
+#   - test
+#   - deploy
+
+# variables:
+#   DOCKER_DRIVER: overlay2
+#   DOCKER_TLS_CERTDIR: ""
+
+# build:
+#   stage: build
+#   image: docker:latest
+#   services:
+#     - docker:dind
+#   script:
+#     - docker build -t flash-cards:$CI_COMMIT_SHA .
+#   only:
+#     - main
+#     - develop
+
+# test:
+#   stage: test
+#   image: node:20-alpine
+#   script:
+#     - npm install
+#     - npm run lint
+#   only:
+#     - main
+#     - develop
+
+# deploy:
+#   stage: deploy
+#   script:
+#     - echo "Deploy to production"
+#   only:
+#     - main
+#   when: manual
+

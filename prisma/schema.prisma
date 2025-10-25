@@ -1,0 +1,67 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Языки для изучения
+enum Language {
+  ENGLISH
+  SPANISH
+}
+
+// Статус слова
+enum WordStatus {
+  NOT_LEARNED
+  LEARNED
+}
+
+// Таблица слов для изучения
+model Word {
+  id            String      @id @default(uuid())
+  foreignWord   String      // Слово на иностранном языке
+  translation   String      // Основной перевод на русском
+  language      Language    // Язык слова (английский или испанский)
+  status        WordStatus  @default(NOT_LEARNED)
+  examples      String[]    @default([]) // Примеры использования
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  
+  // Статистика обучения
+  trainingSessions TrainingSession[]
+
+  @@unique([foreignWord, language])
+  @@index([language, status])
+}
+
+// Кеш переводов для минимизации запросов к внешнему API
+model TranslationCache {
+  id              String   @id @default(uuid())
+  sourceText      String   // Исходное слово
+  sourceLanguage  Language // Язык источника
+  translations    Json     // JSON массив с вариантами переводов и примерами
+  createdAt       DateTime @default(now())
+  
+  @@unique([sourceText, sourceLanguage])
+  @@index([sourceText, sourceLanguage])
+}
+
+// Сессии тренировок для отслеживания прогресса
+model TrainingSession {
+  id          String   @id @default(uuid())
+  wordId      String
+  stage       Int      // Этап тренировки (1-4)
+  isCorrect   Boolean  // Правильный ли был ответ
+  createdAt   DateTime @default(now())
+  
+  word        Word     @relation(fields: [wordId], references: [id], onDelete: Cascade)
+  
+  @@index([wordId, stage])
+}
+
