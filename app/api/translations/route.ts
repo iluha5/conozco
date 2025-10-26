@@ -1,26 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { getMockTranslations, type Language } from '@/lib/translation-mock'
+import { getMockTranslations, type LanguageCode } from '@/lib/translation-mock'
 
 export async function POST(request: NextRequest) {
   try {
-    const { word, language } = await request.json()
+    const { word, languageCode } = await request.json()
 
-    if (!word || !language) {
+    if (!word || !languageCode) {
       return NextResponse.json(
-        { error: 'Word and language are required' },
+        { error: 'Word and language code are required' },
         { status: 400 }
       )
     }
 
     const normalizedWord = word.toLowerCase().trim()
 
+    // Получаем ID языка по коду
+    const language = await prisma.language.findUnique({
+      where: { code: languageCode as LanguageCode },
+    })
+
+    if (!language) {
+      return NextResponse.json(
+        { error: 'Invalid language code' },
+        { status: 400 }
+      )
+    }
+
     // Проверяем кеш
     const cached = await prisma.translationCache.findUnique({
       where: {
-        sourceText_sourceLanguage: {
+        sourceText_sourceLanguageId: {
           sourceText: normalizedWord,
-          sourceLanguage: language as Language,
+          sourceLanguageId: language.id,
         },
       },
     })
@@ -33,13 +45,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Получаем моковые переводы
-    const translations = await getMockTranslations(normalizedWord, language as Language)
+    const translations = await getMockTranslations(normalizedWord, languageCode as LanguageCode)
 
     // Сохраняем в кеш
     await prisma.translationCache.create({
       data: {
         sourceText: normalizedWord,
-        sourceLanguage: language as Language,
+        sourceLanguageId: language.id,
         translations: translations,
       },
     })

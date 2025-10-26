@@ -16,15 +16,21 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url)
-    const language = searchParams.get('language')
+    const languageCode = searchParams.get('languageCode')
     const status = searchParams.get('status')
 
     const where: any = {
       userId: session.user.id
     }
     
-    if (language) {
-      where.language = language
+    if (languageCode) {
+      // Получаем ID языка по коду
+      const language = await prisma.language.findUnique({
+        where: { code: languageCode },
+      })
+      if (language) {
+        where.languageId = language.id
+      }
     }
     if (status) {
       where.status = status
@@ -36,6 +42,7 @@ export async function GET(request: NextRequest) {
         createdAt: 'desc',
       },
       include: {
+        language: true,
         trainingSessions: {
           orderBy: {
             createdAt: 'desc',
@@ -67,11 +74,23 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { foreignWord, translation, language, examples } = await request.json()
+    const { foreignWord, translation, languageCode, examples } = await request.json()
 
-    if (!foreignWord || !translation || !language) {
+    if (!foreignWord || !translation || !languageCode) {
       return NextResponse.json(
-        { error: 'Foreign word, translation and language are required' },
+        { error: 'Foreign word, translation and language code are required' },
+        { status: 400 }
+      )
+    }
+
+    // Получаем ID языка по коду
+    const language = await prisma.language.findUnique({
+      where: { code: languageCode },
+    })
+
+    if (!language) {
+      return NextResponse.json(
+        { error: 'Invalid language code' },
         { status: 400 }
       )
     }
@@ -81,8 +100,11 @@ export async function POST(request: NextRequest) {
         userId: session.user.id,
         foreignWord: foreignWord.trim(),
         translation: translation.trim(),
-        language,
+        languageId: language.id,
         examples: examples || [],
+      },
+      include: {
+        language: true,
       },
     })
 

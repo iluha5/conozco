@@ -10,11 +10,17 @@ import { ArrowLeft, Trash2 } from 'lucide-react'
 import { AddWordDialog } from '@/components/add-word-dialog'
 import { useToast } from '@/hooks/use-toast'
 
+type Language = {
+  id: string
+  code: string
+  name: string
+}
+
 type Word = {
   id: string
   foreignWord: string
   translation: string
-  language: 'ENGLISH' | 'SPANISH'
+  language: Language
   status: 'NOT_LEARNED' | 'LEARNED'
   examples: string[]
   createdAt: string
@@ -59,7 +65,7 @@ export default function WordsPage() {
     let filtered = words
 
     if (selectedLanguage !== 'ALL') {
-      filtered = filtered.filter(word => word.language === selectedLanguage)
+      filtered = filtered.filter(word => word.language.code === selectedLanguage)
     }
 
     if (selectedStatus !== 'ALL') {
@@ -124,8 +130,8 @@ export default function WordsPage() {
     }
   }
 
-  const getLanguageLabel = (language: string) => {
-    return language === 'ENGLISH' ? '🇬🇧 Английский' : '🇪🇸 Испанский'
+  const getLanguageLabel = (language: Language) => {
+    return language.code === 'en' ? '🇬🇧 Английский' : '🇪🇸 Испанский'
   }
 
   return (
@@ -186,8 +192,8 @@ export default function WordsPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="ALL">Все языки</SelectItem>
-              <SelectItem value="ENGLISH">🇬🇧 Английский</SelectItem>
-              <SelectItem value="SPANISH">🇪🇸 Испанский</SelectItem>
+              <SelectItem value="en">🇬🇧 Английский</SelectItem>
+              <SelectItem value="es">🇪🇸 Испанский</SelectItem>
             </SelectContent>
           </Select>
 

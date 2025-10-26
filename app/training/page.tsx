@@ -13,11 +13,17 @@ import { Stage3Training } from '@/components/training/stage3'
 import { Stage4Training } from '@/components/training/stage4'
 import { useToast } from '@/hooks/use-toast'
 
+type Language = {
+  id: string
+  code: string
+  name: string
+}
+
 type Word = {
   id: string
   foreignWord: string
   translation: string
-  language: 'ENGLISH' | 'SPANISH'
+  language: Language
   status: 'NOT_LEARNED' | 'LEARNED'
   examples: string[]
 }
@@ -61,7 +67,7 @@ export default function TrainingPage() {
     let filtered = words.filter(w => w.status === 'NOT_LEARNED')
 
     if (selectedLanguage !== 'ALL') {
-      filtered = filtered.filter(word => word.language === selectedLanguage)
+      filtered = filtered.filter(word => word.language.code === selectedLanguage)
     }
 
     setTrainingWords(filtered)
@@ -128,8 +134,8 @@ export default function TrainingPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="ALL">Все языки</SelectItem>
-              <SelectItem value="ENGLISH">🇬🇧 Английский</SelectItem>
-              <SelectItem value="SPANISH">🇪🇸 Испанский</SelectItem>
+              <SelectItem value="en">🇬🇧 Английский</SelectItem>
+              <SelectItem value="es">🇪🇸 Испанский</SelectItem>
             </SelectContent>
           </Select>
         </div>

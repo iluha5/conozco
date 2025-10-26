@@ -5,11 +5,17 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChevronRight, CheckCircle, XCircle, RotateCcw } from 'lucide-react'
 
+type Language = {
+  id: string
+  code: string
+  name: string
+}
+
 type Word = {
   id: string
   foreignWord: string
   translation: string
-  language: 'ENGLISH' | 'SPANISH'
+  language: Language
 }
 
 type Stage4Props = {

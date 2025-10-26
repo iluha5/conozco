@@ -5,11 +5,17 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Volume2, ChevronRight } from 'lucide-react'
 
+type Language = {
+  id: string
+  code: string
+  name: string
+}
+
 type Word = {
   id: string
   foreignWord: string
   translation: string
-  language: 'ENGLISH' | 'SPANISH'
+  language: Language
   examples: string[]
 }
 
@@ -34,7 +40,7 @@ export function Stage1Training({ words, onComplete }: Stage1Props) {
   const speakWord = () => {
     if ('speechSynthesis' in window && currentWord) {
       const utterance = new SpeechSynthesisUtterance(currentWord.foreignWord)
-      utterance.lang = currentWord.language === 'ENGLISH' ? 'en-US' : 'es-ES'
+      utterance.lang = currentWord.language.code === 'en' ? 'en-US' : 'es-ES'
       utterance.rate = 0.8
       window.speechSynthesis.speak(utterance)
     }

@@ -6,6 +6,27 @@ const prisma = new PrismaClient()
 async function main() {
   console.log('🌱 Seeding database...')
 
+  // Create languages
+  const english = await prisma.language.upsert({
+    where: { code: 'en' },
+    update: {},
+    create: {
+      code: 'en',
+      name: 'English',
+    },
+  })
+  console.log('✅ Created language:', english.name)
+
+  const spanish = await prisma.language.upsert({
+    where: { code: 'es' },
+    update: {},
+    create: {
+      code: 'es',
+      name: 'Spanish',
+    },
+  })
+  console.log('✅ Created language:', spanish.name)
+
   // Hash passwords
   const adminPasswordHash = await bcrypt.hash('12345678', 10)
   const userPasswordHash = await bcrypt.hash('12345678', 10)

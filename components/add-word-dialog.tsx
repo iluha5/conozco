@@ -29,7 +29,7 @@ type AddWordDialogProps = {
 
 export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
   const [open, setOpen] = useState(false)
-  const [language, setLanguage] = useState<'ENGLISH' | 'SPANISH'>('ENGLISH')
+  const [languageCode, setLanguageCode] = useState<'en' | 'es'>('en')
   const [foreignWord, setForeignWord] = useState('')
   const [translations, setTranslations] = useState<TranslationVariant[]>([])
   const [selectedTranslation, setSelectedTranslation] = useState<string>('')
@@ -57,7 +57,7 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
         },
         body: JSON.stringify({
           word: foreignWord,
-          language,
+          languageCode,
         }),
       })
 
@@ -111,7 +111,7 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
         body: JSON.stringify({
           foreignWord: foreignWord.trim(),
           translation: finalTranslation,
-          language,
+          languageCode,
           examples,
         }),
       })
@@ -171,15 +171,15 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
           <div className="space-y-2">
             <label className="text-sm font-medium">Язык</label>
             <Select
-              value={language}
-              onValueChange={(value: 'ENGLISH' | 'SPANISH') => setLanguage(value)}
+              value={languageCode}
+              onValueChange={(value: 'en' | 'es') => setLanguageCode(value)}
             >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="ENGLISH">🇬🇧 Английский</SelectItem>
-                <SelectItem value="SPANISH">🇪🇸 Испанский</SelectItem>
+                <SelectItem value="en">🇬🇧 Английский</SelectItem>
+                <SelectItem value="es">🇪🇸 Испанский</SelectItem>
               </SelectContent>
             </Select>
           </div>

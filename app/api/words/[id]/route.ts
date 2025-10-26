@@ -24,6 +24,7 @@ export async function GET(
         userId: session.user.id
       },
       include: {
+        language: true,
         trainingSessions: {
           orderBy: {
             createdAt: 'desc',
@@ -64,7 +65,7 @@ export async function PATCH(
       )
     }
 
-    const data = await request.json()
+    const body = await request.json()
     
     // Проверяем, что слово принадлежит пользователю
     const existingWord = await prisma.word.findFirst({
@@ -81,9 +82,30 @@ export async function PATCH(
       )
     }
     
+    // Если передан languageCode, получаем ID языка
+    const data: any = { ...body }
+    if (body.languageCode) {
+      const language = await prisma.language.findUnique({
+        where: { code: body.languageCode },
+      })
+      
+      if (!language) {
+        return NextResponse.json(
+          { error: 'Invalid language code' },
+          { status: 400 }
+        )
+      }
+      
+      data.languageId = language.id
+      delete data.languageCode
+    }
+    
     const word = await prisma.word.update({
       where: { id: params.id },
       data,
+      include: {
+        language: true,
+      },
     })
 
     return NextResponse.json(word)

@@ -460,11 +460,11 @@ const mockTranslations: MockTranslations = {
   }
 }
 
-export type Language = 'ENGLISH' | 'SPANISH'
+export type LanguageCode = 'en' | 'es'
 
 export async function getMockTranslations(
   word: string, 
-  language: Language
+  languageCode: LanguageCode
 ): Promise<TranslationVariant[]> {
   // Имитация задержки сети
   await new Promise(resolve => setTimeout(resolve, 300))
@@ -481,7 +481,8 @@ export async function getMockTranslations(
     }]
   }
   
-  const langKey = language.toLowerCase() as 'english' | 'spanish'
+  // Преобразуем код языка в ключ для моков
+  const langKey = languageCode === 'en' ? 'english' : 'spanish'
   return translations[langKey] || [{
     translation: `перевод_${normalizedWord}`,
     examples: [`Example with ${word}`, `Another example with ${word}`],

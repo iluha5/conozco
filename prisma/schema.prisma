@@ -10,12 +10,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Языки для изучения
-enum Language {
-  ENGLISH
-  SPANISH
-}
-
 // Статус слова
 enum WordStatus {
   NOT_LEARNED
@@ -26,6 +20,18 @@ enum WordStatus {
 enum UserRole {
   USER
   ADMIN
+}
+
+// Справочник языков
+model Language {
+  id    String @id @default(uuid())
+  code  String @unique // например: 'en', 'es', 'ru'
+  name  String         // например: 'English', 'Spanish', 'Russian'
+  
+  words             Word[]
+  translationCaches TranslationCache[]
+  
+  @@index([code])
 }
 
 // Пользователь
@@ -84,7 +90,7 @@ model Word {
   userId        String      // Связь с пользователем
   foreignWord   String      // Слово на иностранном языке
   translation   String      // Основной перевод на русском
-  language      Language    // Язык слова (английский или испанский)
+  languageId    String      // ID языка слова
   status        WordStatus  @default(NOT_LEARNED)
   examples      String[]    @default([]) // Примеры использования
   createdAt     DateTime    @default(now())
@@ -92,22 +98,28 @@ model Word {
   
   // Связи
   user             User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  language         Language            @relation(fields: [languageId], references: [id], onDelete: Restrict)
   trainingSessions TrainingSession[]
 
-  @@unique([foreignWord, language, userId])
-  @@index([userId, language, status])
+  @@unique([foreignWord, languageId, userId])
+  @@index([userId, languageId, status])
+  @@index([languageId])
 }
 
 // Кеш переводов для минимизации запросов к внешнему API
 model TranslationCache {
-  id              String   @id @default(uuid())
-  sourceText      String   // Исходное слово
-  sourceLanguage  Language // Язык источника
-  translations    Json     // JSON массив с вариантами переводов и примерами
-  createdAt       DateTime @default(now())
+  id                 String   @id @default(uuid())
+  sourceText         String   // Исходное слово
+  sourceLanguageId   String   // ID языка источника
+  translations       Json     // JSON массив с вариантами переводов и примерами
+  createdAt          DateTime @default(now())
   
-  @@unique([sourceText, sourceLanguage])
-  @@index([sourceText, sourceLanguage])
+  // Связи
+  sourceLanguage Language @relation(fields: [sourceLanguageId], references: [id], onDelete: Restrict)
+  
+  @@unique([sourceText, sourceLanguageId])
+  @@index([sourceText, sourceLanguageId])
+  @@index([sourceLanguageId])
 }
 
 // Сессии тренировок для отслеживания прогресса
