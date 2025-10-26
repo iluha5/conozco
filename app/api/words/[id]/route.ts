@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 // GET - получить одно слово
@@ -7,8 +9,20 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const word = await prisma.word.findUnique({
-      where: { id: params.id },
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    const word = await prisma.word.findFirst({
+      where: { 
+        id: params.id,
+        userId: session.user.id
+      },
       include: {
         trainingSessions: {
           orderBy: {
@@ -41,7 +55,31 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
     const data = await request.json()
+    
+    // Проверяем, что слово принадлежит пользователю
+    const existingWord = await prisma.word.findFirst({
+      where: {
+        id: params.id,
+        userId: session.user.id
+      }
+    })
+
+    if (!existingWord) {
+      return NextResponse.json(
+        { error: 'Word not found' },
+        { status: 404 }
+      )
+    }
     
     const word = await prisma.word.update({
       where: { id: params.id },
@@ -64,6 +102,30 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    // Проверяем, что слово принадлежит пользователю
+    const existingWord = await prisma.word.findFirst({
+      where: {
+        id: params.id,
+        userId: session.user.id
+      }
+    })
+
+    if (!existingWord) {
+      return NextResponse.json(
+        { error: 'Word not found' },
+        { status: 404 }
+      )
+    }
+
     await prisma.word.delete({
       where: { id: params.id },
     })

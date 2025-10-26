@@ -22,9 +22,66 @@ enum WordStatus {
   LEARNED
 }
 
+// Роль пользователя
+enum UserRole {
+  USER
+  ADMIN
+}
+
+// Пользователь
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password      String    // hashed password
+  name          String?
+  role          UserRole  @default(USER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  words         Word[]
+  accounts      Account[]
+  sessions      Session[]
+  
+  @@index([email])
+}
+
+// NextAuth Account
+model Account {
+  id                String  @id @default(uuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+// NextAuth Session
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+}
+
 // Таблица слов для изучения
 model Word {
   id            String      @id @default(uuid())
+  userId        String      // Связь с пользователем
   foreignWord   String      // Слово на иностранном языке
   translation   String      // Основной перевод на русском
   language      Language    // Язык слова (английский или испанский)
@@ -33,11 +90,12 @@ model Word {
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   
-  // Статистика обучения
+  // Связи
+  user             User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   trainingSessions TrainingSession[]
 
-  @@unique([foreignWord, language])
-  @@index([language, status])
+  @@unique([foreignWord, language, userId])
+  @@index([userId, language, status])
 }
 
 // Кеш переводов для минимизации запросов к внешнему API

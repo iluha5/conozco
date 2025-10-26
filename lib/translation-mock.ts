@@ -176,6 +176,287 @@ const mockTranslations: MockTranslations = {
         frequency: "medium"
       }
     ]
+  },
+  // 20 самых популярных испанских глаголов
+  "ser": {
+    spanish: [
+      {
+        translation: "быть",
+        examples: ["Yo soy estudiante", "Ella es médica"],
+        frequency: "very_high"
+      }
+    ]
+  },
+  "estar": {
+    spanish: [
+      {
+        translation: "быть (состояние)",
+        examples: ["Estoy cansado", "¿Cómo estás?"],
+        frequency: "very_high"
+      },
+      {
+        translation: "находиться",
+        examples: ["Estoy en casa", "¿Dónde está el baño?"],
+        frequency: "very_high"
+      }
+    ]
+  },
+  "haber": {
+    spanish: [
+      {
+        translation: "иметь",
+        examples: ["He comido", "Has trabajado mucho"],
+        frequency: "very_high"
+      },
+      {
+        translation: "быть (безличное)",
+        examples: ["Hay muchas personas", "Había un problema"],
+        frequency: "very_high"
+      }
+    ]
+  },
+  "tener": {
+    spanish: [
+      {
+        translation: "иметь",
+        examples: ["Tengo un coche", "Tienen tres hijos"],
+        frequency: "very_high"
+      },
+      {
+        translation: "держать",
+        examples: ["Ten cuidado", "Tengo el libro en la mano"],
+        frequency: "high"
+      }
+    ]
+  },
+  "hacer": {
+    spanish: [
+      {
+        translation: "делать",
+        examples: ["¿Qué haces?", "Hago ejercicio cada día"],
+        frequency: "very_high"
+      },
+      {
+        translation: "создавать",
+        examples: ["Hacer una tarta", "Hacer amigos"],
+        frequency: "high"
+      }
+    ]
+  },
+  "poder": {
+    spanish: [
+      {
+        translation: "мочь",
+        examples: ["¿Puedes ayudarme?", "No puedo ir"],
+        frequency: "very_high"
+      },
+      {
+        translation: "быть в состоянии",
+        examples: ["Podemos hacerlo", "¿Se puede fumar aquí?"],
+        frequency: "high"
+      }
+    ]
+  },
+  "decir": {
+    spanish: [
+      {
+        translation: "говорить",
+        examples: ["¿Qué dices?", "Dice que vendrá"],
+        frequency: "very_high"
+      },
+      {
+        translation: "сказать",
+        examples: ["Te digo la verdad", "Me dijeron que no"],
+        frequency: "very_high"
+      }
+    ]
+  },
+  "ir": {
+    spanish: [
+      {
+        translation: "идти",
+        examples: ["Voy al trabajo", "Vamos a la playa"],
+        frequency: "very_high"
+      },
+      {
+        translation: "ехать",
+        examples: ["Ir en coche", "Fueron a España"],
+        frequency: "very_high"
+      }
+    ]
+  },
+  "ver": {
+    spanish: [
+      {
+        translation: "видеть",
+        examples: ["Veo una estrella", "¿Ves ese edificio?"],
+        frequency: "very_high"
+      },
+      {
+        translation: "смотреть",
+        examples: ["Ver la televisión", "Vamos a ver una película"],
+        frequency: "high"
+      }
+    ]
+  },
+  "dar": {
+    spanish: [
+      {
+        translation: "давать",
+        examples: ["Dame el libro", "Te doy mi número"],
+        frequency: "very_high"
+      },
+      {
+        translation: "дарить",
+        examples: ["Le di un regalo", "Dar flores"],
+        frequency: "high"
+      }
+    ]
+  },
+  "saber": {
+    spanish: [
+      {
+        translation: "знать",
+        examples: ["Sé español", "¿Sabes cocinar?"],
+        frequency: "very_high"
+      },
+      {
+        translation: "уметь",
+        examples: ["Sabe tocar el piano", "No sé nadar"],
+        frequency: "high"
+      }
+    ]
+  },
+  "querer": {
+    spanish: [
+      {
+        translation: "хотеть",
+        examples: ["Quiero agua", "¿Qué quieres?"],
+        frequency: "very_high"
+      },
+      {
+        translation: "любить",
+        examples: ["Te quiero mucho", "Quiero a mi familia"],
+        frequency: "high"
+      }
+    ]
+  },
+  "llegar": {
+    spanish: [
+      {
+        translation: "приходить",
+        examples: ["Llegué tarde", "¿Cuándo llegas?"],
+        frequency: "very_high"
+      },
+      {
+        translation: "прибывать",
+        examples: ["El tren llega a las tres", "Llegamos a Madrid"],
+        frequency: "high"
+      }
+    ]
+  },
+  "pasar": {
+    spanish: [
+      {
+        translation: "проходить",
+        examples: ["Pasa por aquí", "El tiempo pasa rápido"],
+        frequency: "very_high"
+      },
+      {
+        translation: "происходить",
+        examples: ["¿Qué pasa?", "Pasó algo malo"],
+        frequency: "high"
+      },
+      {
+        translation: "проводить (время)",
+        examples: ["Pasamos el día en la playa", "Pasar las vacaciones"],
+        frequency: "high"
+      }
+    ]
+  },
+  "deber": {
+    spanish: [
+      {
+        translation: "долженствовать",
+        examples: ["Debo ir al médico", "Debes estudiar más"],
+        frequency: "very_high"
+      },
+      {
+        translation: "быть должным",
+        examples: ["Te debo dinero", "Me debe una explicación"],
+        frequency: "high"
+      }
+    ]
+  },
+  "poner": {
+    spanish: [
+      {
+        translation: "класть",
+        examples: ["Pon el libro en la mesa", "Pongo la música"],
+        frequency: "very_high"
+      },
+      {
+        translation: "ставить",
+        examples: ["Poner la televisión", "Me pongo los zapatos"],
+        frequency: "high"
+      }
+    ]
+  },
+  "parecer": {
+    spanish: [
+      {
+        translation: "казаться",
+        examples: ["Parece difícil", "Me parece bien"],
+        frequency: "very_high"
+      },
+      {
+        translation: "выглядеть",
+        examples: ["Pareces cansado", "Parece mentira"],
+        frequency: "high"
+      }
+    ]
+  },
+  "quedar": {
+    spanish: [
+      {
+        translation: "оставаться",
+        examples: ["Me quedo en casa", "¿Cuánto dinero queda?"],
+        frequency: "very_high"
+      },
+      {
+        translation: "встречаться",
+        examples: ["Quedamos a las cinco", "¿Quedamos mañana?"],
+        frequency: "high"
+      }
+    ]
+  },
+  "creer": {
+    spanish: [
+      {
+        translation: "верить",
+        examples: ["No te creo", "Creo que sí"],
+        frequency: "very_high"
+      },
+      {
+        translation: "думать",
+        examples: ["Creo que tienes razón", "¿Tú qué crees?"],
+        frequency: "high"
+      }
+    ]
+  },
+  "hablar": {
+    spanish: [
+      {
+        translation: "говорить",
+        examples: ["Hablo español", "¿Hablas inglés?"],
+        frequency: "very_high"
+      },
+      {
+        translation: "разговаривать",
+        examples: ["Hablar por teléfono", "Necesito hablar contigo"],
+        frequency: "high"
+      }
+    ]
   }
 }
 

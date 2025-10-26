@@ -1,14 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
-// GET - получить все слова
+// GET - получить все слова текущего пользователя
 export async function GET(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
     const { searchParams } = new URL(request.url)
     const language = searchParams.get('language')
     const status = searchParams.get('status')
 
-    const where: any = {}
+    const where: any = {
+      userId: session.user.id
+    }
+    
     if (language) {
       where.language = language
     }
@@ -44,6 +58,15 @@ export async function GET(request: NextRequest) {
 // POST - добавить новое слово
 export async function POST(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
     const { foreignWord, translation, language, examples } = await request.json()
 
     if (!foreignWord || !translation || !language) {
@@ -55,6 +78,7 @@ export async function POST(request: NextRequest) {
 
     const word = await prisma.word.create({
       data: {
+        userId: session.user.id,
         foreignWord: foreignWord.trim(),
         translation: translation.trim(),
         language,

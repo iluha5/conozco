@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Header } from '@/components/header'
 import { ArrowLeft } from 'lucide-react'
 import { Stage1Training } from '@/components/training/stage1'
 import { Stage2Training } from '@/components/training/stage2'
@@ -107,6 +108,7 @@ export default function TrainingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100">
+      <Header />
       <div className="container mx-auto px-4 py-8">
         <div className="mb-6">
           <Link href="/">

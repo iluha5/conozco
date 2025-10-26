@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Header } from '@/components/header'
 import { ArrowLeft, Trash2 } from 'lucide-react'
 import { AddWordDialog } from '@/components/add-word-dialog'
 import { useToast } from '@/hooks/use-toast'
@@ -129,6 +130,7 @@ export default function WordsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <Header />
       <div className="container mx-auto px-4 py-8">
         <div className="mb-6">
           <Link href="/">
