@@ -30,7 +30,11 @@ type Word = {
   baseWord?: {
     id: string
     word: string
-    partOfSpeech: string
+    partOfSpeech: {
+      id: string
+      name: string
+      displayName: string
+    }
     languageId: string
     translations: Array<{
       translation: string
@@ -154,19 +158,6 @@ export default function WordsPage() {
     return language.code === 'en' ? '🇬🇧 Английский' : '🇪🇸 Испанский'
   }
 
-  const getPartOfSpeechLabel = (partOfSpeech: string) => {
-    const labels: Record<string, string> = {
-      'NOUN': 'сущ.',
-      'VERB': 'гл.',
-      'ADJECTIVE': 'прил.',
-      'ADVERB': 'нареч.',
-      'PRONOUN': 'мест.',
-      'PREPOSITION': 'предл.',
-      'CONJUNCTION': 'союз',
-      'INTERJECTION': 'межд.',
-    }
-    return labels[partOfSpeech] || partOfSpeech
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -287,7 +278,7 @@ export default function WordsPage() {
                       {getLanguageLabel(word.language)}
                       {word.baseWord?.partOfSpeech && (
                         <span className="ml-2 text-xs bg-gray-100 px-2 py-1 rounded">
-                          {getPartOfSpeechLabel(word.baseWord.partOfSpeech)}
+                          {word.baseWord.partOfSpeech.displayName}
                         </span>
                       )}
                     </div>

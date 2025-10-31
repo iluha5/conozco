@@ -16,7 +16,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { PlusCircle, Loader2, Search, CheckCircle } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
-import { PartOfSpeech } from '@prisma/client'
+
+type PartOfSpeech = {
+  id: string
+  name: string
+  displayName: string
+}
 
 type BaseWord = {
   id: string
@@ -157,19 +162,6 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
     setAvailableWords([])
   }
 
-  const getPartOfSpeechLabel = (pos: PartOfSpeech) => {
-    const labels = {
-      [PartOfSpeech.NOUN]: 'сущ.',
-      [PartOfSpeech.VERB]: 'гл.',
-      [PartOfSpeech.ADJECTIVE]: 'прил.',
-      [PartOfSpeech.ADVERB]: 'нареч.',
-      [PartOfSpeech.PRONOUN]: 'мест.',
-      [PartOfSpeech.PREPOSITION]: 'предл.',
-      [PartOfSpeech.CONJUNCTION]: 'союз',
-      [PartOfSpeech.INTERJECTION]: 'межд.',
-    }
-    return labels[pos] || pos
-  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -240,7 +232,7 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                       <CardTitle className="text-base flex items-center gap-2">
                         {word.word}
                         <span className="text-xs bg-gray-100 px-2 py-1 rounded">
-                          {getPartOfSpeechLabel(word.partOfSpeech)}
+                          {word.partOfSpeech.displayName}
                         </span>
                         {word.isAddedByUser && (
                           <CheckCircle className="w-4 h-4 text-green-500" />

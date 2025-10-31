@@ -65,6 +65,7 @@ export async function GET(request: NextRequest) {
       },
       include: {
         language: true,
+        partOfSpeech: true,
         translations: {
           where: { language: { code: 'ru' } },
           orderBy: { priority: 'asc' }

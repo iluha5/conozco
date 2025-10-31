@@ -38,6 +38,39 @@ async function main() {
   })
   console.log('✅ Created language:', russian.name)
 
+  // Create parts of speech for Spanish
+  const spanishPartsOfSpeech = [
+    { name: 'NOUN', displayName: 'существительное' },
+    { name: 'VERB', displayName: 'глагол' },
+    { name: 'ADJECTIVE', displayName: 'прилагательное' },
+    { name: 'ADVERB', displayName: 'наречие' },
+    { name: 'PRONOUN', displayName: 'местоимение' },
+    { name: 'PREPOSITION', displayName: 'предлог' },
+    { name: 'CONJUNCTION', displayName: 'союз' },
+    { name: 'INTERJECTION', displayName: 'междометие' },
+  ]
+
+  const partsOfSpeechRecords: Record<string, any> = {}
+
+  for (const pos of spanishPartsOfSpeech) {
+    const partOfSpeech = await prisma.partOfSpeech.upsert({
+      where: {
+        name_languageId: {
+          name: pos.name,
+          languageId: spanish.id
+        }
+      },
+      update: {},
+      create: {
+        name: pos.name,
+        displayName: pos.displayName,
+        languageId: spanish.id
+      }
+    })
+    partsOfSpeechRecords[pos.name] = partOfSpeech
+  }
+  console.log('✅ Created parts of speech for Spanish')
+
   // Hash passwords
   const adminPasswordHash = await bcrypt.hash('12345678', 10)
   const userPasswordHash = await bcrypt.hash('12345678', 10)
@@ -70,7 +103,7 @@ async function main() {
 
   // Import words data
   console.log('📚 Importing words data...')
-  await importWordsData(prisma)
+  await importWordsData(prisma, partsOfSpeechRecords)
   console.log('✅ Words data imported successfully')
 
   console.log('🎉 Seeding completed!')

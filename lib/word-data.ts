@@ -153,7 +153,7 @@ export const WORDS_DATA: WordData[] = [
 ]
 
 // Функция для импорта данных слов в базу данных
-export async function importWordsData(prisma: any) {
+export async function importWordsData(prisma: any, partsOfSpeechRecords: Record<string, any>) {
   for (const wordData of WORDS_DATA) {
     // Найти или создать язык
     let language = await prisma.language.findUnique({
@@ -179,7 +179,7 @@ export async function importWordsData(prisma: any) {
     const baseWord = await prisma.baseWord.create({
       data: {
         word: wordData.word,
-        partOfSpeech: wordData.partOfSpeech,
+        partOfSpeechId: partsOfSpeechRecords[wordData.partOfSpeech].id,
         languageId: language.id
       }
     })

@@ -25,7 +25,11 @@ type Word = {
   baseWord?: {
     id: string
     word: string
-    partOfSpeech: string
+    partOfSpeech: {
+      id: string
+      name: string
+      displayName: string
+    }
     languageId: string
     translations: Array<{
       translation: string

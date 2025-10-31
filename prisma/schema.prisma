@@ -22,16 +22,18 @@ enum UserRole {
   ADMIN
 }
 
-// Типы частей речи
-enum PartOfSpeech {
-  NOUN
-  VERB
-  ADJECTIVE
-  ADVERB
-  PRONOUN
-  PREPOSITION
-  CONJUNCTION
-  INTERJECTION
+// Часть речи
+model PartOfSpeech {
+  id         String   @id @default(uuid())
+  name       String   @unique // NOUN, VERB, etc.
+  displayName String  // существительное, глагол, etc.
+  languageId String   // ID языка (для поддержки разных языков)
+
+  language     Language     @relation(fields: [languageId], references: [id])
+  baseWords    BaseWord[]
+
+  @@unique([name, languageId])
+  @@index([languageId])
 }
 
 // Справочник языков
@@ -45,6 +47,7 @@ model Language {
   pronouns                Pronoun[]
   tenses                  Tense[]
   wordTranslations        WordTranslation[]
+  partsOfSpeech           PartOfSpeech[]
 
   @@index([code])
 }
@@ -101,19 +104,20 @@ model Session {
 
 // База слов (словарь)
 model BaseWord {
-  id             String        @id @default(uuid())
-  word           String        // Иностранное слово
-  partOfSpeech   PartOfSpeech  // Часть речи
-  languageId     String        // ID языка слова
+  id             String   @id @default(uuid())
+  word           String   // Иностранное слово
+  partOfSpeechId String   // ID части речи
+  languageId     String   // ID языка слова
 
   language             Language            @relation(fields: [languageId], references: [id])
+  partOfSpeech         PartOfSpeech        @relation(fields: [partOfSpeechId], references: [id])
   translations         WordTranslation[]
   examples             WordExample[]
   grammaticalExamples  GrammaticalExample[]
   userWords            Word[]
 
   @@unique([word, languageId])
-  @@index([languageId, partOfSpeech])
+  @@index([languageId, partOfSpeechId])
 }
 
 // Переводы слов (до 3 самых популярных на каждый язык)
