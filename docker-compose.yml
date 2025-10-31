@@ -24,6 +24,8 @@ services:
       - "3000:3000"
     environment:
       DATABASE_URL: postgresql://flashcards:flashcards_password@postgres:5432/flashcards
+      NEXTAUTH_SECRET: your-secret-key-change-in-production
+      NEXTAUTH_URL: http://localhost:3000
       NODE_ENV: development
     depends_on:
       - postgres
