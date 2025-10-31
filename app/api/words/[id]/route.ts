@@ -10,7 +10,7 @@ export async function GET(
 ) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -18,13 +18,33 @@ export async function GET(
       )
     }
 
+    // Проверить, существует ли пользователь в базе данных
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id }
+    })
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User session expired. Please sign in again.' },
+        { status: 401 }
+      )
+    }
+
     const word = await prisma.word.findFirst({
-      where: { 
+      where: {
         id: params.id,
         userId: session.user.id
       },
       include: {
         language: true,
+        baseWord: {
+          include: {
+            translations: {
+              where: { language: { code: 'ru' } },
+              orderBy: { priority: 'asc' }
+            }
+          }
+        },
         trainingSessions: {
           orderBy: {
             createdAt: 'desc',
@@ -57,10 +77,22 @@ export async function PATCH(
 ) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    // Проверить, существует ли пользователь в базе данных
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id }
+    })
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User session expired. Please sign in again.' },
         { status: 401 }
       )
     }
@@ -125,10 +157,22 @@ export async function DELETE(
 ) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    // Проверить, существует ли пользователь в базе данных
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id }
+    })
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User session expired. Please sign in again.' },
         { status: 401 }
       )
     }

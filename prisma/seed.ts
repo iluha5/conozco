@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
+import { importWordsData } from '../lib/word-data'
 
 const prisma = new PrismaClient()
 
@@ -26,6 +27,16 @@ async function main() {
     },
   })
   console.log('✅ Created language:', spanish.name)
+
+  const russian = await prisma.language.upsert({
+    where: { code: 'ru' },
+    update: {},
+    create: {
+      code: 'ru',
+      name: 'Russian',
+    },
+  })
+  console.log('✅ Created language:', russian.name)
 
   // Hash passwords
   const adminPasswordHash = await bcrypt.hash('12345678', 10)
@@ -56,6 +67,11 @@ async function main() {
     },
   })
   console.log('✅ Created regular user:', user.email)
+
+  // Import words data
+  console.log('📚 Importing words data...')
+  await importWordsData(prisma)
+  console.log('✅ Words data imported successfully')
 
   console.log('🎉 Seeding completed!')
 }

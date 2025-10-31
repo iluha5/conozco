@@ -13,9 +13,32 @@ type Language = {
 
 type Word = {
   id: string
-  foreignWord: string
-  translation: string
+  userId: string
+  baseWordId?: string
+  customWord?: string
+  customTranslation?: string
+  languageId: string
   language: Language
+  status: 'NOT_LEARNED' | 'LEARNED'
+  createdAt: string
+  updatedAt: string
+  baseWord?: {
+    id: string
+    word: string
+    partOfSpeech: string
+    languageId: string
+    translations: Array<{
+      translation: string
+      priority: number
+    }>
+    examples: Array<{
+      example: string
+      translation: string
+      pronoun: {
+        pronoun: string
+      }
+    }>
+  }
 }
 
 type Stage3Props = {
@@ -49,8 +72,11 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
   const initializePairs = () => {
     const newPairs: MatchPair[] = currentWords.map(word => ({
       id: word.id,
-      foreign: word.foreignWord,
-      translation: word.translation,
+      foreign: word.baseWord?.word || word.customWord || '',
+      translation: word.customTranslation ||
+                   (word.baseWord?.translations && word.baseWord.translations.length > 0
+                     ? word.baseWord.translations[0].translation
+                     : 'Нет перевода'),
       matched: false,
     }))
     

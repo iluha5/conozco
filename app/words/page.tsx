@@ -18,12 +18,32 @@ type Language = {
 
 type Word = {
   id: string
-  foreignWord: string
-  translation: string
+  userId: string
+  baseWordId?: string
+  customWord?: string
+  customTranslation?: string
+  languageId: string
   language: Language
   status: 'NOT_LEARNED' | 'LEARNED'
-  examples: string[]
   createdAt: string
+  updatedAt: string
+  baseWord?: {
+    id: string
+    word: string
+    partOfSpeech: string
+    languageId: string
+    translations: Array<{
+      translation: string
+      priority: number
+    }>
+    examples: Array<{
+      example: string
+      translation: string
+      pronoun: {
+        pronoun: string
+      }
+    }>
+  }
 }
 
 export default function WordsPage() {
@@ -134,6 +154,20 @@ export default function WordsPage() {
     return language.code === 'en' ? '🇬🇧 Английский' : '🇪🇸 Испанский'
   }
 
+  const getPartOfSpeechLabel = (partOfSpeech: string) => {
+    const labels: Record<string, string> = {
+      'NOUN': 'сущ.',
+      'VERB': 'гл.',
+      'ADJECTIVE': 'прил.',
+      'ADVERB': 'нареч.',
+      'PRONOUN': 'мест.',
+      'PREPOSITION': 'предл.',
+      'CONJUNCTION': 'союз',
+      'INTERJECTION': 'межд.',
+    }
+    return labels[partOfSpeech] || partOfSpeech
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <Header />
@@ -229,10 +263,13 @@ export default function WordsPage() {
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <CardTitle className="text-2xl mb-1">
-                        {word.foreignWord}
+                        {word.baseWord?.word || word.customWord}
                       </CardTitle>
                       <CardDescription className="text-base">
-                        {word.translation}
+                        {word.customTranslation ||
+                         (word.baseWord?.translations && word.baseWord.translations.length > 0
+                           ? word.baseWord.translations[0].translation
+                           : 'Нет перевода')}
                       </CardDescription>
                     </div>
                     <Button
@@ -248,10 +285,15 @@ export default function WordsPage() {
                   <div className="space-y-2">
                     <div className="text-sm text-gray-600">
                       {getLanguageLabel(word.language)}
+                      {word.baseWord?.partOfSpeech && (
+                        <span className="ml-2 text-xs bg-gray-100 px-2 py-1 rounded">
+                          {getPartOfSpeechLabel(word.baseWord.partOfSpeech)}
+                        </span>
+                      )}
                     </div>
-                    {word.examples.length > 0 && (
+                    {word.baseWord?.examples && word.baseWord.examples.length > 0 && (
                       <div className="text-sm text-gray-500 italic">
-                        {word.examples[0]}
+                        • {word.baseWord.examples[0].example} - {word.baseWord.examples[0].translation}
                       </div>
                     )}
                     <Button

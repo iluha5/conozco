@@ -13,9 +13,32 @@ type Language = {
 
 type Word = {
   id: string
-  foreignWord: string
-  translation: string
+  userId: string
+  baseWordId?: string
+  customWord?: string
+  customTranslation?: string
+  languageId: string
   language: Language
+  status: 'NOT_LEARNED' | 'LEARNED'
+  createdAt: string
+  updatedAt: string
+  baseWord?: {
+    id: string
+    word: string
+    partOfSpeech: string
+    languageId: string
+    translations: Array<{
+      translation: string
+      priority: number
+    }>
+    examples: Array<{
+      example: string
+      translation: string
+      pronoun: {
+        pronoun: string
+      }
+    }>
+  }
 }
 
 type Stage4Props = {
@@ -43,7 +66,8 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
   }, [currentIndex])
 
   const initializeLetters = () => {
-    const wordLetters = currentWord.foreignWord.split('')
+    const word = currentWord.baseWord?.word || currentWord.customWord || ''
+    const wordLetters = word.split('')
     const shuffled = [...wordLetters].sort(() => Math.random() - 0.5)
     setLetters(shuffled)
   }
@@ -61,7 +85,8 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
 
   const handleCheck = async () => {
     const constructed = userWord.join('')
-    const correct = constructed.toLowerCase() === currentWord.foreignWord.toLowerCase()
+    const correctWord = currentWord.baseWord?.word || currentWord.customWord || ''
+    const correct = constructed.toLowerCase() === correctWord.toLowerCase()
     
     setIsCorrect(correct)
     setIsComplete(true)
@@ -123,7 +148,10 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
         <CardContent className="space-y-6">
           <div className="text-center mb-6">
             <p className="text-2xl font-bold text-purple-600 mb-2">
-              {currentWord.translation}
+              {currentWord.customTranslation ||
+               (currentWord.baseWord?.translations && currentWord.baseWord.translations.length > 0
+                 ? currentWord.baseWord.translations[0].translation
+                 : 'Нет перевода')}
             </p>
             <p className="text-gray-600">Составьте слово из букв</p>
           </div>
@@ -176,7 +204,7 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
                 </Button>
                 <Button
                   onClick={handleCheck}
-                  disabled={userWord.length !== currentWord.foreignWord.length}
+                  disabled={userWord.length !== (currentWord.baseWord?.word || currentWord.customWord || '').length}
                   size="lg"
                 >
                   Проверить
@@ -196,7 +224,7 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
                       Неправильно
                     </div>
                     <p className="text-center text-gray-600">
-                      Правильный ответ: <span className="font-bold">{currentWord.foreignWord}</span>
+                      Правильный ответ: <span className="font-bold">{currentWord.baseWord?.word || currentWord.customWord}</span>
                     </p>
                   </div>
                 )}

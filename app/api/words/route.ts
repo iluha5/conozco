@@ -7,10 +7,22 @@ import { prisma } from '@/lib/prisma'
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    // Проверить, существует ли пользователь в базе данных
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id }
+    })
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User session expired. Please sign in again.' },
         { status: 401 }
       )
     }
@@ -22,7 +34,7 @@ export async function GET(request: NextRequest) {
     const where: any = {
       userId: session.user.id
     }
-    
+
     if (languageCode) {
       // Получаем ID языка по коду
       const language = await prisma.language.findUnique({
@@ -43,6 +55,14 @@ export async function GET(request: NextRequest) {
       },
       include: {
         language: true,
+        baseWord: {
+          include: {
+            translations: {
+              where: { language: { code: 'ru' } },
+              orderBy: { priority: 'asc' }
+            }
+          }
+        },
         trainingSessions: {
           orderBy: {
             createdAt: 'desc',
@@ -62,7 +82,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST - добавить новое слово
+// POST - добавить слово из базы данных
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
@@ -74,51 +94,89 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { foreignWord, translation, languageCode, examples } = await request.json()
-
-    if (!foreignWord || !translation || !languageCode) {
-      return NextResponse.json(
-        { error: 'Foreign word, translation and language code are required' },
-        { status: 400 }
-      )
-    }
-
-    // Получаем ID языка по коду
-    const language = await prisma.language.findUnique({
-      where: { code: languageCode },
+    // Проверить, существует ли пользователь в базе данных
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id }
     })
 
-    if (!language) {
+    if (!user) {
       return NextResponse.json(
-        { error: 'Invalid language code' },
+        { error: 'User session expired. Please sign in again.' },
+        { status: 401 }
+      )
+    }
+
+    const { baseWordId, customTranslation } = await request.json()
+
+    if (!baseWordId) {
+      return NextResponse.json(
+        { error: 'Base word ID is required' },
         { status: 400 }
       )
     }
 
+    // Проверить, существует ли базовое слово
+    const baseWord = await prisma.baseWord.findUnique({
+      where: { id: baseWordId },
+      include: {
+        language: true,
+        translations: {
+          where: { language: { code: 'ru' } },
+          orderBy: { priority: 'asc' },
+          take: 1
+        }
+      }
+    })
+
+    if (!baseWord) {
+      return NextResponse.json(
+        { error: 'Word not found in database' },
+        { status: 404 }
+      )
+    }
+
+    // Проверить, не добавил ли пользователь уже это слово
+    const existingWord = await prisma.word.findUnique({
+      where: {
+        userId_baseWordId: {
+          userId: session.user.id,
+          baseWordId: baseWord.id
+        }
+      }
+    })
+
+    if (existingWord) {
+      return NextResponse.json(
+        { error: 'You already have this word in your vocabulary' },
+        { status: 409 }
+      )
+    }
+
+    // Создать слово для пользователя
     const word = await prisma.word.create({
       data: {
         userId: session.user.id,
-        foreignWord: foreignWord.trim(),
-        translation: translation.trim(),
-        languageId: language.id,
-        examples: examples || [],
+        baseWordId: baseWord.id,
+        customTranslation: customTranslation?.trim() || null,
+        languageId: baseWord.languageId,
       },
       include: {
         language: true,
+        baseWord: {
+          include: {
+            translations: {
+              where: { language: { code: 'ru' } },
+              orderBy: { priority: 'asc' }
+            }
+          }
+        },
       },
     })
 
     return NextResponse.json(word, { status: 201 })
   } catch (error: any) {
     console.error('Error creating word:', error)
-    
-    if (error.code === 'P2002') {
-      return NextResponse.json(
-        { error: 'This word already exists for this language' },
-        { status: 409 }
-      )
-    }
-    
+
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

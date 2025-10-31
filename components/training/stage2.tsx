@@ -13,9 +13,32 @@ type Language = {
 
 type Word = {
   id: string
-  foreignWord: string
-  translation: string
+  userId: string
+  baseWordId?: string
+  customWord?: string
+  customTranslation?: string
+  languageId: string
   language: Language
+  status: 'NOT_LEARNED' | 'LEARNED'
+  createdAt: string
+  updatedAt: string
+  baseWord?: {
+    id: string
+    word: string
+    partOfSpeech: string
+    languageId: string
+    translations: Array<{
+      translation: string
+      priority: number
+    }>
+    examples: Array<{
+      example: string
+      translation: string
+      pronoun: {
+        pronoun: string
+      }
+    }>
+  }
 }
 
 type Stage2Props = {
@@ -41,12 +64,18 @@ export function Stage2Training({ words, onComplete }: Stage2Props) {
   }, [currentIndex])
 
   const generateOptions = () => {
-    const correctTranslation = currentWord.translation
+    const correctTranslation = currentWord.customTranslation ||
+                               (currentWord.baseWord?.translations && currentWord.baseWord.translations.length > 0
+                                 ? currentWord.baseWord.translations[0].translation
+                                 : '')
     const otherWords = words.filter((w, idx) => idx !== currentIndex)
-    
+
     // Выбираем 3 случайных неправильных ответа
     const shuffledOthers = [...otherWords].sort(() => Math.random() - 0.5)
-    const wrongOptions = shuffledOthers.slice(0, 3).map(w => w.translation)
+    const wrongOptions = shuffledOthers.slice(0, 3).map(w => w.customTranslation ||
+                                                          (w.baseWord?.translations && w.baseWord.translations.length > 0
+                                                            ? w.baseWord.translations[0].translation
+                                                            : ''))
     
     // Комбинируем с правильным ответом и перемешиваем
     const allOptions = [...wrongOptions, correctTranslation].sort(() => Math.random() - 0.5)
@@ -57,7 +86,11 @@ export function Stage2Training({ words, onComplete }: Stage2Props) {
     if (selectedOption !== null) return // Уже выбрано
 
     setSelectedOption(option)
-    const correct = option === currentWord.translation
+    const correctTranslation = currentWord.customTranslation ||
+                               (currentWord.baseWord?.translations && currentWord.baseWord.translations.length > 0
+                                 ? currentWord.baseWord.translations[0].translation
+                                 : '')
+    const correct = option === correctTranslation
     setIsCorrect(correct)
 
     // Записываем результат
@@ -110,7 +143,7 @@ export function Stage2Training({ words, onComplete }: Stage2Props) {
         <CardContent className="space-y-6">
           <div className="text-center mb-8">
             <h2 className="text-5xl font-bold text-gray-900 mb-2">
-              {currentWord.foreignWord}
+              {currentWord.baseWord?.word || currentWord.customWord}
             </h2>
             <p className="text-gray-600">Выберите правильный перевод</p>
           </div>
@@ -118,7 +151,11 @@ export function Stage2Training({ words, onComplete }: Stage2Props) {
           <div className="grid grid-cols-1 gap-3">
             {options.map((option, index) => {
               const isSelected = selectedOption === option
-              const isCorrectOption = option === currentWord.translation
+              const correctTranslation = currentWord.customTranslation ||
+                                         (currentWord.baseWord?.translations && currentWord.baseWord.translations.length > 0
+                                           ? currentWord.baseWord.translations[0].translation
+                                           : '')
+              const isCorrectOption = option === correctTranslation
               
               let buttonClass = 'h-auto py-4 text-lg justify-start'
               let variant: 'default' | 'outline' | 'secondary' = 'outline'

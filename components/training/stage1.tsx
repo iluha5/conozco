@@ -13,10 +13,32 @@ type Language = {
 
 type Word = {
   id: string
-  foreignWord: string
-  translation: string
+  userId: string
+  baseWordId?: string
+  customWord?: string
+  customTranslation?: string
+  languageId: string
   language: Language
-  examples: string[]
+  status: 'NOT_LEARNED' | 'LEARNED'
+  createdAt: string
+  updatedAt: string
+  baseWord?: {
+    id: string
+    word: string
+    partOfSpeech: string
+    languageId: string
+    translations: Array<{
+      translation: string
+      priority: number
+    }>
+    examples: Array<{
+      example: string
+      translation: string
+      pronoun: {
+        pronoun: string
+      }
+    }>
+  }
 }
 
 type Stage1Props = {
@@ -39,7 +61,8 @@ export function Stage1Training({ words, onComplete }: Stage1Props) {
 
   const speakWord = () => {
     if ('speechSynthesis' in window && currentWord) {
-      const utterance = new SpeechSynthesisUtterance(currentWord.foreignWord)
+      const word = currentWord.baseWord?.word || currentWord.customWord || ''
+      const utterance = new SpeechSynthesisUtterance(word)
       utterance.lang = currentWord.language.code === 'en' ? 'en-US' : 'es-ES'
       utterance.rate = 0.8
       window.speechSynthesis.speak(utterance)
@@ -89,7 +112,7 @@ export function Stage1Training({ words, onComplete }: Stage1Props) {
           <div className="text-center">
             <div className="flex items-center justify-center gap-4 mb-4">
               <h2 className="text-5xl font-bold text-gray-900">
-                {currentWord.foreignWord}
+                {currentWord.baseWord?.word || currentWord.customWord}
               </h2>
               <Button
                 size="icon"
@@ -105,14 +128,17 @@ export function Stage1Training({ words, onComplete }: Stage1Props) {
               {showTranslation ? (
                 <div className="space-y-4">
                   <p className="text-3xl text-purple-600 font-semibold">
-                    {currentWord.translation}
+                    {currentWord.customTranslation ||
+                     (currentWord.baseWord?.translations && currentWord.baseWord.translations.length > 0
+                       ? currentWord.baseWord.translations[0].translation
+                       : 'Нет перевода')}
                   </p>
-                  {currentWord.examples.length > 0 && (
+                  {currentWord.baseWord?.examples && currentWord.baseWord.examples.length > 0 && (
                     <div className="text-gray-600 space-y-2">
                       <p className="font-medium text-sm">Примеры:</p>
-                      {currentWord.examples.slice(0, 2).map((example, idx) => (
+                      {currentWord.baseWord.examples.slice(0, 2).map((example, idx) => (
                         <p key={idx} className="text-sm italic">
-                          {example}
+                          • {example.example} - {example.translation}
                         </p>
                       ))}
                     </div>
