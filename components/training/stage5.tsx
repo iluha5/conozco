@@ -508,20 +508,26 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
           </div>
 
           {/* Доступные слова */}
-          <div className="flex flex-wrap gap-2 justify-center">
-            {availableWords
-              .map((wordState, originalIndex) => ({ wordState, originalIndex }))
-              .filter(({ wordState }) => !wordState.selected)
-              .map(({ wordState, originalIndex }) => (
-                <button
-                  key={originalIndex}
-                  onClick={() => handleWordClick(originalIndex)}
-                  disabled={isComplete}
-                  className="px-3 py-2 bg-white border-2 border-gray-300 rounded-lg text-gray-900 hover:bg-gray-50 hover:border-gray-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-                >
-                  {wordState.word}
-                </button>
-              ))}
+          <div className="flex flex-wrap gap-2 justify-center max-w-2xl mx-auto">
+            {availableWords.map((wordState, index) => (
+              <div key={index} className="relative">
+                {wordState.selected ? (
+                  // Светло-серый блок-заполнитель для выбранных слов
+                  <div className="px-3 py-2 bg-gray-200 border-2 border-gray-300 rounded-lg text-gray-400 font-medium min-w-[60px] h-10 flex items-center justify-center">
+                    {wordState.word}
+                  </div>
+                ) : (
+                  // Активная кнопка для невыбранных слов
+                  <button
+                    onClick={() => handleWordClick(index)}
+                    disabled={isComplete}
+                    className="px-3 py-2 bg-white border-2 border-gray-300 rounded-lg text-gray-900 hover:bg-gray-50 hover:border-gray-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium min-w-[60px] h-10"
+                  >
+                    {wordState.word}
+                  </button>
+                )}
+              </div>
+            ))}
           </div>
 
           {/* Кнопки действий */}

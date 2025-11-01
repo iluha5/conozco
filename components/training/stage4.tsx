@@ -197,20 +197,24 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
           </div>
 
           {/* Доступные буквы */}
-          <div className="flex flex-wrap gap-2 justify-center">
-            {letters
-              .map((letterState, originalIndex) => ({ letterState, originalIndex }))
-              .filter(({ letterState }) => !letterState.selected)
-              .map(({ letterState, originalIndex }) => (
-                <button
-                  key={originalIndex}
-                  onClick={() => handleLetterClick(originalIndex)}
-                  disabled={isComplete}
-                  className="w-12 h-12 bg-white border-2 border-gray-300 rounded-lg text-xl font-bold text-gray-900 hover:bg-gray-50 hover:border-gray-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {letterState.letter}
-                </button>
-              ))}
+          <div className="flex flex-wrap gap-2 justify-center max-w-md mx-auto">
+            {letters.map((letterState, index) => (
+              <div key={index} className="relative w-12 h-12">
+                {letterState.selected ? (
+                  // Светло-серый блок-заполнитель для выбранных букв
+                  <div className="w-full h-full bg-gray-200 rounded-lg border-2 border-gray-300"></div>
+                ) : (
+                  // Активная кнопка для невыбранных букв
+                  <button
+                    onClick={() => handleLetterClick(index)}
+                    disabled={isComplete}
+                    className="w-full h-full bg-white border-2 border-gray-300 rounded-lg text-xl font-bold text-gray-900 hover:bg-gray-50 hover:border-gray-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {letterState.letter}
+                  </button>
+                )}
+              </div>
+            ))}
           </div>
 
           {/* Кнопки действий */}
