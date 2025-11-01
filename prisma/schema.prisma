@@ -24,10 +24,10 @@ enum UserRole {
 
 // Часть речи
 model PartOfSpeech {
-  id         String   @id @default(uuid())
-  name       String   @unique // NOUN, VERB, etc.
+  id         Int      @id @default(autoincrement())
+  name       String   // NOUN, VERB, etc.
   displayName String  // существительное, глагол, etc.
-  languageId String   // ID языка (для поддержки разных языков)
+  languageId Int      // ID языка (для поддержки разных языков)
 
   language     Language     @relation(fields: [languageId], references: [id])
   baseWords    BaseWord[]
@@ -38,7 +38,7 @@ model PartOfSpeech {
 
 // Справочник языков
 model Language {
-  id    String @id @default(uuid())
+  id    Int    @id @default(autoincrement())
   code  String @unique // например: 'en', 'es', 'ru'
   name  String         // например: 'English', 'Spanish', 'Russian'
 
@@ -54,7 +54,7 @@ model Language {
 
 // Пользователь
 model User {
-  id            String    @id @default(uuid())
+  id            Int       @id @default(autoincrement())
   email         String    @unique
   password      String    // hashed password
   name          String?
@@ -71,8 +71,8 @@ model User {
 
 // NextAuth Account
 model Account {
-  id                String  @id @default(uuid())
-  userId            String
+  id                Int     @id @default(autoincrement())
+  userId            Int
   type              String
   provider          String
   providerAccountId String
@@ -92,9 +92,9 @@ model Account {
 
 // NextAuth Session
 model Session {
-  id           String   @id @default(uuid())
+  id           Int      @id @default(autoincrement())
   sessionToken String   @unique
-  userId       String
+  userId       Int
   expires      DateTime
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -104,10 +104,10 @@ model Session {
 
 // База слов (словарь)
 model BaseWord {
-  id             String   @id @default(uuid())
+  id             Int      @id @default(autoincrement())
   word           String   // Иностранное слово
-  partOfSpeechId String   // ID части речи
-  languageId     String   // ID языка слова
+  partOfSpeechId Int      // ID части речи
+  languageId     Int      // ID языка слова
 
   language             Language            @relation(fields: [languageId], references: [id])
   partOfSpeech         PartOfSpeech        @relation(fields: [partOfSpeechId], references: [id])
@@ -122,9 +122,9 @@ model BaseWord {
 
 // Переводы слов (до 3 самых популярных на каждый язык)
 model WordTranslation {
-  id          String   @id @default(uuid())
-  baseWordId  String   // ID базового слова
-  languageId  String   // ID языка перевода
+  id          Int      @id @default(autoincrement())
+  baseWordId  Int      // ID базового слова
+  languageId  Int      // ID языка перевода
   translation String   // Перевод
   priority    Int      @default(1) // Приоритет перевода (1-3)
 
@@ -138,9 +138,9 @@ model WordTranslation {
 
 // Местоимения
 model Pronoun {
-  id         String   @id @default(uuid())
+  id         Int      @id @default(autoincrement())
   pronoun    String   // Местоимение (yo, tú, él/ella, etc.)
-  languageId String   // ID языка
+  languageId Int      // ID языка
 
   language             Language             @relation(fields: [languageId], references: [id])
   wordExamples         WordExample[]
@@ -152,9 +152,9 @@ model Pronoun {
 
 // Простые примеры для слов
 model WordExample {
-  id            String   @id @default(uuid())
-  baseWordId    String   // ID базового слова
-  pronounId     String   // ID местоимения
+  id            Int      @id @default(autoincrement())
+  baseWordId    Int      // ID базового слова
+  pronounId     Int      // ID местоимения
   example       String   // Пример предложения
   translation   String   // Перевод на русский
   isNegative    Boolean  @default(false) // Отрицательный пример
@@ -168,9 +168,9 @@ model WordExample {
 
 // Грамматические времена
 model Tense {
-  id         String   @id @default(uuid())
+  id         Int      @id @default(autoincrement())
   name       String   // Название времени (Presente de indicativo, etc.)
-  languageId String   // ID языка
+  languageId Int      // ID языка
 
   language             Language             @relation(fields: [languageId], references: [id])
   grammaticalExamples  GrammaticalExample[]
@@ -181,10 +181,10 @@ model Tense {
 
 // Грамматические примеры (во всех временах)
 model GrammaticalExample {
-  id            String   @id @default(uuid())
-  baseWordId    String   // ID базового слова
-  tenseId       String   // ID времени
-  pronounId     String   // ID местоимения
+  id            Int      @id @default(autoincrement())
+  baseWordId    Int      // ID базового слова
+  tenseId       Int      // ID времени
+  pronounId     Int      // ID местоимения
   example       String   // Пример в данном времени
   translation   String   // Перевод на русский
   isNegative    Boolean  @default(false) // Отрицательный пример
@@ -200,12 +200,12 @@ model GrammaticalExample {
 
 // Таблица слов для изучения (пользовательские слова)
 model Word {
-  id            String      @id @default(uuid())
-  userId        String      // Связь с пользователем
-  baseWordId    String?     // Связь с базовым словом (если выбрано из словаря)
+  id            Int         @id @default(autoincrement())
+  userId        Int         // Связь с пользователем
+  baseWordId    Int?        // Связь с базовым словом (если выбрано из словаря)
   customWord    String?     // Кастомное слово (если добавлено вручную)
   customTranslation String? // Кастомный перевод
-  languageId    String      // ID языка слова
+  languageId    Int         // ID языка слова
   status        WordStatus  @default(NOT_LEARNED)
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
@@ -224,8 +224,8 @@ model Word {
 
 // Сессии тренировок для отслеживания прогресса
 model TrainingSession {
-  id          String   @id @default(uuid())
-  wordId      String
+  id          Int      @id @default(autoincrement())
+  wordId      Int
   stage       Int      // Этап тренировки (1-4)
   isCorrect   Boolean  // Правильный ли был ответ
   createdAt   DateTime @default(now())
