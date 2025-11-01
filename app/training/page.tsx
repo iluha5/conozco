@@ -12,6 +12,7 @@ import { Stage2Training } from '@/components/training/stage2'
 import { Stage3Training } from '@/components/training/stage3'
 import { Stage4Training } from '@/components/training/stage4'
 import { Stage5Training } from '@/components/training/stage5'
+import { Stage6Training } from '@/components/training/stage6'
 import { useToast } from '@/hooks/use-toast'
 
 type Language = {
@@ -22,11 +23,52 @@ type Language = {
 
 type Word = {
   id: string
-  foreignWord: string
-  translation: string
+  userId: string
+  baseWordId?: string
+  customWord?: string
+  customTranslation?: string
+  languageId: string
   language: Language
   status: 'NOT_LEARNED' | 'LEARNED'
-  examples: string[]
+  createdAt: string
+  updatedAt: string
+  baseWord?: {
+    id: string
+    word: string
+    partOfSpeech: {
+      id: string
+      name: string
+      displayName: string
+    }
+    languageId: string
+    translations: Array<{
+      translation: string
+      priority: number
+    }>
+    examples: Array<{
+      example: string
+      translation: string
+      pronoun: {
+        pronoun: string
+      }
+    }>
+    grammaticalExamples: Array<{
+      example: string
+      translation: string
+      pronoun: {
+        pronoun: string
+      }
+      tense: {
+        name: string
+      }
+    }>
+  }
+  trainingSessions: Array<{
+    id: string
+    stage: number
+    isCorrect: boolean
+    createdAt: string
+  }>
 }
 
 export default function TrainingPage() {
@@ -110,6 +152,8 @@ export default function TrainingPage() {
         return <Stage4Training words={trainingWords} onComplete={handleStageComplete} />
       case 5:
         return <Stage5Training words={trainingWords} onComplete={handleStageComplete} />
+      case 6:
+        return <Stage6Training words={trainingWords} onComplete={handleStageComplete} />
       default:
         return null
     }
@@ -143,8 +187,8 @@ export default function TrainingPage() {
           </Select>
         </div>
 
-        <div className="grid grid-cols-5 gap-4 mb-8">
-          {[1, 2, 3, 4, 5].map((stage) => (
+        <div className="grid grid-cols-6 gap-4 mb-8">
+          {[1, 2, 3, 4, 5, 6].map((stage) => (
             <Card
               key={stage}
               className={`cursor-pointer transition-all ${
@@ -164,6 +208,7 @@ export default function TrainingPage() {
                   {stage === 3 && 'Сопоставление'}
                   {stage === 4 && 'Составление слова'}
                   {stage === 5 && 'Составление предложения'}
+                  {stage === 6 && 'Составление по голосу'}
                 </p>
               </CardContent>
             </Card>

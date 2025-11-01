@@ -58,6 +58,7 @@ export async function GET(request: NextRequest) {
       stage3: { total: 0, correct: 0 },
       stage4: { total: 0, correct: 0 },
       stage5: { total: 0, correct: 0 },
+      stage6: { total: 0, correct: 0 },
     }
 
     sessions.forEach(session => {
