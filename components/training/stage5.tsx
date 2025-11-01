@@ -70,12 +70,14 @@ type Phrase = {
 
 export function Stage5Training({ words, onComplete }: Stage5Props) {
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0)
   const [currentPhrase, setCurrentPhrase] = useState<Phrase | null>(null)
   const [availableWords, setAvailableWords] = useState<string[]>([])
   const [userSentence, setUserSentence] = useState<string[]>([])
   const [isComplete, setIsComplete] = useState(false)
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null)
   const [stats, setStats] = useState({ correct: 0, total: 0 })
+  const [wordPhrases, setWordPhrases] = useState<Phrase[][]>([])
 
   // Фильтруем слова, у которых есть фразы
   const wordsWithPhrases = words.filter(word => {
@@ -90,54 +92,67 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
 
   const currentWord = wordsWithPhrases[currentIndex]
 
+  // Рассчитываем общий прогресс
+  const totalPhrases = wordPhrases.reduce((total, phrases) => total + phrases.length, 0)
+  const currentPhraseNumber = wordPhrases.slice(0, currentIndex).reduce((total, phrases) => total + phrases.length, 0) + currentPhraseIndex + 1
+
+  // Инициализируем массив фраз для всех слов
   useEffect(() => {
-    if (currentWord) {
+    const phrases: Phrase[][] = wordsWithPhrases.map(word => {
+      if (!word.baseWord) return []
+
+      const allPhrases: Phrase[] = []
+
+      // Добавляем простые примеры
+      if (word.baseWord.examples) {
+        word.baseWord.examples.forEach(example => {
+          allPhrases.push({
+            example: example.example,
+            translation: example.translation,
+            pronoun: example.pronoun.pronoun,
+            words: example.example.split(' ').map(w => w.toLowerCase().replace(/[¿?¡!.,;:]/g, ''))
+          })
+        })
+      }
+
+      // Добавляем грамматические примеры
+      if (word.baseWord.grammaticalExamples) {
+        word.baseWord.grammaticalExamples.forEach(example => {
+          allPhrases.push({
+            example: example.example,
+            translation: example.translation,
+            pronoun: example.pronoun.pronoun,
+            words: example.example.split(' ').map(w => w.toLowerCase().replace(/[¿?¡!.,;:]/g, ''))
+          })
+        })
+      }
+
+      // Ограничиваем до 3 предложений максимум
+      return allPhrases.slice(0, 3)
+    })
+
+    setWordPhrases(phrases)
+  }, [wordsWithPhrases])
+
+  useEffect(() => {
+    if (currentWord && wordPhrases.length > currentIndex && wordPhrases[currentIndex].length > 0) {
       initializePhrase()
       setUserSentence([])
       setIsComplete(false)
       setIsCorrect(null)
     }
-  }, [currentIndex])
+  }, [currentIndex, currentPhraseIndex, wordPhrases])
 
   const initializePhrase = () => {
-    if (!currentWord?.baseWord) return
+    if (wordPhrases.length <= currentIndex || wordPhrases[currentIndex].length <= currentPhraseIndex) return
 
-    // Собираем все фразы
-    const allPhrases: Phrase[] = []
-
-    // Добавляем простые примеры
-    if (currentWord.baseWord.examples) {
-      currentWord.baseWord.examples.forEach(example => {
-        allPhrases.push({
-          example: example.example,
-          translation: example.translation,
-          pronoun: example.pronoun.pronoun,
-          words: example.example.split(' ').map(w => w.toLowerCase().replace(/[¿?¡!.,;:]/g, ''))
-        })
-      })
-    }
-
-    // Добавляем грамматические примеры
-    if (currentWord.baseWord.grammaticalExamples) {
-      currentWord.baseWord.grammaticalExamples.forEach(example => {
-        allPhrases.push({
-          example: example.example,
-          translation: example.translation,
-          pronoun: example.pronoun.pronoun,
-          words: example.example.split(' ').map(w => w.toLowerCase().replace(/[¿?¡!.,;:]/g, ''))
-        })
-      })
-    }
-
-    if (allPhrases.length === 0) return
-
-    // Выбираем случайную фразу
-    const randomPhrase = allPhrases[Math.floor(Math.random() * allPhrases.length)]
-    setCurrentPhrase(randomPhrase)
+    const currentWordPhrases = wordPhrases[currentIndex]
+    const phrase = currentWordPhrases[currentPhraseIndex]
+    setCurrentPhrase(phrase)
 
     // Получаем дополнительные слова
-    const extraWords = getExtraWords(randomPhrase.pronoun, currentWord.language.code)
-    const allWords = [...randomPhrase.words, ...extraWords]
+    const extraWords = getExtraWords(phrase.pronoun, currentWord.language.code)
+    const allWords = [...phrase.words, ...extraWords]
 
     // Перемешиваем слова
     const shuffledWords = allWords.sort(() => Math.random() - 0.5)
@@ -251,12 +266,21 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
   }
 
   const handleNext = () => {
-    if (currentIndex < wordsWithPhrases.length - 1) {
-      setCurrentIndex(currentIndex + 1)
+    const currentWordPhrases = wordPhrases[currentIndex] || []
+
+    // Если есть еще предложения для текущего слова
+    if (currentPhraseIndex < currentWordPhrases.length - 1) {
+      setCurrentPhraseIndex(currentPhraseIndex + 1)
     } else {
-      onComplete()
-      setCurrentIndex(0)
-      setStats({ correct: 0, total: 0 })
+      // Переходим к следующему слову
+      setCurrentPhraseIndex(0)
+      if (currentIndex < wordsWithPhrases.length - 1) {
+        setCurrentIndex(currentIndex + 1)
+      } else {
+        onComplete()
+        setCurrentIndex(0)
+        setStats({ correct: 0, total: 0 })
+      }
     }
   }
 
@@ -282,7 +306,7 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
             Этап 5: Составление предложения
           </CardTitle>
           <p className="text-center text-sm text-gray-500">
-            Слово {currentIndex + 1} из {wordsWithPhrases.length}
+            Слово {currentIndex + 1} из {wordsWithPhrases.length} • Предложение {currentPhraseIndex + 1} из {wordPhrases[currentIndex]?.length || 0}
           </p>
           <p className="text-center text-sm text-green-600 font-medium">
             Правильных ответов: {stats.correct} из {stats.total}
@@ -372,7 +396,11 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
 
                 <div className="flex justify-center">
                   <Button size="lg" onClick={handleNext} className="gap-2">
-                    {currentIndex < wordsWithPhrases.length - 1 ? 'Следующее слово' : 'Завершить'}
+                    {currentPhraseIndex < (wordPhrases[currentIndex]?.length || 0) - 1
+                      ? 'Следующее предложение'
+                      : currentIndex < wordsWithPhrases.length - 1
+                        ? 'Следующее слово'
+                        : 'Завершить'}
                     <ChevronRight className="w-5 h-5" />
                   </Button>
                 </div>
@@ -383,7 +411,7 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div
               className="bg-purple-600 h-2 rounded-full transition-all"
-              style={{ width: `${((currentIndex + 1) / wordsWithPhrases.length) * 100}%` }}
+              style={{ width: `${(currentPhraseNumber / totalPhrases) * 100}%` }}
             />
           </div>
         </CardContent>
