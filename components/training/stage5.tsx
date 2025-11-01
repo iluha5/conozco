@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChevronRight, CheckCircle, XCircle, RotateCcw } from 'lucide-react'
@@ -68,6 +68,63 @@ type Phrase = {
   words: string[]
 }
 
+type ProgressDotsProps = {
+  results: boolean[]
+  currentIndex: number
+}
+
+function ProgressDots({ results, currentIndex }: ProgressDotsProps) {
+  const dotsRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    // Автоматическая прокрутка к текущей точке
+    if (dotsRef.current) {
+      const dotElement = dotsRef.current.children[currentIndex] as HTMLElement
+      if (dotElement) {
+        dotElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+          inline: 'center'
+        })
+      }
+    }
+  }, [currentIndex])
+
+  return (
+    <div className="w-full overflow-x-auto">
+      <div
+        ref={dotsRef}
+        className="flex gap-2 px-4 py-2 min-w-max justify-start"
+        style={{ scrollbarWidth: 'thin' }}
+      >
+        {results.map((result, index) => {
+          let dotClass = 'w-3 h-3 rounded-full transition-colors duration-300 '
+
+          if (index === currentIndex) {
+            dotClass += 'ring-2 ring-purple-400 ring-offset-1 '
+          }
+
+          if (result === true) {
+            dotClass += 'bg-green-500'
+          } else if (result === false) {
+            dotClass += 'bg-red-500'
+          } else {
+            dotClass += 'bg-gray-300'
+          }
+
+          return (
+            <div
+              key={index}
+              className={dotClass}
+              title={`Exercise ${index + 1}: ${result === true ? 'Correct' : result === false ? 'Incorrect' : 'Pending'}`}
+            />
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 export function Stage5Training({ words, onComplete }: Stage5Props) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0)
@@ -77,6 +134,7 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
   const [isComplete, setIsComplete] = useState(false)
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null)
   const [stats, setStats] = useState({ correct: 0, total: 0 })
+  const [exerciseResults, setExerciseResults] = useState<boolean[]>([])
 
   // Фильтруем слова, у которых есть фразы
   const wordsWithPhrases = useMemo(() => words.filter(word => {
@@ -129,6 +187,9 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
     })
 
     setWordPhrases(phrases)
+    // Инициализируем массив результатов для всех упражнений
+    const totalExercises = phrases.reduce((total, wordPhrases) => total + wordPhrases.length, 0)
+    setExerciseResults(new Array(totalExercises).fill(null))
   }, [wordsWithPhrases])
 
   // Рассчитываем общий прогресс
@@ -239,6 +300,14 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
     setIsCorrect(correct)
     setIsComplete(true)
 
+    // Обновляем результаты упражнения
+    const exerciseIndex = wordPhrases.slice(0, currentIndex).reduce((total, phrases) => total + phrases.length, 0) + currentPhraseIndex
+    setExerciseResults(prev => {
+      const newResults = [...prev]
+      newResults[exerciseIndex] = correct
+      return newResults
+    })
+
     // Записываем результат
     await fetch('/api/training', {
       method: 'POST',
@@ -256,6 +325,7 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
       correct: prev.correct + (correct ? 1 : 0),
       total: prev.total + 1,
     }))
+
   }
 
   const handleReset = () => {
@@ -305,12 +375,10 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
           <CardTitle className="text-center text-gray-600">
             Этап 5: Составление предложения
           </CardTitle>
-          <p className="text-center text-sm text-gray-500">
-            Слово {currentIndex + 1} из {wordsWithPhrases.length} • Предложение {currentPhraseIndex + 1} из {wordPhrases[currentIndex]?.length || 0}
-          </p>
-          <p className="text-center text-sm text-green-600 font-medium">
-            Правильных ответов: {stats.correct} из {stats.total}
-          </p>
+          <ProgressDots
+            results={exerciseResults}
+            currentIndex={wordPhrases.slice(0, currentIndex).reduce((total, phrases) => total + phrases.length, 0) + currentPhraseIndex}
+          />
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Русский перевод фразы */}
@@ -408,12 +476,6 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
             )}
           </div>
 
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div
-              className="bg-purple-600 h-2 rounded-full transition-all"
-              style={{ width: `${(currentPhraseNumber / totalPhrases) * 100}%` }}
-            />
-          </div>
         </CardContent>
       </Card>
     </div>
