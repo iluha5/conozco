@@ -50,9 +50,14 @@ type Stage4Props = {
   onComplete: () => void
 }
 
+type LetterState = {
+  letter: string
+  selected: boolean
+}
+
 export function Stage4Training({ words, onComplete }: Stage4Props) {
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [letters, setLetters] = useState<string[]>([])
+  const [letters, setLetters] = useState<LetterState[]>([])
   const [userWord, setUserWord] = useState<string[]>([])
   const [isComplete, setIsComplete] = useState(false)
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null)
@@ -73,18 +78,29 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
     const word = currentWord.baseWord?.word || currentWord.customWord || ''
     const wordLetters = word.split('')
     const shuffled = [...wordLetters].sort(() => Math.random() - 0.5)
-    setLetters(shuffled)
+    const letterStates: LetterState[] = shuffled.map(letter => ({
+      letter,
+      selected: false
+    }))
+    setLetters(letterStates)
   }
 
-  const handleLetterClick = (letter: string, index: number) => {
+  const handleLetterClick = (index: number) => {
+    const letter = letters[index].letter
     setUserWord([...userWord, letter])
-    setLetters(letters.filter((_, i) => i !== index))
+    setLetters(prev => prev.map((item, i) =>
+      i === index ? { ...item, selected: true } : item
+    ))
   }
 
   const handleRemoveFromWord = (index: number) => {
     const letter = userWord[index]
     setUserWord(userWord.filter((_, i) => i !== index))
-    setLetters([...letters, letter])
+
+    // Найти эту букву в массиве letters и снять выделение
+    setLetters(prev => prev.map(item =>
+      item.letter === letter && item.selected ? { ...item, selected: false } : item
+    ))
   }
 
   const handleCheck = async () => {
@@ -182,16 +198,19 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
 
           {/* Доступные буквы */}
           <div className="flex flex-wrap gap-2 justify-center">
-            {letters.map((letter, index) => (
-              <button
-                key={index}
-                onClick={() => handleLetterClick(letter, index)}
-                disabled={isComplete}
-                className="w-12 h-12 bg-white border-2 border-gray-300 rounded-lg text-xl font-bold text-gray-900 hover:bg-gray-50 hover:border-gray-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {letter}
-              </button>
-            ))}
+            {letters
+              .map((letterState, originalIndex) => ({ letterState, originalIndex }))
+              .filter(({ letterState }) => !letterState.selected)
+              .map(({ letterState, originalIndex }) => (
+                <button
+                  key={originalIndex}
+                  onClick={() => handleLetterClick(originalIndex)}
+                  disabled={isComplete}
+                  className="w-12 h-12 bg-white border-2 border-gray-300 rounded-lg text-xl font-bold text-gray-900 hover:bg-gray-50 hover:border-gray-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {letterState.letter}
+                </button>
+              ))}
           </div>
 
           {/* Кнопки действий */}

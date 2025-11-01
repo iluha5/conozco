@@ -176,11 +176,16 @@ function SettingsModal({ isOpen, onClose, currentValue, onChange }: SettingsModa
   )
 }
 
+type WordState = {
+  word: string
+  selected: boolean
+}
+
 export function Stage5Training({ words, onComplete }: Stage5Props) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0)
   const [currentPhrase, setCurrentPhrase] = useState<Phrase | null>(null)
-  const [availableWords, setAvailableWords] = useState<string[]>([])
+  const [availableWords, setAvailableWords] = useState<WordState[]>([])
   const [userSentence, setUserSentence] = useState<string[]>([])
   const [isComplete, setIsComplete] = useState(false)
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null)
@@ -270,9 +275,13 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
     const extraWords = getExtraWords(phrase.pronoun, currentWord.language.code, phrase.words)
     const allWords = [...phrase.words, ...extraWords]
 
-    // Перемешиваем слова только если фраза изменилась
+    // Перемешиваем слова и создаем объекты состояния
     const shuffledWords = allWords.sort(() => Math.random() - 0.5)
-    setAvailableWords(shuffledWords)
+    const wordStates: WordState[] = shuffledWords.map(word => ({
+      word,
+      selected: false
+    }))
+    setAvailableWords(wordStates)
   }
 
   const getExtraWords = (currentPronoun: string, languageCode: string, currentPhraseWords: string[]): string[] => {
@@ -330,11 +339,14 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
     return extraWords
   }
 
-  const handleWordClick = (word: string, index: number) => {
+  const handleWordClick = (index: number) => {
     if (isComplete) return
 
+    const word = availableWords[index].word
     setUserSentence([...userSentence, word])
-    setAvailableWords(availableWords.filter((_, i) => i !== index))
+    setAvailableWords(prev => prev.map((item, i) =>
+      i === index ? { ...item, selected: true } : item
+    ))
   }
 
   const handleRemoveFromSentence = (index: number) => {
@@ -342,7 +354,11 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
 
     const word = userSentence[index]
     setUserSentence(userSentence.filter((_, i) => i !== index))
-    setAvailableWords([...availableWords, word])
+
+    // Найти это слово в массиве availableWords и снять выделение
+    setAvailableWords(prev => prev.map(item =>
+      item.word === word && item.selected ? { ...item, selected: false } : item
+    ))
   }
 
   const handleCheck = async () => {
@@ -493,16 +509,19 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
 
           {/* Доступные слова */}
           <div className="flex flex-wrap gap-2 justify-center">
-            {availableWords.map((word, index) => (
-              <button
-                key={index}
-                onClick={() => handleWordClick(word, index)}
-                disabled={isComplete}
-                className="px-3 py-2 bg-white border-2 border-gray-300 rounded-lg text-gray-900 hover:bg-gray-50 hover:border-gray-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-              >
-                {word}
-              </button>
-            ))}
+            {availableWords
+              .map((wordState, originalIndex) => ({ wordState, originalIndex }))
+              .filter(({ wordState }) => !wordState.selected)
+              .map(({ wordState, originalIndex }) => (
+                <button
+                  key={originalIndex}
+                  onClick={() => handleWordClick(originalIndex)}
+                  disabled={isComplete}
+                  className="px-3 py-2 bg-white border-2 border-gray-300 rounded-lg text-gray-900 hover:bg-gray-50 hover:border-gray-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                >
+                  {wordState.word}
+                </button>
+              ))}
           </div>
 
           {/* Кнопки действий */}
