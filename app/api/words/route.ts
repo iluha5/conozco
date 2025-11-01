@@ -61,6 +61,17 @@ export async function GET(request: NextRequest) {
             translations: {
               where: { language: { code: 'ru' } },
               orderBy: { priority: 'asc' }
+            },
+            examples: {
+              include: {
+                pronoun: true
+              }
+            },
+            grammaticalExamples: {
+              include: {
+                pronoun: true,
+                tense: true
+              }
             }
           }
         },
@@ -170,6 +181,17 @@ export async function POST(request: NextRequest) {
             translations: {
               where: { language: { code: 'ru' } },
               orderBy: { priority: 'asc' }
+            },
+            examples: {
+              include: {
+                pronoun: true
+              }
+            },
+            grammaticalExamples: {
+              include: {
+                pronoun: true,
+                tense: true
+              }
             }
           }
         },

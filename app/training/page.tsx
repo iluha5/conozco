@@ -11,6 +11,7 @@ import { Stage1Training } from '@/components/training/stage1'
 import { Stage2Training } from '@/components/training/stage2'
 import { Stage3Training } from '@/components/training/stage3'
 import { Stage4Training } from '@/components/training/stage4'
+import { Stage5Training } from '@/components/training/stage5'
 import { useToast } from '@/hooks/use-toast'
 
 type Language = {
@@ -107,6 +108,8 @@ export default function TrainingPage() {
         return <Stage3Training words={trainingWords} onComplete={handleStageComplete} />
       case 4:
         return <Stage4Training words={trainingWords} onComplete={handleStageComplete} />
+      case 5:
+        return <Stage5Training words={trainingWords} onComplete={handleStageComplete} />
       default:
         return null
     }
@@ -140,8 +143,8 @@ export default function TrainingPage() {
           </Select>
         </div>
 
-        <div className="grid grid-cols-4 gap-4 mb-8">
-          {[1, 2, 3, 4].map((stage) => (
+        <div className="grid grid-cols-5 gap-4 mb-8">
+          {[1, 2, 3, 4, 5].map((stage) => (
             <Card
               key={stage}
               className={`cursor-pointer transition-all ${
@@ -160,6 +163,7 @@ export default function TrainingPage() {
                   {stage === 2 && 'Выбор перевода'}
                   {stage === 3 && 'Сопоставление'}
                   {stage === 4 && 'Составление слова'}
+                  {stage === 5 && 'Составление предложения'}
                 </p>
               </CardContent>
             </Card>
