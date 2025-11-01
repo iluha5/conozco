@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChevronRight, CheckCircle, XCircle, RotateCcw } from 'lucide-react'
@@ -77,10 +77,9 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
   const [isComplete, setIsComplete] = useState(false)
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null)
   const [stats, setStats] = useState({ correct: 0, total: 0 })
-  const [wordPhrases, setWordPhrases] = useState<Phrase[][]>([])
 
   // Фильтруем слова, у которых есть фразы
-  const wordsWithPhrases = words.filter(word => {
+  const wordsWithPhrases = useMemo(() => words.filter(word => {
     const baseWord = word.baseWord
     if (!baseWord) return false
 
@@ -88,15 +87,13 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
     const hasGrammaticalExamples = baseWord.grammaticalExamples && baseWord.grammaticalExamples.length > 0
 
     return hasExamples || hasGrammaticalExamples
-  })
+  }), [words])
 
   const currentWord = wordsWithPhrases[currentIndex]
 
-  // Рассчитываем общий прогресс
-  const totalPhrases = wordPhrases.reduce((total, phrases) => total + phrases.length, 0)
-  const currentPhraseNumber = wordPhrases.slice(0, currentIndex).reduce((total, phrases) => total + phrases.length, 0) + currentPhraseIndex + 1
-
   // Инициализируем массив фраз для всех слов
+  const [wordPhrases, setWordPhrases] = useState<Phrase[][]>([])
+
   useEffect(() => {
     const phrases: Phrase[][] = wordsWithPhrases.map(word => {
       if (!word.baseWord) return []
@@ -134,6 +131,10 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
     setWordPhrases(phrases)
   }, [wordsWithPhrases])
 
+  // Рассчитываем общий прогресс
+  const totalPhrases = wordPhrases.reduce((total, phrases) => total + phrases.length, 0)
+  const currentPhraseNumber = wordPhrases.slice(0, currentIndex).reduce((total, phrases) => total + phrases.length, 0) + currentPhraseIndex + 1
+
   useEffect(() => {
     if (currentWord && wordPhrases.length > currentIndex && wordPhrases[currentIndex].length > 0) {
       initializePhrase()
@@ -151,15 +152,15 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
     setCurrentPhrase(phrase)
 
     // Получаем дополнительные слова
-    const extraWords = getExtraWords(phrase.pronoun, currentWord.language.code)
+    const extraWords = getExtraWords(phrase.pronoun, currentWord.language.code, phrase.words)
     const allWords = [...phrase.words, ...extraWords]
 
-    // Перемешиваем слова
+    // Перемешиваем слова только если фраза изменилась
     const shuffledWords = allWords.sort(() => Math.random() - 0.5)
     setAvailableWords(shuffledWords)
   }
 
-  const getExtraWords = (currentPronoun: string, languageCode: string): string[] => {
+  const getExtraWords = (currentPronoun: string, languageCode: string, currentPhraseWords: string[]): string[] => {
     const extraWords: string[] = []
 
     // Собираем все слова из всех фраз всех слов
@@ -199,7 +200,6 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
     }
 
     // Выбираем 2 случайных слова (не местоимения и не из текущей фразы)
-    const currentPhraseWords = currentPhrase?.words || []
     const nonPronounWords = uniqueWords.filter(word =>
       !uniquePronouns.includes(word) &&
       !currentPhraseWords.includes(word)
