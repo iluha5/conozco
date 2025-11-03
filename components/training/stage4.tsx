@@ -128,6 +128,7 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
   const [flashingLetter, setFlashingLetter] = useState<number | null>(null)
   const [fadeIn, setFadeIn] = useState(false)
   const [animationKey, setAnimationKey] = useState(0)
+  const [backgroundFlash, setBackgroundFlash] = useState<'green' | 'red' | null>(null)
 
   const currentWord = words[currentIndex]
 
@@ -156,6 +157,7 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
       setIsCorrect(null)
       setTotalErrors(0)
       setFlashingLetter(null)
+      setBackgroundFlash(null)
     }
   }, [currentIndex, difficulty])
 
@@ -235,6 +237,9 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
     setIsCorrect(correct)
     setIsComplete(true)
 
+    // Устанавливаем цвет фона для анимации
+    setBackgroundFlash(correct ? 'green' : 'red')
+
     // Обновляем результаты упражнения
     setExerciseResults(prev => {
       const newResults = [...prev]
@@ -264,6 +269,11 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
       correct: prev.correct + (correct ? 1 : 0),
       total: prev.total + 1,
     }))
+
+    // Сбрасываем анимацию фона через 1.5 секунды
+    setTimeout(() => {
+      setBackgroundFlash(null)
+    }, 1500)
 
     // Если слово составлено правильно - автоматически переходим через 1 секунду
     if (correct) {
@@ -327,7 +337,10 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <Card key={animationKey} className={`shadow-xl transition-opacity duration-300 ease-in-out ${fadeIn ? 'opacity-100' : 'opacity-0'}`}>
+      <Card key={animationKey} className={`shadow-xl transition-all duration-300 ease-in-out ${fadeIn ? 'opacity-100' : 'opacity-0'} ${
+        backgroundFlash === 'green' ? 'bg-green-50 border-green-200' :
+        backgroundFlash === 'red' ? 'bg-red-50 border-red-200' : ''
+      }`}>
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-gray-600">
