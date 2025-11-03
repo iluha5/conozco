@@ -339,7 +339,7 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-gray-600">
-              Составление слова
+              Составление слова по буквам
             </CardTitle>
             {isFirstCard && (
               <Button
@@ -368,7 +368,6 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
                  ? currentWord.baseWord.translations[0].translation
                  : 'Нет перевода')}
             </p>
-            <p className="text-gray-600">Составьте слово из букв</p>
           </div>
 
           {/* Собранное слово */}
