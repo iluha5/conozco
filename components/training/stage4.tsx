@@ -372,7 +372,7 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
           </div>
 
           {/* Собранное слово */}
-          <div className="min-h-[80px] p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+          <div className="min-h-[128px] p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
             <div className="flex flex-wrap gap-2 justify-center">
               {userWord.length === 0 ? (
                 <p className="text-gray-400">Выберите буквы ниже</p>
