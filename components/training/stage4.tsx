@@ -388,8 +388,8 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
           </div>
 
           {/* Кнопки действий */}
-          <div className="flex gap-3 justify-center">
-            {isComplete ? (
+          {isComplete && (
+            <div className="flex gap-3 justify-center">
               <div className="w-full space-y-4">
                 {isCorrect ? (
                   <div className="flex items-center justify-center gap-2 text-green-600 text-lg font-medium">
@@ -407,7 +407,7 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
                     </p>
                   </div>
                 )}
-                
+
                 <div className="flex justify-center">
                   <Button size="lg" onClick={handleNext} className="gap-2">
                     {currentIndex < words.length - 1 ? 'Следующее слово' : 'Завершить'}
@@ -415,8 +415,8 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
                   </Button>
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
