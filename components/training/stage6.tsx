@@ -229,7 +229,7 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
       <Card className="shadow-xl">
         <CardHeader>
           <CardTitle className="text-center text-gray-600">
-            Этап 6: Составление слова по голосу
+            Составление слова по голосу
           </CardTitle>
           <ProgressDots
             results={exerciseResults}

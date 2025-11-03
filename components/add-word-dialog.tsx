@@ -14,6 +14,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
 import { PlusCircle, Loader2, Search, CheckCircle } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 
@@ -47,6 +48,8 @@ type BaseWord = {
   isAddedByUser: boolean
 }
 
+type SelectedWord = string // просто baseWordId
+
 type AddWordDialogProps = {
   onWordAdded: () => void
 }
@@ -55,8 +58,7 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
   const [open, setOpen] = useState(false)
   const [languageCode, setLanguageCode] = useState<'en' | 'es'>('es')
   const [searchTerm, setSearchTerm] = useState('')
-  const [selectedWord, setSelectedWord] = useState<BaseWord | null>(null)
-  const [customTranslation, setCustomTranslation] = useState('')
+  const [selectedWords, setSelectedWords] = useState<SelectedWord[]>([])
   const [availableWords, setAvailableWords] = useState<BaseWord[]>([])
   const [loading, setLoading] = useState(false)
   const [searching, setSearching] = useState(false)
@@ -68,6 +70,30 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
       handleSearch()
     }
   }, [languageCode, searchTerm, open])
+
+  // Функции для работы с выбранными словами
+  const toggleWordSelection = (baseWordId: string) => {
+    setSelectedWords(prev =>
+      prev.includes(baseWordId)
+        ? prev.filter(id => id !== baseWordId)
+        : [...prev, baseWordId]
+    )
+  }
+
+  const selectAllWords = () => {
+    const newSelections = availableWords
+      .filter(word => !word.isAddedByUser) // только не добавленные пользователем
+      .map(word => word.id)
+    setSelectedWords(newSelections)
+  }
+
+  const deselectAllWords = () => {
+    setSelectedWords([])
+  }
+
+  const isWordSelected = (baseWordId: string) => {
+    return selectedWords.includes(baseWordId)
+  }
 
   const handleSearch = async () => {
     setSearching(true)
@@ -105,50 +131,66 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
     }
   }
 
-  const handleAddWord = async () => {
-    if (!selectedWord) {
+  const handleAddWords = async () => {
+    if (selectedWords.length === 0) {
       toast({
         title: 'Ошибка',
-        description: 'Выберите слово для добавления',
+        description: 'Выберите слова для добавления',
         variant: 'destructive',
       })
       return
     }
 
     setLoading(true)
-    try {
-      const response = await fetch('/api/words', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          baseWordId: selectedWord.id,
-          customTranslation: customTranslation.trim() || undefined,
-        }),
-      })
+    let successCount = 0
+    let errorCount = 0
 
-      if (response.ok) {
+    try {
+      // Добавляем слова по одному
+      for (const baseWordId of selectedWords) {
+        const wordData = availableWords.find(w => w.id === baseWordId)
+        if (!wordData) continue
+
+        const response = await fetch('/api/words', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            baseWordId: baseWordId,
+            // Используем первый (самый популярный) перевод
+            customTranslation: wordData.translations[0]?.translation || undefined,
+          }),
+        })
+
+        if (response.ok) {
+          successCount++
+        } else {
+          errorCount++
+          console.error('Error adding word:', baseWordId)
+        }
+      }
+
+      if (successCount > 0) {
         toast({
           title: 'Успешно',
-          description: 'Слово добавлено в ваш словарь',
+          description: `Добавлено ${successCount} слов${errorCount > 0 ? `, ${errorCount} ошибок` : ''}`,
         })
         resetForm()
         setOpen(false)
         onWordAdded()
       } else {
-        const data = await response.json()
         toast({
           title: 'Ошибка',
-          description: data.error || 'Не удалось добавить слово',
+          description: 'Не удалось добавить ни одного слова',
           variant: 'destructive',
         })
       }
     } catch (error) {
-      console.error('Error adding word:', error)
+      console.error('Error adding words:', error)
       toast({
         title: 'Ошибка',
-        description: 'Не удалось добавить слово',
+        description: 'Не удалось добавить слова',
         variant: 'destructive',
       })
     } finally {
@@ -157,8 +199,7 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
   }
 
   const resetForm = () => {
-    setSelectedWord(null)
-    setCustomTranslation('')
+    setSelectedWords([])
     setAvailableWords([])
   }
 
@@ -213,49 +254,70 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
 
           {/* Список доступных слов */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">
-              Доступные слова {searching && <Loader2 className="w-4 h-4 animate-spin inline ml-2" />}
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium">
+                Доступные слова {searching && <Loader2 className="w-4 h-4 animate-spin inline ml-2" />}
+              </label>
+              {availableWords.length > 0 && (
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={selectAllWords}
+                    disabled={availableWords.every(w => w.isAddedByUser)}
+                  >
+                    Выбрать все
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={deselectAllWords}
+                    disabled={selectedWords.length === 0}
+                  >
+                    Отменить выбор
+                  </Button>
+                </div>
+              )}
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[400px] overflow-y-auto">
               {availableWords.map((word) => (
                 <Card
                   key={word.id}
-                  className={`cursor-pointer transition-all ${
-                    selectedWord?.id === word.id
+                  className={`transition-all cursor-pointer ${
+                    isWordSelected(word.id)
                       ? 'ring-2 ring-primary bg-blue-50'
                       : 'hover:bg-gray-50'
-                  } ${word.isAddedByUser ? 'opacity-60' : ''}`}
-                  onClick={() => !word.isAddedByUser && setSelectedWord(word)}
+                  } ${word.isAddedByUser ? 'opacity-60 cursor-not-allowed' : ''}`}
+                  onClick={() => !word.isAddedByUser && toggleWordSelection(word.id)}
                 >
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-between">
-                      <CardTitle className="text-base flex items-center gap-2">
-                        {word.word}
-                        <span className="text-xs bg-gray-100 px-2 py-1 rounded">
-                          {word.partOfSpeech.displayName}
-                        </span>
-                        {word.isAddedByUser && (
-                          <CheckCircle className="w-4 h-4 text-green-500" />
-                        )}
-                      </CardTitle>
-                    </div>
-                    {word.translations.length > 0 && (
-                      <CardDescription>
-                        {word.translations[0].translation}
-                      </CardDescription>
-                    )}
-                  </CardHeader>
-                  {word.examples.length > 0 && (
-                    <CardContent className="pt-0">
-                      <div className="text-sm text-gray-600 space-y-1">
-                        {word.examples.slice(0, 2).map((example, idx) => (
-                          <div key={idx} className="italic">
-                            • {example.example} - {example.translation}
-                          </div>
-                        ))}
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <Checkbox
+                          checked={isWordSelected(word.id)}
+                          onChange={() => {}} // отключаем прямое взаимодействие с чекбоксом
+                          disabled={word.isAddedByUser}
+                          className="shrink-0"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <CardTitle className="text-base flex items-center gap-2 flex-wrap">
+                            <span className="truncate">{word.word}</span>
+                            <span className="text-xs bg-gray-100 px-2 py-1 rounded shrink-0">
+                              {word.partOfSpeech.displayName}
+                            </span>
+                            {word.isAddedByUser && (
+                              <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
+                            )}
+                          </CardTitle>
+                          {word.translations.length > 0 && (
+                            <CardDescription className="truncate">
+                              {word.translations[0].translation}
+                            </CardDescription>
+                          )}
+                        </div>
                       </div>
-                    </CardContent>
-                  )}
+                    </div>
+                  </CardHeader>
                 </Card>
               ))}
             </div>
@@ -266,22 +328,6 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
             )}
           </div>
 
-          {/* Кастомный перевод */}
-          {selectedWord && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium">
-                Ваш вариант перевода (необязательно)
-              </label>
-              <Input
-                placeholder={`Перевод для "${selectedWord.word}"...`}
-                value={customTranslation}
-                onChange={(e) => setCustomTranslation(e.target.value)}
-              />
-              <p className="text-xs text-gray-500">
-                Оставьте пустым, если хотите использовать перевод из словаря
-              </p>
-            </div>
-          )}
         </div>
 
         <DialogFooter>
@@ -289,8 +335,8 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
             Отмена
           </Button>
           <Button
-            onClick={handleAddWord}
-            disabled={loading || !selectedWord}
+            onClick={handleAddWords}
+            disabled={loading || selectedWords.length === 0}
           >
             {loading ? (
               <>
@@ -298,7 +344,7 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                 Добавление...
               </>
             ) : (
-              'Добавить слово'
+              `Добавить ${selectedWords.length} ${selectedWords.length === 1 ? 'слово' : 'слов'}`
             )}
           </Button>
         </DialogFooter>

@@ -120,7 +120,7 @@ export function Stage1Training({ words, onComplete }: Stage1Props) {
       <Card className="shadow-xl">
         <CardHeader>
           <CardTitle className="text-center text-gray-600">
-            Этап 1: Просмотр и запоминание
+            Просмотр и запоминание
           </CardTitle>
           <ProgressDots
             results={exerciseResults}

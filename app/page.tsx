@@ -118,7 +118,7 @@ export default function HomePage() {
               </Dialog>
             </CardHeader>
             <CardContent>
-              <Link href="/training">
+              <Link href="/training/setup">
                 <Button className="w-full" size="lg" variant="secondary">
                   Начать тренировку
                 </Button>

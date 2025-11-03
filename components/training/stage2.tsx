@@ -149,7 +149,7 @@ export function Stage2Training({ words, onComplete }: Stage2Props) {
       <Card className="shadow-xl">
         <CardHeader>
           <CardTitle className="text-center text-gray-600">
-            Этап 2: Выбор правильного перевода
+            Выбор правильного перевода
           </CardTitle>
           <ProgressDots
             results={exerciseResults}

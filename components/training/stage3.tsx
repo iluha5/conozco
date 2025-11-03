@@ -220,7 +220,7 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
       <Card className="shadow-xl">
         <CardHeader>
           <CardTitle className="text-center text-gray-600">
-            Этап 3: Сопоставление слов
+            Сопоставление слов
           </CardTitle>
           <p className="text-center text-sm text-gray-500">
             Группа {currentBatch + 1} из {totalBatches}

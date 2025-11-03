@@ -264,7 +264,7 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-gray-600">
-              Этап 4: Составление слова
+              Составление слова
             </CardTitle>
             {isFirstCard && (
               <Button

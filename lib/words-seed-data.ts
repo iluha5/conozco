@@ -450,5 +450,209 @@ export const WORDS_DATA: WordData[] = [
         ]
       }
     ]
+  },
+  {
+    word: 'pecas',
+    partOfSpeech: PartOfSpeech.NOUN,
+    languageCode: 'es',
+    translations: [
+      {
+        languageCode: 'ru',
+        translations: ['веснушки', 'конопушки', 'крапинки']
+      }
+    ],
+    examples: [
+      { pronoun: 'yo', example: 'Yo tengo pecas', translation: 'У меня есть веснушки' },
+      { pronoun: 'tú', example: 'Tú tienes muchas pecas', translation: 'У тебя много веснушек' },
+      { pronoun: 'él', example: 'Él tiene pecas en la cara', translation: 'У него веснушки на лице' },
+      { pronoun: 'ella', example: 'Ella tiene pecas bonitas', translation: 'У нее красивые веснушки' },
+      { pronoun: 'nosotros', example: 'Nosotros tenemos pecas', translation: 'У нас есть веснушки' },
+      { pronoun: 'ellos', example: 'Ellos tienen pecas', translation: 'У них есть веснушки' },
+      { pronoun: 'yo', example: 'No tengo pecas', translation: 'У меня нет веснушек', isNegative: true },
+      { pronoun: 'tú', example: '¿Tienes pecas?', translation: 'У тебя есть веснушки?', isQuestion: true }
+    ],
+    grammaticalExamples: []
+  },
+  {
+    word: 'lleva coleta',
+    partOfSpeech: PartOfSpeech.VERB,
+    languageCode: 'es',
+    translations: [
+      {
+        languageCode: 'ru',
+        translations: ['носит хвост', 'с хвостиком', 'с конским хвостом']
+      }
+    ],
+    examples: [
+      { pronoun: 'yo', example: 'Yo llevo coleta', translation: 'Я ношу хвост' },
+      { pronoun: 'tú', example: 'Tú llevas coleta hoy', translation: 'Ты носишь хвост сегодня' },
+      { pronoun: 'él', example: 'Él lleva coleta larga', translation: 'Он носит длинный хвост' },
+      { pronoun: 'ella', example: 'Ella lleva coleta alta', translation: 'Она носит высокий хвост' },
+      { pronoun: 'nosotros', example: 'Nosotros llevamos coleta', translation: 'Мы носим хвост' },
+      { pronoun: 'ellos', example: 'Ellos llevan coleta', translation: 'Они носят хвост' },
+      { pronoun: 'yo', example: 'No llevo coleta', translation: 'Я не ношу хвост', isNegative: true },
+      { pronoun: 'tú', example: '¿Llevas coleta?', translation: 'Ты носишь хвост?', isQuestion: true }
+    ],
+    grammaticalExamples: [
+      {
+        tenseName: 'Presente de indicativo',
+        examples: [
+          { pronoun: 'yo', example: 'Yo llevo coleta', translation: 'Я ношу хвост' },
+          { pronoun: 'tú', example: 'Tú llevas coleta', translation: 'Ты носишь хвост' },
+          { pronoun: 'él', example: 'Él lleva coleta', translation: 'Он носит хвост' },
+          { pronoun: 'ella', example: 'Ella lleva coleta', translation: 'Она носит хвост' },
+          { pronoun: 'nosotros', example: 'Nosotros llevamos coleta', translation: 'Мы носим хвост' },
+          { pronoun: 'vosotros', example: 'Vosotros lleváis coleta', translation: 'Вы носите хвост' },
+          { pronoun: 'ellos', example: 'Ellos llevan coleta', translation: 'Они носят хвост' },
+          { pronoun: 'yo', example: 'No llevo coleta', translation: 'Я не ношу хвост', isNegative: true },
+          { pronoun: 'tú', example: '¿Llevas coleta?', translation: 'Ты носишь хвост?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Pretérito indefinido',
+        examples: [
+          { pronoun: 'yo', example: 'Yo llevé coleta', translation: 'Я носил хвост' },
+          { pronoun: 'tú', example: 'Tú llevaste coleta', translation: 'Ты носил хвост' },
+          { pronoun: 'él', example: 'Él llevó coleta', translation: 'Он носил хвост' },
+          { pronoun: 'ella', example: 'Ella llevó coleta', translation: 'Она носила хвост' },
+          { pronoun: 'nosotros', example: 'Nosotros llevamos coleta', translation: 'Мы носили хвост' },
+          { pronoun: 'ellos', example: 'Ellos llevaron coleta', translation: 'Они носили хвост' },
+          { pronoun: 'yo', example: 'No llevé coleta', translation: 'Я не носил хвост', isNegative: true },
+          { pronoun: 'tú', example: '¿Llevaste coleta?', translation: 'Ты носил хвост?', isQuestion: true }
+        ]
+      }
+    ]
+  },
+  {
+    word: 'trenzas',
+    partOfSpeech: PartOfSpeech.NOUN,
+    languageCode: 'es',
+    translations: [
+      {
+        languageCode: 'ru',
+        translations: ['косы', 'косички', 'плетенки']
+      }
+    ],
+    examples: [
+      { pronoun: 'yo', example: 'Yo tengo trenzas', translation: 'У меня косы' },
+      { pronoun: 'tú', example: 'Tú llevas trenzas bonitas', translation: 'У тебя красивые косы' },
+      { pronoun: 'ella', example: 'Ella tiene dos trenzas', translation: 'У нее две косы' },
+      { pronoun: 'él', example: 'Él hace trenzas', translation: 'Он плетет косы' },
+      { pronoun: 'nosotros', example: 'Nosotros hacemos trenzas', translation: 'Мы плетем косы' },
+      { pronoun: 'ellos', example: 'Ellos llevan trenzas', translation: 'Они носят косы' },
+      { pronoun: 'yo', example: 'No tengo trenzas', translation: 'У меня нет кос', isNegative: true },
+      { pronoun: 'tú', example: '¿Tienes trenzas?', translation: 'У тебя есть косы?', isQuestion: true }
+    ],
+    grammaticalExamples: []
+  },
+  {
+    word: 'camiseta',
+    partOfSpeech: PartOfSpeech.NOUN,
+    languageCode: 'es',
+    translations: [
+      {
+        languageCode: 'ru',
+        translations: ['футболка', 'майка', 'тенниска']
+      }
+    ],
+    examples: [
+      { pronoun: 'yo', example: 'Yo llevo una camiseta blanca', translation: 'Я ношу белую футболку' },
+      { pronoun: 'tú', example: 'Tú tienes una camiseta nueva', translation: 'У тебя новая футболка' },
+      { pronoun: 'él', example: 'Él compra una camiseta', translation: 'Он покупает футболку' },
+      { pronoun: 'ella', example: 'Ella lleva camiseta azul', translation: 'Она носит синюю футболку' },
+      { pronoun: 'nosotros', example: 'Nosotros llevamos camisetas rojas', translation: 'Мы носим красные футболки' },
+      { pronoun: 'ellos', example: 'Ellos tienen camisetas', translation: 'У них есть футболки' },
+      { pronoun: 'yo', example: 'No llevo camiseta', translation: 'Я не ношу футболку', isNegative: true },
+      { pronoun: 'tú', example: '¿Tienes una camiseta limpia?', translation: 'У тебя есть чистая футболка?', isQuestion: true }
+    ],
+    grammaticalExamples: []
+  },
+  {
+    word: 'bigote',
+    partOfSpeech: PartOfSpeech.NOUN,
+    languageCode: 'es',
+    translations: [
+      {
+        languageCode: 'ru',
+        translations: ['усы', 'усики', 'усищи']
+      }
+    ],
+    examples: [
+      { pronoun: 'yo', example: 'Yo tengo bigote', translation: 'У меня есть усы' },
+      { pronoun: 'tú', example: 'Tú llevas bigote largo', translation: 'Ты носишь длинные усы' },
+      { pronoun: 'él', example: 'Él se afeita el bigote', translation: 'Он бреет усы' },
+      { pronoun: 'ella', example: 'Ella pinta bigotes', translation: 'Она рисует усы' },
+      { pronoun: 'nosotros', example: 'Nosotros tenemos bigote', translation: 'У нас есть усы' },
+      { pronoun: 'ellos', example: 'Ellos llevan bigote', translation: 'Они носят усы' },
+      { pronoun: 'yo', example: 'No tengo bigote', translation: 'У меня нет усов', isNegative: true },
+      { pronoun: 'tú', example: '¿Tienes bigote?', translation: 'У тебя есть усы?', isQuestion: true }
+    ],
+    grammaticalExamples: []
+  },
+  {
+    word: 'perilla',
+    partOfSpeech: PartOfSpeech.NOUN,
+    languageCode: 'es',
+    translations: [
+      {
+        languageCode: 'ru',
+        translations: ['козлиная бородка', 'эспаньолка', 'бородка']
+      }
+    ],
+    examples: [
+      { pronoun: 'yo', example: 'Yo tengo perilla', translation: 'У меня есть бородка' },
+      { pronoun: 'tú', example: 'Tú llevas perilla elegante', translation: 'Ты носишь элегантную бородку' },
+      { pronoun: 'él', example: 'Él se deja crecer la perilla', translation: 'Он отращивает бородку' },
+      { pronoun: 'ella', example: 'Ella dibuja una perilla', translation: 'Она рисует бородку' },
+      { pronoun: 'nosotros', example: 'Nosotros tenemos perilla', translation: 'У нас есть бородка' },
+      { pronoun: 'ellos', example: 'Ellos llevan perilla', translation: 'Они носят бородку' },
+      { pronoun: 'yo', example: 'No tengo perilla', translation: 'У меня нет бородки', isNegative: true },
+      { pronoun: 'tú', example: '¿Tienes perilla?', translation: 'У тебя есть бородка?', isQuestion: true }
+    ],
+    grammaticalExamples: []
+  },
+  {
+    word: 'rubio',
+    partOfSpeech: PartOfSpeech.ADJECTIVE,
+    languageCode: 'es',
+    translations: [
+      {
+        languageCode: 'ru',
+        translations: ['светлый', 'белокурый', 'блондин']
+      }
+    ],
+    examples: [
+      { pronoun: 'yo', example: 'Yo soy rubio', translation: 'Я блондин' },
+      { pronoun: 'tú', example: 'Tú tienes pelo rubio', translation: 'У тебя светлые волосы' },
+      { pronoun: 'él', example: 'Él es rubio natural', translation: 'Он натуральный блондин' },
+      { pronoun: 'ella', example: 'Ella es rubia hermosa', translation: 'Она красивая блондинка' },
+      { pronoun: 'nosotros', example: 'Nosotros somos rubios', translation: 'Мы блондины' },
+      { pronoun: 'ellos', example: 'Ellos son rubios', translation: 'Они блондины' },
+      { pronoun: 'yo', example: 'No soy rubio', translation: 'Я не блондин', isNegative: true },
+      { pronoun: 'tú', example: '¿Eres rubio?', translation: 'Ты блондин?', isQuestion: true }
+    ],
+    grammaticalExamples: []
+  },
+  {
+    word: 'delgado',
+    partOfSpeech: PartOfSpeech.ADJECTIVE,
+    languageCode: 'es',
+    translations: [
+      {
+        languageCode: 'ru',
+        translations: ['худой', 'стройный', 'тонкий']
+      }
+    ],
+    examples: [
+      { pronoun: 'yo', example: 'Yo soy delgado', translation: 'Я худой' },
+      { pronoun: 'tú', example: 'Tú eres muy delgado', translation: 'Ты очень худой' },
+      { pronoun: 'él', example: 'Él es delgado y alto', translation: 'Он худой и высокий' },
+      { pronoun: 'ella', example: 'Ella es delgada', translation: 'Она стройная' },
+      { pronoun: 'nosotros', example: 'Nosotros somos delgados', translation: 'Мы худые' },
+      { pronoun: 'ellos', example: 'Ellos son delgados', translation: 'Они худые' },
+      { pronoun: 'yo', example: 'No soy delgado', translation: 'Я не худой', isNegative: true },
+      { pronoun: 'tú', example: '¿Eres delgado?', translation: 'Ты худой?', isQuestion: true }
+    ],
+    grammaticalExamples: []
   }
 ]
