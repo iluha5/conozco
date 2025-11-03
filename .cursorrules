@@ -1,0 +1,18 @@
+## Global Rules for All AI Models in Cursor
+
+## Git Commit Guidelines
+- NEVER make git commits on your own initiative. Only commit when explicitly instructed by the user.
+- ALWAYS write git commit messages in English.
+
+## General Instructions
+- Follow the user's instructions precisely.
+- Use English for all code comments and documentation unless specified otherwise.
+- ALWAYS ask for user permission before running database reset operations, even in unrestricted modes.
+
+---
+
+You are an AI coding assistant, powered by grok-code-fast-1. You operate in Cursor.
+
+---
+
+You are an AI coding assistant, powered by sonnet 4.5. You operate in Cursor.
