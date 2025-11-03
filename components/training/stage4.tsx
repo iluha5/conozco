@@ -129,6 +129,7 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
   const [fadeIn, setFadeIn] = useState(false)
   const [animationKey, setAnimationKey] = useState(0)
   const [backgroundFlash, setBackgroundFlash] = useState<'green' | 'red' | null>(null)
+  const [showResultPopup, setShowResultPopup] = useState(false)
 
   const currentWord = words[currentIndex]
 
@@ -158,6 +159,7 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
       setTotalErrors(0)
       setFlashingLetter(null)
       setBackgroundFlash(null)
+      setShowResultPopup(false)
     }
   }, [currentIndex, difficulty])
 
@@ -237,8 +239,9 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
     setIsCorrect(correct)
     setIsComplete(true)
 
-    // Устанавливаем цвет фона для анимации
+    // Устанавливаем цвет фона и показываем попап с результатом
     setBackgroundFlash(correct ? 'green' : 'red')
+    setShowResultPopup(true)
 
     // Обновляем результаты упражнения
     setExerciseResults(prev => {
@@ -269,6 +272,11 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
       correct: prev.correct + (correct ? 1 : 0),
       total: prev.total + 1,
     }))
+
+    // Сбрасываем попап через 0.5 секунды
+    setTimeout(() => {
+      setShowResultPopup(false)
+    }, 500)
 
     // Если слово составлено правильно - автоматически переходим через 1 секунду
     if (correct) {
@@ -371,7 +379,7 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
           </div>
 
           {/* Собранное слово */}
-          <div className="min-h-[132px] p-3 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+          <div className="relative min-h-[132px] p-3 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
             <div className="flex flex-wrap gap-2 justify-center">
               {userWord.length === 0 ? (
                 <p className="text-gray-400">Выберите буквы ниже</p>
@@ -388,6 +396,27 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
                 ))
               )}
             </div>
+
+            {/* Попап с результатом */}
+            {showResultPopup && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className={`p-3 rounded-lg border-2 shadow-lg transform transition-all duration-500 ease-out ${
+                  isCorrect
+                    ? 'bg-green-50 border-green-400 text-green-600'
+                    : 'bg-red-50 border-red-400 text-red-600'
+                } ${
+                  backgroundFlash !== null
+                    ? 'opacity-100 translate-y-0 scale-100'
+                    : 'opacity-0 translate-y-4 scale-95'
+                }`}>
+                  {isCorrect ? (
+                    <CheckCircle className="w-8 h-8" />
+                  ) : (
+                    <XCircle className="w-8 h-8" />
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Доступные буквы */}
@@ -417,28 +446,13 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
             ))}
           </div>
 
-          {/* Кнопки действий */}
-          {isComplete && (
-            <div className="flex gap-3 justify-center">
-              <div className="w-full space-y-4">
-                {isCorrect ? (
-                  <div className="flex items-center justify-center">
-                    <CheckCircle className="w-8 h-8 text-green-600" />
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-center">
-                      <XCircle className="w-8 h-8 text-red-600" />
-                    </div>
-                    <div className="flex justify-center">
-                      <Button size="lg" onClick={handleNext} className="gap-2">
-                        {currentIndex < words.length - 1 ? 'Следующее слово' : 'Завершить'}
-                        <ChevronRight className="w-5 h-5" />
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </div>
+          {/* Кнопки действий - только для неправильных ответов */}
+          {isComplete && !isCorrect && (
+            <div className="flex justify-center pt-4">
+              <Button size="lg" onClick={handleNext} className="gap-2">
+                {currentIndex < words.length - 1 ? 'Следующее слово' : 'Завершить'}
+                <ChevronRight className="w-5 h-5" />
+              </Button>
             </div>
           )}
         </CardContent>
