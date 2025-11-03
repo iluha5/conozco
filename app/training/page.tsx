@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Header } from '@/components/header'
 import { ArrowLeft } from 'lucide-react'
 import { Stage1Training } from '@/components/training/stage1'
@@ -77,9 +78,11 @@ export default function TrainingPage() {
   const [selectedLanguage, setSelectedLanguage] = useState<string>('ALL')
   const [loading, setLoading] = useState(true)
   const [trainingWords, setTrainingWords] = useState<Word[]>([])
+  const [enabledStages, setEnabledStages] = useState<Set<number>>(new Set([1, 2, 3, 4, 5, 6]))
   const { toast } = useToast()
 
   useEffect(() => {
+    loadSettings()
     fetchWords()
   }, [])
 
@@ -87,7 +90,18 @@ export default function TrainingPage() {
     filterTrainingWords()
   }, [words, selectedLanguage])
 
+  useEffect(() => {
+    // Если текущий этап отключен, переключаемся на первый доступный
+    if (!isStageEnabled(currentStage)) {
+      const firstEnabled = Array.from(enabledStages).sort()[0]
+      if (firstEnabled) {
+        setCurrentStage(firstEnabled)
+      }
+    }
+  }, [enabledStages, currentStage])
+
   const fetchWords = async () => {
+    setLoading(true)
     try {
       const response = await fetch('/api/words?status=NOT_LEARNED')
       if (response.ok) {
@@ -106,6 +120,25 @@ export default function TrainingPage() {
     }
   }
 
+  const loadSettings = () => {
+    const savedStages = localStorage.getItem('training-enabled-stages')
+    if (savedStages) {
+      try {
+        const stages = JSON.parse(savedStages)
+        setEnabledStages(new Set(stages))
+      } catch (error) {
+        console.error('Error loading stages:', error)
+      }
+    }
+
+    const savedLanguage = localStorage.getItem('training-selected-language')
+    if (savedLanguage) {
+      setSelectedLanguage(savedLanguage)
+    }
+  }
+
+  const isStageEnabled = (stage: number) => enabledStages.has(stage)
+
   const filterTrainingWords = () => {
     let filtered = words.filter(w => w.status === 'NOT_LEARNED')
 
@@ -123,6 +156,62 @@ export default function TrainingPage() {
     })
   }
 
+  const renderTrainingScreen = () => (
+    <>
+      <div className="mb-6 flex items-center justify-between">
+        <Link href="/">
+          <Button variant="ghost">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Назад
+          </Button>
+        </Link>
+        <Link href="/training/setup">
+          <Button variant="outline">
+            Начать сначала
+          </Button>
+        </Link>
+      </div>
+
+      <h1 className="text-4xl font-bold text-gray-900 mb-8">Тренировка</h1>
+
+      <div className={`grid gap-3 mb-6 ${enabledStages.size <= 3 ? 'grid-cols-3' : enabledStages.size <= 4 ? 'grid-cols-4' : enabledStages.size <= 6 ? 'grid-cols-6' : 'grid-cols-6'}`}>
+        {Array.from(enabledStages).sort().map((stage, index) => (
+          <Card
+            key={stage}
+            className={`cursor-pointer transition-all ${
+              currentStage === stage
+                ? 'ring-2 ring-purple-600 bg-purple-50'
+                : 'hover:bg-gray-50'
+            }`}
+            onClick={() => setCurrentStage(stage)}
+          >
+            <CardHeader className="pb-2">
+              <CardTitle className="text-center text-sm">Этап {index + 1}</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <p className="text-xs text-center text-gray-600">
+                {stage === 1 && 'Просмотр + озвучка'}
+                {stage === 2 && 'Выбор перевода'}
+                {stage === 3 && 'Сопоставление'}
+                {stage === 4 && 'Составление слова'}
+                {stage === 5 && 'Составление предложения'}
+                {stage === 6 && 'Составление по голосу'}
+              </p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {loading ? (
+        <div className="text-center py-12">
+          <p className="text-gray-600">Загрузка...</p>
+        </div>
+      ) : (
+        renderStage()
+      )}
+    </>
+  )
+
   const renderStage = () => {
     if (trainingWords.length === 0) {
       return (
@@ -136,6 +225,18 @@ export default function TrainingPage() {
                 <Button>Перейти к словам</Button>
               </Link>
             </div>
+          </CardContent>
+        </Card>
+      )
+    }
+
+    if (!isStageEnabled(currentStage)) {
+      return (
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-center text-gray-600">
+              Этап {currentStage} отключен в настройках.
+            </p>
           </CardContent>
         </Card>
       )
@@ -163,65 +264,7 @@ export default function TrainingPage() {
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100">
       <Header />
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-6">
-          <Link href="/">
-            <Button variant="ghost">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Назад
-            </Button>
-          </Link>
-        </div>
-
-        <h1 className="text-4xl font-bold text-gray-900 mb-8">Тренировка</h1>
-
-        <div className="flex gap-4 mb-8">
-          <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
-            <SelectTrigger className="w-[200px] bg-white">
-              <SelectValue placeholder="Выберите язык" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">Все языки</SelectItem>
-              <SelectItem value="en">🇬🇧 Английский</SelectItem>
-              <SelectItem value="es">🇪🇸 Испанский</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="grid grid-cols-6 gap-4 mb-8">
-          {[1, 2, 3, 4, 5, 6].map((stage) => (
-            <Card
-              key={stage}
-              className={`cursor-pointer transition-all ${
-                currentStage === stage
-                  ? 'ring-2 ring-purple-600 bg-purple-50'
-                  : 'hover:bg-gray-50'
-              }`}
-              onClick={() => setCurrentStage(stage)}
-            >
-              <CardHeader>
-                <CardTitle className="text-center">Этап {stage}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-xs text-center text-gray-600">
-                  {stage === 1 && 'Просмотр + озвучка'}
-                  {stage === 2 && 'Выбор перевода'}
-                  {stage === 3 && 'Сопоставление'}
-                  {stage === 4 && 'Составление слова'}
-                  {stage === 5 && 'Составление предложения'}
-                  {stage === 6 && 'Составление по голосу'}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {loading ? (
-          <div className="text-center py-12">
-            <p className="text-gray-600">Загрузка...</p>
-          </div>
-        ) : (
-          renderStage()
-        )}
+        {renderTrainingScreen()}
       </div>
     </div>
   )
