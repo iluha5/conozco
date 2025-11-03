@@ -185,7 +185,7 @@ export default function TrainingPage() {
             }`}
             onClick={() => setCurrentStage(stage)}
           >
-            <CardHeader className="pb-2 flex-1 flex items-center justify-center">
+            <CardHeader className="flex-1 flex items-center justify-center">
               <CardTitle className="text-center">
                 <span className="md:hidden text-3xl font-bold">{index + 1}</span>
                 <span className="hidden md:inline text-sm">Этап {index + 1}</span>
