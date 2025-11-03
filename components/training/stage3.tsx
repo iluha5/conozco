@@ -67,7 +67,7 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
   const [stats, setStats] = useState({ correct: 0, total: 0 })
   const [exerciseResults, setExerciseResults] = useState<boolean[]>([])
 
-  const wordsPerBatch = 4
+  const wordsPerBatch = 10
   const totalBatches = Math.ceil(words.length / wordsPerBatch)
   const currentWords = words.slice(currentBatch * wordsPerBatch, (currentBatch + 1) * wordsPerBatch)
 
