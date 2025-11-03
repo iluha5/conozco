@@ -336,8 +336,8 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
   return (
     <div className="max-w-2xl mx-auto">
       <Card key={animationKey} className={`shadow-xl transition-all duration-300 ease-in-out ${fadeIn ? 'opacity-100' : 'opacity-0'} ${
-        backgroundFlash === 'green' ? 'bg-green-50 border-green-200' :
-        backgroundFlash === 'red' ? 'bg-red-50 border-red-200' : ''
+        backgroundFlash === 'green' ? 'bg-green-50 border-green-400' :
+        backgroundFlash === 'red' ? 'bg-red-50 border-red-400' : ''
       }`}>
         <CardHeader>
           <div className="flex items-center justify-between">
