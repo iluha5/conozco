@@ -58,6 +58,8 @@ export function Stage2Training({ words, onComplete }: Stage2Props) {
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null)
   const [stats, setStats] = useState({ correct: 0, total: 0 })
   const [exerciseResults, setExerciseResults] = useState<boolean[]>([])
+  const [fadeIn, setFadeIn] = useState(false)
+  const [animationKey, setAnimationKey] = useState(0)
 
   const currentWord = words[currentIndex]
 
@@ -66,9 +68,24 @@ export function Stage2Training({ words, onComplete }: Stage2Props) {
     setExerciseResults(new Array(words.length).fill(null))
   }, [words.length])
 
+  // Запускаем анимацию при каждом монтировании компонента (при новом слове)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setFadeIn(true)
+    }, 50)
+    return () => clearTimeout(timer)
+  }, [animationKey])
+
   useEffect(() => {
     if (currentWord) {
+      // Генерируем новый ключ для принудительного перемонтирования компонента
+      setAnimationKey(prev => prev + 1)
+      setFadeIn(false)
+
+      // Сначала генерируем опции для нового слова
       generateOptions()
+
+      // Сбрасываем состояние выбора
       setSelectedOption(null)
       setIsCorrect(null)
     }
@@ -77,7 +94,7 @@ export function Stage2Training({ words, onComplete }: Stage2Props) {
   // Автоматический переход к следующему слову: 1сек при правильном ответе, 2сек при неправильном
   useEffect(() => {
     if (selectedOption !== null) {
-      const delay = isCorrect ? 1000 : 2000
+      const delay = isCorrect ? 800 : 2000
       const timer = setTimeout(() => {
         handleNext()
       }, delay)
@@ -99,7 +116,7 @@ export function Stage2Training({ words, onComplete }: Stage2Props) {
                                                           (w.baseWord?.translations && w.baseWord.translations.length > 0
                                                             ? w.baseWord.translations[0].translation
                                                             : ''))
-    
+
     // Комбинируем с правильным ответом и перемешиваем
     const allOptions = [...wrongOptions, correctTranslation].sort(() => Math.random() - 0.5)
     setOptions(allOptions)
@@ -158,7 +175,7 @@ export function Stage2Training({ words, onComplete }: Stage2Props) {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <Card className="shadow-xl">
+      <Card key={animationKey} className={`shadow-xl transition-opacity duration-300 ease-in-out ${fadeIn ? 'opacity-100' : 'opacity-0'}`}>
         <CardHeader>
           <CardTitle className="text-center text-gray-600">
             Выбор правильного перевода
@@ -186,10 +203,10 @@ export function Stage2Training({ words, onComplete }: Stage2Props) {
                                            ? currentWord.baseWord.translations[0].translation
                                            : '')
               const isCorrectOption = option === correctTranslation
-              
+
               let buttonClass = 'h-auto py-4 text-lg justify-start'
               let variant: 'default' | 'outline' | 'secondary' = 'outline'
-              
+
               if (isSelected) {
                 if (isCorrect) {
                   buttonClass += ' bg-green-100 border-green-500 hover:bg-green-100'
