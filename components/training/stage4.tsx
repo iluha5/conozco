@@ -432,9 +432,6 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
                       <XCircle className="w-6 h-6" />
                       Неправильно
                     </div>
-                    <p className="text-center text-gray-600">
-                      Правильный ответ: <span className="font-bold">{currentWord.baseWord?.word || currentWord.customWord}</span>
-                    </p>
                     <div className="flex justify-center">
                       <Button size="lg" onClick={handleNext} className="gap-2">
                         {currentIndex < words.length - 1 ? 'Следующее слово' : 'Завершить'}
