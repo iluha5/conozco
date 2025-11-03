@@ -126,6 +126,8 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
   const [exerciseResults, setExerciseResults] = useState<boolean[]>([])
   const [totalErrors, setTotalErrors] = useState(0)
   const [flashingLetter, setFlashingLetter] = useState<number | null>(null)
+  const [fadeIn, setFadeIn] = useState(false)
+  const [animationKey, setAnimationKey] = useState(0)
 
   const currentWord = words[currentIndex]
 
@@ -134,8 +136,20 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
     setExerciseResults(new Array(words.length).fill(null))
   }, [words.length])
 
+  // Запускаем анимацию при каждом монтировании компонента (при новом слове)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setFadeIn(true)
+    }, 50)
+    return () => clearTimeout(timer)
+  }, [animationKey])
+
   useEffect(() => {
     if (currentWord) {
+      // Генерируем новый ключ для принудительного перемонтирования компонента
+      setAnimationKey(prev => prev + 1)
+      setFadeIn(false)
+
       initializeLetters()
       setUserWord([])
       setIsComplete(false)
@@ -313,7 +327,7 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <Card className="shadow-xl">
+      <Card key={animationKey} className={`shadow-xl transition-opacity duration-300 ease-in-out ${fadeIn ? 'opacity-100' : 'opacity-0'}`}>
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-gray-600">
