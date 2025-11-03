@@ -225,7 +225,7 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
           <p className="text-center text-sm text-gray-500">
             Группа {currentBatch + 1} из {totalBatches}
           </p>
-          <div className="mt-3">
+          <div className="!mt-3">
             <ProgressDots
               results={exerciseResults}
               currentIndex={pairs.filter(p => p.matched).length}

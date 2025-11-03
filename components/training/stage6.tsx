@@ -231,7 +231,7 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
           <CardTitle className="text-center text-gray-600">
             Составление слова по голосу
           </CardTitle>
-          <div className="mt-3">
+          <div className="!mt-3">
             <ProgressDots
               results={exerciseResults}
               currentIndex={currentIndex}

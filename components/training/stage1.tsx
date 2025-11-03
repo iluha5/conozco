@@ -122,7 +122,7 @@ export function Stage1Training({ words, onComplete }: Stage1Props) {
           <CardTitle className="text-center text-gray-600">
             Просмотр и запоминание
           </CardTitle>
-          <div className="mt-3">
+          <div className="!mt-3">
             <ProgressDots
               results={exerciseResults}
               currentIndex={currentIndex}

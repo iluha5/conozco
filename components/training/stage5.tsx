@@ -418,7 +418,7 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
               </Button>
             )}
           </div>
-          <div className="mt-3">
+          <div className="!mt-3">
             <ProgressDots
               results={exerciseResults}
               currentIndex={wordPhrases.slice(0, currentIndex).reduce((total, phrases) => total + phrases.length, 0) + currentPhraseIndex}
