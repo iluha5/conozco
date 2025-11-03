@@ -186,10 +186,13 @@ export default function TrainingPage() {
             onClick={() => setCurrentStage(stage)}
           >
             <CardHeader className="pb-2">
-              <CardTitle className="text-center text-sm">Этап {index + 1}</CardTitle>
+              <CardTitle className="text-center text-sm">
+                <span className="md:hidden">{index + 1}</span>
+                <span className="hidden md:inline">Этап {index + 1}</span>
+              </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <p className="text-xs text-center text-gray-600">
+              <p className="hidden md:block text-xs text-center text-gray-600">
                 {stage === 1 && 'Просмотр + озвучка'}
                 {stage === 2 && 'Выбор перевода'}
                 {stage === 3 && 'Сопоставление'}
