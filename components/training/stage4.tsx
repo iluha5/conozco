@@ -270,10 +270,10 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
       total: prev.total + 1,
     }))
 
-    // Сбрасываем анимацию фона через 1.5 секунды
+    // Сбрасываем анимацию фона через 0.5 секунды
     setTimeout(() => {
       setBackgroundFlash(null)
-    }, 1500)
+    }, 500)
 
     // Если слово составлено правильно - автоматически переходим через 1 секунду
     if (correct) {
