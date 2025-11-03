@@ -178,21 +178,21 @@ export default function TrainingPage() {
         {Array.from(enabledStages).sort().map((stage, index) => (
           <Card
             key={stage}
-            className={`cursor-pointer transition-all ${
+            className={`cursor-pointer transition-all aspect-square flex flex-col justify-center ${
               currentStage === stage
                 ? 'ring-2 ring-purple-600 bg-purple-50'
                 : 'hover:bg-gray-50'
             }`}
             onClick={() => setCurrentStage(stage)}
           >
-            <CardHeader className="pb-2">
-              <CardTitle className="text-center text-sm">
-                <span className="md:hidden">{index + 1}</span>
-                <span className="hidden md:inline">Этап {index + 1}</span>
+            <CardHeader className="pb-2 flex-1 flex items-center justify-center">
+              <CardTitle className="text-center">
+                <span className="md:hidden text-3xl font-bold">{index + 1}</span>
+                <span className="hidden md:inline text-sm">Этап {index + 1}</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="pt-0">
-              <p className="hidden md:block text-xs text-center text-gray-600">
+            <CardContent className="pt-0 hidden md:block">
+              <p className="text-xs text-center text-gray-600">
                 {stage === 1 && 'Просмотр + озвучка'}
                 {stage === 2 && 'Выбор перевода'}
                 {stage === 3 && 'Сопоставление'}
