@@ -227,7 +227,7 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
                   key={pair.id}
                   variant={pair.matched ? 'outline' : selectedForeign === pair.foreign ? 'default' : 'outline'}
                   className={`w-full h-auto py-4 text-lg ${
-                    pair.matched ? 'bg-green-50 border-green-500 text-green-800 cursor-not-allowed' : ''
+                    pair.matched ? 'bg-green-500 border-green-500 text-white cursor-not-allowed' : ''
                   }`}
                   onClick={() => handleForeignClick(pair.foreign)}
                   disabled={pair.matched}
@@ -248,7 +248,7 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
                     key={index}
                     variant={isMatched ? 'outline' : selectedTranslation === translation ? 'default' : 'outline'}
                     className={`w-full h-auto py-4 text-lg ${
-                      isMatched ? 'bg-green-50 border-green-500 text-green-800 cursor-not-allowed' : ''
+                      isMatched ? 'bg-green-500 border-green-500 text-white cursor-not-allowed' : ''
                     }`}
                     onClick={() => handleTranslationClick(translation)}
                     disabled={isMatched}
