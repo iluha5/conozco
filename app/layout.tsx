@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Ubuntu } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/components/providers/session-provider";
 
 const inter = Inter({ subsets: ["latin", "cyrillic"] });
+const ubuntu = Ubuntu({
+  weight: ['400', '500', '700'],
+  subsets: ["latin", "cyrillic"],
+  variable: '--font-ubuntu'
+});
 
 export const metadata: Metadata = {
   title: "Flash Cards - Изучение иностранных слов",
@@ -18,7 +23,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ru">
-      <body className={inter.className}>
+      <body className={`${inter.className} ${ubuntu.variable}`}>
         <AuthProvider>
           {children}
           <Toaster />

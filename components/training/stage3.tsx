@@ -185,17 +185,17 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
   useEffect(() => {
     if (allMatched && pairs.length > 0) {
       const timer = setTimeout(() => {
-        if (currentBatch < totalBatches - 1) {
-          setCurrentBatch(currentBatch + 1)
-        } else {
-          onComplete()
-          setCurrentBatch(0)
-          setStats({ correct: 0, total: 0 })
-        }
+    if (currentBatch < totalBatches - 1) {
+      setCurrentBatch(currentBatch + 1)
+    } else {
+      onComplete()
+      setCurrentBatch(0)
+      setStats({ correct: 0, total: 0 })
+    }
       }, 1500) // Задержка 1.5 секунды для визуального подтверждения
 
       return () => clearTimeout(timer)
-    }
+  }
   }, [allMatched, currentBatch, totalBatches, pairs.length, onComplete])
 
 

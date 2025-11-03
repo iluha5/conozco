@@ -362,7 +362,7 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="text-center mb-6">
-            <p className="text-4xl font-bold text-purple-600 mb-2">
+            <p className="text-4xl font-bold text-purple-600 mb-2 font-ubuntu">
               {currentWord.customTranslation ||
                (currentWord.baseWord?.translations && currentWord.baseWord.translations.length > 0
                  ? currentWord.baseWord.translations[0].translation
