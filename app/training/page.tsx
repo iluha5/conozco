@@ -174,11 +174,11 @@ export default function TrainingPage() {
 
       <h1 className="text-4xl font-bold text-gray-900 mb-8">Тренировка</h1>
 
-      <div className={`grid gap-3 mb-6 ${enabledStages.size <= 3 ? 'grid-cols-3' : enabledStages.size <= 4 ? 'grid-cols-4' : enabledStages.size <= 6 ? 'grid-cols-6' : 'grid-cols-6'}`}>
+      <div className="flex gap-4 mb-6 justify-center flex-wrap">
         {Array.from(enabledStages).sort().map((stage, index) => (
           <Card
             key={stage}
-            className={`cursor-pointer transition-all aspect-square flex flex-col justify-center max-w-[136px] ${
+            className={`cursor-pointer transition-all aspect-square flex flex-col justify-center max-w-[120px] ${
               currentStage === stage
                 ? 'ring-2 ring-purple-600 bg-purple-50'
                 : 'hover:bg-gray-50'
