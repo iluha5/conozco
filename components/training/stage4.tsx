@@ -399,20 +399,20 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
 
             {/* Попап с результатом */}
             {showResultPopup && (
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className={`p-3 rounded-lg border-2 shadow-lg transform transition-all duration-500 ease-out ${
+              <div className="absolute bottom-2 right-2 pointer-events-none">
+                <div className={`p-2 rounded-lg border-2 shadow-lg transform transition-all duration-500 ease-out ${
                   isCorrect
                     ? 'bg-green-50 border-green-400 text-green-600'
                     : 'bg-red-50 border-red-400 text-red-600'
                 } ${
-                  backgroundFlash !== null
+                  showResultPopup
                     ? 'opacity-100 translate-y-0 scale-100'
-                    : 'opacity-0 translate-y-4 scale-95'
+                    : 'opacity-0 translate-y-2 scale-95'
                 }`}>
                   {isCorrect ? (
-                    <CheckCircle className="w-8 h-8" />
+                    <CheckCircle className="w-6 h-6" />
                   ) : (
-                    <XCircle className="w-8 h-8" />
+                    <XCircle className="w-6 h-6" />
                   )}
                 </div>
               </div>
