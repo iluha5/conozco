@@ -65,7 +65,6 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
   const [selectedForeign, setSelectedForeign] = useState<string | null>(null)
   const [selectedTranslation, setSelectedTranslation] = useState<string | null>(null)
   const [stats, setStats] = useState({ correct: 0, total: 0 })
-  const [exerciseResults, setExerciseResults] = useState<boolean[]>([])
   const [errorForeign, setErrorForeign] = useState<string | null>(null)
   const [errorTranslation, setErrorTranslation] = useState<string | null>(null)
 
@@ -93,9 +92,6 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
     // Перемешиваем переводы
     const translations = newPairs.map(p => p.translation).sort(() => Math.random() - 0.5)
     setShuffledTranslations(translations)
-
-    // Инициализируем результаты упражнений для текущей группы
-    setExerciseResults(new Array(currentWords.length).fill(null))
 
     setSelectedForeign(null)
     setSelectedTranslation(null)
@@ -134,16 +130,6 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
         p.id === pair.id ? { ...p, matched: true } : p
       ))
 
-      // Находим индекс слова в текущей группе для обновления результатов
-      const wordIndex = currentWords.findIndex(word => word.id === pair.id)
-      if (wordIndex !== -1) {
-        setExerciseResults(prev => {
-          const newResults = [...prev]
-          newResults[wordIndex] = true
-          return newResults
-        })
-      }
-
       await fetch('/api/training', {
         method: 'POST',
         headers: {
@@ -176,15 +162,6 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
 
       const wordPair = pairs.find(p => p.foreign === foreign)
       if (wordPair) {
-        // Находим индекс слова в текущей группе для обновления результатов
-        const wordIndex = currentWords.findIndex(word => word.id === wordPair.id)
-        if (wordIndex !== -1) {
-          setExerciseResults(prev => {
-            const newResults = [...prev]
-            newResults[wordIndex] = false
-            return newResults
-          })
-        }
 
         await fetch('/api/training', {
           method: 'POST',
@@ -227,8 +204,8 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
           </p>
           <div className="!mt-3">
           <ProgressDots
-            results={exerciseResults}
-            currentIndex={pairs.filter(p => p.matched).length}
+            totalExercises={currentWords.length}
+            completedExercises={pairs.filter(p => p.matched).length}
           />
           </div>
         </CardHeader>

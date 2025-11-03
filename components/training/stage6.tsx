@@ -233,8 +233,8 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
           </CardTitle>
           <div className="!mt-3">
           <ProgressDots
-            results={exerciseResults}
-            currentIndex={currentIndex}
+            totalExercises={baseWords.length}
+            completedExercises={currentIndex}
           />
           </div>
         </CardHeader>

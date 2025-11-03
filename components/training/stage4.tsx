@@ -280,8 +280,8 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
           </div>
           <div className="!mt-3">
           <ProgressDots
-            results={exerciseResults}
-            currentIndex={currentIndex}
+            totalExercises={words.length}
+            completedExercises={currentIndex}
           />
           </div>
         </CardHeader>
