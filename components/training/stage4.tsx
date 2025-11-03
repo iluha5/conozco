@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ChevronRight, CheckCircle, XCircle, RotateCcw, Settings, X } from 'lucide-react'
+import { ChevronRight, CheckCircle, XCircle, Settings, X } from 'lucide-react'
 import { ProgressDots } from './progress-dots'
 
 type Language = {
@@ -124,6 +124,8 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
   const [showSettings, setShowSettings] = useState(false)
   const [isFirstCard, setIsFirstCard] = useState(true)
   const [exerciseResults, setExerciseResults] = useState<boolean[]>([])
+  const [consecutiveErrors, setConsecutiveErrors] = useState(0)
+  const [flashingLetter, setFlashingLetter] = useState<number | null>(null)
 
   const currentWord = words[currentIndex]
 
@@ -138,6 +140,8 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
       setUserWord([])
       setIsComplete(false)
       setIsCorrect(null)
+      setConsecutiveErrors(0)
+      setFlashingLetter(null)
     }
   }, [currentIndex, difficulty])
 
@@ -171,12 +175,36 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
     return shuffled.slice(0, count)
   }
 
-  const handleLetterClick = (index: number) => {
+  const handleLetterClick = async (index: number) => {
     const letter = letters[index].letter
-    setUserWord([...userWord, letter])
-    setLetters(prev => prev.map((item, i) =>
-      i === index ? { ...item, selected: true } : item
-    ))
+    const correctWord = currentWord.baseWord?.word || currentWord.customWord || ''
+    const nextExpectedLetter = correctWord[userWord.length]
+
+    // Если буква правильная
+    if (letter.toLowerCase() === nextExpectedLetter.toLowerCase()) {
+      setUserWord([...userWord, letter])
+      setLetters(prev => prev.map((item, i) =>
+        i === index ? { ...item, selected: true } : item
+      ))
+      setConsecutiveErrors(0) // Сбрасываем счетчик ошибок
+
+      // Если слово завершено
+      if (userWord.length + 1 === correctWord.length) {
+        await completeWord(true)
+      }
+    } else {
+      // Неправильная буква - показываем анимацию
+      setFlashingLetter(index)
+      setTimeout(() => setFlashingLetter(null), 200) // 2 раза по 0.1 сек = 0.2 сек
+
+      const newErrorCount = consecutiveErrors + 1
+      setConsecutiveErrors(newErrorCount)
+
+      // Если 3 ошибки подряд - автоматически заполняем слово
+      if (newErrorCount >= 3) {
+        await autoCompleteWord()
+      }
+    }
   }
 
   const handleRemoveFromWord = (index: number) => {
@@ -189,11 +217,7 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
     ))
   }
 
-  const handleCheck = async () => {
-    const constructed = userWord.join('')
-    const correctWord = currentWord.baseWord?.word || currentWord.customWord || ''
-    const correct = constructed.toLowerCase() === correctWord.toLowerCase()
-
+  const completeWord = async (correct: boolean) => {
     setIsCorrect(correct)
     setIsComplete(true)
 
@@ -226,6 +250,28 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
       correct: prev.correct + (correct ? 1 : 0),
       total: prev.total + 1,
     }))
+  }
+
+  const autoCompleteWord = async () => {
+    const correctWord = currentWord.baseWord?.word || currentWord.customWord || ''
+    const correctLetters = correctWord.split('')
+
+    // Заполняем оставшиеся буквы
+    setUserWord(correctLetters)
+
+    // Отмечаем все буквы как выбранные
+    setLetters(prev => prev.map(item => ({ ...item, selected: true })))
+
+    // Завершаем слово как неправильное
+    await completeWord(false)
+  }
+
+  const handleCheck = async () => {
+    const constructed = userWord.join('')
+    const correctWord = currentWord.baseWord?.word || currentWord.customWord || ''
+    const correct = constructed.toLowerCase() === correctWord.toLowerCase()
+
+    await completeWord(correct)
   }
 
   const handleSettingsChange = (newDifficulty: DifficultyLevel) => {
@@ -330,7 +376,9 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
                   <button
                     onClick={() => handleLetterClick(index)}
                     disabled={isComplete}
-                    className="w-full h-full bg-white border-2 border-gray-300 rounded-lg text-xl font-bold text-gray-900 hover:bg-gray-50 hover:border-gray-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className={`w-full h-full bg-white border-2 border-gray-300 rounded-lg text-xl font-bold text-gray-900 hover:bg-gray-50 hover:border-gray-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                      flashingLetter === index ? 'animate-pulse bg-red-500 border-red-500 text-white' : ''
+                    }`}
                   >
                     {letterState.letter}
                   </button>
@@ -341,25 +389,7 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
 
           {/* Кнопки действий */}
           <div className="flex gap-3 justify-center">
-            {!isComplete ? (
-              <>
-                <Button
-                  variant="outline"
-                  onClick={handleReset}
-                  disabled={userWord.length === 0}
-                >
-                  <RotateCcw className="w-4 h-4 mr-2" />
-                  Сброс
-                </Button>
-                <Button
-                  onClick={handleCheck}
-                  disabled={userWord.length !== (currentWord.baseWord?.word || currentWord.customWord || '').length}
-                  size="lg"
-                >
-                  Проверить
-                </Button>
-              </>
-            ) : (
+            {isComplete ? (
               <div className="w-full space-y-4">
                 {isCorrect ? (
                   <div className="flex items-center justify-center gap-2 text-green-600 text-lg font-medium">
