@@ -273,11 +273,6 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
       total: prev.total + 1,
     }))
 
-    // Сбрасываем попап через 1 секунду
-    setTimeout(() => {
-      setShowResultPopup(false)
-    }, 1000)
-
     // Если слово составлено правильно - автоматически переходим через 1 секунду
     if (correct) {
       setTimeout(() => {
