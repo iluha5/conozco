@@ -123,10 +123,10 @@ export function Stage1Training({ words, onComplete }: Stage1Props) {
             Просмотр и запоминание
           </CardTitle>
           <div className="!mt-3">
-            <ProgressDots
-              results={exerciseResults}
-              currentIndex={currentIndex}
-            />
+          <ProgressDots
+            results={exerciseResults}
+            currentIndex={currentIndex}
+          />
           </div>
         </CardHeader>
         <CardContent className="space-y-6">

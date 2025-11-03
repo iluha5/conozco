@@ -232,10 +232,10 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
             Составление слова по голосу
           </CardTitle>
           <div className="!mt-3">
-            <ProgressDots
-              results={exerciseResults}
-              currentIndex={currentIndex}
-            />
+          <ProgressDots
+            results={exerciseResults}
+            currentIndex={currentIndex}
+          />
           </div>
         </CardHeader>
         <CardContent className="space-y-6">

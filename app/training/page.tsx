@@ -174,11 +174,11 @@ export default function TrainingPage() {
 
       <h1 className="text-4xl font-bold text-gray-900 mb-8">Тренировка</h1>
 
-      <div className={`grid gap-1 mb-6 ${enabledStages.size <= 2 ? 'grid-cols-2' : enabledStages.size <= 4 ? 'grid-cols-2' : enabledStages.size <= 6 ? 'grid-cols-3' : 'grid-cols-3'} max-w-md mx-auto`}>
+      <div className={`grid gap-3 mb-6 ${enabledStages.size <= 3 ? 'grid-cols-3' : enabledStages.size <= 4 ? 'grid-cols-4' : enabledStages.size <= 6 ? 'grid-cols-6' : 'grid-cols-6'}`}>
         {Array.from(enabledStages).sort().map((stage, index) => (
           <Card
             key={stage}
-            className={`cursor-pointer transition-all aspect-square flex flex-col justify-center ${
+            className={`cursor-pointer transition-all aspect-square flex flex-col justify-center max-w-[136px] ${
               currentStage === stage
                 ? 'ring-2 ring-purple-600 bg-purple-50'
                 : 'hover:bg-gray-50'

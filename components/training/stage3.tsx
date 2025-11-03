@@ -226,10 +226,10 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
             Группа {currentBatch + 1} из {totalBatches}
           </p>
           <div className="!mt-3">
-            <ProgressDots
-              results={exerciseResults}
-              currentIndex={pairs.filter(p => p.matched).length}
-            />
+          <ProgressDots
+            results={exerciseResults}
+            currentIndex={pairs.filter(p => p.matched).length}
+          />
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
