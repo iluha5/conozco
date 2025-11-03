@@ -8,19 +8,20 @@ type ProgressDotsProps = {
 export function ProgressDots({ results, currentIndex }: ProgressDotsProps) {
   const dotsRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    // Автоматическая прокрутка к текущей точке
-    if (dotsRef.current) {
-      const dotElement = dotsRef.current.children[currentIndex] as HTMLElement
-      if (dotElement) {
-        dotElement.scrollIntoView({
-          behavior: 'smooth',
-          block: 'nearest',
-          inline: 'center'
-        })
-      }
-    }
-  }, [currentIndex])
+  // Прокрутка к текущей точке отключена
+  // useEffect(() => {
+  //   // Автоматическая прокрутка к текущей точке
+  //   if (dotsRef.current) {
+  //     const dotElement = dotsRef.current.children[currentIndex] as HTMLElement
+  //     if (dotElement) {
+  //       dotElement.scrollIntoView({
+  //         behavior: 'smooth',
+  //         block: 'nearest',
+  //         inline: 'center'
+  //       })
+  //     }
+  //   }
+  // }, [currentIndex])
 
   return (
     <div className="w-full overflow-x-auto">

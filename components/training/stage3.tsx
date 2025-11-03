@@ -66,6 +66,8 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
   const [selectedTranslation, setSelectedTranslation] = useState<string | null>(null)
   const [stats, setStats] = useState({ correct: 0, total: 0 })
   const [exerciseResults, setExerciseResults] = useState<boolean[]>([])
+  const [errorForeign, setErrorForeign] = useState<string | null>(null)
+  const [errorTranslation, setErrorTranslation] = useState<string | null>(null)
 
   const wordsPerBatch = 10
   const totalBatches = Math.ceil(words.length / wordsPerBatch)
@@ -97,14 +99,16 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
 
     setSelectedForeign(null)
     setSelectedTranslation(null)
+    setErrorForeign(null)
+    setErrorTranslation(null)
   }
 
   const handleForeignClick = (foreign: string) => {
     const pair = pairs.find(p => p.foreign === foreign)
     if (pair?.matched) return
-    
+
     setSelectedForeign(foreign)
-    
+
     if (selectedTranslation) {
       checkMatch(foreign, selectedTranslation)
     }
@@ -113,9 +117,9 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
   const handleTranslationClick = (translation: string) => {
     const pair = pairs.find(p => p.translation === translation)
     if (pair?.matched) return
-    
+
     setSelectedTranslation(translation)
-    
+
     if (selectedForeign) {
       checkMatch(selectedForeign, translation)
     }
@@ -153,8 +157,23 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
       })
 
       setStats(prev => ({ correct: prev.correct + 1, total: prev.total + 1 }))
+
+      // Снимаем фокус с обоих слов после правильного сопоставления
+      setSelectedForeign(null)
+      setSelectedTranslation(null)
     } else {
-      // Неправильное совпадение
+      // Неправильное совпадение - подсвечиваем оба слова красным на 0.2 секунды
+      setErrorForeign(foreign)
+      setErrorTranslation(translation)
+
+      // Снимаем подсветку и фокус через 0.2 секунды
+      setTimeout(() => {
+        setErrorForeign(null)
+        setErrorTranslation(null)
+        setSelectedForeign(null)
+        setSelectedTranslation(null)
+      }, 200)
+
       const wordPair = pairs.find(p => p.foreign === foreign)
       if (wordPair) {
         // Находим индекс слова в текущей группе для обновления результатов
@@ -182,9 +201,6 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
 
       setStats(prev => ({ correct: prev.correct, total: prev.total + 1 }))
     }
-
-    setSelectedForeign(null)
-    setSelectedTranslation(null)
   }
 
   const allMatched = pairs.every(p => p.matched)
@@ -221,42 +237,63 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
 
           <div className="grid grid-cols-2 gap-8">
             {/* Левая колонка - иностранные слова */}
-            <div className="space-y-3">
-              {pairs.map((pair) => (
-                <Button
-                  key={pair.id}
-                  variant={pair.matched ? 'outline' : selectedForeign === pair.foreign ? 'default' : 'outline'}
-                  className={`w-full h-auto py-4 text-lg ${
-                    pair.matched ? 'bg-green-500 border-green-500 text-white cursor-not-allowed' : ''
+            <div className="space-y-3 transition-all duration-200 ease-in-out">
+              {pairs
+                .sort((a, b) => {
+                  // Сначала matched пары, затем неугаданные
+                  if (a.matched && !b.matched) return -1
+                  if (!a.matched && b.matched) return 1
+                  return 0
+                })
+                .map((pair) => (
+                  <Button
+                    key={pair.id}
+                    variant={pair.matched ? 'outline' : selectedForeign === pair.foreign ? 'default' : 'outline'}
+                  className={`w-full h-auto py-4 text-lg transition-all duration-200 ease-in-out ${
+                    pair.matched ? 'bg-green-500 border-green-500 text-white cursor-not-allowed' :
+                    errorForeign === pair.foreign ? 'bg-red-500 border-red-500 text-white' : ''
                   }`}
-                  onClick={() => handleForeignClick(pair.foreign)}
-                  disabled={pair.matched}
-                >
-                  {pair.foreign}
-                </Button>
-              ))}
+                    onClick={() => handleForeignClick(pair.foreign)}
+                    disabled={pair.matched}
+                  >
+                    {pair.foreign}
+                  </Button>
+                ))}
             </div>
 
             {/* Правая колонка - переводы */}
-            <div className="space-y-3">
-              {shuffledTranslations.map((translation, index) => {
-                const pair = pairs.find(p => p.translation === translation)
-                const isMatched = pair?.matched || false
+            <div className="space-y-3 transition-all duration-200 ease-in-out">
+              {shuffledTranslations
+                .sort((a, b) => {
+                  // Сначала matched переводы, затем неугаданные
+                  const pairA = pairs.find(p => p.translation === a)
+                  const pairB = pairs.find(p => p.translation === b)
+                  const isMatchedA = pairA?.matched || false
+                  const isMatchedB = pairB?.matched || false
 
-                return (
-                  <Button
-                    key={index}
-                    variant={isMatched ? 'outline' : selectedTranslation === translation ? 'default' : 'outline'}
-                    className={`w-full h-auto py-4 text-lg ${
-                      isMatched ? 'bg-green-500 border-green-500 text-white cursor-not-allowed' : ''
-                    }`}
-                    onClick={() => handleTranslationClick(translation)}
-                    disabled={isMatched}
-                  >
-                    {translation}
-                  </Button>
-                )
-              })}
+                  if (isMatchedA && !isMatchedB) return -1
+                  if (!isMatchedA && isMatchedB) return 1
+                  return 0
+                })
+                .map((translation, index) => {
+                  const pair = pairs.find(p => p.translation === translation)
+                  const isMatched = pair?.matched || false
+
+                  return (
+                    <Button
+                      key={translation}
+                      variant={isMatched ? 'outline' : selectedTranslation === translation ? 'default' : 'outline'}
+                      className={`w-full h-auto py-4 text-lg transition-all duration-500 ease-in-out ${
+                        isMatched ? 'bg-green-500 border-green-500 text-white cursor-not-allowed' :
+                        errorTranslation === translation ? 'bg-red-500 border-red-500 text-white' : ''
+                      }`}
+                      onClick={() => handleTranslationClick(translation)}
+                      disabled={isMatched}
+                    >
+                      {translation}
+                    </Button>
+                  )
+                })}
             </div>
           </div>
 
