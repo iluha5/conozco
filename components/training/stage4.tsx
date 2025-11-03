@@ -278,10 +278,12 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
               </Button>
             )}
           </div>
-          <ProgressDots
-            results={exerciseResults}
-            currentIndex={currentIndex}
-          />
+          <div className="mt-3">
+            <ProgressDots
+              results={exerciseResults}
+              currentIndex={currentIndex}
+            />
+          </div>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="text-center mb-6">

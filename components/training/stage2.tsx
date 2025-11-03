@@ -151,10 +151,12 @@ export function Stage2Training({ words, onComplete }: Stage2Props) {
           <CardTitle className="text-center text-gray-600">
             Выбор правильного перевода
           </CardTitle>
-          <ProgressDots
-            results={exerciseResults}
-            currentIndex={currentIndex}
-          />
+          <div className="mt-3">
+            <ProgressDots
+              results={exerciseResults}
+              currentIndex={currentIndex}
+            />
+          </div>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="text-center mb-8">

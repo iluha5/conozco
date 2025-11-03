@@ -231,10 +231,12 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
           <CardTitle className="text-center text-gray-600">
             Составление слова по голосу
           </CardTitle>
-          <ProgressDots
-            results={exerciseResults}
-            currentIndex={currentIndex}
-          />
+          <div className="mt-3">
+            <ProgressDots
+              results={exerciseResults}
+              currentIndex={currentIndex}
+            />
+          </div>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="text-center mb-6">

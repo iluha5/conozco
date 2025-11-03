@@ -225,10 +225,12 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
           <p className="text-center text-sm text-gray-500">
             Группа {currentBatch + 1} из {totalBatches}
           </p>
-          <ProgressDots
-            results={exerciseResults}
-            currentIndex={pairs.filter(p => p.matched).length}
-          />
+          <div className="mt-3">
+            <ProgressDots
+              results={exerciseResults}
+              currentIndex={pairs.filter(p => p.matched).length}
+            />
+          </div>
         </CardHeader>
         <CardContent className="space-y-6">
           <p className="text-center text-gray-600">
