@@ -124,7 +124,7 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
   const [showSettings, setShowSettings] = useState(false)
   const [isFirstCard, setIsFirstCard] = useState(true)
   const [exerciseResults, setExerciseResults] = useState<boolean[]>([])
-  const [consecutiveErrors, setConsecutiveErrors] = useState(0)
+  const [totalErrors, setTotalErrors] = useState(0)
   const [flashingLetter, setFlashingLetter] = useState<number | null>(null)
 
   const currentWord = words[currentIndex]
@@ -140,7 +140,7 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
       setUserWord([])
       setIsComplete(false)
       setIsCorrect(null)
-      setConsecutiveErrors(0)
+      setTotalErrors(0)
       setFlashingLetter(null)
     }
   }, [currentIndex, difficulty])
@@ -186,7 +186,7 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
       setLetters(prev => prev.map((item, i) =>
         i === index ? { ...item, selected: true } : item
       ))
-      setConsecutiveErrors(0) // Сбрасываем счетчик ошибок
+      // Не сбрасываем счетчик ошибок - считаем общее количество ошибок за слово
 
       // Если слово завершено
       if (userWord.length + 1 === correctWord.length) {
@@ -197,10 +197,10 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
       setFlashingLetter(index)
       setTimeout(() => setFlashingLetter(null), 500) // Увеличиваем время до 0.5 сек для лучшей видимости
 
-      const newErrorCount = consecutiveErrors + 1
-      setConsecutiveErrors(newErrorCount)
+      const newErrorCount = totalErrors + 1
+      setTotalErrors(newErrorCount)
 
-      // Если 3 ошибки подряд - автоматически заполняем слово
+      // Если 3 ошибки всего за слово - автоматически заполняем слово
       if (newErrorCount >= 3) {
         await autoCompleteWord()
       }
