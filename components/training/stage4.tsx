@@ -195,7 +195,7 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
     } else {
       // Неправильная буква - показываем анимацию
       setFlashingLetter(index)
-      setTimeout(() => setFlashingLetter(null), 200) // 2 раза по 0.1 сек = 0.2 сек
+      setTimeout(() => setFlashingLetter(null), 500) // Увеличиваем время до 0.5 сек для лучшей видимости
 
       const newErrorCount = consecutiveErrors + 1
       setConsecutiveErrors(newErrorCount)
@@ -376,8 +376,10 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
                   <button
                     onClick={() => handleLetterClick(index)}
                     disabled={isComplete}
-                    className={`w-full h-full bg-white border-2 border-gray-300 rounded-lg text-xl font-bold text-gray-900 hover:bg-gray-50 hover:border-gray-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-                      flashingLetter === index ? 'animate-pulse bg-red-500 border-red-500 text-white' : ''
+                    className={`w-full h-full rounded-lg text-xl font-bold text-gray-900 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
+                      flashingLetter === index
+                        ? 'bg-red-500 border-red-500 text-white shadow-lg scale-110'
+                        : 'bg-white border-2 border-gray-300 hover:bg-gray-50 hover:border-gray-400'
                     }`}
                   >
                     {letterState.letter}
