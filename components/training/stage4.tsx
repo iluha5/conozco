@@ -195,7 +195,7 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
     } else {
       // Неправильная буква - показываем анимацию
       setFlashingLetter(index)
-      setTimeout(() => setFlashingLetter(null), 500) // Увеличиваем время до 0.5 сек для лучшей видимости
+      setTimeout(() => setFlashingLetter(null), 150) // Анимация длится 0.15 сек
 
       const newErrorCount = totalErrors + 1
       setTotalErrors(newErrorCount)
@@ -250,6 +250,13 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
       correct: prev.correct + (correct ? 1 : 0),
       total: prev.total + 1,
     }))
+
+    // Если слово составлено правильно - автоматически переходим через 1 секунду
+    if (correct) {
+      setTimeout(() => {
+        handleNext()
+      }, 1000)
+    }
   }
 
   const autoCompleteWord = async () => {
@@ -407,15 +414,14 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
                     <p className="text-center text-gray-600">
                       Правильный ответ: <span className="font-bold">{currentWord.baseWord?.word || currentWord.customWord}</span>
                     </p>
+                    <div className="flex justify-center">
+                      <Button size="lg" onClick={handleNext} className="gap-2">
+                        {currentIndex < words.length - 1 ? 'Следующее слово' : 'Завершить'}
+                        <ChevronRight className="w-5 h-5" />
+                      </Button>
+                    </div>
                   </div>
                 )}
-
-                <div className="flex justify-center">
-                  <Button size="lg" onClick={handleNext} className="gap-2">
-                    {currentIndex < words.length - 1 ? 'Следующее слово' : 'Завершить'}
-                    <ChevronRight className="w-5 h-5" />
-                  </Button>
-                </div>
               </div>
             </div>
           )}
