@@ -422,15 +422,13 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
             <div className="flex gap-3 justify-center">
               <div className="w-full space-y-4">
                 {isCorrect ? (
-                  <div className="flex items-center justify-center gap-2 text-green-600 text-lg font-medium">
-                    <CheckCircle className="w-6 h-6" />
-                    Правильно!
+                  <div className="flex items-center justify-center">
+                    <CheckCircle className="w-8 h-8 text-green-600" />
                   </div>
                 ) : (
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-center gap-2 text-red-600 text-lg font-medium">
-                      <XCircle className="w-6 h-6" />
-                      Неправильно
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-center">
+                      <XCircle className="w-8 h-8 text-red-600" />
                     </div>
                     <div className="flex justify-center">
                       <Button size="lg" onClick={handleNext} className="gap-2">
