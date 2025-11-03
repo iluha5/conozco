@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ChevronRight } from 'lucide-react'
 import { ProgressDots } from './progress-dots'
 
 type Language = {
@@ -182,15 +181,23 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
 
   const allMatched = pairs.every(p => p.matched)
 
-  const handleNext = () => {
-    if (currentBatch < totalBatches - 1) {
-      setCurrentBatch(currentBatch + 1)
-    } else {
-      onComplete()
-      setCurrentBatch(0)
-      setStats({ correct: 0, total: 0 })
+  // Автоматический переход к следующей группе или завершение этапа
+  useEffect(() => {
+    if (allMatched && pairs.length > 0) {
+      const timer = setTimeout(() => {
+        if (currentBatch < totalBatches - 1) {
+          setCurrentBatch(currentBatch + 1)
+        } else {
+          onComplete()
+          setCurrentBatch(0)
+          setStats({ correct: 0, total: 0 })
+        }
+      }, 1500) // Задержка 1.5 секунды для визуального подтверждения
+
+      return () => clearTimeout(timer)
     }
-  }
+  }, [allMatched, currentBatch, totalBatches, pairs.length, onComplete])
+
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -276,14 +283,6 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
             </div>
           </div>
 
-          {allMatched && (
-            <div className="flex justify-center pt-4">
-              <Button size="lg" onClick={handleNext} className="gap-2">
-                {currentBatch < totalBatches - 1 ? 'Следующая группа' : 'Завершить'}
-                <ChevronRight className="w-5 h-5" />
-              </Button>
-            </div>
-          )}
         </CardContent>
       </Card>
     </div>
