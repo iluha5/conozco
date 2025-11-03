@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChevronRight, CheckCircle, XCircle } from 'lucide-react'
+import { ProgressDots } from './progress-dots'
 
 type Language = {
   id: string
@@ -56,8 +57,14 @@ export function Stage2Training({ words, onComplete }: Stage2Props) {
   const [selectedOption, setSelectedOption] = useState<string | null>(null)
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null)
   const [stats, setStats] = useState({ correct: 0, total: 0 })
+  const [exerciseResults, setExerciseResults] = useState<boolean[]>([])
 
   const currentWord = words[currentIndex]
+
+  // Инициализируем массив результатов упражнений
+  useEffect(() => {
+    setExerciseResults(new Array(words.length).fill(null))
+  }, [words.length])
 
   useEffect(() => {
     if (currentWord) {
@@ -96,6 +103,13 @@ export function Stage2Training({ words, onComplete }: Stage2Props) {
                                  : '')
     const correct = option === correctTranslation
     setIsCorrect(correct)
+
+    // Обновляем результаты упражнения
+    setExerciseResults(prev => {
+      const newResults = [...prev]
+      newResults[currentIndex] = correct
+      return newResults
+    })
 
     // Записываем результат
     await fetch('/api/training', {
@@ -137,12 +151,10 @@ export function Stage2Training({ words, onComplete }: Stage2Props) {
           <CardTitle className="text-center text-gray-600">
             Этап 2: Выбор правильного перевода
           </CardTitle>
-          <p className="text-center text-sm text-gray-500">
-            Слово {currentIndex + 1} из {words.length}
-          </p>
-          <p className="text-center text-sm text-green-600 font-medium">
-            Правильных ответов: {stats.correct} из {stats.total}
-          </p>
+          <ProgressDots
+            results={exerciseResults}
+            currentIndex={currentIndex}
+          />
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="text-center mb-8">
@@ -201,13 +213,6 @@ export function Stage2Training({ words, onComplete }: Stage2Props) {
               </Button>
             </div>
           )}
-
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div
-              className="bg-purple-600 h-2 rounded-full transition-all"
-              style={{ width: `${((currentIndex + 1) / words.length) * 100}%` }}
-            />
-          </div>
         </CardContent>
       </Card>
     </div>

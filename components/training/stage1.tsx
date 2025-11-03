@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Volume2, ChevronRight } from 'lucide-react'
+import { ProgressDots } from './progress-dots'
 
 type Language = {
   id: string
@@ -53,8 +54,14 @@ type Stage1Props = {
 export function Stage1Training({ words, onComplete }: Stage1Props) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [showTranslation, setShowTranslation] = useState(false)
+  const [exerciseResults, setExerciseResults] = useState<boolean[]>([])
 
   const currentWord = words[currentIndex]
+
+  // Инициализируем массив результатов упражнений
+  useEffect(() => {
+    setExerciseResults(new Array(words.length).fill(null))
+  }, [words.length])
 
   useEffect(() => {
     // Автоматическая озвучка при появлении нового слова
@@ -87,6 +94,13 @@ export function Stage1Training({ words, onComplete }: Stage1Props) {
       }),
     })
 
+    // Обновляем результаты упражнения
+    setExerciseResults(prev => {
+      const newResults = [...prev]
+      newResults[currentIndex] = true
+      return newResults
+    })
+
     if (currentIndex < words.length - 1) {
       setCurrentIndex(currentIndex + 1)
       setShowTranslation(false)
@@ -108,9 +122,10 @@ export function Stage1Training({ words, onComplete }: Stage1Props) {
           <CardTitle className="text-center text-gray-600">
             Этап 1: Просмотр и запоминание
           </CardTitle>
-          <p className="text-center text-sm text-gray-500">
-            Слово {currentIndex + 1} из {words.length}
-          </p>
+          <ProgressDots
+            results={exerciseResults}
+            currentIndex={currentIndex}
+          />
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="text-center">
@@ -168,13 +183,6 @@ export function Stage1Training({ words, onComplete }: Stage1Props) {
               </Button>
             </div>
           )}
-
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div
-              className="bg-purple-600 h-2 rounded-full transition-all"
-              style={{ width: `${((currentIndex + 1) / words.length) * 100}%` }}
-            />
-          </div>
         </CardContent>
       </Card>
     </div>

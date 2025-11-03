@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChevronRight } from 'lucide-react'
+import { ProgressDots } from './progress-dots'
 
 type Language = {
   id: string
@@ -64,6 +65,7 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
   const [selectedForeign, setSelectedForeign] = useState<string | null>(null)
   const [selectedTranslation, setSelectedTranslation] = useState<string | null>(null)
   const [stats, setStats] = useState({ correct: 0, total: 0 })
+  const [exerciseResults, setExerciseResults] = useState<boolean[]>([])
 
   const wordsPerBatch = 4
   const totalBatches = Math.ceil(words.length / wordsPerBatch)
@@ -83,13 +85,16 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
                      : 'Нет перевода'),
       matched: false,
     }))
-    
+
     setPairs(newPairs)
-    
+
     // Перемешиваем переводы
     const translations = newPairs.map(p => p.translation).sort(() => Math.random() - 0.5)
     setShuffledTranslations(translations)
-    
+
+    // Инициализируем результаты упражнений для текущей группы
+    setExerciseResults(new Array(currentWords.length).fill(null))
+
     setSelectedForeign(null)
     setSelectedTranslation(null)
   }
@@ -118,13 +123,23 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
 
   const checkMatch = async (foreign: string, translation: string) => {
     const pair = pairs.find(p => p.foreign === foreign && p.translation === translation)
-    
+
     if (pair) {
       // Правильное совпадение
-      setPairs(prev => prev.map(p => 
+      setPairs(prev => prev.map(p =>
         p.id === pair.id ? { ...p, matched: true } : p
       ))
-      
+
+      // Находим индекс слова в текущей группе для обновления результатов
+      const wordIndex = currentWords.findIndex(word => word.id === pair.id)
+      if (wordIndex !== -1) {
+        setExerciseResults(prev => {
+          const newResults = [...prev]
+          newResults[wordIndex] = true
+          return newResults
+        })
+      }
+
       await fetch('/api/training', {
         method: 'POST',
         headers: {
@@ -136,12 +151,22 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
           isCorrect: true,
         }),
       })
-      
+
       setStats(prev => ({ correct: prev.correct + 1, total: prev.total + 1 }))
     } else {
       // Неправильное совпадение
       const wordPair = pairs.find(p => p.foreign === foreign)
       if (wordPair) {
+        // Находим индекс слова в текущей группе для обновления результатов
+        const wordIndex = currentWords.findIndex(word => word.id === wordPair.id)
+        if (wordIndex !== -1) {
+          setExerciseResults(prev => {
+            const newResults = [...prev]
+            newResults[wordIndex] = false
+            return newResults
+          })
+        }
+
         await fetch('/api/training', {
           method: 'POST',
           headers: {
@@ -154,10 +179,10 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
           }),
         })
       }
-      
+
       setStats(prev => ({ correct: prev.correct, total: prev.total + 1 }))
     }
-    
+
     setSelectedForeign(null)
     setSelectedTranslation(null)
   }
@@ -184,9 +209,10 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
           <p className="text-center text-sm text-gray-500">
             Группа {currentBatch + 1} из {totalBatches}
           </p>
-          <p className="text-center text-sm text-green-600 font-medium">
-            Правильных ответов: {stats.correct} из {stats.total}
-          </p>
+          <ProgressDots
+            results={exerciseResults}
+            currentIndex={pairs.filter(p => p.matched).length}
+          />
         </CardHeader>
         <CardContent className="space-y-6">
           <p className="text-center text-gray-600">
@@ -242,13 +268,6 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
               </Button>
             </div>
           )}
-
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div
-              className="bg-purple-600 h-2 rounded-full transition-all"
-              style={{ width: `${((currentBatch + 1) / totalBatches) * 100}%` }}
-            />
-          </div>
         </CardContent>
       </Card>
     </div>

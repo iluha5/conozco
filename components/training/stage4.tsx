@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChevronRight, CheckCircle, XCircle, RotateCcw, Settings, X } from 'lucide-react'
+import { ProgressDots } from './progress-dots'
 
 type Language = {
   id: string
@@ -122,8 +123,14 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
   const [difficulty, setDifficulty] = useState<DifficultyLevel>('easy')
   const [showSettings, setShowSettings] = useState(false)
   const [isFirstCard, setIsFirstCard] = useState(true)
+  const [exerciseResults, setExerciseResults] = useState<boolean[]>([])
 
   const currentWord = words[currentIndex]
+
+  // Инициализируем массив результатов упражнений
+  useEffect(() => {
+    setExerciseResults(new Array(words.length).fill(null))
+  }, [words.length])
 
   useEffect(() => {
     if (currentWord) {
@@ -189,6 +196,13 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
 
     setIsCorrect(correct)
     setIsComplete(true)
+
+    // Обновляем результаты упражнения
+    setExerciseResults(prev => {
+      const newResults = [...prev]
+      newResults[currentIndex] = correct
+      return newResults
+    })
 
     // Записываем результат
     await fetch('/api/training', {
@@ -264,12 +278,10 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
               </Button>
             )}
           </div>
-          <p className="text-center text-sm text-gray-500">
-            Слово {currentIndex + 1} из {words.length}
-          </p>
-          <p className="text-center text-sm text-green-600 font-medium">
-            Правильных ответов: {stats.correct} из {stats.total}
-          </p>
+          <ProgressDots
+            results={exerciseResults}
+            currentIndex={currentIndex}
+          />
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="text-center mb-6">
@@ -372,13 +384,6 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
                 </div>
               </div>
             )}
-          </div>
-
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div
-              className="bg-purple-600 h-2 rounded-full transition-all"
-              style={{ width: `${((currentIndex + 1) / words.length) * 100}%` }}
-            />
           </div>
         </CardContent>
       </Card>

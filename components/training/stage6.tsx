@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChevronRight, CheckCircle, XCircle, RotateCcw, Volume2 } from 'lucide-react'
+import { ProgressDots } from './progress-dots'
 
 type Language = {
   id: string
@@ -64,9 +65,15 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
   const [stats, setStats] = useState({ correct: 0, total: 0 })
   const [isPlaying, setIsPlaying] = useState(false)
   const [hasPlayedOnce, setHasPlayedOnce] = useState(false)
+  const [exerciseResults, setExerciseResults] = useState<boolean[]>([])
 
   // Filter only base words (exclude custom words)
   const baseWords = words.filter(word => word.baseWordId && !word.customWord)
+
+  // Инициализируем массив результатов упражнений
+  useEffect(() => {
+    setExerciseResults(new Array(baseWords.length).fill(null))
+  }, [baseWords.length])
 
   const currentWord = baseWords[currentIndex]
 
@@ -162,6 +169,13 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
     setIsCorrect(correct)
     setIsComplete(true)
 
+    // Обновляем результаты упражнения
+    setExerciseResults(prev => {
+      const newResults = [...prev]
+      newResults[currentIndex] = correct
+      return newResults
+    })
+
     // Записываем результат
     await fetch('/api/training', {
       method: 'POST',
@@ -217,12 +231,10 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
           <CardTitle className="text-center text-gray-600">
             Этап 6: Составление слова по голосу
           </CardTitle>
-          <p className="text-center text-sm text-gray-500">
-            Слово {currentIndex + 1} из {baseWords.length}
-          </p>
-          <p className="text-center text-sm text-green-600 font-medium">
-            Правильных ответов: {stats.correct} из {stats.total}
-          </p>
+          <ProgressDots
+            results={exerciseResults}
+            currentIndex={currentIndex}
+          />
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="text-center mb-6">
@@ -367,13 +379,6 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
                 </div>
               </div>
             )}
-          </div>
-
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div
-              className="bg-purple-600 h-2 rounded-full transition-all"
-              style={{ width: `${((currentIndex + 1) / baseWords.length) * 100}%` }}
-            />
           </div>
         </CardContent>
       </Card>

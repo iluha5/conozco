@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChevronRight, CheckCircle, XCircle, RotateCcw, Settings, X } from 'lucide-react'
+import { ProgressDots } from './progress-dots'
 
 type Language = {
   id: string
@@ -68,62 +69,6 @@ type Phrase = {
   words: string[]
 }
 
-type ProgressDotsProps = {
-  results: boolean[]
-  currentIndex: number
-}
-
-function ProgressDots({ results, currentIndex }: ProgressDotsProps) {
-  const dotsRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    // Автоматическая прокрутка к текущей точке
-    if (dotsRef.current) {
-      const dotElement = dotsRef.current.children[currentIndex] as HTMLElement
-      if (dotElement) {
-        dotElement.scrollIntoView({
-          behavior: 'smooth',
-          block: 'nearest',
-          inline: 'center'
-        })
-      }
-    }
-  }, [currentIndex])
-
-  return (
-    <div className="w-full overflow-x-auto">
-      <div
-        ref={dotsRef}
-        className="flex gap-2 px-4 py-2 min-w-max justify-start"
-        style={{ scrollbarWidth: 'thin' }}
-      >
-        {results.map((result, index) => {
-          let dotClass = 'w-3 h-3 rounded-full transition-colors duration-300 '
-
-          if (index === currentIndex) {
-            dotClass += 'ring-2 ring-purple-400 ring-offset-1 '
-          }
-
-          if (result === true) {
-            dotClass += 'bg-green-500'
-          } else if (result === false) {
-            dotClass += 'bg-red-500'
-          } else {
-            dotClass += 'bg-gray-300'
-          }
-
-          return (
-            <div
-              key={index}
-              className={dotClass}
-              title={`Exercise ${index + 1}: ${result === true ? 'Correct' : result === false ? 'Incorrect' : 'Pending'}`}
-            />
-          )
-        })}
-      </div>
-    </div>
-  )
-}
 
 type SettingsModalProps = {
   isOpen: boolean
