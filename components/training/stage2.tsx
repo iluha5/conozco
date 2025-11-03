@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ChevronRight, CheckCircle, XCircle } from 'lucide-react'
+import { CheckCircle, XCircle } from 'lucide-react'
 import { ProgressDots } from './progress-dots'
 
 type Language = {
@@ -73,6 +73,18 @@ export function Stage2Training({ words, onComplete }: Stage2Props) {
       setIsCorrect(null)
     }
   }, [currentIndex])
+
+  // Автоматический переход к следующему слову: 1сек при правильном ответе, 2сек при неправильном
+  useEffect(() => {
+    if (selectedOption !== null) {
+      const delay = isCorrect ? 1000 : 2000
+      const timer = setTimeout(() => {
+        handleNext()
+      }, delay)
+
+      return () => clearTimeout(timer)
+    }
+  }, [selectedOption, currentIndex, isCorrect])
 
   const generateOptions = () => {
     const correctTranslation = currentWord.customTranslation ||
@@ -207,14 +219,6 @@ export function Stage2Training({ words, onComplete }: Stage2Props) {
             })}
           </div>
 
-          {selectedOption !== null && (
-            <div className="flex justify-center pt-4">
-              <Button size="lg" onClick={handleNext} className="gap-2">
-                {currentIndex < words.length - 1 ? 'Следующее слово' : 'Завершить'}
-                <ChevronRight className="w-5 h-5" />
-              </Button>
-            </div>
-          )}
         </CardContent>
       </Card>
     </div>
