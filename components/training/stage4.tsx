@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ChevronRight, CheckCircle, XCircle, RotateCcw } from 'lucide-react'
+import { ChevronRight, CheckCircle, XCircle, RotateCcw, Settings, X } from 'lucide-react'
 
 type Language = {
   id: string
@@ -55,6 +55,63 @@ type LetterState = {
   selected: boolean
 }
 
+type DifficultyLevel = 'easy' | 'medium' | 'hard'
+
+type SettingsModalProps = {
+  isOpen: boolean
+  onClose: () => void
+  currentDifficulty: DifficultyLevel
+  onChange: (difficulty: DifficultyLevel) => void
+}
+
+function SettingsModal({ isOpen, onClose, currentDifficulty, onChange }: SettingsModalProps) {
+  if (!isOpen) return null
+
+  const difficultyOptions = [
+    { key: 'easy' as DifficultyLevel, label: 'Простой', description: 'Только буквы из слова' },
+    { key: 'medium' as DifficultyLevel, label: 'Средний', description: '+ 3 дополнительные буквы' },
+    { key: 'hard' as DifficultyLevel, label: 'Сложный', description: '+ 6 дополнительных букв' }
+  ]
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 max-w-sm mx-4">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900">Настройки тренировки</h3>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            className="p-1 h-auto"
+          >
+            <X className="w-4 h-4" />
+          </Button>
+        </div>
+
+        <div className="space-y-3">
+          <p className="text-sm text-gray-600">Уровень сложности:</p>
+
+          <div className="space-y-2">
+            {difficultyOptions.map((option) => (
+              <Button
+                key={option.key}
+                variant={currentDifficulty === option.key ? "default" : "outline"}
+                onClick={() => onChange(option.key)}
+                className="w-full justify-start h-auto p-3 text-left"
+              >
+                <div>
+                  <div className="font-medium">{option.label}</div>
+                  <div className="text-xs text-gray-500">{option.description}</div>
+                </div>
+              </Button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function Stage4Training({ words, onComplete }: Stage4Props) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [letters, setLetters] = useState<LetterState[]>([])
@@ -62,6 +119,9 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
   const [isComplete, setIsComplete] = useState(false)
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null)
   const [stats, setStats] = useState({ correct: 0, total: 0 })
+  const [difficulty, setDifficulty] = useState<DifficultyLevel>('easy')
+  const [showSettings, setShowSettings] = useState(false)
+  const [isFirstCard, setIsFirstCard] = useState(true)
 
   const currentWord = words[currentIndex]
 
@@ -72,17 +132,36 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
       setIsComplete(false)
       setIsCorrect(null)
     }
-  }, [currentIndex])
+  }, [currentIndex, difficulty])
 
   const initializeLetters = () => {
     const word = currentWord.baseWord?.word || currentWord.customWord || ''
     const wordLetters = word.split('')
-    const shuffled = [...wordLetters].sort(() => Math.random() - 0.5)
+
+    // Получаем дополнительные буквы в зависимости от сложности
+    let extraLetters: string[] = []
+    if (difficulty === 'medium') {
+      extraLetters = getRandomLetters(3, wordLetters)
+    } else if (difficulty === 'hard') {
+      extraLetters = getRandomLetters(6, wordLetters)
+    }
+
+    const allLetters = [...wordLetters, ...extraLetters]
+    const shuffled = allLetters.sort(() => Math.random() - 0.5)
     const letterStates: LetterState[] = shuffled.map(letter => ({
       letter,
       selected: false
     }))
     setLetters(letterStates)
+  }
+
+  const getRandomLetters = (count: number, excludeLetters: string[]): string[] => {
+    const alphabet = 'abcdefghijklmnopqrstuvwxyz'
+    const availableLetters = alphabet.split('').filter(letter =>
+      !excludeLetters.includes(letter)
+    )
+    const shuffled = [...availableLetters].sort(() => Math.random() - 0.5)
+    return shuffled.slice(0, count)
   }
 
   const handleLetterClick = (index: number) => {
@@ -107,7 +186,7 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
     const constructed = userWord.join('')
     const correctWord = currentWord.baseWord?.word || currentWord.customWord || ''
     const correct = constructed.toLowerCase() === correctWord.toLowerCase()
-    
+
     setIsCorrect(correct)
     setIsComplete(true)
 
@@ -124,10 +203,24 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
       }),
     })
 
+    // После первого ответа скрываем кнопку настроек
+    if (isFirstCard) {
+      setIsFirstCard(false)
+    }
+
     setStats(prev => ({
       correct: prev.correct + (correct ? 1 : 0),
       total: prev.total + 1,
     }))
+  }
+
+  const handleSettingsChange = (newDifficulty: DifficultyLevel) => {
+    setDifficulty(newDifficulty)
+    setShowSettings(false)
+    // Сбрасываем прогресс при изменении сложности
+    setCurrentIndex(0)
+    setStats({ correct: 0, total: 0 })
+    setIsFirstCard(true)
   }
 
   const handleReset = () => {
@@ -155,9 +248,22 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
     <div className="max-w-2xl mx-auto">
       <Card className="shadow-xl">
         <CardHeader>
-          <CardTitle className="text-center text-gray-600">
-            Этап 4: Составление слова
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-gray-600">
+              Этап 4: Составление слова
+            </CardTitle>
+            {isFirstCard && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowSettings(true)}
+                className="p-2 h-auto"
+                title="Настройки тренировки"
+              >
+                <Settings className="w-4 h-4" />
+              </Button>
+            )}
+          </div>
           <p className="text-center text-sm text-gray-500">
             Слово {currentIndex + 1} из {words.length}
           </p>
@@ -276,6 +382,13 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
           </div>
         </CardContent>
       </Card>
+
+      <SettingsModal
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        currentDifficulty={difficulty}
+        onChange={handleSettingsChange}
+      />
     </div>
   )
 }
