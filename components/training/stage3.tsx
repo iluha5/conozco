@@ -55,6 +55,7 @@ type MatchPair = {
   foreign: string
   translation: string
   matched: boolean
+  errorCount?: number
 }
 
 export function Stage3Training({ words, onComplete }: Stage3Props) {
@@ -67,6 +68,8 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
   const [errorForeign, setErrorForeign] = useState<string | null>(null)
   const [errorTranslation, setErrorTranslation] = useState<string | null>(null)
   const [exerciseResults, setExerciseResults] = useState<(boolean | null)[]>([])
+  const [isRetryMode, setIsRetryMode] = useState(false)
+  const [hasCompletedFirstRound, setHasCompletedFirstRound] = useState(false)
 
   const wordsPerBatch = 10
   const totalBatches = Math.ceil(words.length / wordsPerBatch)
@@ -79,18 +82,24 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
 
   useEffect(() => {
     initializePairs()
-  }, [currentBatch])
+  }, [currentBatch, isRetryMode])
 
   const initializePairs = () => {
-    const newPairs: MatchPair[] = currentWords.map(word => ({
-      id: word.id,
-      foreign: word.baseWord?.word || word.customWord || '',
-      translation: word.customTranslation ||
-                   (word.baseWord?.translations && word.baseWord.translations.length > 0
-                     ? word.baseWord.translations[0].translation
-                     : 'Нет перевода'),
-      matched: false,
-    }))
+    const newPairs: MatchPair[] = currentWords.map(word => {
+      const globalIndex = words.findIndex(w => w.id === word.id)
+      const hasError = exerciseResults[globalIndex] === false
+      
+      return {
+        id: word.id,
+        foreign: word.baseWord?.word || word.customWord || '',
+        translation: word.customTranslation ||
+                     (word.baseWord?.translations && word.baseWord.translations.length > 0
+                       ? word.baseWord.translations[0].translation
+                       : 'Нет перевода'),
+        matched: false,
+        errorCount: hasError && isRetryMode ? 0 : 0, // Сбрасываем счетчик ошибок при повторении
+      }
+    })
 
     setPairs(newPairs)
 
@@ -138,6 +147,8 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
       // Находим глобальный индекс слова
       const globalIndex = words.findIndex(w => w.id === pair.id)
       if (globalIndex !== -1) {
+        // В режиме повторения, если слово было с ошибкой - меняем на зеленое
+        // В обычном режиме - просто отмечаем как правильное
         setExerciseResults(prev => {
           const newResults = [...prev]
           newResults[globalIndex] = true
@@ -177,14 +188,23 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
 
       const wordPair = pairs.find(p => p.foreign === foreign)
       if (wordPair) {
+        // Увеличиваем счетчик ошибок для этой пары
+        setPairs(prev => prev.map(p =>
+          p.id === wordPair.id ? { ...p, errorCount: (p.errorCount || 0) + 1 } : p
+        ))
+
         // Находим глобальный индекс слова
         const globalIndex = words.findIndex(w => w.id === wordPair.id)
         if (globalIndex !== -1) {
-          setExerciseResults(prev => {
-            const newResults = [...prev]
-            newResults[globalIndex] = false
-            return newResults
-          })
+          // Отмечаем как ошибку только если превышен лимит ошибок (3)
+          const currentErrorCount = (wordPair.errorCount || 0) + 1
+          if (currentErrorCount >= 3) {
+            setExerciseResults(prev => {
+              const newResults = [...prev]
+              newResults[globalIndex] = false
+              return newResults
+            })
+          }
         }
 
         await fetch('/api/training', {
@@ -206,22 +226,85 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
 
   const allMatched = pairs.every(p => p.matched)
 
+  // Функция для поиска следующей ошибки (батчи с ошибками)
+  const findNextErrorBatch = (startBatch: number) => {
+    // Ищем следующий батч с ошибками после текущего
+    for (let i = startBatch + 1; i < totalBatches; i++) {
+      const batchStart = i * wordsPerBatch
+      const batchEnd = Math.min((i + 1) * wordsPerBatch, words.length)
+      const batchResults = exerciseResults.slice(batchStart, batchEnd)
+      if (batchResults.some(r => r === false)) {
+        return i
+      }
+    }
+    // Если не нашли, ищем с начала до текущего батча
+    for (let i = 0; i <= startBatch; i++) {
+      const batchStart = i * wordsPerBatch
+      const batchEnd = Math.min((i + 1) * wordsPerBatch, words.length)
+      const batchResults = exerciseResults.slice(batchStart, batchEnd)
+      if (batchResults.some(r => r === false)) {
+        return i
+      }
+    }
+    return -1 // Ошибок больше нет
+  }
+
   // Автоматический переход к следующей группе или завершение этапа
   useEffect(() => {
     if (allMatched && pairs.length > 0) {
       const timer = setTimeout(() => {
-    if (currentBatch < totalBatches - 1) {
-      setCurrentBatch(currentBatch + 1)
-    } else {
-      onComplete()
-      setCurrentBatch(0)
-      setStats({ correct: 0, total: 0 })
-    }
+        if (currentBatch < totalBatches - 1) {
+          setCurrentBatch(currentBatch + 1)
+        } else {
+          // Завершили все батчи первый раз
+          setHasCompletedFirstRound(true)
+          
+          // Проверяем, есть ли ошибки во всех батчах
+          const hasAnyErrors = exerciseResults.some(r => r === false)
+          
+          if (hasAnyErrors) {
+            // Есть ошибки - переходим в режим исправления
+            setIsRetryMode(true)
+            const firstErrorBatch = findNextErrorBatch(-1) // Ищем первый батч с ошибками
+            if (firstErrorBatch !== -1) {
+              setCurrentBatch(firstErrorBatch)
+            }
+          } else {
+            // Все правильно - завершаем этап
+            onComplete()
+            setCurrentBatch(0)
+            setStats({ correct: 0, total: 0 })
+            setIsRetryMode(false)
+            setHasCompletedFirstRound(false)
+          }
+        }
       }, 1500) // Задержка 1.5 секунды для визуального подтверждения
 
       return () => clearTimeout(timer)
-  }
-  }, [allMatched, currentBatch, totalBatches, pairs.length, onComplete])
+    } else if (isRetryMode && allMatched && pairs.length > 0) {
+      // В режиме повторения, когда завершили текущий батч
+      const timer = setTimeout(() => {
+        const nextErrorBatch = findNextErrorBatch(currentBatch)
+        
+        if (nextErrorBatch === -1) {
+          // Все ошибки исправлены - завершаем этап
+          onComplete()
+          setCurrentBatch(0)
+          setStats({ correct: 0, total: 0 })
+          setIsRetryMode(false)
+          setHasCompletedFirstRound(false)
+        } else if (nextErrorBatch === currentBatch) {
+          // Это единственный батч с ошибками - перезагружаем его
+          initializePairs()
+        } else {
+          // Переходим к следующему батчу с ошибками
+          setCurrentBatch(nextErrorBatch)
+        }
+      }, 1500)
+
+      return () => clearTimeout(timer)
+    }
+  }, [allMatched, currentBatch, totalBatches, pairs.length, onComplete, isRetryMode, exerciseResults])
 
 
   return (
