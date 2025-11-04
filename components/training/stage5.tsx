@@ -681,11 +681,7 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
           {isComplete && !isCorrect && (
             <div className="flex justify-center pt-4">
                   <Button size="lg" onClick={handleNext} className="gap-2">
-                    {currentPhraseIndex < (wordPhrases[currentIndex]?.length || 0) - 1
-                      ? 'Следующее предложение'
-                      : currentIndex < wordsWithPhrases.length - 1
-                        ? 'Следующее слово'
-                        : 'Завершить'}
+                    Следующее предложение
                     <ChevronRight className="w-5 h-5" />
                   </Button>
               </div>
