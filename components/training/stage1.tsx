@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Volume2, ChevronRight } from 'lucide-react'
+import { Volume2, ChevronRight, Settings, X } from 'lucide-react'
 import { ProgressDots } from './progress-dots'
 
 type Language = {
@@ -51,12 +52,62 @@ type Stage1Props = {
   onComplete: () => void
 }
 
+type SettingsModalProps = {
+  isOpen: boolean
+  onClose: () => void
+  showExamples: boolean
+  onChange: (showExamples: boolean) => void
+}
+
+function SettingsModal({ isOpen, onClose, showExamples, onChange }: SettingsModalProps) {
+  if (!isOpen) return null
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 max-w-sm mx-4">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900">Настройки тренировки</h3>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            className="p-1 h-auto"
+          >
+            <X className="w-4 h-4" />
+          </Button>
+        </div>
+
+        <div className="space-y-4">
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="show-examples"
+              checked={showExamples}
+              onCheckedChange={(checked) => onChange(checked as boolean)}
+            />
+            <label
+              htmlFor="show-examples"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Показывать примеры использования слов
+            </label>
+          </div>
+          <p className="text-xs text-gray-500">
+            При включении будут показаны примеры предложений с изучаемым словом
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function Stage1Training({ words, onComplete }: Stage1Props) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [showTranslation, setShowTranslation] = useState(false)
   const [exerciseResults, setExerciseResults] = useState<boolean[]>([])
   const [fadeIn, setFadeIn] = useState(false)
   const [animationKey, setAnimationKey] = useState(0)
+  const [showSettings, setShowSettings] = useState(false)
+  const [showExamples, setShowExamples] = useState(false)
 
   const currentWord = words[currentIndex]
 
@@ -131,9 +182,20 @@ export function Stage1Training({ words, onComplete }: Stage1Props) {
     <div className="max-w-2xl mx-auto">
       <Card key={animationKey} className={`shadow-xl transition-all duration-300 ease-in-out ${fadeIn ? 'opacity-100' : 'opacity-0'}`}>
         <CardHeader>
-          <CardTitle className="text-center text-gray-600">
-            Просмотр и запоминание
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-gray-600">
+              Просмотр и запоминание
+            </CardTitle>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowSettings(true)}
+              className="p-2 h-auto"
+              title="Настройки тренировки"
+            >
+              <Settings className="w-4 h-4" />
+            </Button>
+          </div>
           <div className="!mt-3">
           <ProgressDots
             totalExercises={words.length}
@@ -166,7 +228,7 @@ export function Stage1Training({ words, onComplete }: Stage1Props) {
                        ? currentWord.baseWord.translations[0].translation
                        : 'Нет перевода')}
                   </p>
-                  {currentWord.baseWord?.examples && currentWord.baseWord.examples.length > 0 && (
+                  {showExamples && currentWord.baseWord?.examples && currentWord.baseWord.examples.length > 0 && (
                     <div className="text-gray-600 space-y-2">
                       <p className="font-medium text-sm">Примеры:</p>
                       {currentWord.baseWord.examples.slice(0, 2).map((example, idx) => (
@@ -199,6 +261,13 @@ export function Stage1Training({ words, onComplete }: Stage1Props) {
           )}
         </CardContent>
       </Card>
+
+      <SettingsModal
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        showExamples={showExamples}
+        onChange={setShowExamples}
+      />
     </div>
   )
 }
