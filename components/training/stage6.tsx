@@ -305,27 +305,16 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
           <div className="text-center mb-6">
             <p className="text-gray-600 mb-4">Послушайте слово и составьте его из букв</p>
 
-            {/* Optional replay button - only show after first auto-play */}
-            {hasPlayedOnce && (
-              <Button
-                onClick={speakWord}
-                disabled={isPlaying}
-                variant="outline"
-                size="sm"
-                className="gap-2 mt-2"
-              >
-                <Volume2 className={`w-4 h-4 ${isPlaying ? 'animate-pulse' : ''}`} />
-                {isPlaying ? 'Проигрывается...' : 'Прослушать еще раз'}
-              </Button>
-            )}
-
-            {/* Show status when auto-playing */}
-            {isPlaying && !hasPlayedOnce && (
-              <div className="flex items-center justify-center gap-2 text-purple-600 mt-2">
-                <Volume2 className="w-5 h-5 animate-pulse" />
-                <span className="text-sm">Проигрывание слова...</span>
-              </div>
-            )}
+            <Button
+              onClick={speakWord}
+              disabled={isPlaying}
+              variant="outline"
+              size="sm"
+              className="gap-2 mt-2"
+            >
+              <Volume2 className={`w-4 h-4 ${isPlaying ? 'animate-pulse' : ''}`} />
+              {isPlaying ? 'Проигрывается...' : 'Прослушать слово'}
+            </Button>
           </div>
 
           {/* Собранное слово */}
