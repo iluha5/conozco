@@ -139,6 +139,12 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
   const [sentencesPerWord, setSentencesPerWord] = useState(1)
   const [showSettings, setShowSettings] = useState(false)
   const [isFirstCard, setIsFirstCard] = useState(true)
+  const [flashingWord, setFlashingWord] = useState<number | null>(null)
+  const [fadeIn, setFadeIn] = useState(false)
+  const [animationKey, setAnimationKey] = useState(0)
+  const [backgroundFlash, setBackgroundFlash] = useState<'green' | 'red' | null>(null)
+  const [showResultPopup, setShowResultPopup] = useState(false)
+  const [totalErrors, setTotalErrors] = useState(0)
 
   // Фильтруем слова, у которых есть фразы
   const wordsWithPhrases = useMemo(() => words.filter(word => {
@@ -200,12 +206,28 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
   const totalPhrases = wordPhrases.reduce((total, phrases) => total + phrases.length, 0)
   const currentPhraseNumber = wordPhrases.slice(0, currentIndex).reduce((total, phrases) => total + phrases.length, 0) + currentPhraseIndex + 1
 
+  // Запускаем анимацию при каждом монтировании компонента (при новом предложении)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setFadeIn(true)
+    }, 50)
+    return () => clearTimeout(timer)
+  }, [animationKey])
+
   useEffect(() => {
     if (currentWord && wordPhrases.length > currentIndex && wordPhrases[currentIndex].length > 0) {
+      // Генерируем новый ключ для принудительного перемонтирования компонента
+      setAnimationKey(prev => prev + 1)
+      setFadeIn(false)
+
       initializePhrase()
       setUserSentence([])
       setIsComplete(false)
       setIsCorrect(null)
+      setTotalErrors(0)
+      setFlashingWord(null)
+      setBackgroundFlash(null)
+      setShowResultPopup(false)
     }
   }, [currentIndex, currentPhraseIndex, wordPhrases])
 
@@ -284,14 +306,37 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
     return extraWords
   }
 
-  const handleWordClick = (index: number) => {
+  const handleWordClick = async (index: number) => {
     if (isComplete) return
 
     const word = availableWords[index].word
-    setUserSentence([...userSentence, word])
-    setAvailableWords(prev => prev.map((item, i) =>
-      i === index ? { ...item, selected: true } : item
-    ))
+    const correctPhrase = currentPhrase?.words || []
+    const nextExpectedWord = correctPhrase[userSentence.length]
+
+    // Если слово правильное
+    if (word.toLowerCase() === nextExpectedWord.toLowerCase()) {
+      setUserSentence([...userSentence, word])
+      setAvailableWords(prev => prev.map((item, i) =>
+        i === index ? { ...item, selected: true } : item
+      ))
+
+      // Если предложение завершено
+      if (userSentence.length + 1 === correctPhrase.length) {
+        await completePhrase(true)
+      }
+    } else {
+      // Неправильное слово - показываем анимацию
+      setFlashingWord(index)
+      setTimeout(() => setFlashingWord(null), 150) // Анимация длится 0.15 сек
+
+      const newErrorCount = totalErrors + 1
+      setTotalErrors(newErrorCount)
+
+      // Если 3 ошибки всего за предложение - автоматически заполняем предложение
+      if (newErrorCount >= 3) {
+        await autoCompletePhrase()
+      }
+    }
   }
 
   const handleRemoveFromSentence = (index: number) => {
@@ -306,14 +351,26 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
     ))
   }
 
-  const handleCheck = async () => {
-    if (!currentPhrase) return
+  const autoCompletePhrase = async () => {
+    const correctPhrase = currentPhrase?.words || []
 
-    const constructed = userSentence.join(' ').toLowerCase()
-    const correct = constructed === currentPhrase.example.toLowerCase().replace(/[¿?¡!.,;:]/g, '')
+    // Заполняем оставшиеся слова
+    setUserSentence(correctPhrase)
 
+    // Отмечаем все слова как выбранные
+    setAvailableWords(prev => prev.map(item => ({ ...item, selected: true })))
+
+    // Завершаем предложение как неправильное
+    await completePhrase(false)
+  }
+
+  const completePhrase = async (correct: boolean) => {
     setIsCorrect(correct)
     setIsComplete(true)
+
+    // Устанавливаем цвет фона и показываем попап с результатом
+    setBackgroundFlash(correct ? 'green' : 'red')
+    setShowResultPopup(true)
 
     // Обновляем результаты упражнения
     const exerciseIndex = wordPhrases.slice(0, currentIndex).reduce((total, phrases) => total + phrases.length, 0) + currentPhraseIndex
@@ -346,23 +403,23 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
       total: prev.total + 1,
     }))
 
+    // Если предложение составлено правильно - автоматически переходим через 1 секунду
+    if (correct) {
+      setTimeout(() => {
+        handleNext()
+      }, 1000)
+    }
   }
+
 
   const handleSettingsChange = (newSentencesPerWord: number) => {
     setSentencesPerWord(newSentencesPerWord)
     setShowSettings(false)
-    // Сбрасываем прогресс и счетчики при изменении настроек
+    // Сбрасываем прогресс при изменении количества предложений
     setCurrentIndex(0)
     setCurrentPhraseIndex(0)
     setStats({ correct: 0, total: 0 })
     setIsFirstCard(true)
-  }
-
-  const handleReset = () => {
-    initializePhrase()
-    setUserSentence([])
-    setIsComplete(false)
-    setIsCorrect(null)
   }
 
   const handleNext = () => {
@@ -400,7 +457,10 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <Card className="shadow-xl">
+      <Card key={animationKey} className={`shadow-xl transition-all duration-300 ease-in-out ${fadeIn ? 'opacity-100' : 'opacity-0'} ${
+        backgroundFlash === 'green' ? 'bg-green-50 border-green-400' :
+        backgroundFlash === 'red' ? 'bg-red-50 border-red-400' : ''
+      }`}>
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-gray-600">
@@ -435,7 +495,7 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
           </div>
 
           {/* Составленное предложение */}
-          <div className="min-h-[80px] p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+          <div className="relative min-h-[132px] p-3 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
             <div className="flex flex-wrap gap-2 justify-center">
               {userSentence.length === 0 ? (
                 <p className="text-gray-400">Выберите слова ниже</p>
@@ -452,6 +512,27 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
                 ))
               )}
             </div>
+
+            {/* Попап с результатом */}
+            {showResultPopup && (
+              <div className="absolute bottom-2 right-2 pointer-events-none">
+                <div className={`p-2 rounded-lg border-2 shadow-lg transform transition-all duration-500 ease-out ${
+                  isCorrect
+                    ? 'bg-green-50 border-green-400 text-green-600'
+                    : 'bg-red-50 border-red-400 text-red-600'
+                } ${
+                  showResultPopup
+                    ? 'opacity-100 translate-y-0 scale-100'
+                    : 'opacity-0 translate-y-2 scale-95'
+                }`}>
+                  {isCorrect ? (
+                    <CheckCircle className="w-6 h-6" />
+                  ) : (
+                    <XCircle className="w-6 h-6" />
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Доступные слова */}
@@ -468,7 +549,11 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
                   <button
                     onClick={() => handleWordClick(index)}
                     disabled={isComplete}
-                    className="px-3 py-2 bg-white border-2 border-gray-300 rounded-lg text-gray-900 hover:bg-gray-50 hover:border-gray-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium min-w-[60px] h-10"
+                    className={`px-3 py-2 rounded-lg text-gray-900 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium min-w-[60px] h-10 ${
+                      flashingWord === index
+                        ? 'bg-red-500 border-red-500 text-white shadow-lg scale-110'
+                        : 'bg-white border-2 border-gray-300 hover:bg-gray-50 hover:border-gray-400'
+                    }`}
                   >
                     {wordState.word}
                   </button>
@@ -477,58 +562,19 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
             ))}
           </div>
 
-          {/* Кнопки действий */}
-          <div className="flex gap-3 justify-center">
-            {!isComplete ? (
-              <>
-                <Button
-                  variant="outline"
-                  onClick={handleReset}
-                  disabled={userSentence.length === 0}
-                >
-                  <RotateCcw className="w-4 h-4 mr-2" />
-                  Сброс
-                </Button>
-                <Button
-                  onClick={handleCheck}
-                  disabled={userSentence.length === 0}
-                  size="lg"
-                >
-                  Проверить
-                </Button>
-              </>
-            ) : (
-              <div className="w-full space-y-4">
-                {isCorrect ? (
-                  <div className="flex items-center justify-center gap-2 text-green-600 text-lg font-medium">
-                    <CheckCircle className="w-6 h-6" />
-                    Правильно!
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-center gap-2 text-red-600 text-lg font-medium">
-                      <XCircle className="w-6 h-6" />
-                      Неправильно
-                    </div>
-                    <p className="text-center text-gray-600">
-                      Правильный ответ: <span className="font-bold">{currentPhrase.example}</span>
-                    </p>
-                  </div>
-                )}
-
-                <div className="flex justify-center">
-                  <Button size="lg" onClick={handleNext} className="gap-2">
-                    {currentPhraseIndex < (wordPhrases[currentIndex]?.length || 0) - 1
-                      ? 'Следующее предложение'
-                      : currentIndex < wordsWithPhrases.length - 1
-                        ? 'Следующее слово'
-                        : 'Завершить'}
-                    <ChevronRight className="w-5 h-5" />
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
+          {/* Кнопки действий - только для неправильных ответов */}
+          {isComplete && !isCorrect && (
+            <div className="flex justify-center pt-4">
+              <Button size="lg" onClick={handleNext} className="gap-2">
+                {currentPhraseIndex < (wordPhrases[currentIndex]?.length || 0) - 1
+                  ? 'Следующее предложение'
+                  : currentIndex < wordsWithPhrases.length - 1
+                    ? 'Следующее слово'
+                    : 'Завершить'}
+                <ChevronRight className="w-5 h-5" />
+              </Button>
+            </div>
+          )}
 
         </CardContent>
       </Card>
