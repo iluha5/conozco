@@ -217,26 +217,22 @@ export default function TrainingSetupPage() {
 
               {/* Выбор слов */}
               <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold">
-                    Выберите слова для тренировки ({selectedWords.size} выбрано)
-                  </h3>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setSelectedWords(new Set(words.slice(0, visibleWordsCount).map(w => w.id)))}
-                    >
-                      Выделить все
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setSelectedWords(new Set())}
-                    >
-                      Отменить выделение
-                    </Button>
-                  </div>
+                <h3 className="text-lg font-semibold mb-3">
+                  Выберите слова для тренировки ({selectedWords.size} выбрано)
+                </h3>
+                <div className="flex gap-4 mb-4">
+                  <button
+                    onClick={() => setSelectedWords(prev => new Set([...prev, ...words.slice(0, visibleWordsCount).map(w => w.id)]))}
+                    className="text-sm text-blue-600 hover:text-blue-800 underline"
+                  >
+                    Выбрать все
+                  </button>
+                  <button
+                    onClick={() => setSelectedWords(new Set())}
+                    className="text-sm text-blue-600 hover:text-blue-800 underline"
+                  >
+                    Снять выделение
+                  </button>
                 </div>
                 <div className="space-y-2 max-h-96 overflow-y-auto border rounded-lg p-4">
                   {words.slice(0, visibleWordsCount).map((word) => (
@@ -298,33 +294,33 @@ export default function TrainingSetupPage() {
                 </button>
                 {showStagesSettings && (
                   <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {[1, 2, 3, 4, 5, 6].map((stage) => (
-                      <div
-                        key={stage}
-                        className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-                        onClick={() => toggleStage(stage)}
-                      >
-                        <Checkbox
-                          id={`setup-stage-${stage}`}
-                          checked={isStageEnabled(stage)}
-                          onChange={() => {}} // Пустой обработчик, чтобы предотвратить warnings
-                        />
-                        <div className="flex-1">
-                          <div className="text-sm font-medium leading-none">
-                            Этап {stage}
-                          </div>
-                          <p className="text-xs text-gray-600 mt-1">
-                            {stage === 1 && 'Просмотр + озвучка'}
-                            {stage === 2 && 'Выбор перевода'}
-                            {stage === 3 && 'Сопоставление'}
-                            {stage === 4 && 'Составление слова'}
-                            {stage === 5 && 'Составление предложения'}
-                            {stage === 6 && 'Составление по голосу'}
-                          </p>
+                  {[1, 2, 3, 4, 5, 6].map((stage) => (
+                    <div
+                      key={stage}
+                      className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                      onClick={() => toggleStage(stage)}
+                    >
+                      <Checkbox
+                        id={`setup-stage-${stage}`}
+                        checked={isStageEnabled(stage)}
+                        onChange={() => {}} // Пустой обработчик, чтобы предотвратить warnings
+                      />
+                      <div className="flex-1">
+                        <div className="text-sm font-medium leading-none">
+                          Этап {stage}
                         </div>
+                        <p className="text-xs text-gray-600 mt-1">
+                          {stage === 1 && 'Просмотр + озвучка'}
+                          {stage === 2 && 'Выбор перевода'}
+                          {stage === 3 && 'Сопоставление'}
+                          {stage === 4 && 'Составление слова'}
+                          {stage === 5 && 'Составление предложения'}
+                          {stage === 6 && 'Составление по голосу'}
+                        </p>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))}
+                </div>
                 )}
               </div>
 
