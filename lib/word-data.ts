@@ -27,9 +27,18 @@ export async function importWordsData(prisma: any, partsOfSpeechRecords: Record<
       })
     }
 
-    // Создать базовое слово
-    const baseWord = await prisma.baseWord.create({
-      data: {
+    // Создать или обновить базовое слово
+    const baseWord = await prisma.baseWord.upsert({
+      where: {
+        word_languageId: {
+          word: wordData.word,
+          languageId: language.id
+        }
+      },
+      update: {
+        partOfSpeechId: partsOfSpeechRecords[wordData.partOfSpeech].id
+      },
+      create: {
         word: wordData.word,
         partOfSpeechId: partsOfSpeechRecords[wordData.partOfSpeech].id,
         languageId: language.id
@@ -44,8 +53,18 @@ export async function importWordsData(prisma: any, partsOfSpeechRecords: Record<
 
       if (translationLanguage) {
         for (let i = 0; i < translationGroup.translations.length; i++) {
-          await prisma.wordTranslation.create({
-            data: {
+          await prisma.wordTranslation.upsert({
+            where: {
+              baseWordId_languageId_priority: {
+                baseWordId: baseWord.id,
+                languageId: translationLanguage.id,
+                priority: i + 1
+              }
+            },
+            update: {
+              translation: translationGroup.translations[i]
+            },
+            create: {
               baseWordId: baseWord.id,
               languageId: translationLanguage.id,
               translation: translationGroup.translations[i],

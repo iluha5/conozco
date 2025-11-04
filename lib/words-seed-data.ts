@@ -654,5 +654,337 @@ export const WORDS_DATA: WordData[] = [
       { pronoun: 'tú', example: '¿Eres delgado?', translation: 'Ты худой?', isQuestion: true }
     ],
     grammaticalExamples: []
+  },
+  {
+    word: 'me equiroco',
+    partOfSpeech: PartOfSpeech.VERB,
+    languageCode: 'es',
+    translations: [
+      {
+        languageCode: 'ru',
+        translations: ['я ошибаюсь', 'я неправ', 'я допускаю ошибку']
+      }
+    ],
+    examples: [
+      { pronoun: 'yo', example: 'Me equiroco a menudo', translation: 'Я часто ошибаюсь' },
+      { pronoun: 'tú', example: 'Te equivocas en eso', translation: 'Ты ошибаешься в этом' },
+      { pronoun: 'él', example: 'Se equivoca mucho', translation: 'Он много ошибается' },
+      { pronoun: 'ella', example: 'Se equivoca poco', translation: 'Она мало ошибается' },
+      { pronoun: 'nosotros', example: 'Nos equivocamos juntos', translation: 'Мы ошибаемся вместе' },
+      { pronoun: 'ellos', example: 'Se equivocan siempre', translation: 'Они всегда ошибаются' },
+      { pronoun: 'yo', example: 'No me equiroco nunca', translation: 'Я никогда не ошибаюсь', isNegative: true },
+      { pronoun: 'tú', example: '¿Te equivocas?', translation: 'Ты ошибаешься?', isQuestion: true }
+    ],
+    grammaticalExamples: [
+      {
+        tenseName: 'Presente de indicativo',
+        examples: [
+          { pronoun: 'yo', example: 'Me equiroco', translation: 'Я ошибаюсь' },
+          { pronoun: 'tú', example: 'Te equivocas', translation: 'Ты ошибаешься' },
+          { pronoun: 'él', example: 'Se equivoca', translation: 'Он ошибается' },
+          { pronoun: 'ella', example: 'Se equivoca', translation: 'Она ошибается' },
+          { pronoun: 'nosotros', example: 'Nos equivocamos', translation: 'Мы ошибаемся' },
+          { pronoun: 'vosotros', example: 'Os equivocáis', translation: 'Вы ошибаетесь' },
+          { pronoun: 'ellos', example: 'Se equivocan', translation: 'Они ошибаются' },
+          { pronoun: 'yo', example: 'No me equiroco', translation: 'Я не ошибаюсь', isNegative: true },
+          { pronoun: 'tú', example: '¿Te equivocas?', translation: 'Ты ошибаешься?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Pretérito indefinido',
+        examples: [
+          { pronoun: 'yo', example: 'Me equiroqué', translation: 'Я ошибся' },
+          { pronoun: 'tú', example: 'Te equivocaste', translation: 'Ты ошибся' },
+          { pronoun: 'él', example: 'Se equivocó', translation: 'Он ошибся' },
+          { pronoun: 'ella', example: 'Se equivocó', translation: 'Она ошиблась' },
+          { pronoun: 'nosotros', example: 'Nos equivocamos', translation: 'Мы ошиблись' },
+          { pronoun: 'ellos', example: 'Se equivocaron', translation: 'Они ошиблись' },
+          { pronoun: 'yo', example: 'No me equiroqué', translation: 'Я не ошибся', isNegative: true },
+          { pronoun: 'tú', example: '¿Te equivocaste?', translation: 'Ты ошибся?', isQuestion: true }
+        ]
+      }
+    ]
+  },
+  {
+    word: 'ganar',
+    partOfSpeech: PartOfSpeech.VERB,
+    languageCode: 'es',
+    translations: [
+      {
+        languageCode: 'ru',
+        translations: ['выигрывать', 'зарабатывать', 'побеждать']
+      }
+    ],
+    examples: [
+      { pronoun: 'yo', example: 'Yo gano dinero', translation: 'Я зарабатываю деньги' },
+      { pronoun: 'tú', example: 'Tú ganas partidos', translation: 'Ты выигрываешь матчи' },
+      { pronoun: 'él', example: 'Él gana premios', translation: 'Он выигрывает призы' },
+      { pronoun: 'ella', example: 'Ella gana concursos', translation: 'Она выигрывает конкурсы' },
+      { pronoun: 'nosotros', example: 'Nosotros ganamos juntos', translation: 'Мы выигрываем вместе' },
+      { pronoun: 'ellos', example: 'Ellos ganan mucho', translation: 'Они много зарабатывают' },
+      { pronoun: 'yo', example: 'No gano suficiente', translation: 'Я не зарабатываю достаточно', isNegative: true },
+      { pronoun: 'tú', example: '¿Ganas bien?', translation: 'Ты хорошо зарабатываешь?', isQuestion: true }
+    ],
+    grammaticalExamples: [
+      {
+        tenseName: 'Presente de indicativo',
+        examples: [
+          { pronoun: 'yo', example: 'Yo gano', translation: 'Я выигрываю' },
+          { pronoun: 'tú', example: 'Tú ganas', translation: 'Ты выигрываешь' },
+          { pronoun: 'él', example: 'Él gana', translation: 'Он выигрывает' },
+          { pronoun: 'ella', example: 'Ella gana', translation: 'Она выигрывает' },
+          { pronoun: 'nosotros', example: 'Nosotros ganamos', translation: 'Мы выигрываем' },
+          { pronoun: 'vosotros', example: 'Vosotros ganáis', translation: 'Вы выигрываете' },
+          { pronoun: 'ellos', example: 'Ellos ganan', translation: 'Они выигрывают' },
+          { pronoun: 'yo', example: 'No gano', translation: 'Я не выигрываю', isNegative: true },
+          { pronoun: 'tú', example: '¿Ganas?', translation: 'Ты выигрываешь?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Pretérito indefinido',
+        examples: [
+          { pronoun: 'yo', example: 'Yo gané', translation: 'Я выиграл' },
+          { pronoun: 'tú', example: 'Tú ganaste', translation: 'Ты выиграл' },
+          { pronoun: 'él', example: 'Él ganó', translation: 'Он выиграл' },
+          { pronoun: 'ella', example: 'Ella ganó', translation: 'Она выиграла' },
+          { pronoun: 'nosotros', example: 'Nosotros ganamos', translation: 'Мы выиграли' },
+          { pronoun: 'ellos', example: 'Ellos ganaron', translation: 'Они выиграли' },
+          { pronoun: 'yo', example: 'No gané', translation: 'Я не выиграл', isNegative: true },
+          { pronoun: 'tú', example: '¿Ganaste?', translation: 'Ты выиграл?', isQuestion: true }
+        ]
+      }
+    ]
+  },
+  {
+    word: 'el barrio',
+    partOfSpeech: PartOfSpeech.NOUN,
+    languageCode: 'es',
+    translations: [
+      {
+        languageCode: 'ru',
+        translations: ['район', 'квартал', 'округ']
+      }
+    ],
+    examples: [
+      { pronoun: 'yo', example: 'Yo vivo en el barrio antiguo', translation: 'Я живу в старом районе' },
+      { pronoun: 'tú', example: 'Tú conoces mi barrio', translation: 'Ты знаешь мой район' },
+      { pronoun: 'él', example: 'Él nació en este barrio', translation: 'Он родился в этом районе' },
+      { pronoun: 'ella', example: 'Ella ama su barrio', translation: 'Она любит свой район' },
+      { pronoun: 'nosotros', example: 'Nosotros paseamos por el barrio', translation: 'Мы гуляем по району' },
+      { pronoun: 'ellos', example: 'Ellos juegan en el barrio', translation: 'Они играют в районе' },
+      { pronoun: 'yo', example: 'No conozco este barrio', translation: 'Я не знаю этот район', isNegative: true },
+      { pronoun: 'tú', example: '¿De qué barrio eres?', translation: 'Из какого ты района?', isQuestion: true }
+    ],
+    grammaticalExamples: []
+  },
+  {
+    word: 'el pueblo',
+    partOfSpeech: PartOfSpeech.NOUN,
+    languageCode: 'es',
+    translations: [
+      {
+        languageCode: 'ru',
+        translations: ['народ', 'деревня', 'городок']
+      }
+    ],
+    examples: [
+      { pronoun: 'yo', example: 'Yo vivo en el pueblo pequeño', translation: 'Я живу в маленьком городке' },
+      { pronoun: 'tú', example: 'Tú vienes del pueblo', translation: 'Ты приехал из деревни' },
+      { pronoun: 'él', example: 'Él ama su pueblo', translation: 'Он любит свой народ' },
+      { pronoun: 'ella', example: 'Ella nació en este pueblo', translation: 'Она родилась в этом городке' },
+      { pronoun: 'nosotros', example: 'Nosotros somos del pueblo', translation: 'Мы из деревни' },
+      { pronoun: 'ellos', example: 'Ellos representan al pueblo', translation: 'Они представляют народ' },
+      { pronoun: 'yo', example: 'No conozco este pueblo', translation: 'Я не знаю этот городок', isNegative: true },
+      { pronoun: 'tú', example: '¿De qué pueblo eres?', translation: 'Из какого ты городка?', isQuestion: true }
+    ],
+    grammaticalExamples: []
+  },
+  {
+    word: 'invierno',
+    partOfSpeech: PartOfSpeech.NOUN,
+    languageCode: 'es',
+    translations: [
+      {
+        languageCode: 'ru',
+        translations: ['зима', 'зимний сезон']
+      }
+    ],
+    examples: [
+      { pronoun: 'yo', example: 'Yo odio el invierno frío', translation: 'Я ненавижу холодную зиму' },
+      { pronoun: 'tú', example: 'Tú esquías en invierno', translation: 'Ты катаешься на лыжах зимой' },
+      { pronoun: 'él', example: 'Él viaja en invierno', translation: 'Он путешествует зимой' },
+      { pronoun: 'ella', example: 'Ella ama el invierno', translation: 'Она любит зиму' },
+      { pronoun: 'nosotros', example: 'Nosotros esperamos el invierno', translation: 'Мы ждем зиму' },
+      { pronoun: 'ellos', example: 'Ellos pasan el invierno aquí', translation: 'Они проводят зиму здесь' },
+      { pronoun: 'yo', example: 'No me gusta el invierno', translation: 'Мне не нравится зима', isNegative: true },
+      { pronoun: 'tú', example: '¿Qué haces en invierno?', translation: 'Что ты делаешь зимой?', isQuestion: true }
+    ],
+    grammaticalExamples: []
+  },
+  {
+    word: 'verano',
+    partOfSpeech: PartOfSpeech.NOUN,
+    languageCode: 'es',
+    translations: [
+      {
+        languageCode: 'ru',
+        translations: ['лето', 'летний сезон']
+      }
+    ],
+    examples: [
+      { pronoun: 'yo', example: 'Yo amo el verano caluroso', translation: 'Я люблю жаркое лето' },
+      { pronoun: 'tú', example: 'Tú nadas en verano', translation: 'Ты плаваешь летом' },
+      { pronoun: 'él', example: 'Él viaja en verano', translation: 'Он путешествует летом' },
+      { pronoun: 'ella', example: 'Ella descansa en verano', translation: 'Она отдыхает летом' },
+      { pronoun: 'nosotros', example: 'Nosotros esperamos el verano', translation: 'Мы ждем лета' },
+      { pronoun: 'ellos', example: 'Ellos pasan el verano en la playa', translation: 'Они проводят лето на пляже' },
+      { pronoun: 'yo', example: 'No me gusta el verano húmedo', translation: 'Мне не нравится влажное лето', isNegative: true },
+      { pronoun: 'tú', example: '¿Qué haces en verano?', translation: 'Что ты делаешь летом?', isQuestion: true }
+    ],
+    grammaticalExamples: []
+  },
+  {
+    word: 'doler',
+    partOfSpeech: PartOfSpeech.VERB,
+    languageCode: 'es',
+    translations: [
+      {
+        languageCode: 'ru',
+        translations: ['болеть', 'причинять боль', 'ныть']
+      }
+    ],
+    examples: [
+      { pronoun: 'yo', example: 'Me duele la cabeza', translation: 'У меня болит голова' },
+      { pronoun: 'tú', example: 'Te duele el estómago', translation: 'У тебя болит живот' },
+      { pronoun: 'él', example: 'Le duele la pierna', translation: 'У него болит нога' },
+      { pronoun: 'ella', example: 'Le duele el brazo', translation: 'У нее болит рука' },
+      { pronoun: 'nosotros', example: 'Nos duelen los pies', translation: 'У нас болят ноги' },
+      { pronoun: 'ellos', example: 'Les duele la espalda', translation: 'У них болит спина' },
+      { pronoun: 'yo', example: 'No me duele nada', translation: 'У меня ничего не болит', isNegative: true },
+      { pronoun: 'tú', example: '¿Te duele algo?', translation: 'У тебя что-то болит?', isQuestion: true }
+    ],
+    grammaticalExamples: [
+      {
+        tenseName: 'Presente de indicativo',
+        examples: [
+          { pronoun: 'yo', example: 'Me duele', translation: 'Мне больно' },
+          { pronoun: 'tú', example: 'Te duele', translation: 'Тебе больно' },
+          { pronoun: 'él', example: 'Le duele', translation: 'Ему больно' },
+          { pronoun: 'ella', example: 'Le duele', translation: 'Ей больно' },
+          { pronoun: 'nosotros', example: 'Nos duele', translation: 'Нам больно' },
+          { pronoun: 'vosotros', example: 'Os duele', translation: 'Вам больно' },
+          { pronoun: 'ellos', example: 'Les duele', translation: 'Им больно' },
+          { pronoun: 'yo', example: 'No me duele', translation: 'Мне не больно', isNegative: true },
+          { pronoun: 'tú', example: '¿Te duele?', translation: 'Тебе больно?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Pretérito indefinido',
+        examples: [
+          { pronoun: 'yo', example: 'Me dolió', translation: 'Мне заболело' },
+          { pronoun: 'tú', example: 'Te dolió', translation: 'Тебе заболело' },
+          { pronoun: 'él', example: 'Le dolió', translation: 'Ему заболело' },
+          { pronoun: 'ella', example: 'Le dolió', translation: 'Ей заболело' },
+          { pronoun: 'nosotros', example: 'Nos dolió', translation: 'Нам заболело' },
+          { pronoun: 'ellos', example: 'Les dolió', translation: 'Им заболело' },
+          { pronoun: 'yo', example: 'No me dolió', translation: 'Мне не заболело', isNegative: true },
+          { pronoun: 'tú', example: '¿Te dolió?', translation: 'Тебе заболело?', isQuestion: true }
+        ]
+      }
+    ]
+  },
+  {
+    word: 'aceite',
+    partOfSpeech: PartOfSpeech.NOUN,
+    languageCode: 'es',
+    translations: [
+      {
+        languageCode: 'ru',
+        translations: ['масло', 'нефть', 'масляная краска']
+      }
+    ],
+    examples: [
+      { pronoun: 'yo', example: 'Yo uso aceite de oliva', translation: 'Я использую оливковое масло' },
+      { pronoun: 'tú', example: 'Tú cocinas con aceite', translation: 'Ты готовишь на масле' },
+      { pronoun: 'él', example: 'Él vende aceite', translation: 'Он продает масло' },
+      { pronoun: 'ella', example: 'Ella compra aceite', translation: 'Она покупает масло' },
+      { pronoun: 'nosotros', example: 'Nosotros necesitamos aceite', translation: 'Нам нужно масло' },
+      { pronoun: 'ellos', example: 'Ellos producen aceite', translation: 'Они производят масло' },
+      { pronoun: 'yo', example: 'No tengo aceite', translation: 'У меня нет масла', isNegative: true },
+      { pronoun: 'tú', example: '¿Quieres aceite?', translation: 'Хочешь масло?', isQuestion: true }
+    ],
+    grammaticalExamples: []
+  },
+  {
+    word: 'entendido',
+    partOfSpeech: PartOfSpeech.ADJECTIVE,
+    languageCode: 'es',
+    translations: [
+      {
+        languageCode: 'ru',
+        translations: ['понятно', 'договорились', 'ясно']
+      }
+    ],
+    examples: [
+      { pronoun: 'yo', example: 'Yo estoy entendido', translation: 'Я понял' },
+      { pronoun: 'tú', example: 'Tú estás entendido', translation: 'Ты понял' },
+      { pronoun: 'él', example: 'Él está entendido', translation: 'Он понял' },
+      { pronoun: 'ella', example: 'Ella está entendida', translation: 'Она поняла' },
+      { pronoun: 'nosotros', example: 'Nosotros estamos entendidos', translation: 'Мы поняли' },
+      { pronoun: 'ellos', example: 'Ellos están entendidos', translation: 'Они поняли' },
+      { pronoun: 'yo', example: 'No estoy entendido', translation: 'Я не понял', isNegative: true },
+      { pronoun: 'tú', example: '¿Estás entendido?', translation: 'Ты понял?', isQuestion: true }
+    ],
+    grammaticalExamples: []
+  },
+  {
+    word: 'pillar',
+    partOfSpeech: PartOfSpeech.VERB,
+    languageCode: 'es',
+    translations: [
+      {
+        languageCode: 'ru',
+        translations: ['поймать', 'схватить', 'понять']
+      }
+    ],
+    examples: [
+      { pronoun: 'yo', example: 'Yo pillo el autobús', translation: 'Я ловлю автобус' },
+      { pronoun: 'tú', example: 'Tú pillas el sentido', translation: 'Ты понимаешь смысл' },
+      { pronoun: 'él', example: 'Él pilla resfriados', translation: 'Он простужается' },
+      { pronoun: 'ella', example: 'Ella pilla flores', translation: 'Она рвет цветы' },
+      { pronoun: 'nosotros', example: 'Nosotros pillamos el tren', translation: 'Мы ловим поезд' },
+      { pronoun: 'ellos', example: 'Ellos pillan el chiste', translation: 'Они понимают шутку' },
+      { pronoun: 'yo', example: 'No pillo nada', translation: 'Я ничего не понимаю', isNegative: true },
+      { pronoun: 'tú', example: '¿Pillaste el tren?', translation: 'Ты поймал поезд?', isQuestion: true }
+    ],
+    grammaticalExamples: [
+      {
+        tenseName: 'Presente de indicativo',
+        examples: [
+          { pronoun: 'yo', example: 'Yo pillo', translation: 'Я ловлю' },
+          { pronoun: 'tú', example: 'Tú pillas', translation: 'Ты ловишь' },
+          { pronoun: 'él', example: 'Él pilla', translation: 'Он ловит' },
+          { pronoun: 'ella', example: 'Ella pilla', translation: 'Она ловит' },
+          { pronoun: 'nosotros', example: 'Nosotros pillamos', translation: 'Мы ловим' },
+          { pronoun: 'vosotros', example: 'Vosotros pilláis', translation: 'Вы ловите' },
+          { pronoun: 'ellos', example: 'Ellos pillan', translation: 'Они ловят' },
+          { pronoun: 'yo', example: 'No pillo', translation: 'Я не ловлю', isNegative: true },
+          { pronoun: 'tú', example: '¿Pillas?', translation: 'Ты ловишь?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Pretérito indefinido',
+        examples: [
+          { pronoun: 'yo', example: 'Yo pillé', translation: 'Я поймал' },
+          { pronoun: 'tú', example: 'Tú pillaste', translation: 'Ты поймал' },
+          { pronoun: 'él', example: 'Él pilló', translation: 'Он поймал' },
+          { pronoun: 'ella', example: 'Ella pilló', translation: 'Она поймала' },
+          { pronoun: 'nosotros', example: 'Nosotros pillamos', translation: 'Мы поймали' },
+          { pronoun: 'ellos', example: 'Ellos pillaron', translation: 'Они поймали' },
+          { pronoun: 'yo', example: 'No pillé', translation: 'Я не поймал', isNegative: true },
+          { pronoun: 'tú', example: '¿Pillaste?', translation: 'Ты поймал?', isQuestion: true }
+        ]
+      }
+    ]
   }
 ]
