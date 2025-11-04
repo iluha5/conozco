@@ -138,6 +138,15 @@ export default function TrainingSetupPage() {
     setVisibleWordsCount(prev => Math.min(prev + 12, 120))
   }
 
+  const selectAllVisible = () => {
+    const visibleWordIds = words.slice(0, visibleWordsCount).map(word => word.id)
+    setSelectedWords(prev => new Set([...prev, ...visibleWordIds]))
+  }
+
+  const deselectAll = () => {
+    setSelectedWords(new Set())
+  }
+
   const isWordSelected = (wordId: string) => selectedWords.has(wordId)
 
   const toggleStage = (stage: number) => {
@@ -217,18 +226,18 @@ export default function TrainingSetupPage() {
 
               {/* Выбор слов */}
               <div>
-                <h3 className="text-lg font-semibold mb-3">
+                <h3 className="text-lg font-semibold mb-2">
                   Выберите слова для тренировки ({selectedWords.size} выбрано)
                 </h3>
                 <div className="flex gap-4 mb-4">
                   <button
-                    onClick={() => setSelectedWords(prev => new Set([...prev, ...words.slice(0, visibleWordsCount).map(w => w.id)]))}
+                    onClick={selectAllVisible}
                     className="text-sm text-blue-600 hover:text-blue-800 underline"
                   >
                     Выбрать все
                   </button>
                   <button
-                    onClick={() => setSelectedWords(new Set())}
+                    onClick={deselectAll}
                     className="text-sm text-blue-600 hover:text-blue-800 underline"
                   >
                     Снять выделение
