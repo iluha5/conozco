@@ -214,21 +214,24 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
     if (correct) {
       setTimeout(() => {
         if (isRetryMode) {
-          // В режиме исправления ошибок - ищем следующую ошибку
-          const nextErrorIndex = findNextError(currentIndex)
-          if (nextErrorIndex === -1) {
-            // Все ошибки исправлены - даем время увидеть все зеленые точки, затем завершаем этап
-            setTimeout(() => {
-              onComplete()
-              setCurrentIndex(0)
-              setStats({ correct: 0, total: 0 })
-              setIsRetryMode(false)
-              setHasCompletedFirstRound(false)
-            }, 1500) // Дополнительная задержка для визуального подтверждения
-          } else {
-            // Переходим к следующей ошибке
-            setCurrentIndex(nextErrorIndex)
-          }
+          // В режиме исправления ошибок - ищем следующую ошибку с учетом обновленных результатов
+          setExerciseResults(currentResults => {
+            const nextErrorIndex = findNextErrorWithResults(currentIndex, currentResults)
+            if (nextErrorIndex === -1) {
+              // Все ошибки исправлены - даем время увидеть все зеленые точки, затем завершаем этап
+              setTimeout(() => {
+                onComplete()
+                setCurrentIndex(0)
+                setStats({ correct: 0, total: 0 })
+                setIsRetryMode(false)
+                setHasCompletedFirstRound(false)
+              }, 1500) // Дополнительная задержка для визуального подтверждения
+            } else {
+              // Переходим к следующей ошибке
+              setCurrentIndex(nextErrorIndex)
+            }
+            return currentResults // Возвращаем без изменений
+          })
         } else {
           // Обычный режим
           handleNext()
@@ -305,21 +308,26 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
   }
 
 
-  // Функция для поиска следующей ошибки
-  const findNextError = (startIndex: number) => {
+  // Функция для поиска следующей ошибки (с текущими результатами)
+  const findNextErrorWithResults = (startIndex: number, results: (boolean | null)[]) => {
     // Ищем следующую ошибку после текущего индекса
-    for (let i = startIndex + 1; i < exerciseResults.length; i++) {
-      if (exerciseResults[i] === false) {
+    for (let i = startIndex + 1; i < results.length; i++) {
+      if (results[i] === false) {
         return i
       }
     }
     // Если не нашли, ищем с начала до текущего индекса
     for (let i = 0; i <= startIndex; i++) {
-      if (exerciseResults[i] === false) {
+      if (results[i] === false) {
         return i
       }
     }
     return -1 // Ошибок больше нет
+  }
+
+  // Функция для поиска следующей ошибки (использует текущее состояние)
+  const findNextError = (startIndex: number) => {
+    return findNextErrorWithResults(startIndex, exerciseResults)
   }
 
   const handleNext = () => {

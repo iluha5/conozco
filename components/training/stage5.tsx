@@ -409,28 +409,32 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
     if (correct) {
       setTimeout(() => {
         if (isRetryMode) {
-          // В режиме исправления ошибок - ищем следующую ошибку
+          // В режиме исправления ошибок - ищем следующую ошибку с учетом обновленных результатов
           const currentExerciseIndex = wordPhrases.slice(0, currentIndex).reduce((total, phrases) => total + phrases.length, 0) + currentPhraseIndex
-          const nextErrorIndex = findNextError(currentExerciseIndex)
           
-          if (nextErrorIndex === -1) {
-            // Все ошибки исправлены - даем время увидеть все зеленые точки, затем завершаем этап
-            setTimeout(() => {
-              onComplete()
-              setCurrentIndex(0)
-              setCurrentPhraseIndex(0)
-              setStats({ correct: 0, total: 0 })
-              setIsRetryMode(false)
-              setHasCompletedFirstRound(false)
-            }, 1500) // Дополнительная задержка для визуального подтверждения
-          } else {
-            // Переходим к следующей ошибке
-            const nextErrorPosition = getWordAndPhraseIndex(nextErrorIndex)
-            if (nextErrorPosition) {
-              setCurrentIndex(nextErrorPosition.wordIndex)
-              setCurrentPhraseIndex(nextErrorPosition.phraseIndex)
+          setExerciseResults(currentResults => {
+            const nextErrorIndex = findNextErrorWithResults(currentExerciseIndex, currentResults)
+            
+            if (nextErrorIndex === -1) {
+              // Все ошибки исправлены - даем время увидеть все зеленые точки, затем завершаем этап
+              setTimeout(() => {
+                onComplete()
+                setCurrentIndex(0)
+                setCurrentPhraseIndex(0)
+                setStats({ correct: 0, total: 0 })
+                setIsRetryMode(false)
+                setHasCompletedFirstRound(false)
+              }, 1500) // Дополнительная задержка для визуального подтверждения
+            } else {
+              // Переходим к следующей ошибке
+              const nextErrorPosition = getWordAndPhraseIndex(nextErrorIndex)
+              if (nextErrorPosition) {
+                setCurrentIndex(nextErrorPosition.wordIndex)
+                setCurrentPhraseIndex(nextErrorPosition.phraseIndex)
+              }
             }
-          }
+            return currentResults // Возвращаем без изменений
+          })
         } else {
           // Обычный режим
           handleNext()
@@ -487,21 +491,26 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
     return null
   }
 
-  // Функция для поиска следующей ошибки
-  const findNextError = (currentExerciseIndex: number) => {
+  // Функция для поиска следующей ошибки (с текущими результатами)
+  const findNextErrorWithResults = (currentExerciseIndex: number, results: (boolean | null)[]) => {
     // Ищем следующую ошибку после текущего индекса
-    for (let i = currentExerciseIndex + 1; i < exerciseResults.length; i++) {
-      if (exerciseResults[i] === false) {
+    for (let i = currentExerciseIndex + 1; i < results.length; i++) {
+      if (results[i] === false) {
         return i
       }
     }
     // Если не нашли, ищем с начала до текущего индекса
     for (let i = 0; i <= currentExerciseIndex; i++) {
-      if (exerciseResults[i] === false) {
+      if (results[i] === false) {
         return i
       }
     }
     return -1 // Ошибок больше нет
+  }
+
+  // Функция для поиска следующей ошибки (использует текущее состояние)
+  const findNextError = (currentExerciseIndex: number) => {
+    return findNextErrorWithResults(currentExerciseIndex, exerciseResults)
   }
 
   const handleNext = () => {
