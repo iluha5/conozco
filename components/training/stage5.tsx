@@ -414,13 +414,15 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
           const nextErrorIndex = findNextError(currentExerciseIndex)
           
           if (nextErrorIndex === -1) {
-            // Все ошибки исправлены - завершаем этап
-            onComplete()
-            setCurrentIndex(0)
-            setCurrentPhraseIndex(0)
-            setStats({ correct: 0, total: 0 })
-            setIsRetryMode(false)
-            setHasCompletedFirstRound(false)
+            // Все ошибки исправлены - даем время увидеть все зеленые точки, затем завершаем этап
+            setTimeout(() => {
+              onComplete()
+              setCurrentIndex(0)
+              setCurrentPhraseIndex(0)
+              setStats({ correct: 0, total: 0 })
+              setIsRetryMode(false)
+              setHasCompletedFirstRound(false)
+            }, 1500) // Дополнительная задержка для визуального подтверждения
           } else {
             // Переходим к следующей ошибке
             const nextErrorPosition = getWordAndPhraseIndex(nextErrorIndex)

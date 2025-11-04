@@ -104,12 +104,14 @@ export function Stage2Training({ words, onComplete }: Stage2Props) {
             // Исправил ошибку - ищем следующую ошибку
             const nextErrorIndex = findNextError(currentIndex)
             if (nextErrorIndex === -1) {
-              // Все ошибки исправлены - завершаем этап
-              onComplete()
-              setCurrentIndex(0)
-              setStats({ correct: 0, total: 0 })
-              setIsRetryMode(false)
-              setHasCompletedFirstRound(false)
+              // Все ошибки исправлены - даем время увидеть все зеленые точки, затем завершаем этап
+              setTimeout(() => {
+                onComplete()
+                setCurrentIndex(0)
+                setStats({ correct: 0, total: 0 })
+                setIsRetryMode(false)
+                setHasCompletedFirstRound(false)
+              }, 1500) // Дополнительная задержка для визуального подтверждения
             } else {
               // Переходим к следующей ошибке
               setCurrentIndex(nextErrorIndex)
