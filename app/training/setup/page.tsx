@@ -144,7 +144,12 @@ export default function TrainingSetupPage() {
   }
 
   const deselectAll = () => {
-    setSelectedWords(new Set())
+    const visibleWordIds = words.slice(0, visibleWordsCount).map(word => word.id)
+    setSelectedWords(prev => {
+      const newSet = new Set(prev)
+      visibleWordIds.forEach(id => newSet.delete(id))
+      return newSet
+    })
   }
 
   const isWordSelected = (wordId: string) => selectedWords.has(wordId)
