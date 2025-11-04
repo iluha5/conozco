@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ChevronRight, CheckCircle, XCircle, RotateCcw, Volume2 } from 'lucide-react'
+import { CheckCircle, XCircle, RotateCcw, Volume2 } from 'lucide-react'
 import { ProgressDots } from './progress-dots'
 
 type Language = {
@@ -462,15 +462,7 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
             ))}
           </div>
 
-          {/* Кнопки действий - только для неправильных ответов */}
-          {isComplete && !isCorrect && (
-            <div className="flex justify-center pt-4">
-                  <Button size="lg" onClick={handleNext} className="gap-2">
-                    {currentIndex < baseWords.length - 1 ? 'Следующее слово' : 'Завершить'}
-                    <ChevronRight className="w-5 h-5" />
-                  </Button>
-              </div>
-            )}
+          {/* Автоматический переход при неправильном ответе - кнопка больше не нужна */}
         </CardContent>
       </Card>
     </div>

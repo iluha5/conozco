@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ChevronRight, CheckCircle, XCircle, Settings, X } from 'lucide-react'
+import { CheckCircle, XCircle, Settings, X } from 'lucide-react'
 import { ProgressDots } from './progress-dots'
 
 type Language = {
@@ -311,6 +311,8 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
           setIsCorrect(null)
           setBackgroundFlash(null)
           setShowResultPopup(false)
+          setTotalErrors(0) // Сбрасываем счетчик ошибок
+          setFlashingLetter(null)
         } else {
           setCurrentIndex(nextErrorIndex)
         }
@@ -514,15 +516,7 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
             ))}
           </div>
 
-          {/* Кнопки действий - только для неправильных ответов */}
-          {isComplete && !isCorrect && (
-            <div className="flex justify-center pt-4">
-              <Button size="lg" onClick={handleNext} className="gap-2">
-                {currentIndex < words.length - 1 ? 'Следующее слово' : 'Завершить'}
-                <ChevronRight className="w-5 h-5" />
-              </Button>
-            </div>
-          )}
+          {/* Автоматический переход при неправильном ответе - кнопка больше не нужна */}
         </CardContent>
       </Card>
 
