@@ -79,6 +79,7 @@ export default function TrainingPage() {
   const [loading, setLoading] = useState(true)
   const [trainingWords, setTrainingWords] = useState<Word[]>([])
   const [enabledStages, setEnabledStages] = useState<Set<number>>(new Set([1, 2, 3, 4, 5, 6]))
+  const [selectedWords, setSelectedWords] = useState<Set<string>>(new Set())
   const { toast } = useToast()
 
   useEffect(() => {
@@ -88,7 +89,7 @@ export default function TrainingPage() {
 
   useEffect(() => {
     filterTrainingWords()
-  }, [words, selectedLanguage])
+  }, [words, selectedLanguage, selectedWords])
 
   useEffect(() => {
     // Если текущий этап отключен, переключаемся на первый доступный
@@ -135,6 +136,16 @@ export default function TrainingPage() {
     if (savedLanguage) {
       setSelectedLanguage(savedLanguage)
     }
+
+    const savedWords = localStorage.getItem('training-selected-words')
+    if (savedWords) {
+      try {
+        const words = JSON.parse(savedWords)
+        setSelectedWords(new Set(words))
+      } catch (error) {
+        console.error('Error loading selected words:', error)
+      }
+    }
   }
 
   const isStageEnabled = (stage: number) => enabledStages.has(stage)
@@ -144,6 +155,11 @@ export default function TrainingPage() {
 
     if (selectedLanguage !== 'ALL') {
       filtered = filtered.filter(word => word.language.code === selectedLanguage)
+    }
+
+    // Фильтруем по выбранным словам
+    if (selectedWords.size > 0) {
+      filtered = filtered.filter(word => selectedWords.has(word.id))
     }
 
     setTrainingWords(filtered)
