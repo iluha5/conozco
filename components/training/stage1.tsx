@@ -55,6 +55,8 @@ export function Stage1Training({ words, onComplete }: Stage1Props) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [showTranslation, setShowTranslation] = useState(false)
   const [exerciseResults, setExerciseResults] = useState<boolean[]>([])
+  const [fadeIn, setFadeIn] = useState(false)
+  const [animationKey, setAnimationKey] = useState(0)
 
   const currentWord = words[currentIndex]
 
@@ -63,9 +65,21 @@ export function Stage1Training({ words, onComplete }: Stage1Props) {
     setExerciseResults(new Array(words.length).fill(null))
   }, [words.length])
 
+  // Запускаем анимацию при каждом монтировании компонента (при новом слове)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setFadeIn(true)
+    }, 50)
+    return () => clearTimeout(timer)
+  }, [animationKey])
+
   useEffect(() => {
     // Автоматическая озвучка при появлении нового слова
     if (currentWord) {
+      // Генерируем новый ключ для принудительного перемонтирования компонента
+      setAnimationKey(prev => prev + 1)
+      setFadeIn(false)
+      setShowTranslation(false)
       speakWord()
     }
   }, [currentIndex])
@@ -103,11 +117,9 @@ export function Stage1Training({ words, onComplete }: Stage1Props) {
 
     if (currentIndex < words.length - 1) {
       setCurrentIndex(currentIndex + 1)
-      setShowTranslation(false)
     } else {
       onComplete()
       setCurrentIndex(0)
-      setShowTranslation(false)
     }
   }
 
@@ -117,7 +129,7 @@ export function Stage1Training({ words, onComplete }: Stage1Props) {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <Card className="shadow-xl">
+      <Card key={animationKey} className={`shadow-xl transition-all duration-300 ease-in-out ${fadeIn ? 'opacity-100' : 'opacity-0'}`}>
         <CardHeader>
           <CardTitle className="text-center text-gray-600">
             Просмотр и запоминание
