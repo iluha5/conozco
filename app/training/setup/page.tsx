@@ -217,9 +217,27 @@ export default function TrainingSetupPage() {
 
               {/* Выбор слов */}
               <div>
-                <h3 className="text-lg font-semibold mb-4">
-                  Выберите слова для тренировки ({selectedWords.size} выбрано)
-                </h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold">
+                    Выберите слова для тренировки ({selectedWords.size} выбрано)
+                  </h3>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSelectedWords(new Set(words.slice(0, visibleWordsCount).map(w => w.id)))}
+                    >
+                      Выделить все
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSelectedWords(new Set())}
+                    >
+                      Отменить выделение
+                    </Button>
+                  </div>
+                </div>
                 <div className="space-y-2 max-h-96 overflow-y-auto border rounded-lg p-4">
                   {words.slice(0, visibleWordsCount).map((word) => (
                     <div
