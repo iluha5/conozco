@@ -173,11 +173,6 @@ export default function TrainingPage() {
       // Есть следующий этап - переключаемся на него
       const nextStage = enabledStagesArray[currentIndex + 1]
       setCurrentStage(nextStage)
-
-      toast({
-        title: 'Этап завершен!',
-        description: `Переходим к этапу ${nextStage}`,
-      })
     } else {
       // Это последний этап - завершаем тренировку
       toast({

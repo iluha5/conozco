@@ -145,6 +145,8 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
   const [backgroundFlash, setBackgroundFlash] = useState<'green' | 'red' | null>(null)
   const [showResultPopup, setShowResultPopup] = useState(false)
   const [totalErrors, setTotalErrors] = useState(0)
+  const [isRetryMode, setIsRetryMode] = useState(false)
+  const [hasCompletedFirstRound, setHasCompletedFirstRound] = useState(false)
 
   // Фильтруем слова, у которых есть фразы
   const wordsWithPhrases = useMemo(() => words.filter(word => {
@@ -315,10 +317,10 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
 
     // Если слово правильное
     if (word.toLowerCase() === nextExpectedWord.toLowerCase()) {
-      setUserSentence([...userSentence, word])
-      setAvailableWords(prev => prev.map((item, i) =>
-        i === index ? { ...item, selected: true } : item
-      ))
+    setUserSentence([...userSentence, word])
+    setAvailableWords(prev => prev.map((item, i) =>
+      i === index ? { ...item, selected: true } : item
+    ))
 
       // Если предложение завершено
       if (userSentence.length + 1 === correctPhrase.length) {
@@ -406,8 +408,56 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
     // Если предложение составлено правильно - автоматически переходим через 1 секунду
     if (correct) {
       setTimeout(() => {
-        handleNext()
+        if (isRetryMode) {
+          // В режиме исправления ошибок - ищем следующую ошибку
+          const currentExerciseIndex = wordPhrases.slice(0, currentIndex).reduce((total, phrases) => total + phrases.length, 0) + currentPhraseIndex
+          const nextErrorIndex = findNextError(currentExerciseIndex)
+          
+          if (nextErrorIndex === -1) {
+            // Все ошибки исправлены - завершаем этап
+            onComplete()
+            setCurrentIndex(0)
+            setCurrentPhraseIndex(0)
+            setStats({ correct: 0, total: 0 })
+            setIsRetryMode(false)
+            setHasCompletedFirstRound(false)
+          } else {
+            // Переходим к следующей ошибке
+            const nextErrorPosition = getWordAndPhraseIndex(nextErrorIndex)
+            if (nextErrorPosition) {
+              setCurrentIndex(nextErrorPosition.wordIndex)
+              setCurrentPhraseIndex(nextErrorPosition.phraseIndex)
+            }
+          }
+        } else {
+          // Обычный режим
+          handleNext()
+        }
       }, 1000)
+    } else if (isRetryMode && !correct) {
+      // В режиме повторения, если снова ошибка - переходим к следующей ошибке через 2 секунды
+      setTimeout(() => {
+        const currentExerciseIndex = wordPhrases.slice(0, currentIndex).reduce((total, phrases) => total + phrases.length, 0) + currentPhraseIndex
+        const nextErrorIndex = findNextError(currentExerciseIndex)
+        
+        if (nextErrorIndex === -1 || nextErrorIndex === currentExerciseIndex) {
+          // Это единственная ошибка или других нет - остаемся на ней, но перезагружаем карточку
+          setAnimationKey(prev => prev + 1)
+          setFadeIn(false)
+          initializePhrase(currentPhrase!)
+          setUserSentence([])
+          setIsComplete(false)
+          setIsCorrect(null)
+          setBackgroundFlash(null)
+          setShowResultPopup(false)
+        } else {
+          const nextErrorPosition = getWordAndPhraseIndex(nextErrorIndex)
+          if (nextErrorPosition) {
+            setCurrentIndex(nextErrorPosition.wordIndex)
+            setCurrentPhraseIndex(nextErrorPosition.phraseIndex)
+          }
+        }
+      }, 2000)
     }
   }
 
@@ -422,6 +472,36 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
     setIsFirstCard(true)
   }
 
+  // Функция для преобразования линейного индекса упражнения в (wordIndex, phraseIndex)
+  const getWordAndPhraseIndex = (exerciseIndex: number): { wordIndex: number, phraseIndex: number } | null => {
+    let accumulated = 0
+    for (let i = 0; i < wordPhrases.length; i++) {
+      const phrasesCount = wordPhrases[i].length
+      if (exerciseIndex < accumulated + phrasesCount) {
+        return { wordIndex: i, phraseIndex: exerciseIndex - accumulated }
+      }
+      accumulated += phrasesCount
+    }
+    return null
+  }
+
+  // Функция для поиска следующей ошибки
+  const findNextError = (currentExerciseIndex: number) => {
+    // Ищем следующую ошибку после текущего индекса
+    for (let i = currentExerciseIndex + 1; i < exerciseResults.length; i++) {
+      if (exerciseResults[i] === false) {
+        return i
+      }
+    }
+    // Если не нашли, ищем с начала до текущего индекса
+    for (let i = 0; i <= currentExerciseIndex; i++) {
+      if (exerciseResults[i] === false) {
+        return i
+      }
+    }
+    return -1 // Ошибок больше нет
+  }
+
   const handleNext = () => {
     const currentWordPhrases = wordPhrases[currentIndex] || []
 
@@ -434,9 +514,31 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
       if (currentIndex < wordsWithPhrases.length - 1) {
         setCurrentIndex(currentIndex + 1)
       } else {
-        onComplete()
-        setCurrentIndex(0)
-        setStats({ correct: 0, total: 0 })
+        // Завершили все фразы первый раз
+        setHasCompletedFirstRound(true)
+        
+        // Проверяем, есть ли ошибки
+        const errorIndices = exerciseResults
+          .map((result, idx) => result === false ? idx : -1)
+          .filter(idx => idx !== -1)
+        
+        if (errorIndices.length > 0) {
+          // Есть ошибки - переходим в режим исправления
+          setIsRetryMode(true)
+          const firstErrorPosition = getWordAndPhraseIndex(errorIndices[0])
+          if (firstErrorPosition) {
+            setCurrentIndex(firstErrorPosition.wordIndex)
+            setCurrentPhraseIndex(firstErrorPosition.phraseIndex)
+          }
+        } else {
+          // Все правильно - завершаем этап
+          onComplete()
+          setCurrentIndex(0)
+          setCurrentPhraseIndex(0)
+          setStats({ correct: 0, total: 0 })
+          setIsRetryMode(false)
+          setHasCompletedFirstRound(false)
+        }
       }
     }
   }
@@ -481,7 +583,9 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
           <div className="!mt-3">
           <ProgressDots
             totalExercises={totalPhrases}
-            completedExercises={currentPhraseNumber - 1}
+            completedExercises={exerciseResults.filter(r => r !== null).length}
+            exerciseResults={exerciseResults}
+            currentIndex={wordPhrases.slice(0, currentIndex).reduce((total, phrases) => total + phrases.length, 0) + currentPhraseIndex}
           />
           </div>
         </CardHeader>
@@ -565,16 +669,16 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
           {/* Кнопки действий - только для неправильных ответов */}
           {isComplete && !isCorrect && (
             <div className="flex justify-center pt-4">
-              <Button size="lg" onClick={handleNext} className="gap-2">
-                {currentPhraseIndex < (wordPhrases[currentIndex]?.length || 0) - 1
-                  ? 'Следующее предложение'
-                  : currentIndex < wordsWithPhrases.length - 1
-                    ? 'Следующее слово'
-                    : 'Завершить'}
-                <ChevronRight className="w-5 h-5" />
-              </Button>
-            </div>
-          )}
+                  <Button size="lg" onClick={handleNext} className="gap-2">
+                    {currentPhraseIndex < (wordPhrases[currentIndex]?.length || 0) - 1
+                      ? 'Следующее предложение'
+                      : currentIndex < wordsWithPhrases.length - 1
+                        ? 'Следующее слово'
+                        : 'Завершить'}
+                    <ChevronRight className="w-5 h-5" />
+                  </Button>
+              </div>
+            )}
 
         </CardContent>
       </Card>

@@ -60,6 +60,8 @@ export function Stage2Training({ words, onComplete }: Stage2Props) {
   const [exerciseResults, setExerciseResults] = useState<boolean[]>([])
   const [fadeIn, setFadeIn] = useState(false)
   const [animationKey, setAnimationKey] = useState(0)
+  const [isRetryMode, setIsRetryMode] = useState(false)
+  const [hasCompletedFirstRound, setHasCompletedFirstRound] = useState(false)
 
   const currentWord = words[currentIndex]
 
@@ -96,12 +98,45 @@ export function Stage2Training({ words, onComplete }: Stage2Props) {
     if (selectedOption !== null) {
       const delay = isCorrect ? 800 : 2000
       const timer = setTimeout(() => {
-        handleNext()
+        if (isRetryMode) {
+          // В режиме исправления ошибок
+          if (isCorrect) {
+            // Исправил ошибку - ищем следующую ошибку
+            const nextErrorIndex = findNextError(currentIndex)
+            if (nextErrorIndex === -1) {
+              // Все ошибки исправлены - завершаем этап
+              onComplete()
+              setCurrentIndex(0)
+              setStats({ correct: 0, total: 0 })
+              setIsRetryMode(false)
+              setHasCompletedFirstRound(false)
+            } else {
+              // Переходим к следующей ошибке
+              setCurrentIndex(nextErrorIndex)
+            }
+          } else {
+            // Снова ошибся - переходим к следующей ошибке (или к этой же, если она одна)
+            const nextErrorIndex = findNextError(currentIndex)
+            if (nextErrorIndex === -1 || nextErrorIndex === currentIndex) {
+              // Это единственная ошибка или других нет - остаемся на ней, но перезагружаем карточку
+              setAnimationKey(prev => prev + 1)
+              setFadeIn(false)
+              generateOptions()
+              setSelectedOption(null)
+              setIsCorrect(null)
+            } else {
+              setCurrentIndex(nextErrorIndex)
+            }
+          }
+        } else {
+          // Обычный режим
+          handleNext()
+        }
       }, delay)
 
       return () => clearTimeout(timer)
     }
-  }, [selectedOption, currentIndex, isCorrect])
+  }, [selectedOption, currentIndex, isCorrect, isRetryMode, exerciseResults])
 
   const generateOptions = () => {
     const correctTranslation = currentWord.customTranslation ||
@@ -163,10 +198,44 @@ export function Stage2Training({ words, onComplete }: Stage2Props) {
     if (currentIndex < words.length - 1) {
       setCurrentIndex(currentIndex + 1)
     } else {
-      onComplete()
-      setCurrentIndex(0)
-      setStats({ correct: 0, total: 0 })
+      // Завершили все слова первый раз
+      setHasCompletedFirstRound(true)
+      
+      // Проверяем, есть ли ошибки
+      const errorIndices = exerciseResults
+        .map((result, idx) => result === false ? idx : -1)
+        .filter(idx => idx !== -1)
+      
+      if (errorIndices.length > 0) {
+        // Есть ошибки - переходим в режим исправления
+        setIsRetryMode(true)
+        setCurrentIndex(errorIndices[0])
+      } else {
+        // Все правильно - завершаем этап
+        onComplete()
+        setCurrentIndex(0)
+        setStats({ correct: 0, total: 0 })
+        setIsRetryMode(false)
+        setHasCompletedFirstRound(false)
+      }
     }
+  }
+  
+  // Функция для поиска следующей ошибки
+  const findNextError = (startIndex: number) => {
+    // Ищем следующую ошибку после текущего индекса
+    for (let i = startIndex + 1; i < exerciseResults.length; i++) {
+      if (exerciseResults[i] === false) {
+        return i
+      }
+    }
+    // Если не нашли, ищем с начала до текущего индекса
+    for (let i = 0; i <= startIndex; i++) {
+      if (exerciseResults[i] === false) {
+        return i
+      }
+    }
+    return -1 // Ошибок больше нет
   }
 
   if (!currentWord) {
@@ -183,7 +252,9 @@ export function Stage2Training({ words, onComplete }: Stage2Props) {
           <div className="!mt-3">
           <ProgressDots
             totalExercises={words.length}
-            completedExercises={currentIndex}
+            completedExercises={exerciseResults.filter(r => r !== null).length}
+            exerciseResults={exerciseResults}
+            currentIndex={currentIndex}
           />
           </div>
         </CardHeader>

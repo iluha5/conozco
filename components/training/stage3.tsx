@@ -66,10 +66,16 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
   const [stats, setStats] = useState({ correct: 0, total: 0 })
   const [errorForeign, setErrorForeign] = useState<string | null>(null)
   const [errorTranslation, setErrorTranslation] = useState<string | null>(null)
+  const [exerciseResults, setExerciseResults] = useState<(boolean | null)[]>([])
 
   const wordsPerBatch = 10
   const totalBatches = Math.ceil(words.length / wordsPerBatch)
   const currentWords = words.slice(currentBatch * wordsPerBatch, (currentBatch + 1) * wordsPerBatch)
+
+  // Инициализируем массив результатов упражнений
+  useEffect(() => {
+    setExerciseResults(new Array(words.length).fill(null))
+  }, [words.length])
 
   useEffect(() => {
     initializePairs()
@@ -129,6 +135,16 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
         p.id === pair.id ? { ...p, matched: true } : p
       ))
 
+      // Находим глобальный индекс слова
+      const globalIndex = words.findIndex(w => w.id === pair.id)
+      if (globalIndex !== -1) {
+        setExerciseResults(prev => {
+          const newResults = [...prev]
+          newResults[globalIndex] = true
+          return newResults
+        })
+      }
+
       await fetch('/api/training', {
         method: 'POST',
         headers: {
@@ -161,6 +177,15 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
 
       const wordPair = pairs.find(p => p.foreign === foreign)
       if (wordPair) {
+        // Находим глобальный индекс слова
+        const globalIndex = words.findIndex(w => w.id === wordPair.id)
+        if (globalIndex !== -1) {
+          setExerciseResults(prev => {
+            const newResults = [...prev]
+            newResults[globalIndex] = false
+            return newResults
+          })
+        }
 
         await fetch('/api/training', {
           method: 'POST',
@@ -213,6 +238,8 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
           <ProgressDots
             totalExercises={currentWords.length}
             completedExercises={pairs.filter(p => p.matched).length}
+            exerciseResults={exerciseResults.slice(currentBatch * wordsPerBatch, (currentBatch + 1) * wordsPerBatch)}
+            currentIndex={pairs.filter(p => p.matched).length}
           />
           </div>
         </CardHeader>

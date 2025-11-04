@@ -72,6 +72,8 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
   const [backgroundFlash, setBackgroundFlash] = useState<'green' | 'red' | null>(null)
   const [showResultPopup, setShowResultPopup] = useState(false)
   const [totalErrors, setTotalErrors] = useState(0)
+  const [isRetryMode, setIsRetryMode] = useState(false)
+  const [hasCompletedFirstRound, setHasCompletedFirstRound] = useState(false)
 
   // Filter only base words (exclude custom words)
   const baseWords = words.filter(word => word.baseWordId && !word.customWord)
@@ -141,10 +143,10 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
 
     // Если буква правильная
     if (letter.toLowerCase() === nextExpectedLetter.toLowerCase()) {
-      setUserWord([...userWord, letter])
-      setLetters(prev => prev.map((item, i) =>
-        i === index ? { ...item, selected: true } : item
-      ))
+    setUserWord([...userWord, letter])
+    setLetters(prev => prev.map((item, i) =>
+      i === index ? { ...item, selected: true } : item
+    ))
 
       // Если слово завершено
       if (userWord.length + 1 === correctWord.length) {
@@ -211,8 +213,47 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
     // Если слово составлено правильно - автоматически переходим через 1 секунду
     if (correct) {
       setTimeout(() => {
-        handleNext()
+        if (isRetryMode) {
+          // В режиме исправления ошибок - ищем следующую ошибку
+          const nextErrorIndex = findNextError(currentIndex)
+          if (nextErrorIndex === -1) {
+            // Все ошибки исправлены - завершаем этап
+            onComplete()
+            setCurrentIndex(0)
+            setStats({ correct: 0, total: 0 })
+            setIsRetryMode(false)
+            setHasCompletedFirstRound(false)
+          } else {
+            // Переходим к следующей ошибке
+            setCurrentIndex(nextErrorIndex)
+          }
+        } else {
+          // Обычный режим
+          handleNext()
+        }
       }, 1000)
+    } else if (isRetryMode && !correct) {
+      // В режиме повторения, если снова ошибка - переходим к следующей ошибке через 2 секунды
+      setTimeout(() => {
+        const nextErrorIndex = findNextError(currentIndex)
+        if (nextErrorIndex === -1 || nextErrorIndex === currentIndex) {
+          // Это единственная ошибка или других нет - остаемся на ней, но перезагружаем карточку
+          setAnimationKey(prev => prev + 1)
+          setFadeIn(false)
+          initializeLetters()
+          setUserWord([])
+          setIsComplete(false)
+          setIsCorrect(null)
+          setBackgroundFlash(null)
+          setShowResultPopup(false)
+          setTotalErrors(0)
+          setFlashingLetter(null)
+          // Автоматически проигрываем слово снова
+          setTimeout(() => speakWord(), 500)
+        } else {
+          setCurrentIndex(nextErrorIndex)
+        }
+      }, 2000)
     }
   }
 
@@ -262,13 +303,47 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
   }
 
 
+  // Функция для поиска следующей ошибки
+  const findNextError = (startIndex: number) => {
+    // Ищем следующую ошибку после текущего индекса
+    for (let i = startIndex + 1; i < exerciseResults.length; i++) {
+      if (exerciseResults[i] === false) {
+        return i
+      }
+    }
+    // Если не нашли, ищем с начала до текущего индекса
+    for (let i = 0; i <= startIndex; i++) {
+      if (exerciseResults[i] === false) {
+        return i
+      }
+    }
+    return -1 // Ошибок больше нет
+  }
+
   const handleNext = () => {
     if (currentIndex < baseWords.length - 1) {
       setCurrentIndex(currentIndex + 1)
     } else {
-      onComplete()
-      setCurrentIndex(0)
-      setStats({ correct: 0, total: 0 })
+      // Завершили все слова первый раз
+      setHasCompletedFirstRound(true)
+      
+      // Проверяем, есть ли ошибки
+      const errorIndices = exerciseResults
+        .map((result, idx) => result === false ? idx : -1)
+        .filter(idx => idx !== -1)
+      
+      if (errorIndices.length > 0) {
+        // Есть ошибки - переходим в режим исправления
+        setIsRetryMode(true)
+        setCurrentIndex(errorIndices[0])
+      } else {
+        // Все правильно - завершаем этап
+        onComplete()
+        setCurrentIndex(0)
+        setStats({ correct: 0, total: 0 })
+        setIsRetryMode(false)
+        setHasCompletedFirstRound(false)
+      }
     }
   }
 
@@ -297,7 +372,9 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
           <div className="!mt-3">
           <ProgressDots
             totalExercises={baseWords.length}
-            completedExercises={currentIndex}
+            completedExercises={exerciseResults.filter(r => r !== null).length}
+            exerciseResults={exerciseResults}
+            currentIndex={currentIndex}
           />
           </div>
         </CardHeader>
@@ -305,16 +382,16 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
           <div className="text-center mb-6">
             <p className="text-gray-600 mb-4">Послушайте слово и составьте его из букв</p>
 
-            <Button
-              onClick={speakWord}
-              disabled={isPlaying}
-              variant="outline"
-              size="sm"
-              className="gap-2 mt-2"
-            >
-              <Volume2 className={`w-4 h-4 ${isPlaying ? 'animate-pulse' : ''}`} />
+              <Button
+                onClick={speakWord}
+                disabled={isPlaying}
+                variant="outline"
+                size="sm"
+                className="gap-2 mt-2"
+              >
+                <Volume2 className={`w-4 h-4 ${isPlaying ? 'animate-pulse' : ''}`} />
               {isPlaying ? 'Проигрывается...' : 'Прослушать слово'}
-            </Button>
+              </Button>
           </div>
 
           {/* Собранное слово */}
@@ -388,12 +465,12 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
           {/* Кнопки действий - только для неправильных ответов */}
           {isComplete && !isCorrect && (
             <div className="flex justify-center pt-4">
-              <Button size="lg" onClick={handleNext} className="gap-2">
-                {currentIndex < baseWords.length - 1 ? 'Следующее слово' : 'Завершить'}
-                <ChevronRight className="w-5 h-5" />
-              </Button>
-            </div>
-          )}
+                  <Button size="lg" onClick={handleNext} className="gap-2">
+                    {currentIndex < baseWords.length - 1 ? 'Следующее слово' : 'Завершить'}
+                    <ChevronRight className="w-5 h-5" />
+                  </Button>
+              </div>
+            )}
         </CardContent>
       </Card>
     </div>

@@ -200,6 +200,8 @@ export function Stage1Training({ words, onComplete }: Stage1Props) {
           <ProgressDots
             totalExercises={words.length}
             completedExercises={currentIndex}
+            exerciseResults={exerciseResults}
+            currentIndex={currentIndex}
           />
           </div>
         </CardHeader>
