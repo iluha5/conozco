@@ -150,10 +150,30 @@ export default function TrainingPage() {
   }
 
   const handleStageComplete = () => {
-    toast({
-      title: 'Этап завершен!',
-      description: `Вы завершили этап ${currentStage}`,
-    })
+    const enabledStagesArray = Array.from(enabledStages).sort()
+    const currentIndex = enabledStagesArray.indexOf(currentStage)
+
+    if (currentIndex < enabledStagesArray.length - 1) {
+      // Есть следующий этап - переключаемся на него
+      const nextStage = enabledStagesArray[currentIndex + 1]
+      setCurrentStage(nextStage)
+
+      toast({
+        title: 'Этап завершен!',
+        description: `Переходим к этапу ${nextStage}`,
+      })
+    } else {
+      // Это последний этап - завершаем тренировку
+      toast({
+        title: 'Все этапы завершены!',
+        description: 'Поздравляем! Вы завершили всю тренировку',
+      })
+
+      // Можно добавить редирект на главную страницу через некоторое время
+      setTimeout(() => {
+        window.location.href = '/'
+      }, 3000)
+    }
   }
 
   const renderTrainingScreen = () => (
