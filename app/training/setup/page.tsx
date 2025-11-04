@@ -58,6 +58,7 @@ export default function TrainingSetupPage() {
   const [selectedWords, setSelectedWords] = useState<Set<string>>(new Set())
   const [visibleWordsCount, setVisibleWordsCount] = useState(12)
   const [showStagesSettings, setShowStagesSettings] = useState(false)
+  const [isInitialSelection, setIsInitialSelection] = useState(true)
   const { toast } = useToast()
   const router = useRouter()
 
@@ -71,12 +72,13 @@ export default function TrainingSetupPage() {
   }, [enabledStages, selectedWords])
 
   useEffect(() => {
-    // Когда слова загружены, выбираем первые 12 по умолчанию
-    if (words.length > 0 && selectedWords.size === 0) {
+    // Когда слова загружены, выбираем первые 12 по умолчанию (только при первой загрузке)
+    if (words.length > 0 && selectedWords.size === 0 && isInitialSelection) {
       const first12Words = words.slice(0, 12).map(word => word.id)
       setSelectedWords(new Set(first12Words))
+      setIsInitialSelection(false)
     }
-  }, [words, selectedWords.size])
+  }, [words, selectedWords.size, isInitialSelection])
 
   const fetchWords = async () => {
     try {
