@@ -203,9 +203,9 @@ export function Stage1Training({ words, onComplete }: Stage1Props) {
           />
           </div>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-4">
           <div className="text-center">
-            <div className="flex items-center justify-center gap-4 mb-4">
+            <div className="flex items-center justify-center gap-4 mb-2">
               <h2 className="text-5xl font-bold text-gray-900">
                 {currentWord.baseWord?.word || currentWord.customWord}
               </h2>
@@ -219,9 +219,12 @@ export function Stage1Training({ words, onComplete }: Stage1Props) {
               </Button>
             </div>
 
-            <div className="min-h-[120px] flex items-center justify-center">
-              {showTranslation ? (
-                <div className="space-y-4">
+            <div className="relative min-h-[140px] flex items-center justify-center">
+              {/* Перевод (всегда присутствует, но скрыт/показан) */}
+              <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${
+                showTranslation ? 'opacity-100' : 'opacity-0 pointer-events-none'
+              }`}>
+                <div className="space-y-4 text-center">
                   <p className="text-3xl text-purple-600 font-semibold">
                     {currentWord.customTranslation ||
                      (currentWord.baseWord?.translations && currentWord.baseWord.translations.length > 0
@@ -239,15 +242,16 @@ export function Stage1Training({ words, onComplete }: Stage1Props) {
                     </div>
                   )}
                 </div>
-              ) : (
-                <Button
-                  size="lg"
-                  onClick={() => setShowTranslation(true)}
-                  className="text-lg"
-                >
-                  Показать перевод
-                </Button>
-              )}
+              </div>
+
+              {/* Кнопка "Показать перевод" */}
+              <Button
+                size="lg"
+                onClick={() => setShowTranslation(true)}
+                className={`text-lg transition-opacity duration-300 ${showTranslation ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+              >
+                Показать перевод
+              </Button>
             </div>
           </div>
 
