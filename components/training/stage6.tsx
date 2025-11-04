@@ -66,6 +66,12 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [hasPlayedOnce, setHasPlayedOnce] = useState(false)
   const [exerciseResults, setExerciseResults] = useState<boolean[]>([])
+  const [flashingLetter, setFlashingLetter] = useState<number | null>(null)
+  const [fadeIn, setFadeIn] = useState(false)
+  const [animationKey, setAnimationKey] = useState(0)
+  const [backgroundFlash, setBackgroundFlash] = useState<'green' | 'red' | null>(null)
+  const [showResultPopup, setShowResultPopup] = useState(false)
+  const [totalErrors, setTotalErrors] = useState(0)
 
   // Filter only base words (exclude custom words)
   const baseWords = words.filter(word => word.baseWordId && !word.customWord)
@@ -75,14 +81,30 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
     setExerciseResults(new Array(baseWords.length).fill(null))
   }, [baseWords.length])
 
+  // Запускаем анимацию при каждом монтировании компонента (при новом слове)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setFadeIn(true)
+    }, 50)
+    return () => clearTimeout(timer)
+  }, [animationKey])
+
   const currentWord = baseWords[currentIndex]
 
   useEffect(() => {
     if (currentWord) {
+      // Генерируем новый ключ для принудительного перемонтирования компонента
+      setAnimationKey(prev => prev + 1)
+      setFadeIn(false)
+
       initializeLetters()
       setUserWord([])
       setIsComplete(false)
       setIsCorrect(null)
+      setTotalErrors(0)
+      setFlashingLetter(null)
+      setBackgroundFlash(null)
+      setShowResultPopup(false)
       setHasPlayedOnce(false)
       // Auto-play the word once when loading a new word
       setTimeout(() => speakWord(), 500) // Small delay to allow UI to render
@@ -112,12 +134,35 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
     setLetters(letterStates)
   }
 
-  const handleLetterClick = (index: number) => {
+  const handleLetterClick = async (index: number) => {
     const letter = letters[index].letter
-    setUserWord([...userWord, letter])
-    setLetters(prev => prev.map((item, i) =>
-      i === index ? { ...item, selected: true } : item
-    ))
+    const correctWord = currentWord.baseWord?.word || ''
+    const nextExpectedLetter = correctWord[userWord.length]
+
+    // Если буква правильная
+    if (letter.toLowerCase() === nextExpectedLetter.toLowerCase()) {
+      setUserWord([...userWord, letter])
+      setLetters(prev => prev.map((item, i) =>
+        i === index ? { ...item, selected: true } : item
+      ))
+
+      // Если слово завершено
+      if (userWord.length + 1 === correctWord.length) {
+        await completeWord(true)
+      }
+    } else {
+      // Неправильная буква - показываем анимацию
+      setFlashingLetter(index)
+      setTimeout(() => setFlashingLetter(null), 150) // Анимация длится 0.15 сек
+
+      const newErrorCount = totalErrors + 1
+      setTotalErrors(newErrorCount)
+
+      // Если 3 ошибки всего за слово - автоматически заполняем слово
+      if (newErrorCount >= 3) {
+        await autoCompleteWord()
+      }
+    }
   }
 
   const handleRemoveFromWord = (index: number) => {
@@ -128,6 +173,61 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
     setLetters(prev => prev.map(item =>
       item.letter === letter && item.selected ? { ...item, selected: false } : item
     ))
+  }
+
+  const completeWord = async (correct: boolean) => {
+    setIsCorrect(correct)
+    setIsComplete(true)
+
+    // Устанавливаем цвет фона и показываем попап с результатом
+    setBackgroundFlash(correct ? 'green' : 'red')
+    setShowResultPopup(true)
+
+    // Обновляем результаты упражнения
+    setExerciseResults(prev => {
+      const newResults = [...prev]
+      newResults[currentIndex] = correct
+      return newResults
+    })
+
+    // Записываем результат
+    await fetch('/api/training', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        wordId: currentWord.id,
+        stage: 6,
+        isCorrect: correct,
+      }),
+    })
+
+    setStats(prev => ({
+      correct: prev.correct + (correct ? 1 : 0),
+      total: prev.total + 1,
+    }))
+
+    // Если слово составлено правильно - автоматически переходим через 1 секунду
+    if (correct) {
+      setTimeout(() => {
+        handleNext()
+      }, 1000)
+    }
+  }
+
+  const autoCompleteWord = async () => {
+    const correctWord = currentWord.baseWord?.word || ''
+    const correctLetters = correctWord.split('')
+
+    // Заполняем оставшиеся буквы
+    setUserWord(correctLetters)
+
+    // Отмечаем все буквы как выбранные
+    setLetters(prev => prev.map(item => ({ ...item, selected: true })))
+
+    // Завершаем слово как неправильное
+    await completeWord(false)
   }
 
   const speakWord = () => {
@@ -161,46 +261,6 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
     speechSynthesis.speak(utterance)
   }
 
-  const handleCheck = async () => {
-    const constructed = userWord.join('')
-    const correctWord = currentWord.baseWord?.word || ''
-    const correct = constructed.toLowerCase() === correctWord.toLowerCase()
-
-    setIsCorrect(correct)
-    setIsComplete(true)
-
-    // Обновляем результаты упражнения
-    setExerciseResults(prev => {
-      const newResults = [...prev]
-      newResults[currentIndex] = correct
-      return newResults
-    })
-
-    // Записываем результат
-    await fetch('/api/training', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        wordId: currentWord.id,
-        stage: 6,
-        isCorrect: correct,
-      }),
-    })
-
-    setStats(prev => ({
-      correct: prev.correct + (correct ? 1 : 0),
-      total: prev.total + 1,
-    }))
-  }
-
-  const handleReset = () => {
-    initializeLetters()
-    setUserWord([])
-    setIsComplete(false)
-    setIsCorrect(null)
-  }
 
   const handleNext = () => {
     if (currentIndex < baseWords.length - 1) {
@@ -226,7 +286,10 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <Card className="shadow-xl">
+      <Card key={animationKey} className={`shadow-xl transition-all duration-300 ease-in-out ${fadeIn ? 'opacity-100' : 'opacity-0'} ${
+        backgroundFlash === 'green' ? 'bg-green-50 border-green-400' :
+        backgroundFlash === 'red' ? 'bg-red-50 border-red-400' : ''
+      }`}>
         <CardHeader>
           <CardTitle className="text-center text-gray-600">
             Составление слова по голосу
@@ -266,7 +329,7 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
           </div>
 
           {/* Собранное слово */}
-          <div className="min-h-[80px] p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+          <div className="relative min-h-[132px] p-3 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
             <div className="flex flex-wrap gap-2 justify-center">
               {userWord.length === 0 ? (
                 <p className="text-gray-400">Выберите буквы ниже</p>
@@ -283,6 +346,27 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
                 ))
               )}
             </div>
+
+            {/* Попап с результатом */}
+            {showResultPopup && (
+              <div className="absolute bottom-2 right-2 pointer-events-none">
+                <div className={`p-2 rounded-lg border-2 shadow-lg transform transition-all duration-500 ease-out ${
+                  isCorrect
+                    ? 'bg-green-50 border-green-400 text-green-600'
+                    : 'bg-red-50 border-red-400 text-red-600'
+                } ${
+                  showResultPopup
+                    ? 'opacity-100 translate-y-0 scale-100'
+                    : 'opacity-0 translate-y-2 scale-95'
+                }`}>
+                  {isCorrect ? (
+                    <CheckCircle className="w-6 h-6" />
+                  ) : (
+                    <XCircle className="w-6 h-6" />
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Доступные буквы */}
@@ -299,7 +383,11 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
                   <button
                     onClick={() => handleLetterClick(index)}
                     disabled={isComplete}
-                    className="w-full h-full bg-white border-2 border-gray-300 rounded-lg text-xl font-bold text-gray-900 hover:bg-gray-50 hover:border-gray-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className={`w-full h-full rounded-lg text-xl font-bold text-gray-900 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
+                      flashingLetter === index
+                        ? 'bg-red-500 border-red-500 text-white shadow-lg scale-110'
+                        : 'bg-white border-2 border-gray-300 hover:bg-gray-50 hover:border-gray-400'
+                    }`}
                   >
                     {letterState.letter}
                   </button>
@@ -308,80 +396,15 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
             ))}
           </div>
 
-          {/* Кнопки действий */}
-          <div className="flex gap-3 justify-center">
-            {!isComplete ? (
-              <>
-                <Button
-                  variant="outline"
-                  onClick={handleReset}
-                  disabled={userWord.length === 0}
-                >
-                  <RotateCcw className="w-4 h-4 mr-2" />
-                  Сброс
-                </Button>
-                <Button
-                  onClick={handleCheck}
-                  disabled={userWord.length !== (currentWord.baseWord?.word || '').length}
-                  size="lg"
-                >
-                  Проверить
-                </Button>
-              </>
-            ) : (
-              <div className="w-full space-y-4">
-                {isCorrect ? (
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-center gap-2 text-green-600 text-lg font-medium">
-                      <CheckCircle className="w-6 h-6" />
-                      Правильно!
-                    </div>
-                    <div className="text-center space-y-2">
-                      <div className="space-y-1">
-                        <p className="text-2xl font-bold text-gray-900">
-                          {currentWord.baseWord?.word}
-                        </p>
-                        <p className="text-lg text-gray-600">
-                          {currentWord.customTranslation ||
-                           (currentWord.baseWord?.translations && currentWord.baseWord.translations.length > 0
-                             ? currentWord.baseWord.translations[0].translation
-                             : 'Нет перевода')}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-center gap-2 text-red-600 text-lg font-medium">
-                      <XCircle className="w-6 h-6" />
-                      Неправильно
-                    </div>
-                    <div className="text-center space-y-2">
-                      <p className="text-gray-600">Правильный ответ:</p>
-                      <div className="space-y-1">
-                        <p className="text-2xl font-bold text-gray-900">
-                          {currentWord.baseWord?.word}
-                        </p>
-                        <p className="text-lg text-gray-600">
-                          {currentWord.customTranslation ||
-                           (currentWord.baseWord?.translations && currentWord.baseWord.translations.length > 0
-                             ? currentWord.baseWord.translations[0].translation
-                             : 'Нет перевода')}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex justify-center">
-                  <Button size="lg" onClick={handleNext} className="gap-2">
-                    {currentIndex < baseWords.length - 1 ? 'Следующее слово' : 'Завершить'}
-                    <ChevronRight className="w-5 h-5" />
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
+          {/* Кнопки действий - только для неправильных ответов */}
+          {isComplete && !isCorrect && (
+            <div className="flex justify-center pt-4">
+              <Button size="lg" onClick={handleNext} className="gap-2">
+                {currentIndex < baseWords.length - 1 ? 'Следующее слово' : 'Завершить'}
+                <ChevronRight className="w-5 h-5" />
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
