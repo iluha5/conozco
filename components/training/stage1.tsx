@@ -210,64 +210,65 @@ export function Stage1Training({ words, onComplete }: Stage1Props) {
                 {currentWord.baseWord?.word || currentWord.customWord}
               </h2>
               <Button
-                size="icon"
-                variant="outline"
-                onClick={speakWord}
-                className="rounded-full w-12 h-12"
+                  size="icon"
+                  variant="outline"
+                  onClick={speakWord}
+                  className="rounded-full w-12 h-12"
               >
-                <Volume2 className="w-6 h-6" />
+                <Volume2 className="w-6 h-6"/>
               </Button>
             </div>
 
-            <div className="relative min-h-[140px] flex items-center justify-center">
+            <div className="relative mt-4 flex items-center justify-center">
               {/* Перевод (всегда присутствует, но скрыт/показан) */}
-              <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${
-                showTranslation ? 'opacity-100' : 'opacity-0 pointer-events-none'
+              <div className={`inset-0 flex items-center justify-center transition-opacity duration-300 ${
+                  showTranslation ? 'opacity-100' : 'opacity-0 pointer-events-none'
               }`}>
                 <div className="space-y-4 text-center">
                   <p className="text-3xl text-purple-600 font-semibold">
                     {currentWord.customTranslation ||
-                     (currentWord.baseWord?.translations && currentWord.baseWord.translations.length > 0
-                       ? currentWord.baseWord.translations[0].translation
-                       : 'Нет перевода')}
+                        (currentWord.baseWord?.translations && currentWord.baseWord.translations.length > 0
+                            ? currentWord.baseWord.translations[0].translation
+                            : 'Нет перевода')}
                   </p>
                   {showExamples && currentWord.baseWord?.examples && currentWord.baseWord.examples.length > 0 && (
-                    <div className="text-gray-600 space-y-2">
-                      <p className="font-medium text-sm">Примеры:</p>
-                      {currentWord.baseWord.examples.slice(0, 2).map((example, idx) => (
-                        <p key={idx} className="text-sm italic">
-                          • {example.example} - {example.translation}
-                        </p>
-                      ))}
-                    </div>
+                      <div className="text-gray-600 space-y-2">
+                        <p className="font-medium text-sm">Примеры:</p>
+                        {currentWord.baseWord.examples.slice(0, 2).map((example, idx) => (
+                            <p key={idx} className="text-sm italic">
+                              • {example.example} - {example.translation}
+                            </p>
+                        ))}
+                      </div>
                   )}
                 </div>
               </div>
-
-              {/* Кнопка "Показать перевод" */}
-              <Button
-                size="lg"
-                onClick={() => setShowTranslation(true)}
-                className={`text-lg transition-opacity duration-300 ${showTranslation ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
-              >
-                Показать перевод
-              </Button>
             </div>
           </div>
 
-          {showTranslation && (
-            <div className="flex justify-center pt-4">
-              <Button size="lg" onClick={handleNext} className="gap-2">
-                {currentIndex < words.length - 1 ? 'Следующее слово' : 'Завершить'}
-                <ChevronRight className="w-5 h-5" />
-              </Button>
-            </div>
-          )}
+          {!showTranslation && (
+          <div className="flex justify-center pt-4">
+            <Button
+                size="lg"
+                onClick={() => setShowTranslation(true)}
+                className={`text-lg transition-opacity duration-300 ${showTranslation ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+            >
+              Показать перевод
+            </Button>
+          </div>)}
+            {showTranslation && (
+                <div className="flex justify-center pt-4">
+                  <Button size="lg" onClick={handleNext} className="gap-2">
+                    {currentIndex < words.length - 1 ? 'Следующее слово' : 'Завершить'}
+                    <ChevronRight className="w-5 h-5"/>
+                  </Button>
+                </div>
+            )}
         </CardContent>
       </Card>
 
       <SettingsModal
-        isOpen={showSettings}
+          isOpen={showSettings}
         onClose={() => setShowSettings(false)}
         showExamples={showExamples}
         onChange={setShowExamples}
