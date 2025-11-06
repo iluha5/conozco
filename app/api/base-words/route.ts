@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
 
     // Проверить, существует ли пользователь в базе данных
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id }
+      where: { id: parseInt(session.user.id) }
     })
 
     if (!user) {
@@ -94,7 +94,7 @@ export async function GET(request: NextRequest) {
     // Проверить, какие слова уже добавлены пользователем
     const userWordIds = await prisma.word.findMany({
       where: {
-        userId: session.user.id,
+        userId: parseInt(session.user.id),
         baseWordId: {
           in: baseWords.map(bw => bw.id)
         }

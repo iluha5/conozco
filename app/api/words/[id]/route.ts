@@ -20,7 +20,7 @@ export async function GET(
 
     // Проверить, существует ли пользователь в базе данных
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id }
+      where: { id: parseInt(session.user.id) }
     })
 
     if (!user) {
@@ -30,10 +30,18 @@ export async function GET(
       )
     }
 
+    const wordId = parseInt(params.id)
+    if (isNaN(wordId)) {
+      return NextResponse.json(
+        { error: 'Invalid word ID' },
+        { status: 400 }
+      )
+    }
+
     const word = await prisma.word.findFirst({
       where: {
-        id: params.id,
-        userId: session.user.id
+        id: wordId,
+        userId: parseInt(session.user.id)
       },
       include: {
         language: true,
@@ -87,7 +95,7 @@ export async function PATCH(
 
     // Проверить, существует ли пользователь в базе данных
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id }
+      where: { id: parseInt(session.user.id) }
     })
 
     if (!user) {
@@ -97,13 +105,21 @@ export async function PATCH(
       )
     }
 
+    const wordId = parseInt(params.id)
+    if (isNaN(wordId)) {
+      return NextResponse.json(
+        { error: 'Invalid word ID' },
+        { status: 400 }
+      )
+    }
+
     const body = await request.json()
-    
+
     // Проверяем, что слово принадлежит пользователю
     const existingWord = await prisma.word.findFirst({
       where: {
-        id: params.id,
-        userId: session.user.id
+        id: wordId,
+        userId: parseInt(session.user.id)
       }
     })
 
@@ -133,7 +149,7 @@ export async function PATCH(
     }
     
     const word = await prisma.word.update({
-      where: { id: params.id },
+      where: { id: wordId },
       data,
       include: {
         language: true,
@@ -167,7 +183,7 @@ export async function DELETE(
 
     // Проверить, существует ли пользователь в базе данных
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id }
+      where: { id: parseInt(session.user.id) }
     })
 
     if (!user) {
@@ -177,11 +193,19 @@ export async function DELETE(
       )
     }
 
+    const wordId = parseInt(params.id)
+    if (isNaN(wordId)) {
+      return NextResponse.json(
+        { error: 'Invalid word ID' },
+        { status: 400 }
+      )
+    }
+
     // Проверяем, что слово принадлежит пользователю
     const existingWord = await prisma.word.findFirst({
       where: {
-        id: params.id,
-        userId: session.user.id
+        id: wordId,
+        userId: parseInt(session.user.id)
       }
     })
 
@@ -193,7 +217,7 @@ export async function DELETE(
     }
 
     await prisma.word.delete({
-      where: { id: params.id },
+      where: { id: wordId },
     })
 
     return NextResponse.json({ success: true })

@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
 
     // Проверить, существует ли пользователь в базе данных
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id }
+      where: { id: parseInt(session.user.id) }
     })
 
     if (!user) {

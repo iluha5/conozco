@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
 
     // Проверить, существует ли пользователь в базе данных
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id }
+      where: { id: parseInt(session.user.id) }
     })
 
     if (!user) {
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status')
 
     const where: any = {
-      userId: session.user.id
+      userId: parseInt(session.user.id)
     }
 
     if (languageCode) {
@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
 
     // Проверить, существует ли пользователь в базе данных
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id }
+      where: { id: parseInt(session.user.id) }
     })
 
     if (!user) {
@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
 
     // Проверить, существует ли базовое слово
     const baseWord = await prisma.baseWord.findUnique({
-      where: { id: baseWordId },
+      where: { id: parseInt(baseWordId) },
       include: {
         language: true,
         partOfSpeech: true,
@@ -152,7 +152,7 @@ export async function POST(request: NextRequest) {
     const existingWord = await prisma.word.findUnique({
       where: {
         userId_baseWordId: {
-          userId: session.user.id,
+          userId: parseInt(session.user.id),
           baseWordId: baseWord.id
         }
       }
@@ -168,7 +168,7 @@ export async function POST(request: NextRequest) {
     // Создать слово для пользователя
     const word = await prisma.word.create({
       data: {
-        userId: session.user.id,
+        userId: parseInt(session.user.id),
         baseWordId: baseWord.id,
         customTranslation: customTranslation?.trim() || null,
         languageId: baseWord.languageId,
