@@ -656,7 +656,7 @@ export const WORDS_DATA: WordData[] = [
     grammaticalExamples: []
   },
   {
-    word: 'me equiroco',
+    word: 'me equivoco',
     partOfSpeech: PartOfSpeech.VERB,
     languageCode: 'es',
     translations: [
@@ -666,27 +666,27 @@ export const WORDS_DATA: WordData[] = [
       }
     ],
     examples: [
-      { pronoun: 'yo', example: 'Me equiroco a menudo', translation: 'Я часто ошибаюсь' },
+      { pronoun: 'yo', example: 'Me equivoco a menudo', translation: 'Я часто ошибаюсь' },
       { pronoun: 'tú', example: 'Te equivocas en eso', translation: 'Ты ошибаешься в этом' },
       { pronoun: 'él', example: 'Se equivoca mucho', translation: 'Он много ошибается' },
       { pronoun: 'ella', example: 'Se equivoca poco', translation: 'Она мало ошибается' },
       { pronoun: 'nosotros', example: 'Nos equivocamos juntos', translation: 'Мы ошибаемся вместе' },
       { pronoun: 'ellos', example: 'Se equivocan siempre', translation: 'Они всегда ошибаются' },
-      { pronoun: 'yo', example: 'No me equiroco nunca', translation: 'Я никогда не ошибаюсь', isNegative: true },
+      { pronoun: 'yo', example: 'No me equivoco nunca', translation: 'Я никогда не ошибаюсь', isNegative: true },
       { pronoun: 'tú', example: '¿Te equivocas?', translation: 'Ты ошибаешься?', isQuestion: true }
     ],
     grammaticalExamples: [
       {
         tenseName: 'Presente de indicativo',
         examples: [
-          { pronoun: 'yo', example: 'Me equiroco', translation: 'Я ошибаюсь' },
+          { pronoun: 'yo', example: 'Me equivoco', translation: 'Я ошибаюсь' },
           { pronoun: 'tú', example: 'Te equivocas', translation: 'Ты ошибаешься' },
           { pronoun: 'él', example: 'Se equivoca', translation: 'Он ошибается' },
           { pronoun: 'ella', example: 'Se equivoca', translation: 'Она ошибается' },
           { pronoun: 'nosotros', example: 'Nos equivocamos', translation: 'Мы ошибаемся' },
           { pronoun: 'vosotros', example: 'Os equivocáis', translation: 'Вы ошибаетесь' },
           { pronoun: 'ellos', example: 'Se equivocan', translation: 'Они ошибаются' },
-          { pronoun: 'yo', example: 'No me equiroco', translation: 'Я не ошибаюсь', isNegative: true },
+          { pronoun: 'yo', example: 'No me equivoco', translation: 'Я не ошибаюсь', isNegative: true },
           { pronoun: 'tú', example: '¿Te equivocas?', translation: 'Ты ошибаешься?', isQuestion: true }
         ]
       },

@@ -45,10 +45,6 @@ export default function LoginPage() {
           variant: 'destructive',
         })
       } else {
-        toast({
-          title: 'Успешно',
-          description: 'Вы вошли в систему',
-        })
         router.push('/')
         router.refresh()
       }
