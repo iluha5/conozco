@@ -59,6 +59,8 @@ export default function WordsPage() {
   const [selectedWords, setSelectedWords] = useState<number[]>([])
   const [loading, setLoading] = useState(true)
   const [isClient, setIsClient] = useState(false)
+  const [translationSelectorOpen, setTranslationSelectorOpen] = useState<{[key: number]: boolean}>({})
+  const [translationSelectorPosition, setTranslationSelectorPosition] = useState<{[key: number]: {top: number, left: number}}>({})
   const { toast } = useToast()
 
   useEffect(() => {
@@ -74,6 +76,30 @@ export default function WordsPage() {
     // Сбрасываем выделение при изменении фильтров
     setSelectedWords([])
   }, [filteredWords])
+
+  // Закрываем все открытые translation selectors при клике вне их
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element
+      if (!target.closest('.translation-selector')) {
+        setTranslationSelectorOpen({})
+        setTranslationSelectorPosition({})
+      }
+    }
+
+    const handleScroll = () => {
+      // При скролле закрываем все открытые dropdown
+      setTranslationSelectorOpen({})
+      setTranslationSelectorPosition({})
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    window.addEventListener('scroll', handleScroll, true)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      window.removeEventListener('scroll', handleScroll, true)
+    }
+  }, [])
 
   const fetchWords = async () => {
     try {
@@ -166,6 +192,61 @@ export default function WordsPage() {
 
   const isWordSelected = (wordId: number) => {
     return selectedWords.includes(wordId)
+  }
+
+  const handleUpdateTranslation = async (wordId: number, newTranslation: string) => {
+    try {
+      const response = await fetch(`/api/words/${wordId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ customTranslation: newTranslation }),
+      })
+
+      if (response.ok) {
+        await fetchWords()
+        setTranslationSelectorOpen(prev => ({ ...prev, [wordId]: false }))
+        setTranslationSelectorPosition(prev => {
+          const newPositions = { ...prev }
+          delete newPositions[wordId]
+          return newPositions
+        })
+      }
+    } catch (error) {
+      console.error('Error updating translation:', error)
+    }
+  }
+
+  const toggleTranslationSelector = (wordId: number, element?: HTMLElement) => {
+    if (element) {
+      const rect = element.getBoundingClientRect()
+      const dropdownWidth = 200 // min-w-[200px]
+      const dropdownHeight = 150 // примерная высота
+
+      let left = rect.left
+      let top = rect.bottom + 4 // 4px ниже элемента
+
+      // Проверяем, не выходит ли dropdown за правый край экрана
+      if (left + dropdownWidth > window.innerWidth) {
+        left = window.innerWidth - dropdownWidth - 8 // 8px от края
+      }
+
+      // Проверяем, не выходит ли dropdown за нижний край экрана
+      if (top + dropdownHeight > window.innerHeight) {
+        top = rect.top - dropdownHeight - 4 // показываем выше элемента
+      }
+
+      setTranslationSelectorPosition(prev => ({
+        ...prev,
+        [wordId]: { top, left }
+      }))
+    }
+
+    setTranslationSelectorOpen(prev => ({
+      ...prev,
+      [wordId]: !prev[wordId]
+    }))
   }
 
   const handleBulkStatusChange = async (newStatus: 'LEARNED' | 'NOT_LEARNED') => {
@@ -430,12 +511,82 @@ export default function WordsPage() {
                               {word.baseWord?.partOfSpeech ? getPartOfSpeechAbbrev(word.baseWord.partOfSpeech.displayName) : 'Слово'}
                             </span>
                           </CardTitle>
-                          <CardDescription className="truncate">
-                            {word.customTranslation ||
-                             (word.baseWord?.translations && word.baseWord.translations.length > 0
-                               ? word.baseWord.translations[0].translation
-                               : 'Нет перевода')}
-                          </CardDescription>
+                          <div className="translation-selector flex items-center gap-1">
+                            <span
+                              className={`truncate cursor-pointer hover:text-blue-600 transition-colors ${
+                                (word.baseWord?.translations && word.baseWord.translations.length > 1) ||
+                                word.customTranslation ? 'text-blue-500' : 'text-gray-500'
+                              }`}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                if ((word.baseWord?.translations && word.baseWord.translations.length > 1) || word.customTranslation) {
+                                  toggleTranslationSelector(word.id, e.currentTarget as HTMLElement)
+                                }
+                              }}
+                            >
+                              {word.customTranslation ||
+                               (word.baseWord?.translations && word.baseWord.translations.length > 0
+                                 ? word.baseWord.translations[0].translation
+                                 : 'Нет перевода')}
+                            </span>
+                            {word.baseWord?.translations && word.baseWord.translations.length > 1 && (
+                              <span className="text-xs text-gray-400 shrink-0">
+                                (+{word.baseWord.translations.length - 1})
+                              </span>
+                            )}
+                            {translationSelectorOpen[word.id] && translationSelectorPosition[word.id] && (
+                              <div
+                                className="translation-selector fixed z-50 bg-white border border-gray-200 rounded-md shadow-lg p-2 min-w-[200px]"
+                                style={{
+                                  top: translationSelectorPosition[word.id].top,
+                                  left: translationSelectorPosition[word.id].left
+                                }}
+                              >
+                                <div className="flex justify-between items-center mb-2">
+                                  <div className="text-xs font-medium text-gray-600">Выберите перевод:</div>
+                                  <button
+                                    className="text-gray-400 hover:text-gray-600 p-1 rounded hover:bg-gray-100"
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      setTranslationSelectorOpen(prev => ({ ...prev, [word.id]: false }))
+                                      setTranslationSelectorPosition(prev => {
+                                        const newPositions = { ...prev }
+                                        delete newPositions[word.id]
+                                        return newPositions
+                                      })
+                                    }}
+                                  >
+                                    <X className="w-3 h-3" />
+                                  </button>
+                                </div>
+                                <div className="space-y-1">
+                                  {word.customTranslation && (
+                                    <button
+                                      className="w-full text-left px-2 py-1 text-sm hover:bg-gray-100 rounded text-blue-600"
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        handleUpdateTranslation(word.id, word.customTranslation!)
+                                      }}
+                                    >
+                                      ✏️ {word.customTranslation} (текущий)
+                                    </button>
+                                  )}
+                                  {word.baseWord?.translations.map((translation, index) => (
+                                    <button
+                                      key={index}
+                                      className="w-full text-left px-2 py-1 text-sm hover:bg-gray-100 rounded"
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        handleUpdateTranslation(word.id, translation.translation)
+                                      }}
+                                    >
+                                            {index + 1}. {translation.translation}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
                       <div className="flex gap-1 shrink-0">
