@@ -119,20 +119,11 @@ export default function WordsPage() {
       })
 
       if (response.ok) {
-        toast({
-          title: 'Успешно',
-          description: 'Слово удалено',
-          variant: 'success',
-        })
         await fetchWords()
       }
     } catch (error) {
       console.error('Error deleting word:', error)
-      toast({
-        title: 'Ошибка',
-        description: 'Не удалось удалить слово',
-        variant: 'destructive',
-      })
+      // Не показываем toast для индивидуальных операций
     }
   }
 
@@ -148,20 +139,11 @@ export default function WordsPage() {
       })
 
       if (response.ok) {
-        toast({
-          title: 'Успешно',
-          description: `Слово помечено как ${newStatus === 'LEARNED' ? 'выученное' : 'невыученное'}`,
-          variant: 'success',
-        })
         await fetchWords()
       }
     } catch (error) {
       console.error('Error updating word:', error)
-      toast({
-        title: 'Ошибка',
-        description: 'Не удалось обновить статус слова',
-        variant: 'destructive',
-      })
+      // Не показываем toast для индивидуальных операций
     }
   }
 
@@ -249,6 +231,30 @@ export default function WordsPage() {
     return language.code === 'en' ? '🇬🇧 Английский' : '🇪🇸 Испанский'
   }
 
+  const getPartOfSpeechAbbrev = (displayName: string) => {
+    const abbreviations: { [key: string]: string } = {
+      'существительное': 'сущ',
+      'глагол': 'гл',
+      'прилагательное': 'пр',
+      'наречие': 'нар',
+      'местоимение': 'мест',
+      'предлог': 'пред',
+      'союз': 'союз',
+      'частица': 'част',
+      'междометие': 'межд',
+      'noun': 'n',
+      'verb': 'v',
+      'adjective': 'adj',
+      'adverb': 'adv',
+      'pronoun': 'pron',
+      'preposition': 'prep',
+      'conjunction': 'conj',
+      'particle': 'part',
+      'interjection': 'int',
+    }
+    return abbreviations[displayName.toLowerCase()] || displayName.substring(0, 3)
+  }
+
 
   if (!isClient) {
     return (
@@ -281,33 +287,33 @@ export default function WordsPage() {
           <AddWordDialog onWordAdded={handleAddWord} />
         </div>
 
-        <div className="grid md:grid-cols-3 gap-4 mb-8">
-          <Card>
-            <CardHeader className="pb-3">
+        <div className="flex gap-4 mb-8">
+          <Card className="flex-1 max-w-[140px]">
+            <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Всего слов</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{words.length}</div>
+              <div className="text-2xl font-bold">{words.length}</div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="pb-3">
+          <Card className="flex-1 max-w-[140px]">
+            <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Не выучено</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-orange-600">
+              <div className="text-2xl font-bold text-orange-600">
                 {words.filter(w => w.status === 'NOT_LEARNED').length}
               </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="pb-3">
+          <Card className="flex-1 max-w-[140px]">
+            <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Выучено</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-green-600">
+              <div className="text-2xl font-bold text-green-600">
                 {words.filter(w => w.status === 'LEARNED').length}
               </div>
             </CardContent>
@@ -397,11 +403,11 @@ export default function WordsPage() {
             )}
 
             {/* Список слов */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[600px] overflow-y-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-1 max-h-[600px] overflow-y-auto p-2">
               {filteredWords.map((word) => (
                 <Card
                   key={word.id}
-                  className={`transition-all cursor-pointer ${
+                  className={`transition-all cursor-pointer m-1 ${
                     isWordSelected(word.id)
                       ? 'ring-2 ring-primary bg-blue-50'
                       : 'hover:bg-gray-50'
@@ -421,7 +427,7 @@ export default function WordsPage() {
                             <span className="truncate">{word.baseWord?.word || word.customWord}</span>
                             <span className="text-sm shrink-0">{getLanguageFlag(word.language)}</span>
                             <span className="text-xs bg-gray-100 px-2 py-1 rounded shrink-0">
-                              {word.baseWord?.partOfSpeech?.displayName || 'Слово'}
+                              {word.baseWord?.partOfSpeech ? getPartOfSpeechAbbrev(word.baseWord.partOfSpeech.displayName) : 'Слово'}
                             </span>
                           </CardTitle>
                           <CardDescription className="truncate">
