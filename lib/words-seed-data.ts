@@ -10,6 +10,13 @@ export enum PartOfSpeech {
   INTERJECTION = 'INTERJECTION'
 }
 
+export enum SentenceTypeCode {
+  AFFIRMATIVE = 'AFFIRMATIVE',
+  NEGATIVE = 'NEGATIVE',
+  QUESTION = 'QUESTION',
+  NEGATIVE_QUESTION = 'NEGATIVE_QUESTION'
+}
+
 export interface WordData {
   word: string
   partOfSpeech: PartOfSpeech
@@ -22,6 +29,7 @@ export interface WordData {
     pronoun: string
     example: string
     translation: string
+    sentenceTypeCode?: SentenceTypeCode
     isNegative?: boolean
     isQuestion?: boolean
   }[]
@@ -31,6 +39,7 @@ export interface WordData {
       pronoun: string
       example: string
       translation: string
+      sentenceTypeCode?: SentenceTypeCode
       isNegative?: boolean
       isQuestion?: boolean
     }[]

@@ -52,6 +52,13 @@ type Word = {
       pronoun: {
         pronoun: string
       }
+      sentenceType?: {
+        id: number
+        code: string
+        displayName: string
+        isNegative: boolean
+        isQuestion: boolean
+      }
     }>
     grammaticalExamples: Array<{
       example: string
@@ -61,6 +68,13 @@ type Word = {
       }
       tense: {
         name: string
+      }
+      sentenceType?: {
+        id: number
+        code: string
+        displayName: string
+        isNegative: boolean
+        isQuestion: boolean
       }
     }>
   }

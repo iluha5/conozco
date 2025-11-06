@@ -3,6 +3,28 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
+const serializeWord = (word: any) => {
+  const { status, baseWord, ...rest } = word
+
+  return {
+    ...rest,
+    status: status.code,
+    baseWord: baseWord
+      ? {
+          ...baseWord,
+          examples: baseWord.examples.map((example: any) => ({
+            ...example,
+            sentenceType: example.sentenceType,
+          })),
+          grammaticalExamples: baseWord.grammaticalExamples.map((example: any) => ({
+            ...example,
+            sentenceType: example.sentenceType,
+          })),
+        }
+      : undefined,
+  }
+}
+
 // GET - получить одно слово
 export async function GET(
   request: NextRequest,
@@ -44,13 +66,27 @@ export async function GET(
         userId: parseInt(session.user.id)
       },
       include: {
+        status: true,
         language: true,
         baseWord: {
           include: {
             translations: {
               where: { language: { code: 'ru' } },
               orderBy: { priority: 'asc' }
-            }
+            },
+            examples: {
+              include: {
+                pronoun: true,
+                sentenceType: true,
+              },
+            },
+            grammaticalExamples: {
+              include: {
+                pronoun: true,
+                tense: true,
+                sentenceType: true,
+              },
+            },
           }
         },
         trainingSessions: {
@@ -68,7 +104,9 @@ export async function GET(
       )
     }
 
-    return NextResponse.json(word)
+    const normalized = serializeWord(word)
+
+    return NextResponse.json(normalized)
   } catch (error) {
     console.error('Error fetching word:', error)
     return NextResponse.json(
@@ -147,16 +185,56 @@ export async function PATCH(
       data.languageId = language.id
       delete data.languageCode
     }
+
+    if (body.status) {
+      const statusRecord = await prisma.wordStatus.findUnique({
+        where: { code: body.status },
+      })
+
+      if (!statusRecord) {
+        return NextResponse.json(
+          { error: 'Invalid word status' },
+          { status: 400 }
+        )
+      }
+
+      data.statusId = statusRecord.id
+      delete data.status
+    }
     
     const word = await prisma.word.update({
       where: { id: wordId },
       data,
       include: {
+        status: true,
         language: true,
+        baseWord: {
+          include: {
+            translations: {
+              where: { language: { code: 'ru' } },
+              orderBy: { priority: 'asc' },
+            },
+            examples: {
+              include: {
+                pronoun: true,
+                sentenceType: true,
+              },
+            },
+            grammaticalExamples: {
+              include: {
+                pronoun: true,
+                tense: true,
+                sentenceType: true,
+              },
+            },
+          },
+        },
       },
     })
 
-    return NextResponse.json(word)
+    const normalized = serializeWord(word)
+
+    return NextResponse.json(normalized)
   } catch (error) {
     console.error('Error updating word:', error)
     return NextResponse.json(

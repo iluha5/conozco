@@ -1,10 +1,48 @@
 // Реэкспорт данных слов из отдельного файла
-export { WORDS_DATA, PartOfSpeech, type WordData } from './words-seed-data'
+export { WORDS_DATA, PartOfSpeech, SentenceTypeCode, type WordData } from './words-seed-data'
+
+import type { SentenceTypeCode as SentenceTypeCodeEnum } from './words-seed-data'
 
 // Функция для импорта данных слов в базу данных
 export async function importWordsData(prisma: any, partsOfSpeechRecords: Record<string, any>) {
   // Импортируем данные слов из отдельного файла
-  const { WORDS_DATA } = await import('./words-seed-data')
+  const { WORDS_DATA, SentenceTypeCode } = await import('./words-seed-data')
+
+  const sentenceTypes = await prisma.sentenceType.findMany()
+  const sentenceTypeByCode = new Map(sentenceTypes.map((type: any) => [type.code, type]))
+
+  type SentenceTypeFlags = {
+    sentenceTypeCode?: SentenceTypeCodeEnum
+    isNegative?: boolean
+    isQuestion?: boolean
+  }
+
+  const resolveSentenceTypeCode = ({ sentenceTypeCode, isNegative, isQuestion }: SentenceTypeFlags) => {
+    if (sentenceTypeCode) {
+      return sentenceTypeCode
+    }
+    if (isNegative && isQuestion) {
+      return SentenceTypeCode.NEGATIVE_QUESTION
+    }
+    if (isNegative) {
+      return SentenceTypeCode.NEGATIVE
+    }
+    if (isQuestion) {
+      return SentenceTypeCode.QUESTION
+    }
+    return SentenceTypeCode.AFFIRMATIVE
+  }
+
+  const getSentenceTypeId = (flags: SentenceTypeFlags) => {
+    const code = resolveSentenceTypeCode(flags)
+    const sentenceType = sentenceTypeByCode.get(code)
+
+    if (!sentenceType) {
+      throw new Error(`Sentence type with code ${code} is not seeded`)
+    }
+
+    return sentenceType.id
+  }
 
   for (const wordData of WORDS_DATA) {
     // Найти или создать язык
@@ -110,8 +148,7 @@ export async function importWordsData(prisma: any, partsOfSpeechRecords: Record<
             pronounId: pronounRecords[example.pronoun].id,
             example: example.example,
             translation: example.translation,
-            isNegative: example.isNegative || false,
-            isQuestion: example.isQuestion || false
+            sentenceTypeId: getSentenceTypeId(example)
           }
         })
       }
@@ -152,8 +189,7 @@ export async function importWordsData(prisma: any, partsOfSpeechRecords: Record<
                 pronounId: pronounRecords[example.pronoun].id,
                 example: example.example,
                 translation: example.translation,
-                isNegative: example.isNegative || false,
-                isQuestion: example.isQuestion || false
+                sentenceTypeId: getSentenceTypeId(example)
               }
             })
           }

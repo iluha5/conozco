@@ -42,8 +42,13 @@ type BaseWord = {
     pronoun: {
       pronoun: string
     }
-    isNegative?: boolean
-    isQuestion?: boolean
+    sentenceType?: {
+      id: number
+      code: string
+      displayName: string
+      isNegative: boolean
+      isQuestion: boolean
+    }
   }>
   isAddedByUser: boolean
 }

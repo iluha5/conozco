@@ -45,7 +45,9 @@ export async function GET(request: NextRequest) {
       }
     }
     if (status) {
-      where.status = status
+      where.status = {
+        code: status
+      }
     }
 
     const words = await prisma.word.findMany({
@@ -54,6 +56,7 @@ export async function GET(request: NextRequest) {
         createdAt: 'desc',
       },
       include: {
+        status: true,
         language: true,
         baseWord: {
           include: {
@@ -64,13 +67,15 @@ export async function GET(request: NextRequest) {
             },
             examples: {
               include: {
-                pronoun: true
+                pronoun: true,
+                sentenceType: true,
               }
             },
             grammaticalExamples: {
               include: {
                 pronoun: true,
-                tense: true
+                tense: true,
+                sentenceType: true,
               }
             }
           }
@@ -84,7 +89,29 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    return NextResponse.json(words)
+    const serializedWords = words.map((word: any) => {
+      const { status, baseWord, ...restWord } = word
+
+      return {
+        ...restWord,
+        status: status.code,
+        baseWord: baseWord
+          ? {
+              ...baseWord,
+              examples: baseWord.examples.map((example: any) => ({
+                ...example,
+                sentenceType: example.sentenceType,
+              })),
+              grammaticalExamples: baseWord.grammaticalExamples.map((example: any) => ({
+                ...example,
+                sentenceType: example.sentenceType,
+              })),
+            }
+          : undefined,
+      }
+    })
+
+    return NextResponse.json(serializedWords)
   } catch (error) {
     console.error('Error fetching words:', error)
     return NextResponse.json(
@@ -174,6 +201,7 @@ export async function POST(request: NextRequest) {
         languageId: baseWord.languageId,
       },
       include: {
+        status: true,
         language: true,
         baseWord: {
           include: {
@@ -184,13 +212,15 @@ export async function POST(request: NextRequest) {
             },
             examples: {
               include: {
-                pronoun: true
+                pronoun: true,
+                sentenceType: true,
               }
             },
             grammaticalExamples: {
               include: {
                 pronoun: true,
-                tense: true
+                tense: true,
+                sentenceType: true,
               }
             }
           }
@@ -198,7 +228,26 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    return NextResponse.json(word, { status: 201 })
+    const { status, ...rest } = word as any
+    const normalized = {
+      ...rest,
+      status: status.code,
+      baseWord: rest.baseWord
+        ? {
+            ...rest.baseWord,
+            examples: rest.baseWord.examples.map((example: any) => ({
+              ...example,
+              sentenceType: example.sentenceType,
+            })),
+            grammaticalExamples: rest.baseWord.grammaticalExamples.map((example: any) => ({
+              ...example,
+              sentenceType: example.sentenceType,
+            })),
+          }
+        : undefined,
+    }
+
+    return NextResponse.json(normalized, { status: 201 })
   } catch (error: any) {
     console.error('Error creating word:', error)
 

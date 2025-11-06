@@ -10,16 +10,35 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Статус слова
-enum WordStatus {
-  NOT_LEARNED
-  LEARNED
+// Тип предложения (отрицательное, вопросительное и т.д.)
+model SentenceType {
+  id                   Int                   @id @default(autoincrement())
+  code                 String                @unique
+  displayName          String
+  isNegative           Boolean               @default(false)
+  isQuestion           Boolean               @default(false)
+  wordExamples         WordExample[]
+  grammaticalExamples  GrammaticalExample[]
+
+  @@unique([isNegative, isQuestion])
+}
+
+// Статус изучения слова
+model WordStatus {
+  id          Int    @id @default(autoincrement())
+  code        String @unique
+  displayName String
+
+  words Word[]
 }
 
 // Роль пользователя
-enum UserRole {
-  USER
-  ADMIN
+model UserRole {
+  id          Int    @id @default(autoincrement())
+  code        String @unique
+  displayName String
+
+  users User[]
 }
 
 // Часть речи
@@ -58,7 +77,8 @@ model User {
   email         String    @unique
   password      String    // hashed password
   name          String?
-  role          UserRole  @default(USER)
+  roleId        Int       @default(1)
+  role          UserRole  @relation(fields: [roleId], references: [id])
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -157,13 +177,14 @@ model WordExample {
   pronounId     Int      // ID местоимения
   example       String   // Пример предложения
   translation   String   // Перевод на русский
-  isNegative    Boolean  @default(false) // Отрицательный пример
-  isQuestion    Boolean  @default(false) // Вопросительный пример
+  sentenceTypeId Int
+  sentenceType  SentenceType @relation(fields: [sentenceTypeId], references: [id])
 
   baseWord      BaseWord @relation(fields: [baseWordId], references: [id], onDelete: Cascade)
   pronoun       Pronoun  @relation(fields: [pronounId], references: [id])
 
   @@index([baseWordId])
+  @@index([sentenceTypeId])
 }
 
 // Грамматические времена
@@ -187,8 +208,8 @@ model GrammaticalExample {
   pronounId     Int      // ID местоимения
   example       String   // Пример в данном времени
   translation   String   // Перевод на русский
-  isNegative    Boolean  @default(false) // Отрицательный пример
-  isQuestion    Boolean  @default(false) // Вопросительный пример
+  sentenceTypeId Int
+  sentenceType  SentenceType @relation(fields: [sentenceTypeId], references: [id])
 
   baseWord      BaseWord @relation(fields: [baseWordId], references: [id], onDelete: Cascade)
   tense         Tense    @relation(fields: [tenseId], references: [id])
@@ -196,6 +217,7 @@ model GrammaticalExample {
 
   @@index([baseWordId, tenseId])
   @@index([tenseId])
+  @@index([sentenceTypeId])
 }
 
 // Таблица слов для изучения (пользовательские слова)
@@ -206,7 +228,8 @@ model Word {
   customWord    String?     // Кастомное слово (если добавлено вручную)
   customTranslation String? // Кастомный перевод
   languageId    Int         // ID языка слова
-  status        WordStatus  @default(NOT_LEARNED)
+  statusId      Int         @default(1)
+  status        WordStatus  @relation(fields: [statusId], references: [id])
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 
@@ -218,7 +241,7 @@ model Word {
 
   @@unique([userId, baseWordId]) // Пользователь может добавить базовое слово только один раз
   @@unique([userId, customWord, languageId]) // Кастомное слово уникально для пользователя и языка
-  @@index([userId, languageId, status])
+  @@index([userId, languageId, statusId])
   @@index([languageId])
 }
 

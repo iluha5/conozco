@@ -7,6 +7,61 @@ const prisma = new PrismaClient()
 async function main() {
   console.log('🌱 Seeding database...')
 
+  // Create reference data
+  const userRolesData = [
+    { code: 'USER', displayName: 'Пользователь' },
+    { code: 'ADMIN', displayName: 'Администратор' },
+  ]
+  const userRoles: Record<string, { id: number }> = {}
+
+  for (const role of userRolesData) {
+    const record = await prisma.userRole.upsert({
+      where: { code: role.code },
+      update: {
+        displayName: role.displayName,
+      },
+      create: role,
+    })
+    userRoles[role.code] = { id: record.id }
+  }
+  console.log('✅ Ensured user roles')
+
+  const wordStatusesData = [
+    { code: 'NOT_LEARNED', displayName: 'Не выучено' },
+    { code: 'LEARNED', displayName: 'Выучено' },
+  ]
+
+  for (const status of wordStatusesData) {
+    await prisma.wordStatus.upsert({
+      where: { code: status.code },
+      update: {
+        displayName: status.displayName,
+      },
+      create: status,
+    })
+  }
+  console.log('✅ Ensured word statuses')
+
+  const sentenceTypesData = [
+    { code: 'AFFIRMATIVE', displayName: 'Утвердительное', isNegative: false, isQuestion: false },
+    { code: 'NEGATIVE', displayName: 'Отрицательное', isNegative: true, isQuestion: false },
+    { code: 'QUESTION', displayName: 'Вопросительное', isNegative: false, isQuestion: true },
+    { code: 'NEGATIVE_QUESTION', displayName: 'Отрицательно-вопросительное', isNegative: true, isQuestion: true },
+  ]
+
+  for (const type of sentenceTypesData) {
+    await prisma.sentenceType.upsert({
+      where: { code: type.code },
+      update: {
+        displayName: type.displayName,
+        isNegative: type.isNegative,
+        isQuestion: type.isQuestion,
+      },
+      create: type,
+    })
+  }
+  console.log('✅ Ensured sentence types')
+
   // Create languages
   const english = await prisma.language.upsert({
     where: { code: 'en' },
@@ -83,7 +138,7 @@ async function main() {
       email: 'ilya.rovda@gmail.com',
       password: adminPasswordHash,
       name: 'Ilya Rovda',
-      role: 'ADMIN',
+      roleId: userRoles['ADMIN'].id,
     },
   })
   console.log('✅ Created admin user:', admin.email)
@@ -96,7 +151,7 @@ async function main() {
       email: 'user@example.com',
       password: userPasswordHash,
       name: 'Test User',
-      role: 'USER',
+      roleId: userRoles['USER'].id,
     },
   })
   console.log('✅ Created regular user:', user.email)

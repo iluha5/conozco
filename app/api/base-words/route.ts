@@ -72,7 +72,8 @@ export async function GET(request: NextRequest) {
         },
         examples: {
           include: {
-            pronoun: true
+            pronoun: true,
+            sentenceType: true,
           },
           take: 3 // Ограничим количество примеров
         },
@@ -84,7 +85,8 @@ export async function GET(request: NextRequest) {
           },
           include: {
             tense: true,
-            pronoun: true
+            pronoun: true,
+            sentenceType: true,
           },
           take: 5 // Ограничим количество грамматических примеров
         }
