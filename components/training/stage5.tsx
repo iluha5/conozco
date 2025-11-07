@@ -1,10 +1,13 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
+import { useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ChevronRight, CheckCircle, XCircle, RotateCcw, Settings, X } from 'lucide-react'
+import { ChevronRight, CheckCircle, XCircle } from 'lucide-react'
 import { ProgressDots } from './progress-dots'
+import { Stage5SettingsModal } from './stage-settings'
+import { getStage5Settings, saveStage5Settings, type Stage5Settings } from '@/lib/training-settings'
 
 type Language = {
   id: string
@@ -83,64 +86,13 @@ type Phrase = {
   words: string[]
 }
 
-
-type SettingsModalProps = {
-  isOpen: boolean
-  onClose: () => void
-  currentValue: number
-  onChange: (value: number) => void
-}
-
-function SettingsModal({ isOpen, onClose, currentValue, onChange }: SettingsModalProps) {
-  if (!isOpen) return null
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 max-w-sm mx-4">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Настройки тренировки</h3>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClose}
-            className="p-1 h-auto"
-          >
-            <X className="w-4 h-4" />
-          </Button>
-        </div>
-
-        <div className="space-y-3">
-          <p className="text-sm text-gray-600">Количество предложений на слово:</p>
-
-          <div className="grid grid-cols-5 gap-2">
-            {[1, 2, 3, 4, 5].map((num) => (
-              <Button
-                key={num}
-                variant={currentValue === num ? "default" : "outline"}
-                size="sm"
-                onClick={() => onChange(num)}
-                className="h-10"
-              >
-                {num}
-              </Button>
-            ))}
-          </div>
-
-          <p className="text-xs text-gray-500 mt-2">
-            Если в базе меньше предложений, будут использованы все доступные.
-          </p>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 type WordState = {
   word: string
   selected: boolean
 }
 
 export function Stage5Training({ words, onComplete }: Stage5Props) {
+  const { data: session } = useSession()
   const [currentIndex, setCurrentIndex] = useState(0)
   const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0)
   const [currentPhrase, setCurrentPhrase] = useState<Phrase | null>(null)
@@ -177,6 +129,28 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
 
   // Инициализируем массив фраз для всех слов
   const [wordPhrases, setWordPhrases] = useState<Phrase[][]>([])
+
+  // Загружаем настройки из localStorage при монтировании
+  useEffect(() => {
+    if (session?.user?.id) {
+      const settings = getStage5Settings(session.user.id)
+      setSentencesPerWord(settings.sentencesPerWord)
+    }
+  }, [session])
+
+  // Обработчик изменения настроек
+  const handleSettingsChange = (newSettings: Stage5Settings) => {
+    if (session?.user?.id) {
+      setSentencesPerWord(newSettings.sentencesPerWord)
+      saveStage5Settings(session.user.id, newSettings)
+      setShowSettings(false)
+      // Сбрасываем прогресс при изменении количества предложений
+      setCurrentIndex(0)
+      setCurrentPhraseIndex(0)
+      setStats({ correct: 0, total: 0 })
+      setIsFirstCard(true)
+    }
+  }
 
   useEffect(() => {
     const phrases: Phrase[][] = wordsWithPhrases.map(word => {
@@ -482,16 +456,6 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
   }
 
 
-  const handleSettingsChange = (newSentencesPerWord: number) => {
-    setSentencesPerWord(newSentencesPerWord)
-    setShowSettings(false)
-    // Сбрасываем прогресс при изменении количества предложений
-    setCurrentIndex(0)
-    setCurrentPhraseIndex(0)
-    setStats({ correct: 0, total: 0 })
-    setIsFirstCard(true)
-  }
-
   // Функция для преобразования линейного индекса упражнения в (wordIndex, phraseIndex)
   const getWordAndPhraseIndex = (exerciseIndex: number): { wordIndex: number, phraseIndex: number } | null => {
     let accumulated = 0
@@ -704,10 +668,10 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
         </CardContent>
       </Card>
 
-      <SettingsModal
+      <Stage5SettingsModal
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}
-        currentValue={sentencesPerWord}
+        settings={{ sentencesPerWord }}
         onChange={handleSettingsChange}
       />
     </div>

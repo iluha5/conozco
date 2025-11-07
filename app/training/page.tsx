@@ -1,11 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Header } from '@/components/header'
 import { ArrowLeft } from 'lucide-react'
 import { Stage1Training } from '@/components/training/stage1'
@@ -16,6 +15,7 @@ import { Stage5Training } from '@/components/training/stage5'
 import { Stage6Training } from '@/components/training/stage6'
 import { WordsList } from '@/components/words-list'
 import { useToast } from '@/hooks/use-toast'
+import { getTrainingSettings } from '@/lib/training-settings'
 
 type Language = {
   id: string
@@ -88,6 +88,7 @@ type Word = {
 }
 
 export default function TrainingPage() {
+  const { data: session } = useSession()
   const [words, setWords] = useState<Word[]>([])
   const [currentStage, setCurrentStage] = useState<number>(1)
   const [selectedLanguage, setSelectedLanguage] = useState<string>('ALL')
@@ -100,9 +101,11 @@ export default function TrainingPage() {
   const { toast } = useToast()
 
   useEffect(() => {
-    loadSettings()
-    fetchWords()
-  }, [])
+    if (session?.user?.id) {
+      loadSettings()
+      fetchWords()
+    }
+  }, [session])
 
   useEffect(() => {
     filterTrainingWords()
@@ -139,22 +142,18 @@ export default function TrainingPage() {
   }
 
   const loadSettings = () => {
-    const savedStages = localStorage.getItem('training-enabled-stages')
-    if (savedStages) {
-      try {
-        const stages = JSON.parse(savedStages)
-        setEnabledStages(new Set(stages))
-      } catch (error) {
-        console.error('Error loading stages:', error)
-      }
-    }
+    if (!session?.user?.id) return
 
-    const savedLanguage = localStorage.getItem('training-selected-language')
+    // Загружаем настройки с userId
+    const settings = getTrainingSettings(session.user.id)
+    setEnabledStages(new Set(settings.enabledStages))
+
+    const savedLanguage = localStorage.getItem(`training_${session.user.id}_selected-language`)
     if (savedLanguage) {
       setSelectedLanguage(savedLanguage)
     }
 
-    const savedWords = localStorage.getItem('training-selected-words')
+    const savedWords = localStorage.getItem(`training_${session.user.id}_selected-words`)
     if (savedWords) {
       try {
         const words = JSON.parse(savedWords)

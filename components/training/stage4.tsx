@@ -1,10 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { CheckCircle, XCircle, Settings, X, ChevronRight } from 'lucide-react'
+import { CheckCircle, XCircle, Settings, ChevronRight } from 'lucide-react'
 import { ProgressDots } from './progress-dots'
+import { Stage4SettingsModal } from './stage-settings'
+import { getStage4Settings, saveStage4Settings, type Stage4Settings } from '@/lib/training-settings'
 
 type Language = {
   id: string
@@ -63,71 +66,15 @@ type LetterState = {
   selected: boolean
 }
 
-type DifficultyLevel = 'easy' | 'medium' | 'hard'
-
-type SettingsModalProps = {
-  isOpen: boolean
-  onClose: () => void
-  currentDifficulty: DifficultyLevel
-  onChange: (difficulty: DifficultyLevel) => void
-}
-
-function SettingsModal({ isOpen, onClose, currentDifficulty, onChange }: SettingsModalProps) {
-  if (!isOpen) return null
-
-  const difficultyOptions = [
-    { key: 'easy' as DifficultyLevel, label: 'Простой', description: 'Только буквы из слова' },
-    { key: 'medium' as DifficultyLevel, label: 'Средний', description: '+ 3 дополнительные буквы' },
-    { key: 'hard' as DifficultyLevel, label: 'Сложный', description: '+ 6 дополнительных букв' }
-  ]
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 max-w-sm mx-4">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Настройки тренировки</h3>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClose}
-            className="p-1 h-auto"
-          >
-            <X className="w-4 h-4" />
-          </Button>
-        </div>
-
-        <div className="space-y-3">
-          <p className="text-sm text-gray-600">Уровень сложности:</p>
-
-          <div className="space-y-2">
-            {difficultyOptions.map((option) => (
-              <Button
-                key={option.key}
-                variant={currentDifficulty === option.key ? "default" : "outline"}
-                onClick={() => onChange(option.key)}
-                className="w-full justify-start h-auto p-3 text-left"
-              >
-                <div>
-                  <div className="font-medium">{option.label}</div>
-                  <div className="text-xs text-gray-500">{option.description}</div>
-                </div>
-              </Button>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 export function Stage4Training({ words, onComplete }: Stage4Props) {
+  const { data: session } = useSession()
   const [currentIndex, setCurrentIndex] = useState(0)
   const [letters, setLetters] = useState<LetterState[]>([])
   const [userWord, setUserWord] = useState<string[]>([])
   const [isComplete, setIsComplete] = useState(false)
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null)
   const [stats, setStats] = useState({ correct: 0, total: 0 })
-  const [difficulty, setDifficulty] = useState<DifficultyLevel>('easy')
+  const [difficulty, setDifficulty] = useState<Stage4Settings['difficulty']>('easy')
   const [showSettings, setShowSettings] = useState(false)
   const [isFirstCard, setIsFirstCard] = useState(true)
   const [exerciseResults, setExerciseResults] = useState<boolean[]>([])
@@ -141,6 +88,27 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
   const [hasCompletedFirstRound, setHasCompletedFirstRound] = useState(false)
 
   const currentWord = words[currentIndex]
+
+  // Загружаем настройки из localStorage при монтировании
+  useEffect(() => {
+    if (session?.user?.id) {
+      const settings = getStage4Settings(session.user.id)
+      setDifficulty(settings.difficulty)
+    }
+  }, [session])
+
+  // Обработчик изменения настроек
+  const handleSettingsChange = (newSettings: Stage4Settings) => {
+    if (session?.user?.id) {
+      setDifficulty(newSettings.difficulty)
+      saveStage4Settings(session.user.id, newSettings)
+      setShowSettings(false)
+      // Сбрасываем прогресс при изменении сложности
+      setCurrentIndex(0)
+      setStats({ correct: 0, total: 0 })
+      setIsFirstCard(true)
+    }
+  }
 
   // Инициализируем массив результатов упражнений
   useEffect(() => {
@@ -355,15 +323,6 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
     await completeWord(correct)
   }
 
-  const handleSettingsChange = (newDifficulty: DifficultyLevel) => {
-    setDifficulty(newDifficulty)
-    setShowSettings(false)
-    // Сбрасываем прогресс при изменении сложности
-    setCurrentIndex(0)
-    setStats({ correct: 0, total: 0 })
-    setIsFirstCard(true)
-  }
-
   const handleReset = () => {
     initializeLetters()
     setUserWord([])
@@ -546,10 +505,10 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
         </CardContent>
       </Card>
 
-      <SettingsModal
+      <Stage4SettingsModal
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}
-        currentDifficulty={difficulty}
+        settings={{ difficulty }}
         onChange={handleSettingsChange}
       />
     </div>

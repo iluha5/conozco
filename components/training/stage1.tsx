@@ -1,11 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Volume2, ChevronRight, Settings, X } from 'lucide-react'
+import { Volume2, ChevronRight, Settings } from 'lucide-react'
 import { ProgressDots } from './progress-dots'
+import { Stage1SettingsModal } from './stage-settings'
+import { getStage1Settings, saveStage1Settings } from '@/lib/training-settings'
 
 type Language = {
   id: string
@@ -59,55 +61,8 @@ type Stage1Props = {
   onComplete: () => void
 }
 
-type SettingsModalProps = {
-  isOpen: boolean
-  onClose: () => void
-  showExamples: boolean
-  onChange: (showExamples: boolean) => void
-}
-
-function SettingsModal({ isOpen, onClose, showExamples, onChange }: SettingsModalProps) {
-  if (!isOpen) return null
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 max-w-sm mx-4">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Настройки тренировки</h3>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClose}
-            className="p-1 h-auto"
-          >
-            <X className="w-4 h-4" />
-          </Button>
-        </div>
-
-        <div className="space-y-4">
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="show-examples"
-              checked={showExamples}
-              onCheckedChange={(checked) => onChange(checked as boolean)}
-            />
-            <label
-              htmlFor="show-examples"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              Показывать примеры использования слов
-            </label>
-          </div>
-          <p className="text-xs text-gray-500">
-            При включении будут показаны примеры предложений с изучаемым словом
-          </p>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 export function Stage1Training({ words, onComplete }: Stage1Props) {
+  const { data: session } = useSession()
   const [currentIndex, setCurrentIndex] = useState(0)
   const [showTranslation, setShowTranslation] = useState(false)
   const [exerciseResults, setExerciseResults] = useState<boolean[]>([])
@@ -117,6 +72,23 @@ export function Stage1Training({ words, onComplete }: Stage1Props) {
   const [showExamples, setShowExamples] = useState(false)
 
   const currentWord = words[currentIndex]
+
+  // Загружаем настройки из localStorage при монтировании
+  useEffect(() => {
+    if (session?.user?.id) {
+      const settings = getStage1Settings(session.user.id)
+      setShowExamples(settings.showExamples)
+    }
+  }, [session])
+
+  // Обработчик изменения настроек
+  const handleSettingsChange = (newSettings: { showExamples: boolean }) => {
+    if (session?.user?.id) {
+      setShowExamples(newSettings.showExamples)
+      saveStage1Settings(session.user.id, newSettings)
+      setShowSettings(false)
+    }
+  }
 
   // Инициализируем массив результатов упражнений
   useEffect(() => {
@@ -276,11 +248,11 @@ export function Stage1Training({ words, onComplete }: Stage1Props) {
         </CardContent>
       </Card>
 
-      <SettingsModal
-          isOpen={showSettings}
+      <Stage1SettingsModal
+        isOpen={showSettings}
         onClose={() => setShowSettings(false)}
-        showExamples={showExamples}
-        onChange={setShowExamples}
+        settings={{ showExamples }}
+        onChange={handleSettingsChange}
       />
     </div>
   )

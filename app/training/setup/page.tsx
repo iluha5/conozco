@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -8,8 +9,22 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Header } from '@/components/header'
-import { ArrowLeft, ChevronDown, ChevronUp } from 'lucide-react'
+import { ArrowLeft, ChevronDown, ChevronUp, Settings } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+import { Stage1SettingsModal, Stage4SettingsModal, Stage5SettingsModal } from '@/components/training/stage-settings'
+import {
+  getTrainingSettings,
+  saveTrainingSettings,
+  getStage1Settings,
+  saveStage1Settings,
+  getStage4Settings,
+  saveStage4Settings,
+  getStage5Settings,
+  saveStage5Settings,
+  type Stage1Settings,
+  type Stage4Settings,
+  type Stage5Settings
+} from '@/lib/training-settings'
 
 type Language = {
   id: string
@@ -59,6 +74,7 @@ type Word = {
 }
 
 export default function TrainingSetupPage() {
+  const { data: session } = useSession()
   const [selectedLanguage, setSelectedLanguage] = useState<string>('ALL')
   const [enabledStages, setEnabledStages] = useState<Set<number>>(new Set([1, 2, 3, 4, 5, 6]))
   const [words, setWords] = useState<Word[]>([])
@@ -66,17 +82,27 @@ export default function TrainingSetupPage() {
   const [visibleWordsCount, setVisibleWordsCount] = useState(12)
   const [showStagesSettings, setShowStagesSettings] = useState(false)
   const [isInitialSelection, setIsInitialSelection] = useState(true)
+  const [showStage1Settings, setShowStage1Settings] = useState(false)
+  const [showStage4Settings, setShowStage4Settings] = useState(false)
+  const [showStage5Settings, setShowStage5Settings] = useState(false)
+  const [stage1Settings, setStage1Settings] = useState<Stage1Settings>({ showExamples: false })
+  const [stage4Settings, setStage4Settings] = useState<Stage4Settings>({ difficulty: 'easy' })
+  const [stage5Settings, setStage5Settings] = useState<Stage5Settings>({ sentencesPerWord: 1 })
   const { toast } = useToast()
   const router = useRouter()
 
   useEffect(() => {
-    loadSettings()
+    if (session?.user?.id) {
+      loadSettings()
+    }
     fetchWords()
-  }, [])
+  }, [session])
 
   useEffect(() => {
-    saveSettings()
-  }, [enabledStages, selectedWords])
+    if (session?.user?.id) {
+      saveSettings()
+    }
+  }, [enabledStages, selectedWords, session])
 
   useEffect(() => {
     // Когда слова загружены, выбираем первые 12 по умолчанию (только при первой загрузке)
@@ -105,17 +131,19 @@ export default function TrainingSetupPage() {
   }
 
   const loadSettings = () => {
-    const savedStages = localStorage.getItem('training-enabled-stages')
-    if (savedStages) {
-      try {
-        const stages = JSON.parse(savedStages)
-        setEnabledStages(new Set(stages))
-      } catch (error) {
-        console.error('Error loading stages:', error)
-      }
-    }
+    if (!session?.user?.id) return
 
-    const savedWords = localStorage.getItem('training-selected-words')
+    // Загружаем все настройки тренировки
+    const allSettings = getTrainingSettings(session.user.id)
+    setEnabledStages(new Set(allSettings.enabledStages))
+    
+    // Загружаем настройки этапов
+    setStage1Settings(allSettings.stage1)
+    setStage4Settings(allSettings.stage4)
+    setStage5Settings(allSettings.stage5)
+
+    // Для обратной совместимости - проверяем старые ключи
+    const savedWords = localStorage.getItem(`training_${session.user.id}_selected-words`)
     if (savedWords) {
       try {
         const words = JSON.parse(savedWords)
@@ -127,8 +155,17 @@ export default function TrainingSetupPage() {
   }
 
   const saveSettings = () => {
-    localStorage.setItem('training-enabled-stages', JSON.stringify([...enabledStages]))
-    localStorage.setItem('training-selected-words', JSON.stringify([...selectedWords]))
+    if (!session?.user?.id) return
+
+    // Сохраняем выбранные этапы
+    const allSettings = getTrainingSettings(session.user.id)
+    saveTrainingSettings(session.user.id, {
+      ...allSettings,
+      enabledStages: [...enabledStages]
+    })
+
+    // Сохраняем выбранные слова
+    localStorage.setItem(`training_${session.user.id}_selected-words`, JSON.stringify([...selectedWords]))
   }
 
   const toggleWord = (wordId: string) => {
@@ -186,10 +223,34 @@ export default function TrainingSetupPage() {
 
   const isStageEnabled = (stage: number) => enabledStages.has(stage)
 
+  // Обработчики изменения настроек этапов
+  const handleStage1SettingsChange = (newSettings: Stage1Settings) => {
+    if (!session?.user?.id) return
+    setStage1Settings(newSettings)
+    saveStage1Settings(session.user.id, newSettings)
+    setShowStage1Settings(false)
+  }
+
+  const handleStage4SettingsChange = (newSettings: Stage4Settings) => {
+    if (!session?.user?.id) return
+    setStage4Settings(newSettings)
+    saveStage4Settings(session.user.id, newSettings)
+    setShowStage4Settings(false)
+  }
+
+  const handleStage5SettingsChange = (newSettings: Stage5Settings) => {
+    if (!session?.user?.id) return
+    setStage5Settings(newSettings)
+    saveStage5Settings(session.user.id, newSettings)
+    setShowStage5Settings(false)
+  }
+
   const startTraining = () => {
-    // Сохраняем выбранный язык и выбранные слова
-    localStorage.setItem('training-selected-language', selectedLanguage)
-    localStorage.setItem('training-selected-words', JSON.stringify([...selectedWords]))
+    if (!session?.user?.id) return
+
+    // Сохраняем выбранный язык и выбранные слова с userId
+    localStorage.setItem(`training_${session.user.id}_selected-language`, selectedLanguage)
+    localStorage.setItem(`training_${session.user.id}_selected-words`, JSON.stringify([...selectedWords]))
 
     if (selectedWords.size === 0) {
       toast({
@@ -320,15 +381,16 @@ export default function TrainingSetupPage() {
                   {[1, 2, 3, 4, 5, 6].map((stage) => (
                     <div
                       key={stage}
-                      className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-                      onClick={() => toggleStage(stage)}
+                      className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 transition-colors"
                     >
                       <Checkbox
                         id={`setup-stage-${stage}`}
                         checked={isStageEnabled(stage)}
                         onChange={() => {}} // Пустой обработчик, чтобы предотвратить warnings
+                        onClick={() => toggleStage(stage)}
+                        className="cursor-pointer"
                       />
-                      <div className="flex-1">
+                      <div className="flex-1 cursor-pointer" onClick={() => toggleStage(stage)}>
                         <div className="text-sm font-medium leading-none">
                           Этап {stage}
                         </div>
@@ -341,6 +403,22 @@ export default function TrainingSetupPage() {
                           {stage === 6 && 'Составление по голосу'}
                         </p>
                       </div>
+                      {(stage === 1 || stage === 4 || stage === 5) && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            if (stage === 1) setShowStage1Settings(true)
+                            if (stage === 4) setShowStage4Settings(true)
+                            if (stage === 5) setShowStage5Settings(true)
+                          }}
+                          className="p-2 h-auto shrink-0"
+                          title="Настройки этапа"
+                        >
+                          <Settings className="w-4 h-4" />
+                        </Button>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -362,6 +440,26 @@ export default function TrainingSetupPage() {
           </Card>
         </div>
       </div>
+
+      {/* Модальные окна настроек этапов */}
+      <Stage1SettingsModal
+        isOpen={showStage1Settings}
+        onClose={() => setShowStage1Settings(false)}
+        settings={stage1Settings}
+        onChange={handleStage1SettingsChange}
+      />
+      <Stage4SettingsModal
+        isOpen={showStage4Settings}
+        onClose={() => setShowStage4Settings(false)}
+        settings={stage4Settings}
+        onChange={handleStage4SettingsChange}
+      />
+      <Stage5SettingsModal
+        isOpen={showStage5Settings}
+        onClose={() => setShowStage5Settings(false)}
+        settings={stage5Settings}
+        onChange={handleStage5SettingsChange}
+      />
     </div>
   )
 }
