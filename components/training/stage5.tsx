@@ -1,13 +1,12 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ChevronRight, CheckCircle, XCircle } from 'lucide-react'
+import { ChevronRight, CheckCircle, XCircle, Settings } from 'lucide-react'
 import { ProgressDots } from './progress-dots'
 import { Stage5SettingsModal } from './stage-settings'
-import { getStage5Settings, saveStage5Settings, type Stage5Settings } from '@/lib/training-settings'
+import { useStage5Settings } from '@/hooks/use-training-settings'
 
 type Language = {
   id: string
@@ -92,7 +91,7 @@ type WordState = {
 }
 
 export function Stage5Training({ words, onComplete }: Stage5Props) {
-  const { data: session } = useSession()
+  const { settings, updateSettings } = useStage5Settings()
   const [currentIndex, setCurrentIndex] = useState(0)
   const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0)
   const [currentPhrase, setCurrentPhrase] = useState<Phrase | null>(null)
@@ -102,8 +101,7 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null)
   const [stats, setStats] = useState({ correct: 0, total: 0 })
   const [exerciseResults, setExerciseResults] = useState<boolean[]>([])
-  const [sentencesPerWord, setSentencesPerWord] = useState(1)
-  const [showSettings, setShowSettings] = useState(false)
+  const [showSettingsModal, setShowSettingsModal] = useState(false)
   const [isFirstCard, setIsFirstCard] = useState(true)
   const [flashingWord, setFlashingWord] = useState<number | null>(null)
   const [fadeIn, setFadeIn] = useState(false)
@@ -130,26 +128,15 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
   // Инициализируем массив фраз для всех слов
   const [wordPhrases, setWordPhrases] = useState<Phrase[][]>([])
 
-  // Загружаем настройки из localStorage при монтировании
-  useEffect(() => {
-    if (session?.user?.id) {
-      const settings = getStage5Settings(session.user.id)
-      setSentencesPerWord(settings.sentencesPerWord)
-    }
-  }, [session])
-
   // Обработчик изменения настроек
-  const handleSettingsChange = (newSettings: Stage5Settings) => {
-    if (session?.user?.id) {
-      setSentencesPerWord(newSettings.sentencesPerWord)
-      saveStage5Settings(session.user.id, newSettings)
-      setShowSettings(false)
-      // Сбрасываем прогресс при изменении количества предложений
-      setCurrentIndex(0)
-      setCurrentPhraseIndex(0)
-      setStats({ correct: 0, total: 0 })
-      setIsFirstCard(true)
-    }
+  const handleSettingsChange = (newSettings: typeof settings) => {
+    updateSettings(newSettings)
+    setShowSettingsModal(false)
+    // Сбрасываем прогресс при изменении количества предложений
+    setCurrentIndex(0)
+    setCurrentPhraseIndex(0)
+    setStats({ correct: 0, total: 0 })
+    setIsFirstCard(true)
   }
 
   useEffect(() => {
@@ -183,14 +170,14 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
       }
 
       // Ограничиваем до выбранного количества предложений, но не больше доступных
-      return allPhrases.slice(0, sentencesPerWord)
+      return allPhrases.slice(0, settings.sentencesPerWord)
     })
 
     setWordPhrases(phrases)
     // Инициализируем массив результатов для всех упражнений
     const totalExercises = phrases.reduce((total, wordPhrases) => total + wordPhrases.length, 0)
     setExerciseResults(new Array(totalExercises).fill(null))
-  }, [wordsWithPhrases, sentencesPerWord])
+  }, [wordsWithPhrases, settings.sentencesPerWord])
 
   // Рассчитываем общий прогресс
   const totalPhrases = wordPhrases.reduce((total, phrases) => total + phrases.length, 0)
@@ -561,7 +548,7 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setShowSettings(true)}
+                onClick={() => setShowSettingsModal(true)}
                 className="p-2 h-auto"
                 title="Настройки тренировки"
               >
@@ -669,9 +656,9 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
       </Card>
 
       <Stage5SettingsModal
-        isOpen={showSettings}
-        onClose={() => setShowSettings(false)}
-        settings={{ sentencesPerWord }}
+        isOpen={showSettingsModal}
+        onClose={() => setShowSettingsModal(false)}
+        settings={settings}
         onChange={handleSettingsChange}
       />
     </div>

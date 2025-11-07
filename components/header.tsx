@@ -7,9 +7,38 @@ import { Button } from '@/components/ui/button'
 import { LogOut, User, Menu, X } from 'lucide-react'
 import { MobileSidebar } from './mobile-sidebar'
 
+function HeaderSkeleton() {
+  return (
+    <header className="border-b bg-white">
+      <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+        {/* Logo skeleton */}
+        <div className="h-7 w-32 bg-gray-200 rounded animate-pulse" />
+
+        {/* Desktop version skeleton */}
+        <div className="hidden md:flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-gray-200 rounded-full animate-pulse" />
+            <div className="h-5 w-40 bg-gray-200 rounded animate-pulse" />
+          </div>
+          <div className="h-9 w-20 bg-gray-200 rounded animate-pulse" />
+        </div>
+
+        {/* Mobile hamburger skeleton */}
+        <div className="md:hidden">
+          <div className="w-10 h-10 bg-gray-200 rounded animate-pulse" />
+        </div>
+      </div>
+    </header>
+  )
+}
+
 export function Header() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
+
+  if (status === 'loading') {
+    return <HeaderSkeleton />
+  }
 
   if (!session) {
     return null

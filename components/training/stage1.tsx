@@ -1,13 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Volume2, ChevronRight, Settings } from 'lucide-react'
 import { ProgressDots } from './progress-dots'
 import { Stage1SettingsModal } from './stage-settings'
-import { getStage1Settings, saveStage1Settings } from '@/lib/training-settings'
+import { useStage1Settings } from '@/hooks/use-training-settings'
 
 type Language = {
   id: string
@@ -62,32 +61,20 @@ type Stage1Props = {
 }
 
 export function Stage1Training({ words, onComplete }: Stage1Props) {
-  const { data: session } = useSession()
+  const { settings, updateSettings } = useStage1Settings()
   const [currentIndex, setCurrentIndex] = useState(0)
   const [showTranslation, setShowTranslation] = useState(false)
   const [exerciseResults, setExerciseResults] = useState<boolean[]>([])
   const [fadeIn, setFadeIn] = useState(false)
   const [animationKey, setAnimationKey] = useState(0)
-  const [showSettings, setShowSettings] = useState(false)
-  const [showExamples, setShowExamples] = useState(false)
+  const [showSettingsModal, setShowSettingsModal] = useState(false)
 
   const currentWord = words[currentIndex]
 
-  // Загружаем настройки из localStorage при монтировании
-  useEffect(() => {
-    if (session?.user?.id) {
-      const settings = getStage1Settings(session.user.id)
-      setShowExamples(settings.showExamples)
-    }
-  }, [session])
-
   // Обработчик изменения настроек
   const handleSettingsChange = (newSettings: { showExamples: boolean }) => {
-    if (session?.user?.id) {
-      setShowExamples(newSettings.showExamples)
-      saveStage1Settings(session.user.id, newSettings)
-      setShowSettings(false)
-    }
+    updateSettings(newSettings)
+    setShowSettingsModal(false)
   }
 
   // Инициализируем массив результатов упражнений
@@ -168,7 +155,7 @@ export function Stage1Training({ words, onComplete }: Stage1Props) {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setShowSettings(true)}
+              onClick={() => setShowSettingsModal(true)}
               className="p-2 h-auto"
               title="Настройки тренировки"
             >
@@ -212,7 +199,7 @@ export function Stage1Training({ words, onComplete }: Stage1Props) {
                             ? currentWord.baseWord.translations[0].translation
                             : 'Нет перевода')}
                   </p>
-                  {showExamples && currentWord.baseWord?.examples && currentWord.baseWord.examples.length > 0 && (
+                  {settings.showExamples && currentWord.baseWord?.examples && currentWord.baseWord.examples.length > 0 && (
                       <div className="text-gray-600 space-y-2">
                         <p className="font-medium text-sm">Примеры:</p>
                         {currentWord.baseWord.examples.slice(0, 2).map((example, idx) => (
@@ -249,9 +236,9 @@ export function Stage1Training({ words, onComplete }: Stage1Props) {
       </Card>
 
       <Stage1SettingsModal
-        isOpen={showSettings}
-        onClose={() => setShowSettings(false)}
-        settings={{ showExamples }}
+        isOpen={showSettingsModal}
+        onClose={() => setShowSettingsModal(false)}
+        settings={settings}
         onChange={handleSettingsChange}
       />
     </div>

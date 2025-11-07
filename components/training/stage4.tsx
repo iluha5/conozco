@@ -1,13 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CheckCircle, XCircle, Settings, ChevronRight } from 'lucide-react'
 import { ProgressDots } from './progress-dots'
 import { Stage4SettingsModal } from './stage-settings'
-import { getStage4Settings, saveStage4Settings, type Stage4Settings } from '@/lib/training-settings'
+import { useStage4Settings } from '@/hooks/use-training-settings'
 
 type Language = {
   id: string
@@ -67,15 +66,14 @@ type LetterState = {
 }
 
 export function Stage4Training({ words, onComplete }: Stage4Props) {
-  const { data: session } = useSession()
+  const { settings, updateSettings } = useStage4Settings()
   const [currentIndex, setCurrentIndex] = useState(0)
   const [letters, setLetters] = useState<LetterState[]>([])
   const [userWord, setUserWord] = useState<string[]>([])
   const [isComplete, setIsComplete] = useState(false)
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null)
   const [stats, setStats] = useState({ correct: 0, total: 0 })
-  const [difficulty, setDifficulty] = useState<Stage4Settings['difficulty']>('easy')
-  const [showSettings, setShowSettings] = useState(false)
+  const [showSettingsModal, setShowSettingsModal] = useState(false)
   const [isFirstCard, setIsFirstCard] = useState(true)
   const [exerciseResults, setExerciseResults] = useState<boolean[]>([])
   const [totalErrors, setTotalErrors] = useState(0)
@@ -89,25 +87,14 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
 
   const currentWord = words[currentIndex]
 
-  // Загружаем настройки из localStorage при монтировании
-  useEffect(() => {
-    if (session?.user?.id) {
-      const settings = getStage4Settings(session.user.id)
-      setDifficulty(settings.difficulty)
-    }
-  }, [session])
-
   // Обработчик изменения настроек
-  const handleSettingsChange = (newSettings: Stage4Settings) => {
-    if (session?.user?.id) {
-      setDifficulty(newSettings.difficulty)
-      saveStage4Settings(session.user.id, newSettings)
-      setShowSettings(false)
-      // Сбрасываем прогресс при изменении сложности
-      setCurrentIndex(0)
-      setStats({ correct: 0, total: 0 })
-      setIsFirstCard(true)
-    }
+  const handleSettingsChange = (newSettings: typeof settings) => {
+    updateSettings(newSettings)
+    setShowSettingsModal(false)
+    // Сбрасываем прогресс при изменении сложности
+    setCurrentIndex(0)
+    setStats({ correct: 0, total: 0 })
+    setIsFirstCard(true)
   }
 
   // Инициализируем массив результатов упражнений
@@ -138,7 +125,7 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
       setBackgroundFlash(null)
       setShowResultPopup(false)
     }
-  }, [currentIndex, difficulty])
+  }, [currentIndex, settings.difficulty])
 
   const initializeLetters = () => {
     const word = currentWord.baseWord?.word || currentWord.customWord || ''
@@ -146,9 +133,9 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
 
     // Получаем дополнительные буквы в зависимости от сложности
     let extraLetters: string[] = []
-    if (difficulty === 'medium') {
+    if (settings.difficulty === 'medium') {
       extraLetters = getRandomLetters(3, wordLetters)
-    } else if (difficulty === 'hard') {
+    } else if (settings.difficulty === 'hard') {
       extraLetters = getRandomLetters(6, wordLetters)
     }
 
@@ -398,7 +385,7 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setShowSettings(true)}
+                onClick={() => setShowSettingsModal(true)}
                 className="p-2 h-auto"
                 title="Настройки тренировки"
               >
@@ -506,9 +493,9 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
       </Card>
 
       <Stage4SettingsModal
-        isOpen={showSettings}
-        onClose={() => setShowSettings(false)}
-        settings={{ difficulty }}
+        isOpen={showSettingsModal}
+        onClose={() => setShowSettingsModal(false)}
+        settings={settings}
         onChange={handleSettingsChange}
       />
     </div>

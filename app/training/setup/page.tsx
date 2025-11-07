@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -13,18 +12,12 @@ import { ArrowLeft, ChevronDown, ChevronUp, Settings } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { Stage1SettingsModal, Stage4SettingsModal, Stage5SettingsModal } from '@/components/training/stage-settings'
 import {
-  getTrainingSettings,
-  saveTrainingSettings,
-  getStage1Settings,
-  saveStage1Settings,
-  getStage4Settings,
-  saveStage4Settings,
-  getStage5Settings,
-  saveStage5Settings,
-  type Stage1Settings,
-  type Stage4Settings,
-  type Stage5Settings
-} from '@/lib/training-settings'
+  useTrainingSettings,
+  useTrainingSelection,
+  useStage1Settings,
+  useStage4Settings,
+  useStage5Settings
+} from '@/hooks/use-training-settings'
 
 type Language = {
   id: string
@@ -74,37 +67,33 @@ type Word = {
 }
 
 export default function TrainingSetupPage() {
-  const { data: session } = useSession()
-  const [selectedLanguage, setSelectedLanguage] = useState<string>('ALL')
-  const [enabledStages, setEnabledStages] = useState<Set<number>>(new Set([1, 2, 3, 4, 5, 6]))
+  const { settings: trainingSettings, updateEnabledStages, updateStagesSettingsExpanded, isLoaded: trainingSettingsLoaded, userId } = useTrainingSettings()
+  const { selectedWords, setSelectedWords, selectedLanguage, setSelectedLanguage, isLoaded: selectionLoaded } = useTrainingSelection()
+  const { settings: stage1Settings, updateSettings: updateStage1 } = useStage1Settings()
+  const { settings: stage4Settings, updateSettings: updateStage4 } = useStage4Settings()
+  const { settings: stage5Settings, updateSettings: updateStage5 } = useStage5Settings()
+  
   const [words, setWords] = useState<Word[]>([])
-  const [selectedWords, setSelectedWords] = useState<Set<string>>(new Set())
   const [visibleWordsCount, setVisibleWordsCount] = useState(12)
-  const [showStagesSettings, setShowStagesSettings] = useState(false)
   const [isInitialSelection, setIsInitialSelection] = useState(true)
-  const [showStage1Settings, setShowStage1Settings] = useState(false)
-  const [showStage4Settings, setShowStage4Settings] = useState(false)
-  const [showStage5Settings, setShowStage5Settings] = useState(false)
-  const [stage1Settings, setStage1Settings] = useState<Stage1Settings>({ showExamples: false })
-  const [stage4Settings, setStage4Settings] = useState<Stage4Settings>({ difficulty: 'easy' })
-  const [stage5Settings, setStage5Settings] = useState<Stage5Settings>({ sentencesPerWord: 1 })
-  const [settingsLoaded, setSettingsLoaded] = useState(false)
+  const [showStage1SettingsModal, setShowStage1SettingsModal] = useState(false)
+  const [showStage4SettingsModal, setShowStage4SettingsModal] = useState(false)
+  const [showStage5SettingsModal, setShowStage5SettingsModal] = useState(false)
+  const [isLoadingWords, setIsLoadingWords] = useState(true)
   const { toast } = useToast()
   const router = useRouter()
 
-  useEffect(() => {
-    if (session?.user?.id) {
-      loadSettings()
-    }
-    fetchWords()
-  }, [session])
+  const enabledStages = trainingSettings ? new Set(trainingSettings.enabledStages) : new Set([1, 2, 3, 4, 5, 6])
+  // По умолчанию свернут пока не загрузятся настройки, чтобы избежать "мигания"
+  const showStagesSettings = trainingSettingsLoaded ? (trainingSettings?.stagesSettingsExpanded ?? true) : false
+  
+  const toggleStagesSettings = () => {
+    updateStagesSettingsExpanded(!showStagesSettings)
+  }
 
   useEffect(() => {
-    // Сохраняем только после того, как настройки загружены
-    if (session?.user?.id && settingsLoaded) {
-      saveSettings()
-    }
-  }, [enabledStages, selectedWords, session, settingsLoaded])
+    fetchWords()
+  }, [])
 
   useEffect(() => {
     // Когда слова загружены, выбираем первые 12 по умолчанию (только при первой загрузке)
@@ -116,6 +105,7 @@ export default function TrainingSetupPage() {
   }, [words, selectedWords.size, isInitialSelection])
 
   const fetchWords = async () => {
+    setIsLoadingWords(true)
     try {
       const response = await fetch('/api/words?status=NOT_LEARNED&limit=120')
       if (response.ok) {
@@ -129,49 +119,11 @@ export default function TrainingSetupPage() {
         description: 'Не удалось загрузить слова',
         variant: 'destructive',
       })
+    } finally {
+      setIsLoadingWords(false)
     }
   }
 
-  const loadSettings = () => {
-    if (!session?.user?.id) return
-
-    // Загружаем все настройки тренировки
-    const allSettings = getTrainingSettings(session.user.id)
-    setEnabledStages(new Set(allSettings.enabledStages))
-    
-    // Загружаем настройки этапов
-    setStage1Settings(allSettings.stage1)
-    setStage4Settings(allSettings.stage4)
-    setStage5Settings(allSettings.stage5)
-
-    // Для обратной совместимости - проверяем старые ключи
-    const savedWords = localStorage.getItem(`training_${session.user.id}_selected-words`)
-    if (savedWords) {
-      try {
-        const words = JSON.parse(savedWords)
-        setSelectedWords(new Set(words))
-      } catch (error) {
-        console.error('Error loading selected words:', error)
-      }
-    }
-
-    // Отмечаем что настройки загружены
-    setSettingsLoaded(true)
-  }
-
-  const saveSettings = () => {
-    if (!session?.user?.id) return
-
-    // Сохраняем выбранные этапы
-    const allSettings = getTrainingSettings(session.user.id)
-    saveTrainingSettings(session.user.id, {
-      ...allSettings,
-      enabledStages: [...enabledStages]
-    })
-
-    // Сохраняем выбранные слова
-    localStorage.setItem(`training_${session.user.id}_selected-words`, JSON.stringify([...selectedWords]))
-  }
 
   const toggleWord = (wordId: string) => {
     setSelectedWords(prev => {
@@ -206,57 +158,44 @@ export default function TrainingSetupPage() {
   const isWordSelected = (wordId: string) => selectedWords.has(wordId)
 
   const toggleStage = (stage: number) => {
-    setEnabledStages(prev => {
-      const newSet = new Set(prev)
-      if (newSet.has(stage)) {
-        // Не позволяем отключить последний этап
-        if (newSet.size > 1) {
-          newSet.delete(stage)
-        } else {
-          toast({
-            title: 'Ошибка',
-            description: 'Должен быть выбран хотя бы один этап тренировки',
-            variant: 'destructive',
-          })
-        }
+    const newSet = new Set(enabledStages)
+    if (newSet.has(stage)) {
+      // Не позволяем отключить последний этап
+      if (newSet.size > 1) {
+        newSet.delete(stage)
+        updateEnabledStages([...newSet])
       } else {
-        newSet.add(stage)
+        toast({
+          title: 'Ошибка',
+          description: 'Должен быть выбран хотя бы один этап тренировки',
+          variant: 'destructive',
+        })
       }
-      return newSet
-    })
+    } else {
+      newSet.add(stage)
+      updateEnabledStages([...newSet])
+    }
   }
 
   const isStageEnabled = (stage: number) => enabledStages.has(stage)
 
   // Обработчики изменения настроек этапов
-  const handleStage1SettingsChange = (newSettings: Stage1Settings) => {
-    if (!session?.user?.id) return
-    setStage1Settings(newSettings)
-    saveStage1Settings(session.user.id, newSettings)
-    setShowStage1Settings(false)
+  const handleStage1SettingsChange = (newSettings: typeof stage1Settings) => {
+    updateStage1(newSettings)
+    setShowStage1SettingsModal(false)
   }
 
-  const handleStage4SettingsChange = (newSettings: Stage4Settings) => {
-    if (!session?.user?.id) return
-    setStage4Settings(newSettings)
-    saveStage4Settings(session.user.id, newSettings)
-    setShowStage4Settings(false)
+  const handleStage4SettingsChange = (newSettings: typeof stage4Settings) => {
+    updateStage4(newSettings)
+    setShowStage4SettingsModal(false)
   }
 
-  const handleStage5SettingsChange = (newSettings: Stage5Settings) => {
-    if (!session?.user?.id) return
-    setStage5Settings(newSettings)
-    saveStage5Settings(session.user.id, newSettings)
-    setShowStage5Settings(false)
+  const handleStage5SettingsChange = (newSettings: typeof stage5Settings) => {
+    updateStage5(newSettings)
+    setShowStage5SettingsModal(false)
   }
 
   const startTraining = () => {
-    if (!session?.user?.id) return
-
-    // Сохраняем выбранный язык и выбранные слова с userId
-    localStorage.setItem(`training_${session.user.id}_selected-language`, selectedLanguage)
-    localStorage.setItem(`training_${session.user.id}_selected-words`, JSON.stringify([...selectedWords]))
-
     if (selectedWords.size === 0) {
       toast({
         title: 'Ошибка',
@@ -313,68 +252,83 @@ export default function TrainingSetupPage() {
                   <button
                     onClick={selectAllVisible}
                     className="text-sm text-blue-600 hover:text-blue-800 underline"
+                    disabled={isLoadingWords}
                   >
                     Выбрать все
                   </button>
                   <button
                     onClick={deselectAll}
                     className="text-sm text-blue-600 hover:text-blue-800 underline"
+                    disabled={isLoadingWords}
                   >
                     Снять выделение
                   </button>
                 </div>
-                <div className="space-y-2 max-h-96 overflow-y-auto border rounded-lg p-4">
-                  {words.slice(0, visibleWordsCount).map((word) => (
-                    <div
-                      key={word.id}
-                      className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded cursor-pointer"
-                      onClick={() => toggleWord(word.id)}
-                    >
-                      <Checkbox
-                        id={`word-${word.id}`}
-                        checked={isWordSelected(word.id)}
-                        onChange={() => {}}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center space-x-2">
-                          <span className="text-sm font-medium truncate">
-                            {word.baseWord?.word || word.customWord}
-                          </span>
-                          <span className="text-xs text-gray-500">→</span>
-                          <span className="text-sm text-purple-600 truncate">
-                            {word.customTranslation ||
-                             (word.baseWord?.translations && word.baseWord.translations.length > 0
-                               ? word.baseWord.translations[0].translation
-                               : 'Нет перевода')}
-                          </span>
-                        </div>
+                <div className="relative border rounded-lg p-4 h-[350px] overflow-y-auto">
+                  {isLoadingWords ? (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div>
+                        <p className="text-sm text-gray-600">Загрузка слов...</p>
                       </div>
                     </div>
-                  ))}
-                  {words.length > visibleWordsCount && (
-                    <div className="pt-2 border-t">
-                      <Button
-                        variant="outline"
-                        onClick={loadMoreWords}
-                        className="w-full"
-                      >
-                        Показать еще ({Math.min(visibleWordsCount + 12, Math.min(words.length, 120)) - visibleWordsCount} слов)
-                      </Button>
+                  ) : (
+                    <div className="space-y-2">
+                      {words.slice(0, visibleWordsCount).map((word) => (
+                        <div
+                          key={word.id}
+                          className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded cursor-pointer"
+                          onClick={() => toggleWord(word.id)}
+                        >
+                          <Checkbox
+                            id={`word-${word.id}`}
+                            checked={isWordSelected(word.id)}
+                            onChange={() => {}}
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center space-x-2">
+                              <span className="text-sm font-medium truncate">
+                                {word.baseWord?.word || word.customWord}
+                              </span>
+                              <span className="text-xs text-gray-500">→</span>
+                              <span className="text-sm text-purple-600 truncate">
+                                {word.customTranslation ||
+                                 (word.baseWord?.translations && word.baseWord.translations.length > 0
+                                   ? word.baseWord.translations[0].translation
+                                   : 'Нет перевода')}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      {words.length > visibleWordsCount && (
+                        <div className="pt-2 border-t">
+                          <Button
+                            variant="outline"
+                            onClick={loadMoreWords}
+                            className="w-full"
+                          >
+                            Показать еще ({Math.min(visibleWordsCount + 12, Math.min(words.length, 120)) - visibleWordsCount} слов)
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
-                <p className="text-xs text-gray-500 mt-2">
-                  Показано {Math.min(visibleWordsCount, words.length)} из {words.length} слов
-                </p>
+                {!isLoadingWords && (
+                  <p className="text-xs text-gray-500 mt-2">
+                    Показано {Math.min(visibleWordsCount, words.length)} из {words.length} слов
+                  </p>
+                )}
               </div>
 
-              {/* Выбор этапов (свернутый по умолчанию) */}
+              {/* Настройки этапов тренировки */}
               <div>
                 <button
-                  onClick={() => setShowStagesSettings(!showStagesSettings)}
+                  onClick={toggleStagesSettings}
                   className="flex items-center justify-between w-full text-left"
                 >
-                  <h3 className="text-lg font-semibold">Выберите этапы тренировки</h3>
+                  <h3 className="text-lg font-semibold">Настройки этапов тренировки</h3>
                   {showStagesSettings ? (
                     <ChevronUp className="w-5 h-5" />
                   ) : (
@@ -414,9 +368,9 @@ export default function TrainingSetupPage() {
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation()
-                            if (stage === 1) setShowStage1Settings(true)
-                            if (stage === 4) setShowStage4Settings(true)
-                            if (stage === 5) setShowStage5Settings(true)
+                            if (stage === 1) setShowStage1SettingsModal(true)
+                            if (stage === 4) setShowStage4SettingsModal(true)
+                            if (stage === 5) setShowStage5SettingsModal(true)
                           }}
                           className="p-2 h-auto shrink-0"
                           title="Настройки этапа"
@@ -448,20 +402,20 @@ export default function TrainingSetupPage() {
 
       {/* Модальные окна настроек этапов */}
       <Stage1SettingsModal
-        isOpen={showStage1Settings}
-        onClose={() => setShowStage1Settings(false)}
+        isOpen={showStage1SettingsModal}
+        onClose={() => setShowStage1SettingsModal(false)}
         settings={stage1Settings}
         onChange={handleStage1SettingsChange}
       />
       <Stage4SettingsModal
-        isOpen={showStage4Settings}
-        onClose={() => setShowStage4Settings(false)}
+        isOpen={showStage4SettingsModal}
+        onClose={() => setShowStage4SettingsModal(false)}
         settings={stage4Settings}
         onChange={handleStage4SettingsChange}
       />
       <Stage5SettingsModal
-        isOpen={showStage5Settings}
-        onClose={() => setShowStage5Settings(false)}
+        isOpen={showStage5SettingsModal}
+        onClose={() => setShowStage5SettingsModal(false)}
         settings={stage5Settings}
         onChange={handleStage5SettingsChange}
       />

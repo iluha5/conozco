@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -15,7 +14,7 @@ import { Stage5Training } from '@/components/training/stage5'
 import { Stage6Training } from '@/components/training/stage6'
 import { WordsList } from '@/components/words-list'
 import { useToast } from '@/hooks/use-toast'
-import { getTrainingSettings } from '@/lib/training-settings'
+import { useTrainingSettings, useTrainingSelection } from '@/hooks/use-training-settings'
 
 type Language = {
   id: string
@@ -88,24 +87,23 @@ type Word = {
 }
 
 export default function TrainingPage() {
-  const { data: session } = useSession()
+  const { settings: trainingSettings, isLoaded: settingsLoaded } = useTrainingSettings()
+  const { selectedWords, selectedLanguage, isLoaded: selectionLoaded } = useTrainingSelection()
   const [words, setWords] = useState<Word[]>([])
   const [currentStage, setCurrentStage] = useState<number>(1)
-  const [selectedLanguage, setSelectedLanguage] = useState<string>('ALL')
   const [loading, setLoading] = useState(true)
   const [trainingWords, setTrainingWords] = useState<Word[]>([])
-  const [enabledStages, setEnabledStages] = useState<Set<number>>(new Set([1, 2, 3, 4, 5, 6]))
-  const [selectedWords, setSelectedWords] = useState<Set<string>>(new Set())
   const [trainingCompleted, setTrainingCompleted] = useState(false)
   const [completedWords, setCompletedWords] = useState<Word[]>([])
   const { toast } = useToast()
 
+  const enabledStages = trainingSettings ? new Set(trainingSettings.enabledStages) : new Set([1, 2, 3, 4, 5, 6])
+
   useEffect(() => {
-    if (session?.user?.id) {
-      loadSettings()
+    if (settingsLoaded && selectionLoaded) {
       fetchWords()
     }
-  }, [session])
+  }, [settingsLoaded, selectionLoaded])
 
   useEffect(() => {
     filterTrainingWords()
@@ -138,29 +136,6 @@ export default function TrainingPage() {
       })
     } finally {
       setLoading(false)
-    }
-  }
-
-  const loadSettings = () => {
-    if (!session?.user?.id) return
-
-    // Загружаем настройки с userId
-    const settings = getTrainingSettings(session.user.id)
-    setEnabledStages(new Set(settings.enabledStages))
-
-    const savedLanguage = localStorage.getItem(`training_${session.user.id}_selected-language`)
-    if (savedLanguage) {
-      setSelectedLanguage(savedLanguage)
-    }
-
-    const savedWords = localStorage.getItem(`training_${session.user.id}_selected-words`)
-    if (savedWords) {
-      try {
-        const words = JSON.parse(savedWords)
-        setSelectedWords(new Set(words))
-      } catch (error) {
-        console.error('Error loading selected words:', error)
-      }
     }
   }
 

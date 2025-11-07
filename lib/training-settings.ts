@@ -19,6 +19,7 @@ export type TrainingSettings = {
   stage1: Stage1Settings
   stage4: Stage4Settings
   stage5: Stage5Settings
+  stagesSettingsExpanded: boolean
 }
 
 const DEFAULT_SETTINGS: TrainingSettings = {
@@ -31,7 +32,8 @@ const DEFAULT_SETTINGS: TrainingSettings = {
   },
   stage5: {
     sentencesPerWord: 1
-  }
+  },
+  stagesSettingsExpanded: true
 }
 
 /**
@@ -146,6 +148,22 @@ export const getEnabledStages = (userId: string): number[] => {
 export const saveEnabledStages = (userId: string, enabledStages: number[]): void => {
   const settings = getTrainingSettings(userId)
   saveTrainingSettings(userId, { ...settings, enabledStages })
+}
+
+/**
+ * Получить состояние развернутости настроек этапов
+ */
+export const getStagesSettingsExpanded = (userId: string): boolean => {
+  const settings = getTrainingSettings(userId)
+  return settings.stagesSettingsExpanded
+}
+
+/**
+ * Сохранить состояние развернутости настроек этапов
+ */
+export const saveStagesSettingsExpanded = (userId: string, expanded: boolean): void => {
+  const settings = getTrainingSettings(userId)
+  saveTrainingSettings(userId, { ...settings, stagesSettingsExpanded: expanded })
 }
 
 /**
