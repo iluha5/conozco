@@ -32,7 +32,7 @@ sleep 5
 echo ""
 echo "✅ Приложение запущено!"
 echo ""
-echo "📱 Откройте в браузере: http://localhost:3000"
+echo "📱 Откройте в браузере: http://localhost:8000"
 echo ""
 echo "🛠  Полезные команды:"
 echo "  - Просмотр логов: docker compose logs -f"

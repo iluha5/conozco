@@ -6,9 +6,9 @@
 
 Создайте или обновите файл `.env` в корне проекта:
 ```bash
-DATABASE_URL="postgresql://flashcards:flashcards_password@localhost:5432/flashcards"
+DATABASE_URL="postgresql://flashcards:flashcards_password@localhost:5433/flashcards"
 NEXTAUTH_SECRET="your-secret-key-change-in-production"
-NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_URL="http://localhost:8000"
 ADMIN_REGISTRATION_PASSWORD="admin123"
 ```
 
@@ -30,7 +30,7 @@ docker compose exec app npm run prisma:seed
 
 ### 5. Откройте браузер и войдите
 
-**Откройте**: http://localhost:3000
+**Откройте**: http://localhost:8000
 
 Вы будете перенаправлены на страницу входа.
 
@@ -56,7 +56,7 @@ docker compose exec app npm run prisma:seed
 
 ## 🔑 Регистрация новых пользователей
 
-1. Перейдите на http://localhost:3000/auth/register
+1. Перейдите на http://localhost:8000/auth/register
 2. Заполните форму
 3. **Введите пароль администратора**: `admin123`
 4. Новый пользователь создан!

@@ -13,7 +13,7 @@ chmod +x start.sh
 docker compose up --build
 ```
 
-Откройте браузер: http://localhost:3000
+Откройте браузер: http://localhost:8000
 
 ## Основные функции
 
@@ -143,7 +143,7 @@ docker compose exec app npx prisma studio
 npx prisma studio
 ```
 
-Откроется интерфейс на http://localhost:5555
+Откроется интерфейс на http://localhost:5555 (порт Prisma Studio по умолчанию)
 
 ### Миграции
 
@@ -230,18 +230,18 @@ const mockTranslations: MockTranslations = {
 
 ## Troubleshooting
 
-### Порт 3000 уже занят
+### Порт 8000 уже занят
 ```bash
 # Измените порт в docker-compose.yml
 ports:
-  - "3001:3000"
+  - "8001:8000"
 ```
 
-### Порт 5432 уже занят
+### Порт 5433 уже занят
 ```bash
 # Измените порт PostgreSQL в docker-compose.yml
 ports:
-  - "5433:5432"
+  - "5434:5432"
   
 # Не забудьте обновить DATABASE_URL
 ```

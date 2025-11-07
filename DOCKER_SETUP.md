@@ -45,7 +45,7 @@ docker-compose down
      - User: `user@example.com` / `12345678`
 
 3. **Запуск приложения**: `npm run dev`
-   - Next.js dev server на порту 3000
+   - Next.js dev server на порту 8000
 
 ## 🔧 Troubleshooting
 
@@ -98,8 +98,8 @@ docker-compose logs -f
 
 ## 🌐 Доступ к приложению
 
-- **Приложение**: http://localhost:3000
-- **База данных**: localhost:5432
+- **Приложение**: http://localhost:8000
+- **База данных**: localhost:5433
   - User: `flashcards`
   - Password: `flashcards_password`
   - Database: `flashcards`

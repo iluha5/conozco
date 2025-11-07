@@ -107,9 +107,9 @@ app/api/words/[id]/route.ts
 
 ### 1. Добавьте .env
 ```bash
-DATABASE_URL="postgresql://flashcards:flashcards_password@localhost:5432/flashcards"
+DATABASE_URL="postgresql://flashcards:flashcards_password@localhost:5433/flashcards"
 NEXTAUTH_SECRET="your-secret-key-here"
-NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_URL="http://localhost:8000"
 ADMIN_REGISTRATION_PASSWORD="admin123"
 ```
 
@@ -130,7 +130,7 @@ docker compose exec app npm run prisma:seed
 ```
 
 ### 5. Войдите в систему
-- Откройте: http://localhost:3000
+- Откройте: http://localhost:8000
 - Email: `ilya.rovda@gmail.com`
 - Пароль: `12345678`
 

@@ -11,7 +11,7 @@
 │  ┌──────────────────┐         ┌──────────────────┐     │
 │  │   PostgreSQL     │◄────────│   Next.js App    │     │
 │  │   (База данных)  │         │  (Frontend+API)  │     │
-│  │   Port: 5432     │         │   Port: 3000     │     │
+│  │   Port: 5433     │         │   Port: 8000     │     │
 │  └──────────────────┘         └──────────────────┘     │
 │                                                          │
 └─────────────────────────────────────────────────────────┘
@@ -263,8 +263,9 @@ Request → Check TranslationCache
 
 ### Development
 ```env
-DATABASE_URL=postgresql://flashcards:flashcards_password@localhost:5432/flashcards
+DATABASE_URL=postgresql://flashcards:flashcards_password@localhost:5433/flashcards
 NODE_ENV=development
+NEXTAUTH_URL=http://localhost:8000
 ```
 
 ### Production (рекомендуется)

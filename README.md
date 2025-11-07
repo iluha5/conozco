@@ -72,13 +72,13 @@ docker compose up --build
 ```
 
 Эта команда:
-- Запустит PostgreSQL на порту 5432
-- Запустит Next.js приложение на порту 3000
+- Запустит PostgreSQL на порту 5433
+- Запустит Next.js приложение на порту 8000
 - Автоматически выполнит миграции базы данных
 
 3. **Откройте приложение в браузере**
 ```
-http://localhost:3000
+http://localhost:8000
 ```
 
 ### Разработка без Docker
@@ -94,7 +94,7 @@ npm install
 
 Создайте файл `.env.local`:
 ```env
-DATABASE_URL="postgresql://flashcards:flashcards_password@localhost:5432/flashcards"
+DATABASE_URL="postgresql://flashcards:flashcards_password@localhost:5433/flashcards"
 ```
 
 3. **Запустите PostgreSQL локально** (или используйте Docker только для БД)

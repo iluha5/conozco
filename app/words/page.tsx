@@ -541,7 +541,7 @@ export default function WordsPage() {
                                 (+{word.baseWord.translations.length - 1})
                               </span>
                             )}
-                            {translationSelectorOpen[word.id] && translationSelectorPosition[word.id] && (
+                            {isClient && translationSelectorOpen[word.id] && translationSelectorPosition[word.id] && (
                               <div
                                 className="translation-selector fixed z-50 bg-white border border-gray-200 rounded-md shadow-lg p-2 min-w-[200px]"
                                 style={{

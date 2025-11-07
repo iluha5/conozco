@@ -16,7 +16,7 @@ COPY . .
 RUN npx prisma generate
 
 # Экспонирование порта
-EXPOSE 3000
+EXPOSE 8000
 
 # Запуск приложения
 CMD ["sh", "-c", "npx prisma migrate deploy && npm run dev"]

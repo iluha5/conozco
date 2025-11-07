@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
         name: name || null,
         roleId: defaultRole.id,
       },
-      include: {
+      select: {
         id: true,
         email: true,
         name: true,

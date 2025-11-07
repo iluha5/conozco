@@ -32,9 +32,9 @@
 
 Добавьте в `.env`:
 ```env
-DATABASE_URL="postgresql://flashcards:flashcards_password@localhost:5432/flashcards"
+DATABASE_URL="postgresql://flashcards:flashcards_password@localhost:5433/flashcards"
 NEXTAUTH_SECRET="your-secret-key-change-in-production-use-openssl-rand-base64-32"
-NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_URL="http://localhost:8000"
 ADMIN_REGISTRATION_PASSWORD="admin123"
 ```
 
@@ -89,12 +89,12 @@ docker compose exec app npm run prisma:seed
 ## 🔑 Функции авторизации
 
 ### Вход в систему
-1. Перейдите на http://localhost:3000/auth/login
+1. Перейдите на http://localhost:8000/auth/login
 2. Введите email и пароль
 3. После успешного входа вы будете перенаправлены на главную страницу
 
 ### Регистрация нового пользователя (только для администратора)
-1. Перейдите на http://localhost:3000/auth/register
+1. Перейдите на http://localhost:8000/auth/register
 2. Введите данные нового пользователя
 3. **Введите пароль администратора**: `admin123`
 4. Пользователь будет создан и сможет войти
@@ -165,7 +165,7 @@ await signIn('credentials', {
 
 ### Регистрация
 ```bash
-curl -X POST http://localhost:3000/api/auth/register \
+curl -X POST http://localhost:8000/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "email": "newuser@example.com",

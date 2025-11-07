@@ -31,7 +31,7 @@ docker compose up --build -d
 
 ### 3. Откройте браузер
 
-Перейдите по адресу: **http://localhost:3000**
+Перейдите по адресу: **http://localhost:8000**
 
 ---
 
@@ -148,24 +148,24 @@ docker compose exec app npx prisma studio
 
 ## ❓ Решение проблем
 
-### Порт 3000 занят
+### Порт 8000 занят
 Измените в `docker-compose.yml`:
 ```yaml
 ports:
-  - "3001:3000"  # Используйте другой порт
+  - "8001:8000"  # Используйте другой порт
 ```
 
-### Порт 5432 (PostgreSQL) занят
+### Порт 5433 (PostgreSQL) занят
 Измените в `docker-compose.yml`:
 ```yaml
 postgres:
   ports:
-    - "5433:5432"  # Используйте другой порт
+    - "5434:5432"  # Используйте другой порт
 ```
 
 И обновите `.env`:
 ```
-DATABASE_URL="postgresql://flashcards:flashcards_password@localhost:5433/flashcards"
+DATABASE_URL="postgresql://flashcards:flashcards_password@localhost:5434/flashcards"
 ```
 
 ### База данных не создаётся
