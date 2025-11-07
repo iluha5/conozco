@@ -14,6 +14,7 @@ import { Stage3Training } from '@/components/training/stage3'
 import { Stage4Training } from '@/components/training/stage4'
 import { Stage5Training } from '@/components/training/stage5'
 import { Stage6Training } from '@/components/training/stage6'
+import { WordsList } from '@/components/words-list'
 import { useToast } from '@/hooks/use-toast'
 
 type Language = {
@@ -94,6 +95,8 @@ export default function TrainingPage() {
   const [trainingWords, setTrainingWords] = useState<Word[]>([])
   const [enabledStages, setEnabledStages] = useState<Set<number>>(new Set([1, 2, 3, 4, 5, 6]))
   const [selectedWords, setSelectedWords] = useState<Set<string>>(new Set())
+  const [trainingCompleted, setTrainingCompleted] = useState(false)
+  const [completedWords, setCompletedWords] = useState<Word[]>([])
   const { toast } = useToast()
 
   useEffect(() => {
@@ -179,7 +182,7 @@ export default function TrainingPage() {
     setTrainingWords(filtered)
   }
 
-  const handleStageComplete = () => {
+  const handleStageComplete = async () => {
     const enabledStagesArray = Array.from(enabledStages).sort()
     const currentIndex = enabledStagesArray.indexOf(currentStage)
 
@@ -188,17 +191,61 @@ export default function TrainingPage() {
       const nextStage = enabledStagesArray[currentIndex + 1]
       setCurrentStage(nextStage)
     } else {
-      // Это последний этап - завершаем тренировку
-      toast({
-        title: 'Все этапы завершены!',
-        description: 'Поздравляем! Вы завершили всю тренировку',
-      })
+      // Это последний этап - завершаем тренировку и отмечаем слова как выученные
+      // Отмечаем все слова как выученные
+      try {
+        for (const word of trainingWords) {
+          await fetch(`/api/words/${word.id}`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ status: 'LEARNED' }),
+          })
+        }
 
-      // Можно добавить редирект на главную страницу через некоторое время
-      setTimeout(() => {
-        window.location.href = '/'
-      }, 3000)
+        // Обновляем список слов для отображения
+        const response = await fetch('/api/words')
+        if (response.ok) {
+          const allWords = await response.json()
+          // Фильтруем только те слова которые были в тренировке
+          const trainedWordIds = trainingWords.map(w => w.id)
+          const learnedWords = allWords.filter((w: Word) => trainedWordIds.includes(w.id))
+          setCompletedWords(learnedWords)
+
+          // Показываем зеленый toast с результатами
+          toast({
+            description: `Выучено слов: ${learnedWords.length}`,
+            variant: 'success',
+          })
+        }
+
+        setTrainingCompleted(true)
+      } catch (error) {
+        console.error('Error marking words as learned:', error)
+        toast({
+          title: 'Ошибка',
+          description: 'Не удалось отметить слова как выученные',
+          variant: 'destructive',
+        })
+      }
     }
+  }
+
+  const handleReloadWords = async () => {
+    const response = await fetch('/api/words')
+    if (response.ok) {
+      const allWords = await response.json()
+      const trainedWordIds = trainingWords.map(w => w.id)
+      const learnedWords = allWords.filter((w: Word) => trainedWordIds.includes(w.id))
+      setCompletedWords(learnedWords)
+    }
+  }
+
+  const handleStartNewTraining = () => {
+    setTrainingCompleted(false)
+    setCompletedWords([])
+    window.location.href = '/training/setup'
   }
 
   const renderTrainingScreen = () => (
@@ -308,11 +355,41 @@ export default function TrainingPage() {
     }
   }
 
+  const renderResultsScreen = () => (
+    <>
+      <div className="mb-6 flex items-center justify-between">
+        <Link href="/">
+          <Button variant="ghost">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Главная
+          </Button>
+        </Link>
+        <Button onClick={handleStartNewTraining}>
+          Новая тренировка
+        </Button>
+      </div>
+
+      <div className="mb-8 text-center">
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">🎉 Тренировка завершена!</h1>
+        <p className="text-md text-gray-600">
+          Все слова отмечены как выученные. Вы можете изменить их статус ниже.
+        </p>
+      </div>
+
+      <WordsList
+        words={completedWords}
+        onWordsChange={handleReloadWords}
+        showBulkActions={true}
+        emptyMessage="Слова не найдены"
+      />
+    </>
+  )
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100">
       <Header />
       <div className="container mx-auto px-4 py-8">
-        {renderTrainingScreen()}
+        {trainingCompleted ? renderResultsScreen() : renderTrainingScreen()}
       </div>
     </div>
   )
