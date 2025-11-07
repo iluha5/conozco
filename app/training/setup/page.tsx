@@ -88,6 +88,7 @@ export default function TrainingSetupPage() {
   const [stage1Settings, setStage1Settings] = useState<Stage1Settings>({ showExamples: false })
   const [stage4Settings, setStage4Settings] = useState<Stage4Settings>({ difficulty: 'easy' })
   const [stage5Settings, setStage5Settings] = useState<Stage5Settings>({ sentencesPerWord: 1 })
+  const [settingsLoaded, setSettingsLoaded] = useState(false)
   const { toast } = useToast()
   const router = useRouter()
 
@@ -99,10 +100,11 @@ export default function TrainingSetupPage() {
   }, [session])
 
   useEffect(() => {
-    if (session?.user?.id) {
+    // Сохраняем только после того, как настройки загружены
+    if (session?.user?.id && settingsLoaded) {
       saveSettings()
     }
-  }, [enabledStages, selectedWords, session])
+  }, [enabledStages, selectedWords, session, settingsLoaded])
 
   useEffect(() => {
     // Когда слова загружены, выбираем первые 12 по умолчанию (только при первой загрузке)
@@ -152,6 +154,9 @@ export default function TrainingSetupPage() {
         console.error('Error loading selected words:', error)
       }
     }
+
+    // Отмечаем что настройки загружены
+    setSettingsLoaded(true)
   }
 
   const saveSettings = () => {
