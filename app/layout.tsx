@@ -22,8 +22,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ru">
-      <body className={`${inter.className} ${ubuntu.variable}`}>
+    <html lang="ru" suppressHydrationWarning>
+      <body className={`${inter.className} ${ubuntu.variable}`} suppressHydrationWarning>
         <AuthProvider>
           {children}
           <Toaster />

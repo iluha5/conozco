@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from "react"
 import {
   Toast,
   ToastClose,
@@ -12,6 +13,15 @@ import { useToast } from "@/hooks/use-toast"
 
 export function Toaster() {
   const { toasts } = useToast()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return null
+  }
 
   return (
     <ToastProvider duration={2000}>
