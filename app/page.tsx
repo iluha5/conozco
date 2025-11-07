@@ -24,16 +24,17 @@ export default function HomePage() {
         <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto mb-12">
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader className="relative">
-              <CardTitle className="flex items-center gap-2">
-                <Brain className="w-6 h-6 text-purple-600" />
-                Тренировка
-              </CardTitle>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="ghost" size="sm" className="absolute top-4 right-4 h-8 w-8 p-0 hover:bg-purple-100">
-                    <HelpCircle className="w-5 h-5 text-purple-600" />
-                  </Button>
-                </DialogTrigger>
+              <div className="flex items-start justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Brain className="w-6 h-6 text-purple-600" />
+                  Тренировка
+                </CardTitle>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-purple-100">
+                      <HelpCircle className="w-5 h-5 text-purple-600" />
+                    </Button>
+                  </DialogTrigger>
                 <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
                   <DialogClose className="absolute right-4 top-4 z-50 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
                     <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -116,6 +117,10 @@ export default function HomePage() {
                   </div>
                 </DialogContent>
               </Dialog>
+              </div>
+              <CardDescription>
+                Проходите 6 этапов обучения для эффективного запоминания слов
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <Link href="/training/setup">
