@@ -131,7 +131,7 @@ export default function HomePage() {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-lg transition-shadow">
+          <Card className="hover:shadow-lg transition-shadow flex flex-col justify-between">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Languages className="w-6 h-6 text-blue-600" />

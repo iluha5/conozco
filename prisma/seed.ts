@@ -93,6 +93,29 @@ async function main() {
   })
   console.log('✅ Created language:', russian.name)
 
+  // Create tenses for English
+  const englishTensesData = [
+    { name: 'Present Simple', languageId: english.id },
+    { name: 'Past Simple', languageId: english.id },
+    { name: 'Future Simple', languageId: english.id },
+    { name: 'Present Continuous', languageId: english.id },
+    { name: 'Present Perfect', languageId: english.id },
+  ]
+
+  for (const tense of englishTensesData) {
+    await prisma.tense.upsert({
+      where: {
+        name_languageId: {
+          name: tense.name,
+          languageId: tense.languageId
+        }
+      },
+      update: {},
+      create: tense,
+    })
+  }
+  console.log('✅ Created tenses for English')
+
   // Create parts of speech for Spanish
   const spanishPartsOfSpeech = [
     { name: 'NOUN', displayName: 'существительное' },

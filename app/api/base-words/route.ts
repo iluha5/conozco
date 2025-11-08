@@ -32,6 +32,7 @@ export async function GET(request: NextRequest) {
     const partOfSpeech = searchParams.get('partOfSpeech')
     const search = searchParams.get('search')
     const limit = parseInt(searchParams.get('limit') || '50')
+    const offset = parseInt(searchParams.get('offset') || '0')
 
     const where: any = {}
 
@@ -59,6 +60,7 @@ export async function GET(request: NextRequest) {
     // Получить базовые слова
     const baseWords = await prisma.baseWord.findMany({
       where,
+      skip: offset,
       take: limit,
       orderBy: {
         word: 'asc',
