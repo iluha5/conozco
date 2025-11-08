@@ -130,8 +130,8 @@ export default function WordsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <Header />
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-6">
+      <div className="container mx-auto px-4 py-4">
+        <div className="mb-3">
           <Link href="/">
             <Button variant="ghost">
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -140,12 +140,12 @@ export default function WordsPage() {
           </Link>
         </div>
 
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex justify-between items-center mb-6">
           <h1 className="text-4xl font-bold text-gray-900">Мои слова</h1>
           <AddWordDialog onWordAdded={handleAddWord} />
         </div>
 
-        <div className="flex gap-4 mb-8">
+        <div className="flex gap-4 mb-6">
           <Card className="flex-1 max-w-[140px]">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Всего слов</CardTitle>
