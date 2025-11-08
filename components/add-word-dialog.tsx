@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { PlusCircle, Loader2, Search, CheckCircle } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
@@ -67,12 +67,19 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
   const [availableWords, setAvailableWords] = useState<BaseWord[]>([])
   const [loading, setLoading] = useState(false)
   const [searching, setSearching] = useState(false)
+  const [offset, setOffset] = useState(0)
+  const [hasMore, setHasMore] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
   const { toast } = useToast()
 
   // Поиск слов при изменении параметров
   useEffect(() => {
-    if (open && (searchTerm.length >= 2 || !searchTerm)) {
-      handleSearch()
+    if (open) {
+      // Сброс и загрузка при изменении языка или поиска
+      setOffset(0)
+      setAvailableWords([])
+      setHasMore(true)
+      handleSearch(0, true)
     }
   }, [languageCode, searchTerm, open])
 
@@ -100,12 +107,46 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
     return selectedWords.includes(baseWordId)
   }
 
-  const handleSearch = async () => {
-    setSearching(true)
+  const getLanguageFlag = (languageCode: string) => {
+    return languageCode === 'en' ? '🇬🇧' : '🇪🇸'
+  }
+
+  const getPartOfSpeechAbbrev = (displayName: string) => {
+    const abbreviations: { [key: string]: string } = {
+      'существительное': 'сущ',
+      'глагол': 'гл',
+      'прилагательное': 'пр',
+      'наречие': 'нар',
+      'местоимение': 'мест',
+      'предлог': 'пред',
+      'союз': 'союз',
+      'частица': 'част',
+      'междометие': 'межд',
+      'noun': 'n',
+      'verb': 'v',
+      'adjective': 'adj',
+      'adverb': 'adv',
+      'pronoun': 'pron',
+      'preposition': 'prep',
+      'conjunction': 'conj',
+      'particle': 'part',
+      'interjection': 'int',
+    }
+    return abbreviations[displayName.toLowerCase()] || displayName.substring(0, 3)
+  }
+
+  const handleSearch = async (currentOffset: number = offset, isNewSearch: boolean = false) => {
+    if (isNewSearch) {
+      setSearching(true)
+    } else {
+      setLoadingMore(true)
+    }
+
     try {
       const params = new URLSearchParams({
         languageCode,
-        limit: '20'
+        limit: '30',
+        offset: currentOffset.toString()
       })
 
       if (searchTerm.trim()) {
@@ -116,7 +157,17 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
 
       if (response.ok) {
         const words = await response.json()
-        setAvailableWords(words)
+
+        // Если это новый поиск, заменяем слова, иначе добавляем
+        if (isNewSearch) {
+          setAvailableWords(words)
+        } else {
+          setAvailableWords(prev => [...prev, ...words])
+        }
+
+        // Если получили меньше 30 слов, значит больше нет
+        setHasMore(words.length === 30)
+        setOffset(currentOffset + words.length)
       } else {
         toast({
           title: 'Ошибка',
@@ -133,7 +184,12 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
       })
     } finally {
       setSearching(false)
+      setLoadingMore(false)
     }
+  }
+
+  const handleLoadMore = () => {
+    handleSearch(offset, false)
   }
 
   const handleAddWords = async () => {
@@ -206,6 +262,8 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
   const resetForm = () => {
     setSelectedWords([])
     setAvailableWords([])
+    setOffset(0)
+    setHasMore(true)
   }
 
 
@@ -217,12 +275,9 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
           Добавить слово
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl">
         <DialogHeader>
           <DialogTitle>Добавить слово из словаря</DialogTitle>
-          <DialogDescription>
-            Выберите слово из нашей базы данных и добавьте его в свой словарь
-          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
@@ -284,53 +339,100 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                 </div>
               )}
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[400px] overflow-y-auto">
-              {availableWords.map((word) => (
-                <Card
-                  key={word.id}
-                  className={`transition-all cursor-pointer ${
-                    isWordSelected(word.id)
-                      ? 'ring-2 ring-primary bg-blue-50'
-                      : 'hover:bg-gray-50'
-                  } ${word.isAddedByUser ? 'opacity-60 cursor-not-allowed' : ''}`}
-                  onClick={() => !word.isAddedByUser && toggleWordSelection(word.id)}
-                >
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <Checkbox
-                          checked={isWordSelected(word.id)}
-                          onChange={() => {}} // отключаем прямое взаимодействие с чекбоксом
-                          disabled={word.isAddedByUser}
-                          className="shrink-0"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <CardTitle className="text-base flex items-center gap-2 flex-wrap">
-                            <span className="truncate">{word.word}</span>
-                            <span className="text-xs bg-gray-100 px-2 py-1 rounded shrink-0">
-                              {word.partOfSpeech.displayName}
-                            </span>
-                            {word.isAddedByUser && (
-                              <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
-                            )}
-                          </CardTitle>
-                          {word.translations.length > 0 && (
-                            <CardDescription className="truncate">
-                              {word.translations[0].translation}
-                            </CardDescription>
-                          )}
+            <div className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 h-[300px] overflow-y-auto border rounded-md p-3 bg-gray-50">
+                {searching && availableWords.length === 0 ? (
+                  // Скелетон во время загрузки
+                  <>
+                    {[1, 2, 3, 4].map((i) => (
+                      <Card key={i} className="animate-pulse">
+                        <CardHeader className="pb-2">
+                          <div className="flex items-center gap-3">
+                            <div className="w-4 h-4 bg-gray-300 rounded shrink-0"></div>
+                            <div className="flex-1 space-y-2">
+                              <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+                              <div className="h-3 bg-gray-300 rounded w-1/2"></div>
+                            </div>
+                          </div>
+                        </CardHeader>
+                      </Card>
+                    ))}
+                  </>
+                ) : availableWords.length > 0 ? (
+                  availableWords.map((word) => (
+                    <Card
+                      key={word.id}
+                      className={`transition-all ${word.isAddedByUser ? 'cursor-not-allowed' : 'cursor-pointer'} ${
+                        isWordSelected(word.id)
+                          ? 'ring-2 ring-primary bg-blue-50'
+                          : 'hover:bg-gray-50 bg-white'
+                      } ${word.isAddedByUser ? 'opacity-60' : ''}`}
+                      onClick={() => !word.isAddedByUser && toggleWordSelection(word.id)}
+                    >
+                      <CardHeader className="pb-2 pt-2">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <Checkbox
+                              checked={isWordSelected(word.id)}
+                              onChange={() => {}} // отключаем прямое взаимодействие с чекбоксом
+                              disabled={word.isAddedByUser}
+                              className="shrink-0"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <CardTitle className="text-base flex items-center gap-2 flex-wrap">
+                                <span className="truncate">{word.word}</span>
+                                <span className="text-sm shrink-0">{getLanguageFlag(word.language.code)}</span>
+                                <span className="text-xs bg-gray-100 px-2 py-1 rounded shrink-0">
+                                  {getPartOfSpeechAbbrev(word.partOfSpeech.displayName)}
+                                </span>
+                              </CardTitle>
+                              <div className="flex items-center gap-1">
+                                <span className="truncate text-sm text-gray-500">
+                                  {word.translations.length > 0
+                                    ? word.translations[0].translation
+                                    : 'Нет перевода'}
+                                </span>
+                                {word.translations.length > 1 && (
+                                  <span className="text-xs text-gray-400 shrink-0">
+                                    (+{word.translations.length - 1})
+                                  </span>
+                                )}
+                                {word.isAddedByUser && (
+                                  <CheckCircle className="w-4 h-4 text-green-500 shrink-0 ml-1" />
+                                )}
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  </CardHeader>
-                </Card>
-              ))}
-            </div>
-            {availableWords.length === 0 && !searching && (
-              <div className="text-center py-8 text-gray-500">
-                {searchTerm.length >= 2 ? 'Слова не найдены' : 'Введите минимум 2 символа для поиска'}
+                      </CardHeader>
+                    </Card>
+                  ))
+                ) : (
+                  <div className="col-span-2 flex items-center justify-center text-gray-500">
+                    Слова не найдены
+                  </div>
+                )}
               </div>
-            )}
+
+              {hasMore && availableWords.length > 0 && (
+                <div className="flex justify-center pt-2">
+                  <Button
+                    variant="outline"
+                    onClick={handleLoadMore}
+                    disabled={loadingMore}
+                  >
+                    {loadingMore ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Загрузка...
+                      </>
+                    ) : (
+                      'Показать еще'
+                    )}
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
 
         </div>
