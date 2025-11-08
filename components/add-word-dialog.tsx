@@ -63,6 +63,7 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
   const [open, setOpen] = useState(false)
   const [languageCode, setLanguageCode] = useState<'en' | 'es'>('es')
   const [searchTerm, setSearchTerm] = useState('')
+  const [selectedPartsOfSpeech, setSelectedPartsOfSpeech] = useState<string[]>([])
   const [selectedWords, setSelectedWords] = useState<SelectedWord[]>([])
   const [availableWords, setAvailableWords] = useState<BaseWord[]>([])
   const [loading, setLoading] = useState(false)
@@ -83,6 +84,22 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
     }
   }, [languageCode, searchTerm, open])
 
+  // Функция для фильтрации слов по частям речи (клиентская фильтрация)
+  const getFilteredWords = () => {
+    if (selectedPartsOfSpeech.length === 0) {
+      return availableWords.filter(word => !word.isAddedByUser)
+    }
+    return availableWords.filter(
+      word => !word.isAddedByUser && selectedPartsOfSpeech.includes(word.partOfSpeech.name)
+    )
+  }
+
+  const togglePartOfSpeech = (pos: string) => {
+    setSelectedPartsOfSpeech(prev =>
+      prev.includes(pos) ? prev.filter(p => p !== pos) : [...prev, pos]
+    )
+  }
+
   // Функции для работы с выбранными словами
   const toggleWordSelection = (baseWordId: string) => {
     setSelectedWords(prev =>
@@ -93,9 +110,7 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
   }
 
   const selectAllWords = () => {
-    const newSelections = availableWords
-      .filter(word => !word.isAddedByUser) // только не добавленные пользователем
-      .map(word => word.id)
+    const newSelections = getFilteredWords().map(word => word.id)
     setSelectedWords(newSelections)
   }
 
@@ -282,34 +297,68 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
         </DialogHeader>
 
         <div className="space-y-4 py-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Язык</label>
-              <Select
-                value={languageCode}
-                onValueChange={(value: 'en' | 'es') => setLanguageCode(value)}
-              >
+          <div className="flex flex-wrap gap-2">
+            <Select
+              value={languageCode}
+              onValueChange={(value: 'en' | 'es') => setLanguageCode(value)}
+            >
+              <SelectTrigger className="w-[100px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="es">🇪🇸 Исп</SelectItem>
+                <SelectItem value="en">🇬🇧 Англ</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <div className="relative w-[140px]">
+              <Select value="parts-of-speech">
                 <SelectTrigger>
-                  <SelectValue />
+                  <span className="text-sm truncate">
+                    {selectedPartsOfSpeech.length === 0
+                      ? 'Части речи'
+                      : `${selectedPartsOfSpeech.length} шт.`}
+                  </span>
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="es">🇪🇸 Испанский</SelectItem>
-                  <SelectItem value="en">🇬🇧 Английский</SelectItem>
+                  <div className="p-2 space-y-2">
+                    {[
+                      { value: 'VERB', label: 'Глагол' },
+                      { value: 'NOUN', label: 'Существительное' },
+                      { value: 'ADJECTIVE', label: 'Прилагательное' },
+                      { value: 'ADVERB', label: 'Наречие' },
+                      { value: 'PRONOUN', label: 'Местоимение' },
+                    ].map(pos => (
+                      <div
+                        key={pos.value}
+                        className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 p-1 rounded"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          togglePartOfSpeech(pos.value)
+                        }}
+                      >
+                        <Checkbox
+                          checked={selectedPartsOfSpeech.includes(pos.value)}
+                          onCheckedChange={() => togglePartOfSpeech(pos.value)}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                        <label className="text-sm cursor-pointer">{pos.label}</label>
+                      </div>
+                    ))}
+                  </div>
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="space-y-2 md:col-span-2">
-              <label className="text-sm font-medium">Поиск слова</label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <Input
-                  placeholder="Введите слово для поиска..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
+            <div className="relative flex-1 min-w-[200px]">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Input
+                placeholder="Поиск..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
             </div>
           </div>
 
@@ -324,7 +373,7 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                   variant="outline"
                   size="sm"
                   onClick={selectAllWords}
-                  disabled={searching || availableWords.filter(w => !w.isAddedByUser).length === 0}
+                  disabled={searching || getFilteredWords().length === 0}
                 >
                   Выбрать все
                 </Button>
@@ -357,8 +406,8 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                       </Card>
                     ))}
                   </>
-                ) : availableWords.filter(word => !word.isAddedByUser).length > 0 ? (
-                  availableWords.filter(word => !word.isAddedByUser).map((word) => (
+                ) : getFilteredWords().length > 0 ? (
+                  getFilteredWords().map((word) => (
                     <Card
                       key={word.id}
                       className={`transition-all cursor-pointer ${
@@ -409,15 +458,14 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                 )}
               </div>
 
-              <div className="flex justify-center pt-2">
-                <Button
-                  variant="outline"
+              <div className="flex justify-center pt-1 pb-1">
+                <button
                   onClick={handleLoadMore}
                   disabled={searching || loadingMore || !hasMore}
-                  className={!hasMore && availableWords.length > 0 ? 'invisible' : ''}
+                  className={`text-sm text-black underline decoration-dotted decoration-1 underline-offset-2 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed ${!hasMore && availableWords.length > 0 ? 'invisible' : ''}`}
                 >
                   Показать еще
-                </Button>
+                </button>
               </div>
             </div>
           </div>
