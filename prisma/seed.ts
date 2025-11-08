@@ -100,6 +100,7 @@ async function main() {
     { name: 'Future Simple', languageId: english.id },
     { name: 'Present Continuous', languageId: english.id },
     { name: 'Present Perfect', languageId: english.id },
+    { name: 'Future (going to)', languageId: english.id },
   ]
 
   for (const tense of englishTensesData) {
@@ -116,8 +117,8 @@ async function main() {
   }
   console.log('✅ Created tenses for English')
 
-  // Create parts of speech for Spanish
-  const spanishPartsOfSpeech = [
+  // Create parts of speech for both Spanish and English
+  const partsOfSpeechData = [
     { name: 'NOUN', displayName: 'существительное' },
     { name: 'VERB', displayName: 'глагол' },
     { name: 'ADJECTIVE', displayName: 'прилагательное' },
@@ -130,7 +131,8 @@ async function main() {
 
   const partsOfSpeechRecords: Record<string, any> = {}
 
-  for (const pos of spanishPartsOfSpeech) {
+  // Create parts of speech for Spanish
+  for (const pos of partsOfSpeechData) {
     const partOfSpeech = await prisma.partOfSpeech.upsert({
       where: {
         name_languageId: {
@@ -148,6 +150,27 @@ async function main() {
     partsOfSpeechRecords[pos.name] = partOfSpeech
   }
   console.log('✅ Created parts of speech for Spanish')
+
+  // Create parts of speech for English
+  for (const pos of partsOfSpeechData) {
+    const partOfSpeech = await prisma.partOfSpeech.upsert({
+      where: {
+        name_languageId: {
+          name: pos.name,
+          languageId: english.id
+        }
+      },
+      update: {},
+      create: {
+        name: pos.name,
+        displayName: pos.displayName,
+        languageId: english.id
+      }
+    })
+    // Store English parts of speech with the same keys
+    partsOfSpeechRecords[pos.name] = partOfSpeech
+  }
+  console.log('✅ Created parts of speech for English')
 
   // Hash passwords
   const adminPasswordHash = await bcrypt.hash('12345678', 10)

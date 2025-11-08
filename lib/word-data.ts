@@ -114,7 +114,12 @@ export async function importWordsData(prisma: any, partsOfSpeechRecords: Record<
     }
 
     // Добавить местоимения если они еще не существуют
-    const pronouns = ['yo', 'tú', 'él', 'ella', 'nosotros', 'vosotros', 'ellos', 'ellas']
+    const pronounsByLanguage: Record<string, string[]> = {
+      'es': ['yo', 'tú', 'él', 'ella', 'nosotros', 'vosotros', 'ellos', 'ellas'],
+      'en': ['I', 'you', 'he', 'she', 'we', 'they', 'it']
+    }
+    
+    const pronouns = pronounsByLanguage[wordData.languageCode] || []
     const pronounRecords: Record<string, any> = {}
 
     for (const pronoun of pronouns) {
