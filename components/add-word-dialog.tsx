@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
-import { PlusCircle, Loader2, Search, CheckCircle } from 'lucide-react'
+import { PlusCircle, Loader2, Search } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 
 type PartOfSpeech = {
@@ -237,9 +237,10 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
           title: 'Успешно',
           description: `Добавлено ${successCount} слов${errorCount > 0 ? `, ${errorCount} ошибок` : ''}`,
         })
-        resetForm()
-        setOpen(false)
+        setSelectedWords([])
         onWordAdded()
+        // Обновляем список слов, не закрывая попап
+        handleSearch(0, true)
       } else {
         toast({
           title: 'Ошибка',
@@ -318,26 +319,24 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
               <label className="text-sm font-medium">
                 Доступные слова {searching && <Loader2 className="w-4 h-4 animate-spin inline ml-2" />}
               </label>
-              {availableWords.length > 0 && (
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={selectAllWords}
-                    disabled={availableWords.every(w => w.isAddedByUser)}
-                  >
-                    Выбрать все
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={deselectAllWords}
-                    disabled={selectedWords.length === 0}
-                  >
-                    Отменить выбор
-                  </Button>
-                </div>
-              )}
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={selectAllWords}
+                  disabled={searching || availableWords.filter(w => !w.isAddedByUser).length === 0}
+                >
+                  Выбрать все
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={deselectAllWords}
+                  disabled={searching || selectedWords.length === 0}
+                >
+                  Отменить выбор
+                </Button>
+              </div>
             </div>
             <div className="space-y-3">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 h-[300px] overflow-y-auto border rounded-md p-3 bg-gray-50">
@@ -358,16 +357,16 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                       </Card>
                     ))}
                   </>
-                ) : availableWords.length > 0 ? (
-                  availableWords.map((word) => (
+                ) : availableWords.filter(word => !word.isAddedByUser).length > 0 ? (
+                  availableWords.filter(word => !word.isAddedByUser).map((word) => (
                     <Card
                       key={word.id}
-                      className={`transition-all ${word.isAddedByUser ? 'cursor-not-allowed' : 'cursor-pointer'} ${
+                      className={`transition-all cursor-pointer ${
                         isWordSelected(word.id)
                           ? 'ring-2 ring-primary bg-blue-50'
                           : 'hover:bg-gray-50 bg-white'
-                      } ${word.isAddedByUser ? 'opacity-60' : ''}`}
-                      onClick={() => !word.isAddedByUser && toggleWordSelection(word.id)}
+                      }`}
+                      onClick={() => toggleWordSelection(word.id)}
                     >
                       <CardHeader className="pb-2 pt-2">
                         <div className="flex items-center justify-between">
@@ -375,7 +374,6 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                             <Checkbox
                               checked={isWordSelected(word.id)}
                               onChange={() => {}} // отключаем прямое взаимодействие с чекбоксом
-                              disabled={word.isAddedByUser}
                               className="shrink-0"
                             />
                             <div className="flex-1 min-w-0">
@@ -397,9 +395,6 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                                     (+{word.translations.length - 1})
                                   </span>
                                 )}
-                                {word.isAddedByUser && (
-                                  <CheckCircle className="w-4 h-4 text-green-500 shrink-0 ml-1" />
-                                )}
                               </div>
                             </div>
                           </div>
@@ -414,30 +409,22 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                 )}
               </div>
 
-              {hasMore && availableWords.length > 0 && (
-                <div className="flex justify-center pt-2">
-                  <Button
-                    variant="outline"
-                    onClick={handleLoadMore}
-                    disabled={loadingMore}
-                  >
-                    {loadingMore ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Загрузка...
-                      </>
-                    ) : (
-                      'Показать еще'
-                    )}
-                  </Button>
-                </div>
-              )}
+              <div className="flex justify-center pt-2">
+                <Button
+                  variant="outline"
+                  onClick={handleLoadMore}
+                  disabled={searching || loadingMore || !hasMore}
+                  className={!hasMore && availableWords.length > 0 ? 'invisible' : ''}
+                >
+                  Показать еще
+                </Button>
+              </div>
             </div>
           </div>
 
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="flex-row justify-end space-x-2">
           <Button variant="outline" onClick={() => setOpen(false)}>
             Отмена
           </Button>
