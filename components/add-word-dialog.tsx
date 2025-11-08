@@ -71,7 +71,23 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
   const [offset, setOffset] = useState(0)
   const [hasMore, setHasMore] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
+  const [needsScroll, setNeedsScroll] = useState(false)
   const { toast } = useToast()
+
+  // Проверка, нужен ли скролл для попапа
+  useEffect(() => {
+    const checkViewportSize = () => {
+      // Примерная высота попапа: header(60) + filters(80) + list(300) + controls(40) + footer(60) + padding(60) = ~600px
+      const estimatedDialogHeight = 600
+      const viewportHeight = window.innerHeight
+      // Если попап занимает больше 90% высоты viewport, включаем скролл
+      setNeedsScroll(viewportHeight * 0.9 < estimatedDialogHeight)
+    }
+
+    checkViewportSize()
+    window.addEventListener('resize', checkViewportSize)
+    return () => window.removeEventListener('resize', checkViewportSize)
+  }, [])
 
   // Поиск слов при изменении параметров
   useEffect(() => {
@@ -291,7 +307,7 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
           Добавить слово
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl">
+      <DialogContent className={`max-w-4xl ${needsScroll ? 'max-h-[90vh] overflow-y-auto' : ''}`}>
         <DialogHeader>
           <DialogTitle>Добавить слово из словаря</DialogTitle>
         </DialogHeader>
