@@ -119,14 +119,18 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Получаем источник MYMEMORY для AI-поиска
+        // Получаем источники для AI-поиска
         const myMemorySource = await prisma.wordSource.findUnique({
             where: { code: 'MYMEMORY' },
         });
 
-        if (!myMemorySource) {
+        const tatoebaSource = await prisma.wordSource.findUnique({
+            where: { code: 'TATOEBA' },
+        });
+
+        if (!myMemorySource || !tatoebaSource) {
             return NextResponse.json(
-                { error: 'MYMEMORY source not found in database' },
+                { error: 'Required word sources not found in database' },
                 { status: 500 },
             );
         }
@@ -225,7 +229,7 @@ export async function POST(request: NextRequest) {
                     );
 
                     if (defaultPronoun && defaultSentenceType) {
-                        // Добавляем до 5 примеров
+                        // Добавляем до 5 примеров из Tatoeba
                         for (
                             let i = 0;
                             i < Math.min(5, wordData.examples.length);
@@ -239,6 +243,7 @@ export async function POST(request: NextRequest) {
                                     example: example.sentence,
                                     translation: example.translation,
                                     sentenceTypeId: defaultSentenceType.id,
+                                    sourceId: tatoebaSource.id,
                                 },
                             });
                         }

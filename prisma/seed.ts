@@ -86,6 +86,7 @@ async function main() {
     const wordSourcesData = [
         { code: 'native', displayName: 'Вручную' },
         { code: 'MYMEMORY', displayName: 'MyMemory Translation API' },
+        { code: 'TATOEBA', displayName: 'Tatoeba' },
     ];
 
     const wordSources: Record<string, { id: number }> = {};

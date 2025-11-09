@@ -184,6 +184,7 @@ export async function importWordsData(
                         example: example.example,
                         translation: example.translation,
                         sentenceTypeId: getSentenceTypeId(example),
+                        sourceId: wordSources['native'].id,
                     },
                 });
             }
@@ -228,6 +229,7 @@ export async function importWordsData(
                                 example: example.example,
                                 translation: example.translation,
                                 sentenceTypeId: getSentenceTypeId(example),
+                                sourceId: wordSources['native'].id,
                             },
                         });
                     }
