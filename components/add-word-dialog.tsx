@@ -69,6 +69,7 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
     const [open, setOpen] = useState(false);
     const [languageCode, setLanguageCode] = useState<'en' | 'es'>('es');
     const [searchTerm, setSearchTerm] = useState('');
+    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
     const [selectedPartsOfSpeech, setSelectedPartsOfSpeech] = useState<
         string[]
     >([]);
@@ -100,6 +101,15 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
         return () => window.removeEventListener('resize', checkViewportSize);
     }, []);
 
+    // Debounce для поиска (200мс задержка)
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearchTerm(searchTerm);
+        }, 200);
+
+        return () => clearTimeout(timer);
+    }, [searchTerm]);
+
     // Проверка наличия точных совпадений
     useEffect(() => {
         if (!searchTerm.trim()) {
@@ -114,7 +124,7 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
         setHasExactMatch(!!exactMatch);
     }, [searchTerm, availableWords]);
 
-    // Поиск слов при изменении параметров
+    // Поиск слов при изменении параметров (с debounce)
     useEffect(() => {
         if (open && !skipAutoSearch) {
             // Сброс и загрузка при изменении языка или поиска
@@ -128,7 +138,7 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
         if (skipAutoSearch) {
             setSkipAutoSearch(false);
         }
-    }, [languageCode, searchTerm, open, skipAutoSearch]);
+    }, [languageCode, debouncedSearchTerm, open, skipAutoSearch]);
 
     // Функция для фильтрации слов по частям речи (клиентская фильтрация)
     // ВАЖНО: Мы показываем ВСЕ слова, включая уже добавленные пользователем
@@ -221,8 +231,9 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                 offset: currentOffset.toString(),
             });
 
-            if (searchTerm.trim()) {
-                params.set('search', searchTerm.trim());
+            // Используем debouncedSearchTerm для API запроса
+            if (debouncedSearchTerm.trim()) {
+                params.set('search', debouncedSearchTerm.trim());
             }
 
             const response = await fetch(`/api/base-words?${params}`);
@@ -420,6 +431,7 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
         setOffset(0);
         setHasMore(true);
         setSearchTerm('');
+        setDebouncedSearchTerm('');
         setSelectedPartsOfSpeech([]);
         setSkipAutoSearch(false);
         setHasExactMatch(false);
