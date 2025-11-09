@@ -5,6 +5,7 @@
 ### 1. Добавьте переменные окружения
 
 Создайте или обновите файл `.env` в корне проекта:
+
 ```bash
 DATABASE_URL="postgresql://flashcards:flashcards_password@localhost:5433/flashcards"
 NEXTAUTH_SECRET="your-secret-key-change-in-production"
@@ -13,17 +14,20 @@ ADMIN_REGISTRATION_PASSWORD="admin123"
 ```
 
 ### 2. Пересоберите и запустите
+
 ```bash
 docker compose down
 docker compose up --build -d
 ```
 
 ### 3. Примените миграции
+
 ```bash
 docker compose exec app npx prisma migrate dev --name add_auth
 ```
 
 ### 4. Создайте начальных пользователей
+
 ```bash
 docker compose exec app npm run prisma:seed
 ```
@@ -35,10 +39,12 @@ docker compose exec app npm run prisma:seed
 Вы будете перенаправлены на страницу входа.
 
 **Войдите как администратор:**
+
 - Email: `ilya.rovda@gmail.com`
 - Пароль: `12345678`
 
 **Или как обычный пользователь:**
+
 - Email: `user@example.com`
 - Пароль: `12345678`
 
@@ -47,6 +53,7 @@ docker compose exec app npm run prisma:seed
 ## ✅ Готово!
 
 После входа вы можете:
+
 - Добавлять свои слова
 - Проходить тренировки
 - Управлять словарем
@@ -70,4 +77,3 @@ docker compose exec app npm run prisma:seed
 ---
 
 **Все слова теперь привязаны к вашему аккаунту!** 🎉
-

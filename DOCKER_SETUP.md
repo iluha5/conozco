@@ -30,22 +30,23 @@ docker-compose down
 ## 📋 Структура миграций
 
 Все миграции объединены в одну инициализирующую:
+
 - `20251026000000_init` - создание всех таблиц с нормализованной структурой языков
 
 ## 🗄️ Что происходит при запуске контейнера
 
 1. **Применение миграций**: `npx prisma migrate deploy`
-   - Создаются все таблицы согласно схеме Prisma
-   - Таблица `Language` уже нормализована (вместо enum)
+    - Создаются все таблицы согласно схеме Prisma
+    - Таблица `Language` уже нормализована (вместо enum)
 
 2. **Seed данных**: `npm run prisma:seed`
-   - Создаются языки: English (en), Spanish (es)
-   - Создаются пользователи:
-     - Admin: `ilya.rovda@gmail.com` / `12345678`
-     - User: `user@example.com` / `12345678`
+    - Создаются языки: English (en), Spanish (es)
+    - Создаются пользователи:
+        - Admin: `ilya.rovda@gmail.com` / `12345678`
+        - User: `user@example.com` / `12345678`
 
 3. **Запуск приложения**: `npm run dev`
-   - Next.js dev server на порту 8000
+    - Next.js dev server на порту 8000
 
 ## 🔧 Troubleshooting
 
@@ -54,6 +55,7 @@ docker-compose down
 Это значит, что база данных находится в несогласованном состоянии.
 
 **Решение:**
+
 ```bash
 # Очистить базу данных
 ./reset-db.sh
@@ -94,15 +96,15 @@ docker-compose logs -f
 ## 📦 Volumes
 
 - `postgres_data` - данные PostgreSQL
-  - Для очистки: `docker volume rm flash-cards_postgres_data`
+    - Для очистки: `docker volume rm flash-cards_postgres_data`
 
 ## 🌐 Доступ к приложению
 
 - **Приложение**: http://localhost:8000
 - **База данных**: localhost:5433
-  - User: `flashcards`
-  - Password: `flashcards_password`
-  - Database: `flashcards`
+    - User: `flashcards`
+    - Password: `flashcards_password`
+    - Database: `flashcards`
 
 ## 🔄 Полная переустановка
 
@@ -132,4 +134,3 @@ docker exec -it flashcards-app sh
 # Выполнить команду в контейнере
 docker exec -it flashcards-app npx prisma studio
 ```
-

@@ -20,6 +20,7 @@
 ## Стек технологий
 
 ### Frontend
+
 - **Next.js 14** (App Router) - React framework
 - **TypeScript** - Типизация
 - **Tailwind CSS** - Утилитарный CSS framework
@@ -27,15 +28,18 @@
 - **Lucide React** - Иконки
 
 ### Backend
+
 - **Next.js API Routes** - Serverless функции
 - **Prisma ORM** - Работа с базой данных
 - **Zod** - Валидация данных (опционально)
 
 ### База данных
+
 - **PostgreSQL 16** - Реляционная БД
 - **Prisma Client** - Типизированный ORM
 
 ### DevOps
+
 - **Docker** - Контейнеризация
 - **Docker Compose** - Оркестрация контейнеров
 
@@ -167,6 +171,7 @@ Request → GET /api/base-words
 ## Масштабируемость
 
 ### Текущая архитектура
+
 - Monolith (Next.js Frontend + Backend)
 - Один контейнер приложения
 - Один контейнер PostgreSQL
@@ -174,30 +179,32 @@ Request → GET /api/base-words
 ### Возможности масштабирования
 
 1. **Horizontal scaling**
-   - Запуск нескольких инстансов Next.js за load balancer
-   - Connection pooling через PgBouncer
+    - Запуск нескольких инстансов Next.js за load balancer
+    - Connection pooling через PgBouncer
 
 2. **Separation of concerns**
-   - Отдельный API сервис (Node.js/Express)
-   - Отдельный Frontend (Next.js SSG)
-   - Отдельный сервис переводов
+    - Отдельный API сервис (Node.js/Express)
+    - Отдельный Frontend (Next.js SSG)
+    - Отдельный сервис переводов
 
 3. **Caching layer**
-   - Redis для session storage
-   - Redis для кеша переводов (вместо БД)
+    - Redis для session storage
+    - Redis для кеша переводов (вместо БД)
 
 4. **CDN**
-   - Статические ассеты через CDN
-   - Edge caching для API responses
+    - Статические ассеты через CDN
+    - Edge caching для API responses
 
 ## Безопасность
 
 ### Текущие меры
+
 - Валидация входных данных на API уровне
 - Prisma защита от SQL injection
 - CORS настройки Next.js
 
 ### Будущие улучшения
+
 - [ ] JWT аутентификация
 - [ ] Rate limiting
 - [ ] CSRF protection
@@ -208,6 +215,7 @@ Request → GET /api/base-words
 ## Производительность
 
 ### Оптимизации
+
 - Prisma connection pooling
 - NextJS automatic code splitting
 - React Server Components
@@ -215,6 +223,7 @@ Request → GET /api/base-words
 - Efficient queries with relations
 
 ### Metrics
+
 - Response time: ~50-200ms (локально)
 - Database queries: Оптимизированы с индексами
 - Bundle size: Оптимизирован через tree-shaking
@@ -222,10 +231,12 @@ Request → GET /api/base-words
 ## Мониторинг и логирование
 
 ### Текущее состояние
+
 - Console.log для ошибок
 - Docker logs
 
 ### Рекомендации для production
+
 - Structured logging (Winston/Pino)
 - Error tracking (Sentry)
 - Performance monitoring (New Relic/DataDog)
@@ -246,6 +257,7 @@ Request → GET /api/base-words
 ```
 
 ### Этапы
+
 1. **Build**: Docker image build & push to registry
 2. **Test**: Lint, type check, unit tests
 3. **Deploy**: Deploy to staging/production
@@ -253,6 +265,7 @@ Request → GET /api/base-words
 ## Environment Variables
 
 ### Development
+
 ```env
 DATABASE_URL=postgresql://flashcards:flashcards_password@localhost:5433/flashcards
 NODE_ENV=development
@@ -260,6 +273,7 @@ NEXTAUTH_URL=http://localhost:8000
 ```
 
 ### Production (рекомендуется)
+
 ```env
 DATABASE_URL=postgresql://user:password@host:5432/db
 NODE_ENV=production
@@ -271,11 +285,13 @@ NEXTAUTH_URL=https://your-domain.com
 ## Deployment стратегия
 
 ### Docker Compose (Current - Local)
+
 ```bash
 docker compose up --build
 ```
 
 ### Kubernetes (Future)
+
 - Deployment для Next.js app
 - StatefulSet для PostgreSQL
 - Service для load balancing
@@ -284,6 +300,7 @@ docker compose up --build
 - Secret для sensitive data
 
 ### Managed Services (Future)
+
 - **Frontend**: Vercel / Netlify
 - **Database**: AWS RDS / Supabase
 - **API**: AWS Lambda / Google Cloud Run
@@ -293,47 +310,51 @@ docker compose up --build
 ### Рекомендуемые типы тестов
 
 1. **Unit Tests**
-   - API routes
-   - Utility functions
-   - React components
+    - API routes
+    - Utility functions
+    - React components
 
 2. **Integration Tests**
-   - Database operations
-   - API endpoints end-to-end
+    - Database operations
+    - API endpoints end-to-end
 
 3. **E2E Tests**
-   - Playwright/Cypress
-   - Критические user flows
+    - Playwright/Cypress
+    - Критические user flows
 
 ## API Design
 
 ### RESTful принципы
+
 - GET для чтения
 - POST для создания
 - PATCH для частичного обновления
 - DELETE для удаления
 
 ### Response format
+
 ```json
 {
-  "data": {},
-  "error": null,
-  "metadata": {}
+    "data": {},
+    "error": null,
+    "metadata": {}
 }
 ```
 
 ### Error handling
+
 ```json
 {
-  "error": "Error message",
-  "code": "ERROR_CODE",
-  "status": 400
+    "error": "Error message",
+    "code": "ERROR_CODE",
+    "status": 400
 }
 ```
 
 ## Future Improvements
 
 ### Функционал
+
 - [ ] Multi-user support
 - [ ] Social features (share dictionaries)
 - [ ] Gamification (achievements, streaks)
@@ -342,6 +363,7 @@ docker compose up --build
 - [ ] Mobile app (React Native)
 
 ### Технические
+
 - [ ] GraphQL API
 - [ ] Real-time updates (WebSockets)
 - [ ] Background jobs (Bull/BullMQ)
@@ -351,9 +373,9 @@ docker compose up --build
 ## Вклад в проект
 
 При добавлении нового функционала следуйте:
+
 1. Типизация TypeScript для всех данных
 2. Компонентный подход в React
 3. API first design
 4. Database migrations через Prisma
 5. Документация изменений
-

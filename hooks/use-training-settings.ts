@@ -1,179 +1,185 @@
-import { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
+import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import {
-  getTrainingSettings,
-  saveTrainingSettings,
-  getStage1Settings,
-  saveStage1Settings,
-  getStage4Settings,
-  saveStage4Settings,
-  getStage5Settings,
-  saveStage5Settings,
-  getEnabledStages,
-  saveEnabledStages,
-  type Stage1Settings,
-  type Stage4Settings,
-  type Stage5Settings,
-  type TrainingSettings
-} from '@/lib/training-settings'
+    getTrainingSettings,
+    saveTrainingSettings,
+    getStage1Settings,
+    saveStage1Settings,
+    getStage4Settings,
+    saveStage4Settings,
+    getStage5Settings,
+    saveStage5Settings,
+    getEnabledStages,
+    saveEnabledStages,
+    type Stage1Settings,
+    type Stage4Settings,
+    type Stage5Settings,
+    type TrainingSettings,
+} from '@/lib/training-settings';
 
 /**
  * Хук для управления всеми настройками тренировки с автоматической загрузкой и сохранением
  */
 export function useTrainingSettings() {
-  const { data: session } = useSession()
-  const [isLoaded, setIsLoaded] = useState(false)
-  const [settings, setSettings] = useState<TrainingSettings | null>(null)
+    const { data: session } = useSession();
+    const [isLoaded, setIsLoaded] = useState(false);
+    const [settings, setSettings] = useState<TrainingSettings | null>(null);
 
-  // Загружаем настройки при монтировании или изменении сессии
-  useEffect(() => {
-    if (session?.user?.id) {
-      const loadedSettings = getTrainingSettings(session.user.id)
-      setSettings(loadedSettings)
-      setIsLoaded(true)
-    }
-  }, [session])
+    // Загружаем настройки при монтировании или изменении сессии
+    useEffect(() => {
+        if (session?.user?.id) {
+            const loadedSettings = getTrainingSettings(session.user.id);
+            setSettings(loadedSettings);
+            setIsLoaded(true);
+        }
+    }, [session]);
 
-  // Сохраняем настройки при их изменении (только после загрузки)
-  useEffect(() => {
-    if (session?.user?.id && isLoaded && settings) {
-      saveTrainingSettings(session.user.id, settings)
-    }
-  }, [settings, session, isLoaded])
+    // Сохраняем настройки при их изменении (только после загрузки)
+    useEffect(() => {
+        if (session?.user?.id && isLoaded && settings) {
+            saveTrainingSettings(session.user.id, settings);
+        }
+    }, [settings, session, isLoaded]);
 
-  const updateEnabledStages = (stages: number[]) => {
-    if (settings) {
-      setSettings({ ...settings, enabledStages: stages })
-    }
-  }
+    const updateEnabledStages = (stages: number[]) => {
+        if (settings) {
+            setSettings({ ...settings, enabledStages: stages });
+        }
+    };
 
-  const updateStage1Settings = (stage1: Stage1Settings) => {
-    if (settings) {
-      setSettings({ ...settings, stage1 })
-    }
-  }
+    const updateStage1Settings = (stage1: Stage1Settings) => {
+        if (settings) {
+            setSettings({ ...settings, stage1 });
+        }
+    };
 
-  const updateStage4Settings = (stage4: Stage4Settings) => {
-    if (settings) {
-      setSettings({ ...settings, stage4 })
-    }
-  }
+    const updateStage4Settings = (stage4: Stage4Settings) => {
+        if (settings) {
+            setSettings({ ...settings, stage4 });
+        }
+    };
 
-  const updateStage5Settings = (stage5: Stage5Settings) => {
-    if (settings) {
-      setSettings({ ...settings, stage5 })
-    }
-  }
+    const updateStage5Settings = (stage5: Stage5Settings) => {
+        if (settings) {
+            setSettings({ ...settings, stage5 });
+        }
+    };
 
-  const updateStagesSettingsExpanded = (expanded: boolean) => {
-    if (settings) {
-      setSettings({ ...settings, stagesSettingsExpanded: expanded })
-    }
-  }
+    const updateStagesSettingsExpanded = (expanded: boolean) => {
+        if (settings) {
+            setSettings({ ...settings, stagesSettingsExpanded: expanded });
+        }
+    };
 
-  return {
-    settings,
-    isLoaded,
-    updateEnabledStages,
-    updateStage1Settings,
-    updateStage4Settings,
-    updateStage5Settings,
-    updateStagesSettingsExpanded,
-    userId: session?.user?.id
-  }
+    return {
+        settings,
+        isLoaded,
+        updateEnabledStages,
+        updateStage1Settings,
+        updateStage4Settings,
+        updateStage5Settings,
+        updateStagesSettingsExpanded,
+        userId: session?.user?.id,
+    };
 }
 
 /**
  * Хук для работы с настройками конкретного этапа 1
  */
 export function useStage1Settings() {
-  const { data: session } = useSession()
-  const [settings, setSettings] = useState<Stage1Settings>({ showExamples: false })
-  const [isLoaded, setIsLoaded] = useState(false)
+    const { data: session } = useSession();
+    const [settings, setSettings] = useState<Stage1Settings>({
+        showExamples: false,
+    });
+    const [isLoaded, setIsLoaded] = useState(false);
 
-  useEffect(() => {
-    if (session?.user?.id) {
-      const loaded = getStage1Settings(session.user.id)
-      setSettings(loaded)
-      setIsLoaded(true)
-    }
-  }, [session])
+    useEffect(() => {
+        if (session?.user?.id) {
+            const loaded = getStage1Settings(session.user.id);
+            setSettings(loaded);
+            setIsLoaded(true);
+        }
+    }, [session]);
 
-  const updateSettings = (newSettings: Stage1Settings) => {
-    setSettings(newSettings)
-    if (session?.user?.id) {
-      saveStage1Settings(session.user.id, newSettings)
-    }
-  }
+    const updateSettings = (newSettings: Stage1Settings) => {
+        setSettings(newSettings);
+        if (session?.user?.id) {
+            saveStage1Settings(session.user.id, newSettings);
+        }
+    };
 
-  return {
-    settings,
-    updateSettings,
-    isLoaded,
-    userId: session?.user?.id
-  }
+    return {
+        settings,
+        updateSettings,
+        isLoaded,
+        userId: session?.user?.id,
+    };
 }
 
 /**
  * Хук для работы с настройками конкретного этапа 4
  */
 export function useStage4Settings() {
-  const { data: session } = useSession()
-  const [settings, setSettings] = useState<Stage4Settings>({ difficulty: 'easy' })
-  const [isLoaded, setIsLoaded] = useState(false)
+    const { data: session } = useSession();
+    const [settings, setSettings] = useState<Stage4Settings>({
+        difficulty: 'easy',
+    });
+    const [isLoaded, setIsLoaded] = useState(false);
 
-  useEffect(() => {
-    if (session?.user?.id) {
-      const loaded = getStage4Settings(session.user.id)
-      setSettings(loaded)
-      setIsLoaded(true)
-    }
-  }, [session])
+    useEffect(() => {
+        if (session?.user?.id) {
+            const loaded = getStage4Settings(session.user.id);
+            setSettings(loaded);
+            setIsLoaded(true);
+        }
+    }, [session]);
 
-  const updateSettings = (newSettings: Stage4Settings) => {
-    setSettings(newSettings)
-    if (session?.user?.id) {
-      saveStage4Settings(session.user.id, newSettings)
-    }
-  }
+    const updateSettings = (newSettings: Stage4Settings) => {
+        setSettings(newSettings);
+        if (session?.user?.id) {
+            saveStage4Settings(session.user.id, newSettings);
+        }
+    };
 
-  return {
-    settings,
-    updateSettings,
-    isLoaded,
-    userId: session?.user?.id
-  }
+    return {
+        settings,
+        updateSettings,
+        isLoaded,
+        userId: session?.user?.id,
+    };
 }
 
 /**
  * Хук для работы с настройками конкретного этапа 5
  */
 export function useStage5Settings() {
-  const { data: session } = useSession()
-  const [settings, setSettings] = useState<Stage5Settings>({ sentencesPerWord: 1 })
-  const [isLoaded, setIsLoaded] = useState(false)
+    const { data: session } = useSession();
+    const [settings, setSettings] = useState<Stage5Settings>({
+        sentencesPerWord: 1,
+    });
+    const [isLoaded, setIsLoaded] = useState(false);
 
-  useEffect(() => {
-    if (session?.user?.id) {
-      const loaded = getStage5Settings(session.user.id)
-      setSettings(loaded)
-      setIsLoaded(true)
-    }
-  }, [session])
+    useEffect(() => {
+        if (session?.user?.id) {
+            const loaded = getStage5Settings(session.user.id);
+            setSettings(loaded);
+            setIsLoaded(true);
+        }
+    }, [session]);
 
-  const updateSettings = (newSettings: Stage5Settings) => {
-    setSettings(newSettings)
-    if (session?.user?.id) {
-      saveStage5Settings(session.user.id, newSettings)
-    }
-  }
+    const updateSettings = (newSettings: Stage5Settings) => {
+        setSettings(newSettings);
+        if (session?.user?.id) {
+            saveStage5Settings(session.user.id, newSettings);
+        }
+    };
 
-  return {
-    settings,
-    updateSettings,
-    isLoaded,
-    userId: session?.user?.id
-  }
+    return {
+        settings,
+        updateSettings,
+        isLoaded,
+        userId: session?.user?.id,
+    };
 }
 
 /**
@@ -181,33 +187,37 @@ export function useStage5Settings() {
  * Выбранные слова теперь управляются через TrainingWordsContext
  */
 export function useTrainingSelection() {
-  const { data: session } = useSession()
-  const [selectedLanguage, setSelectedLanguage] = useState<string>('ALL')
-  const [isLoaded, setIsLoaded] = useState(false)
+    const { data: session } = useSession();
+    const [selectedLanguage, setSelectedLanguage] = useState<string>('ALL');
+    const [isLoaded, setIsLoaded] = useState(false);
 
-  // Загружаем язык при монтировании
-  useEffect(() => {
-    if (session?.user?.id) {
-      const savedLanguage = localStorage.getItem(`training_${session.user.id}_selected-language`)
-      if (savedLanguage) {
-        setSelectedLanguage(savedLanguage)
-      }
-      setIsLoaded(true)
-    }
-  }, [session])
+    // Загружаем язык при монтировании
+    useEffect(() => {
+        if (session?.user?.id) {
+            const savedLanguage = localStorage.getItem(
+                `training_${session.user.id}_selected-language`,
+            );
+            if (savedLanguage) {
+                setSelectedLanguage(savedLanguage);
+            }
+            setIsLoaded(true);
+        }
+    }, [session]);
 
-  // Сохраняем язык при изменении (только после загрузки)
-  useEffect(() => {
-    if (session?.user?.id && isLoaded) {
-      localStorage.setItem(`training_${session.user.id}_selected-language`, selectedLanguage)
-    }
-  }, [selectedLanguage, session, isLoaded])
+    // Сохраняем язык при изменении (только после загрузки)
+    useEffect(() => {
+        if (session?.user?.id && isLoaded) {
+            localStorage.setItem(
+                `training_${session.user.id}_selected-language`,
+                selectedLanguage,
+            );
+        }
+    }, [selectedLanguage, session, isLoaded]);
 
-  return {
-    selectedLanguage,
-    setSelectedLanguage,
-    isLoaded,
-    userId: session?.user?.id
-  }
+    return {
+        selectedLanguage,
+        setSelectedLanguage,
+        isLoaded,
+        userId: session?.user?.id,
+    };
 }
-

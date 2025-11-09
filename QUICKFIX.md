@@ -9,13 +9,16 @@
 ## 1️⃣ Ошибка OpenSSL в Prisma
 
 ### Симптомы
+
 ```
 prisma:warn Prisma failed to detect the libssl/openssl version to use
 Error: Could not parse schema engine response
 ```
 
 ### ✅ Решение
+
 Добавлены системные зависимости в Dockerfile:
+
 ```dockerfile
 RUN apk add --no-cache openssl libc6-compat
 ```
@@ -25,13 +28,16 @@ RUN apk add --no-cache openssl libc6-compat
 ## 2️⃣ Ошибка Client Components в Next.js
 
 ### Симптомы
+
 ```
-Error: useState only works in Client Components. 
+Error: useState only works in Client Components.
 Add the "use client" directive at the top of the file to use it.
 ```
 
 ### ✅ Решение
+
 Добавлена директива `'use client'` в 8 файлов:
+
 - `hooks/use-toast.ts`
 - `components/ui/button.tsx`
 - `components/ui/card.tsx`
@@ -61,26 +67,29 @@ Add the "use client" directive at the top of the file to use it.
 1. Откройте браузер: **http://localhost:8000**
 2. Вы должны увидеть главную страницу без ошибок
 3. Попробуйте:
-   - Перейти в "Управление словами"
-   - Добавить новое слово
-   - Начать тренировку
+    - Перейти в "Управление словами"
+    - Добавить новое слово
+    - Начать тренировку
 
 ---
 
 ## 🛠 Если что-то не работает
 
 ### Полный перезапуск
+
 ```bash
 docker compose down -v
 docker compose up --build
 ```
 
 ### Проверка логов
+
 ```bash
 docker compose logs -f app
 ```
 
 ### Проверка статуса контейнеров
+
 ```bash
 docker compose ps
 ```
@@ -99,18 +108,24 @@ docker compose ps
 ## 💡 Полезные советы
 
 ### Next.js App Router
+
 В Next.js 14 App Router:
+
 - По умолчанию все компоненты - **Server Components**
 - Для использования хуков нужна директива `'use client'`
 - Директива должна быть **первой строкой** файла
 
 ### Docker Compose
+
 Используйте современный синтаксис:
+
 - ✅ `docker compose up` (правильно)
 - ❌ `docker-compose up` (устарело)
 
 ### Prisma в Alpine Linux
+
 Alpine использует LibreSSL, но Prisma требует OpenSSL:
+
 ```dockerfile
 RUN apk add --no-cache openssl libc6-compat
 ```
@@ -121,4 +136,3 @@ RUN apk add --no-cache openssl libc6-compat
 
 Версия: **0.1.1**  
 Дата: **24.10.2024**
-
