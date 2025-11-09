@@ -1,8 +1,8 @@
 # Dependencies
 node_modules
+.next
 
 # Build outputs
-.next
 out
 dist
 build
@@ -10,24 +10,11 @@ build
 # Database
 prisma/migrations
 
-# Logs
-*.log
-
 # Environment files
 .env
 .env.local
 .env.production
 
-# Lock files
-package-lock.json
-yarn.lock
-pnpm-lock.yaml
-
-# Coverage
-coverage
-
-# Documentation (if you want to exclude)
-# *.md
-
 # Temporary files
 temp.ts
+
