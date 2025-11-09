@@ -14,10 +14,20 @@
         "prisma:generate": "prisma generate",
         "prisma:migrate": "prisma migrate dev",
         "prisma:studio": "prisma studio",
-        "prisma:seed": "tsx prisma/seed.ts"
+        "prisma:seed": "tsx prisma/seed.ts",
+        "prepare": "husky"
     },
     "prisma": {
         "seed": "tsx prisma/seed.ts"
+    },
+    "lint-staged": {
+        "*.{ts,tsx,js,jsx}": [
+            "eslint --fix",
+            "prettier --write"
+        ],
+        "*.{json,md,yml,yaml,css}": [
+            "prettier --write"
+        ]
     },
     "dependencies": {
         "@prisma/client": "^5.7.0",
@@ -48,6 +58,8 @@
         "eslint-config-next": "^14.0.4",
         "eslint-config-prettier": "^10.1.8",
         "eslint-plugin-prettier": "^5.5.4",
+        "husky": "^9.1.7",
+        "lint-staged": "^16.2.6",
         "postcss": "^8.4.32",
         "prettier": "^3.6.2",
         "prisma": "^5.7.0",
