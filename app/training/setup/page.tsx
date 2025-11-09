@@ -18,6 +18,7 @@ import {
   useStage4Settings,
   useStage5Settings
 } from '@/hooks/use-training-settings'
+import { useTrainingWords } from '@/contexts/training-words-context'
 
 type Language = {
   id: string
@@ -68,7 +69,8 @@ type Word = {
 
 export default function TrainingSetupPage() {
   const { settings: trainingSettings, updateEnabledStages, updateStagesSettingsExpanded, isLoaded: trainingSettingsLoaded, userId } = useTrainingSettings()
-  const { selectedWords, setSelectedWords, selectedLanguage, setSelectedLanguage, isLoaded: selectionLoaded } = useTrainingSelection()
+  const { selectedLanguage, setSelectedLanguage, isLoaded: selectionLoaded } = useTrainingSelection()
+  const { selectedWords, setSelectedWords } = useTrainingWords()
   const { settings: stage1Settings, updateSettings: updateStage1 } = useStage1Settings()
   const { settings: stage4Settings, updateSettings: updateStage4 } = useStage4Settings()
   const { settings: stage5Settings, updateSettings: updateStage5 } = useStage5Settings()
@@ -102,7 +104,7 @@ export default function TrainingSetupPage() {
       setSelectedWords(new Set(first12Words))
       setIsInitialSelection(false)
     }
-  }, [words, selectedWords.size, isInitialSelection])
+  }, [words, selectedWords.size, isInitialSelection, setSelectedWords])
 
   const fetchWords = async () => {
     setIsLoadingWords(true)

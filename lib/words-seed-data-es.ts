@@ -4033,5 +4033,1085 @@ export const SPANISH_WORDS_DATA: WordData[] = [
         ]
       }
     ]
+  },
+
+  // MOLESTAR
+  {
+    word: 'molestar',
+    partOfSpeech: PartOfSpeech.VERB,
+    languageCode: 'es',
+    translations: [
+      {
+        languageCode: 'ru',
+        translations: ['беспокоить', 'раздражать', 'надоедать']
+      }
+    ],
+    examples: [
+      { pronoun: 'yo', example: 'Me molesta el ruido de la calle', translation: 'Меня раздражает шум с улицы' },
+      { pronoun: 'tú', example: 'Te molestan las interrupciones constantes', translation: 'Тебя раздражают постоянные перерывы' },
+      { pronoun: 'él', example: 'Le molesta levantarse temprano', translation: 'Его раздражает вставать рано' },
+      { pronoun: 'nosotros', example: 'Nos molesta la falta de respeto', translation: 'Нас раздражает неуважение' },
+      { pronoun: 'ellos', example: 'Les molestan los malos modales', translation: 'Их раздражают плохие манеры' },
+      { pronoun: 'yo', example: 'No me molesta esperar', translation: 'Меня не раздражает ждать', isNegative: true },
+      { pronoun: 'tú', example: '¿Te molesta que fume aquí?', translation: 'Тебя раздражает, что я курю здесь?', isQuestion: true }
+    ],
+    grammaticalExamples: [
+      {
+        tenseName: 'Presente de indicativo',
+        examples: [
+          { pronoun: 'yo', example: 'Me molesta la música alta', translation: 'Меня раздражает громкая музыка' },
+          { pronoun: 'tú', example: 'Te molesta el calor', translation: 'Тебя раздражает жара' },
+          { pronoun: 'él', example: 'Le molesta el frío', translation: 'Его раздражает холод' },
+          { pronoun: 'ella', example: 'Le molesta la mentira', translation: 'Ее раздражает ложь' },
+          { pronoun: 'nosotros', example: 'Nos molesta el humo', translation: 'Нас раздражает дым' },
+          { pronoun: 'vosotros', example: 'Os molesta el ruido', translation: 'Вас раздражает шум' },
+          { pronoun: 'ellos', example: 'Les molesta la espera', translation: 'Их раздражает ожидание' },
+          { pronoun: 'yo', example: 'No me molesta nada', translation: 'Меня ничего не раздражает', isNegative: true },
+          { pronoun: 'tú', example: '¿Te molesta algo?', translation: 'Тебя что-то раздражает?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Pretérito perfecto compuesto',
+        examples: [
+          { pronoun: 'yo', example: 'Me ha molestado su actitud', translation: 'Меня раздражало его отношение' },
+          { pronoun: 'tú', example: 'Te ha molestado el comentario', translation: 'Тебя раздражал комментарий' },
+          { pronoun: 'él', example: 'Le ha molestado la situación', translation: 'Его раздражала ситуация' },
+          { pronoun: 'ella', example: 'Le ha molestado el retraso', translation: 'Ее раздражала задержка' },
+          { pronoun: 'nosotros', example: 'Nos ha molestado el error', translation: 'Нас раздражала ошибка' },
+          { pronoun: 'ellos', example: 'Les ha molestado el cambio', translation: 'Их раздражало изменение' },
+          { pronoun: 'yo', example: 'No me ha molestado', translation: 'Меня это не раздражало', isNegative: true },
+          { pronoun: 'tú', example: '¿Te ha molestado?', translation: 'Тебя это раздражало?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Pretérito indefinido',
+        examples: [
+          { pronoun: 'yo', example: 'Me molestó su respuesta', translation: 'Меня раздражил его ответ' },
+          { pronoun: 'tú', example: 'Te molestó la noticia', translation: 'Тебя раздражила новость' },
+          { pronoun: 'él', example: 'Le molestó el problema', translation: 'Его раздражила проблема' },
+          { pronoun: 'ella', example: 'Le molestó la interrupción', translation: 'Ее раздражило прерывание' },
+          { pronoun: 'nosotros', example: 'Nos molestó el incidente', translation: 'Нас раздражил инцидент' },
+          { pronoun: 'ellos', example: 'Les molestó la decisión', translation: 'Их раздражило решение' },
+          { pronoun: 'yo', example: 'No me molestó nada', translation: 'Меня ничего не раздражало', isNegative: true },
+          { pronoun: 'tú', example: '¿Te molestó eso?', translation: 'Тебя это раздражало?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Futuro próximo (ir a + infinitivo)',
+        examples: [
+          { pronoun: 'yo', example: 'Me va a molestar el viaje largo', translation: 'Меня будет раздражать долгая поездка' },
+          { pronoun: 'tú', example: 'Te va a molestar la espera', translation: 'Тебя будет раздражать ожидание' },
+          { pronoun: 'él', example: 'Le va a molestar el cambio', translation: 'Его будет раздражать изменение' },
+          { pronoun: 'ella', example: 'Le va a molestar la demora', translation: 'Ее будет раздражать задержка' },
+          { pronoun: 'nosotros', example: 'Nos va a molestar el tráfico', translation: 'Нас будет раздражать движение' },
+          { pronoun: 'ellos', example: 'Les va a molestar el ruido', translation: 'Их будет раздражать шум' },
+          { pronoun: 'yo', example: 'No me va a molestar', translation: 'Меня это не будет раздражать', isNegative: true },
+          { pronoun: 'tú', example: '¿Te va a molestar?', translation: 'Тебя это будет раздражать?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Presente progresivo',
+        examples: [
+          { pronoun: 'yo', example: 'Me está molestando el dolor', translation: 'Меня раздражает боль' },
+          { pronoun: 'tú', example: 'Te está molestando algo', translation: 'Тебя что-то раздражает' },
+          { pronoun: 'él', example: 'Le está molestando el calor', translation: 'Его раздражает жара' },
+          { pronoun: 'ella', example: 'Le está molestando la luz', translation: 'Ее раздражает свет' },
+          { pronoun: 'nosotros', example: 'Nos está molestando el olor', translation: 'Нас раздражает запах' },
+          { pronoun: 'ellos', example: 'Les está molestando el sonido', translation: 'Их раздражает звук' },
+          { pronoun: 'yo', example: 'No me está molestando', translation: 'Меня это не раздражает', isNegative: true },
+          { pronoun: 'tú', example: '¿Te está molestando?', translation: 'Тебя это раздражает?', isQuestion: true }
+        ]
+      }
+    ]
+  },
+
+  // ENCANTAR
+  {
+    word: 'encantar',
+    partOfSpeech: PartOfSpeech.VERB,
+    languageCode: 'es',
+    translations: [
+      {
+        languageCode: 'ru',
+        translations: ['очаровывать', 'восхищать', 'нравиться']
+      }
+    ],
+    examples: [
+      { pronoun: 'yo', example: 'Me encanta el chocolate suizo', translation: 'Мне нравится швейцарский шоколад' },
+      { pronoun: 'tú', example: 'Te encantan las películas de acción', translation: 'Тебе нравятся боевики' },
+      { pronoun: 'él', example: 'Le encanta viajar por el mundo', translation: 'Ему нравится путешествовать по миру' },
+      { pronoun: 'nosotros', example: 'Nos encanta la comida italiana', translation: 'Нам нравится итальянская кухня' },
+      { pronoun: 'ellos', example: 'Les encantan los conciertos en vivo', translation: 'Им нравятся живые концерты' },
+      { pronoun: 'yo', example: 'No me encantan los lunes', translation: 'Мне не нравятся понедельники', isNegative: true },
+      { pronoun: 'tú', example: '¿Te encanta el jazz?', translation: 'Тебе нравится джаз?', isQuestion: true }
+    ],
+    grammaticalExamples: [
+      {
+        tenseName: 'Presente de indicativo',
+        examples: [
+          { pronoun: 'yo', example: 'Me encanta bailar salsa', translation: 'Мне нравится танцевать сальсу' },
+          { pronoun: 'tú', example: 'Te encanta leer novelas', translation: 'Тебе нравится читать романы' },
+          { pronoun: 'él', example: 'Le encanta cocinar platos nuevos', translation: 'Ему нравится готовить новые блюда' },
+          { pronoun: 'ella', example: 'Le encanta pintar cuadros', translation: 'Ей нравится рисовать картины' },
+          { pronoun: 'nosotros', example: 'Nos encanta ir al cine', translation: 'Нам нравится ходить в кино' },
+          { pronoun: 'vosotros', example: 'Os encanta el fútbol', translation: 'Вам нравится футбол' },
+          { pronoun: 'ellos', example: 'Les encanta la música clásica', translation: 'Им нравится классическая музыка' },
+          { pronoun: 'yo', example: 'No me encanta madrugar', translation: 'Мне не нравится рано вставать', isNegative: true },
+          { pronoun: 'tú', example: '¿Te encanta este lugar?', translation: 'Тебе нравится это место?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Pretérito perfecto compuesto',
+        examples: [
+          { pronoun: 'yo', example: 'Me ha encantado tu regalo', translation: 'Мне понравился твой подарок' },
+          { pronoun: 'tú', example: 'Te ha encantado la película', translation: 'Тебе понравился фильм' },
+          { pronoun: 'él', example: 'Le ha encantado la sorpresa', translation: 'Ему понравился сюрприз' },
+          { pronoun: 'ella', example: 'Le ha encantado el viaje', translation: 'Ей понравилась поездка' },
+          { pronoun: 'nosotros', example: 'Nos ha encantado la fiesta', translation: 'Нам понравилась вечеринка' },
+          { pronoun: 'ellos', example: 'Les ha encantado el concierto', translation: 'Им понравился концерт' },
+          { pronoun: 'yo', example: 'No me ha encantado la idea', translation: 'Мне не понравилась идея', isNegative: true },
+          { pronoun: 'tú', example: '¿Te ha encantado el restaurante?', translation: 'Тебе понравился ресторан?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Pretérito indefinido',
+        examples: [
+          { pronoun: 'yo', example: 'Me encantó tu presentación', translation: 'Мне понравилась твоя презентация' },
+          { pronoun: 'tú', example: 'Te encantó el espectáculo', translation: 'Тебе понравилось представление' },
+          { pronoun: 'él', example: 'Le encantó la conferencia', translation: 'Ему понравилась конференция' },
+          { pronoun: 'ella', example: 'Le encantó el museo', translation: 'Ей понравился музей' },
+          { pronoun: 'nosotros', example: 'Nos encantó la ciudad', translation: 'Нам понравился город' },
+          { pronoun: 'ellos', example: 'Les encantó la experiencia', translation: 'Им понравился опыт' },
+          { pronoun: 'yo', example: 'No me encantó el hotel', translation: 'Мне не понравился отель', isNegative: true },
+          { pronoun: 'tú', example: '¿Te encantó el show?', translation: 'Тебе понравилось шоу?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Futuro próximo (ir a + infinitivo)',
+        examples: [
+          { pronoun: 'yo', example: 'Me va a encantar tu propuesta', translation: 'Мне понравится твое предложение' },
+          { pronoun: 'tú', example: 'Te va a encantar este lugar', translation: 'Тебе понравится это место' },
+          { pronoun: 'él', example: 'Le va a encantar la noticia', translation: 'Ему понравится новость' },
+          { pronoun: 'ella', example: 'Le va a encantar el regalo', translation: 'Ей понравится подарок' },
+          { pronoun: 'nosotros', example: 'Nos va a encantar el plan', translation: 'Нам понравится план' },
+          { pronoun: 'ellos', example: 'Les va a encantar la idea', translation: 'Им понравится идея' },
+          { pronoun: 'yo', example: 'No me va a encantar', translation: 'Мне это не понравится', isNegative: true },
+          { pronoun: 'tú', example: '¿Te va a encantar?', translation: 'Тебе это понравится?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Presente progresivo',
+        examples: [
+          { pronoun: 'yo', example: 'Me está encantando este libro', translation: 'Мне нравится эта книга' },
+          { pronoun: 'tú', example: 'Te está encantando la serie', translation: 'Тебе нравится сериал' },
+          { pronoun: 'él', example: 'Le está encantando el curso', translation: 'Ему нравится курс' },
+          { pronoun: 'ella', example: 'Le está encantando la clase', translation: 'Ей нравится урок' },
+          { pronoun: 'nosotros', example: 'Nos está encantando el viaje', translation: 'Нам нравится поездка' },
+          { pronoun: 'ellos', example: 'Les está encantando la ciudad', translation: 'Им нравится город' },
+          { pronoun: 'yo', example: 'No me está encantando', translation: 'Мне это не нравится', isNegative: true },
+          { pronoun: 'tú', example: '¿Te está encantando?', translation: 'Тебе это нравится?', isQuestion: true }
+        ]
+      }
+    ]
+  },
+
+  // FASCINAR
+  {
+    word: 'fascinar',
+    partOfSpeech: PartOfSpeech.VERB,
+    languageCode: 'es',
+    translations: [
+      {
+        languageCode: 'ru',
+        translations: ['восхищать', 'завораживать', 'очаровывать']
+      }
+    ],
+    examples: [
+      { pronoun: 'yo', example: 'Me fascina la astronomía moderna', translation: 'Меня восхищает современная астрономия' },
+      { pronoun: 'tú', example: 'Te fascinan las culturas antiguas', translation: 'Тебя восхищают древние культуры' },
+      { pronoun: 'él', example: 'Le fascina el arte contemporáneo', translation: 'Его восхищает современное искусство' },
+      { pronoun: 'nosotros', example: 'Nos fascina la naturaleza salvaje', translation: 'Нас восхищает дикая природа' },
+      { pronoun: 'ellos', example: 'Les fascinan los avances tecnológicos', translation: 'Их восхищают технологические достижения' },
+      { pronoun: 'yo', example: 'No me fascina la política', translation: 'Меня не восхищает политика', isNegative: true },
+      { pronoun: 'tú', example: '¿Te fascina la historia?', translation: 'Тебя восхищает история?', isQuestion: true }
+    ],
+    grammaticalExamples: [
+      {
+        tenseName: 'Presente de indicativo',
+        examples: [
+          { pronoun: 'yo', example: 'Me fascina la física cuántica', translation: 'Меня восхищает квантовая физика' },
+          { pronoun: 'tú', example: 'Te fascina el universo', translation: 'Тебя восхищает вселенная' },
+          { pronoun: 'él', example: 'Le fascina la fotografía artística', translation: 'Его восхищает художественная фотография' },
+          { pronoun: 'ella', example: 'Le fascina la arquitectura gótica', translation: 'Ее восхищает готическая архитектура' },
+          { pronoun: 'nosotros', example: 'Nos fascina el océano profundo', translation: 'Нас восхищает глубокий океан' },
+          { pronoun: 'vosotros', example: 'Os fascina la ciencia', translation: 'Вас восхищает наука' },
+          { pronoun: 'ellos', example: 'Les fascina el espacio exterior', translation: 'Их восхищает космос' },
+          { pronoun: 'yo', example: 'No me fascina eso', translation: 'Меня это не восхищает', isNegative: true },
+          { pronoun: 'tú', example: '¿Te fascina el tema?', translation: 'Тебя восхищает тема?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Pretérito perfecto compuesto',
+        examples: [
+          { pronoun: 'yo', example: 'Me ha fascinado tu trabajo', translation: 'Меня восхитила твоя работа' },
+          { pronoun: 'tú', example: 'Te ha fascinado el documental', translation: 'Тебя восхитил документальный фильм' },
+          { pronoun: 'él', example: 'Le ha fascinado la exposición', translation: 'Его восхитила выставка' },
+          { pronoun: 'ella', example: 'Le ha fascinado el descubrimiento', translation: 'Ее восхитило открытие' },
+          { pronoun: 'nosotros', example: 'Nos ha fascinado el proyecto', translation: 'Нас восхитил проект' },
+          { pronoun: 'ellos', example: 'Les ha fascinado la investigación', translation: 'Их восхитило исследование' },
+          { pronoun: 'yo', example: 'No me ha fascinado', translation: 'Меня это не восхитило', isNegative: true },
+          { pronoun: 'tú', example: '¿Te ha fascinado?', translation: 'Тебя это восхитило?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Pretérito indefinido',
+        examples: [
+          { pronoun: 'yo', example: 'Me fascinó la conferencia', translation: 'Меня восхитила конференция' },
+          { pronoun: 'tú', example: 'Te fascinó el experimento', translation: 'Тебя восхитил эксперимент' },
+          { pronoun: 'él', example: 'Le fascinó el hallazgo', translation: 'Его восхитила находка' },
+          { pronoun: 'ella', example: 'Le fascinó la teoría', translation: 'Ее восхитила теория' },
+          { pronoun: 'nosotros', example: 'Nos fascinó el fenómeno', translation: 'Нас восхитило явление' },
+          { pronoun: 'ellos', example: 'Les fascinó el método', translation: 'Их восхитил метод' },
+          { pronoun: 'yo', example: 'No me fascinó nada', translation: 'Меня ничего не восхитило', isNegative: true },
+          { pronoun: 'tú', example: '¿Te fascinó el resultado?', translation: 'Тебя восхитил результат?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Futuro próximo (ir a + infinitivo)',
+        examples: [
+          { pronoun: 'yo', example: 'Me va a fascinar el viaje', translation: 'Меня восхитит поездка' },
+          { pronoun: 'tú', example: 'Te va a fascinar la tecnología', translation: 'Тебя восхитит технология' },
+          { pronoun: 'él', example: 'Le va a fascinar el descubrimiento', translation: 'Его восхитит открытие' },
+          { pronoun: 'ella', example: 'Le va a fascinar el estudio', translation: 'Ее восхитит исследование' },
+          { pronoun: 'nosotros', example: 'Nos va a fascinar la experiencia', translation: 'Нас восхитит опыт' },
+          { pronoun: 'ellos', example: 'Les va a fascinar el sistema', translation: 'Их восхитит система' },
+          { pronoun: 'yo', example: 'No me va a fascinar', translation: 'Меня это не восхитит', isNegative: true },
+          { pronoun: 'tú', example: '¿Te va a fascinar?', translation: 'Тебя это восхитит?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Presente progresivo',
+        examples: [
+          { pronoun: 'yo', example: 'Me está fascinando este tema', translation: 'Меня восхищает эта тема' },
+          { pronoun: 'tú', example: 'Te está fascinando el proyecto', translation: 'Тебя восхищает проект' },
+          { pronoun: 'él', example: 'Le está fascinando la materia', translation: 'Его восхищает предмет' },
+          { pronoun: 'ella', example: 'Le está fascinando el curso', translation: 'Ее восхищает курс' },
+          { pronoun: 'nosotros', example: 'Nos está fascinando la investigación', translation: 'Нас восхищает исследование' },
+          { pronoun: 'ellos', example: 'Les está fascinando el descubrimiento', translation: 'Их восхищает открытие' },
+          { pronoun: 'yo', example: 'No me está fascinando', translation: 'Меня это не восхищает', isNegative: true },
+          { pronoun: 'tú', example: '¿Te está fascinando?', translation: 'Тебя это восхищает?', isQuestion: true }
+        ]
+      }
+    ]
+  },
+
+  // APETECER
+  {
+    word: 'apetecer',
+    partOfSpeech: PartOfSpeech.VERB,
+    languageCode: 'es',
+    translations: [
+      {
+        languageCode: 'ru',
+        translations: ['хотеться', 'иметь желание', 'желать']
+      }
+    ],
+    examples: [
+      { pronoun: 'yo', example: 'Me apetece un café con leche', translation: 'Мне хочется кофе с молоком' },
+      { pronoun: 'tú', example: 'Te apetece salir a pasear', translation: 'Тебе хочется пойти погулять' },
+      { pronoun: 'él', example: 'Le apetece comer algo dulce', translation: 'Ему хочется съесть что-то сладкое' },
+      { pronoun: 'nosotros', example: 'Nos apetece ver una película', translation: 'Нам хочется посмотреть фильм' },
+      { pronoun: 'ellos', example: 'Les apetece ir a la playa', translation: 'Им хочется пойти на пляж' },
+      { pronoun: 'yo', example: 'No me apetece trabajar hoy', translation: 'Мне не хочется работать сегодня', isNegative: true },
+      { pronoun: 'tú', example: '¿Te apetece una cerveza?', translation: 'Тебе хочется пива?', isQuestion: true }
+    ],
+    grammaticalExamples: [
+      {
+        tenseName: 'Presente de indicativo',
+        examples: [
+          { pronoun: 'yo', example: 'Me apetece descansar un poco', translation: 'Мне хочется немного отдохнуть' },
+          { pronoun: 'tú', example: 'Te apetece bailar esta noche', translation: 'Тебе хочется потанцевать сегодня вечером' },
+          { pronoun: 'él', example: 'Le apetece probar comida nueva', translation: 'Ему хочется попробовать новую еду' },
+          { pronoun: 'ella', example: 'Le apetece leer un buen libro', translation: 'Ей хочется почитать хорошую книгу' },
+          { pronoun: 'nosotros', example: 'Nos apetece hacer un viaje', translation: 'Нам хочется совершить поездку' },
+          { pronoun: 'vosotros', example: 'Os apetece jugar al fútbol', translation: 'Вам хочется поиграть в футбол' },
+          { pronoun: 'ellos', example: 'Les apetece cenar fuera', translation: 'Им хочется поужинать вне дома' },
+          { pronoun: 'yo', example: 'No me apetece salir', translation: 'Мне не хочется выходить', isNegative: true },
+          { pronoun: 'tú', example: '¿Te apetece algo?', translation: 'Тебе чего-нибудь хочется?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Pretérito perfecto compuesto',
+        examples: [
+          { pronoun: 'yo', example: 'Me ha apetecido un helado', translation: 'Мне захотелось мороженого' },
+          { pronoun: 'tú', example: 'Te ha apetecido cambiar de aires', translation: 'Тебе захотелось сменить обстановку' },
+          { pronoun: 'él', example: 'Le ha apetecido tomar un café', translation: 'Ему захотелось выпить кофе' },
+          { pronoun: 'ella', example: 'Le ha apetecido dar un paseo', translation: 'Ей захотелось прогуляться' },
+          { pronoun: 'nosotros', example: 'Nos ha apetecido ir al cine', translation: 'Нам захотелось пойти в кино' },
+          { pronoun: 'ellos', example: 'Les ha apetecido viajar', translation: 'Им захотелось попутешествовать' },
+          { pronoun: 'yo', example: 'No me ha apetecido nada', translation: 'Мне ничего не захотелось', isNegative: true },
+          { pronoun: 'tú', example: '¿Te ha apetecido?', translation: 'Тебе захотелось?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Pretérito indefinido',
+        examples: [
+          { pronoun: 'yo', example: 'Me apeteció quedarme en casa', translation: 'Мне захотелось остаться дома' },
+          { pronoun: 'tú', example: 'Te apeteció probar algo diferente', translation: 'Тебе захотелось попробовать что-то другое' },
+          { pronoun: 'él', example: 'Le apeteció descansar todo el día', translation: 'Ему захотелось отдыхать весь день' },
+          { pronoun: 'ella', example: 'Le apeteció cocinar algo especial', translation: 'Ей захотелось приготовить что-то особенное' },
+          { pronoun: 'nosotros', example: 'Nos apeteció salir de fiesta', translation: 'Нам захотелось пойти на вечеринку' },
+          { pronoun: 'ellos', example: 'Les apeteció ir de compras', translation: 'Им захотелось пойти за покупками' },
+          { pronoun: 'yo', example: 'No me apeteció nada especial', translation: 'Мне не захотелось ничего особенного', isNegative: true },
+          { pronoun: 'tú', example: '¿Te apeteció la idea?', translation: 'Тебе понравилась идея?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Futuro próximo (ir a + infinitivo)',
+        examples: [
+          { pronoun: 'yo', example: 'Me va a apetecer dormir después', translation: 'Мне захочется поспать потом' },
+          { pronoun: 'tú', example: 'Te va a apetecer comer algo', translation: 'Тебе захочется что-нибудь поесть' },
+          { pronoun: 'él', example: 'Le va a apetecer descansar', translation: 'Ему захочется отдохнуть' },
+          { pronoun: 'ella', example: 'Le va a apetecer salir', translation: 'Ей захочется выйти' },
+          { pronoun: 'nosotros', example: 'Nos va a apetecer bailar', translation: 'Нам захочется потанцевать' },
+          { pronoun: 'ellos', example: 'Les va a apetecer volver', translation: 'Им захочется вернуться' },
+          { pronoun: 'yo', example: 'No me va a apetecer', translation: 'Мне не захочется', isNegative: true },
+          { pronoun: 'tú', example: '¿Te va a apetecer?', translation: 'Тебе захочется?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Presente progresivo',
+        examples: [
+          { pronoun: 'yo', example: 'Me está apeteciendo un té caliente', translation: 'Мне хочется горячего чая' },
+          { pronoun: 'tú', example: 'Te está apeteciendo descansar', translation: 'Тебе хочется отдохнуть' },
+          { pronoun: 'él', example: 'Le está apeteciendo comer algo', translation: 'Ему хочется что-нибудь поесть' },
+          { pronoun: 'ella', example: 'Le está apeteciendo dormir', translation: 'Ей хочется спать' },
+          { pronoun: 'nosotros', example: 'Nos está apeteciendo salir', translation: 'Нам хочется выйти' },
+          { pronoun: 'ellos', example: 'Les está apeteciendo viajar', translation: 'Им хочется попутешествовать' },
+          { pronoun: 'yo', example: 'No me está apeteciendo nada', translation: 'Мне ничего не хочется', isNegative: true },
+          { pronoun: 'tú', example: '¿Te está apeteciendo algo?', translation: 'Тебе чего-нибудь хочется?', isQuestion: true }
+        ]
+      }
+    ]
+  },
+
+  // ASUSTAR
+  {
+    word: 'asustar',
+    partOfSpeech: PartOfSpeech.VERB,
+    languageCode: 'es',
+    translations: [
+      {
+        languageCode: 'ru',
+        translations: ['пугать', 'страшить', 'испугать']
+      }
+    ],
+    examples: [
+      { pronoun: 'yo', example: 'Me asustan las películas de terror', translation: 'Меня пугают фильмы ужасов' },
+      { pronoun: 'tú', example: 'Te asustan los truenos y relámpagos', translation: 'Тебя пугают гром и молния' },
+      { pronoun: 'él', example: 'Le asustan los perros grandes', translation: 'Его пугают большие собаки' },
+      { pronoun: 'nosotros', example: 'Nos asustan los cambios repentinos', translation: 'Нас пугают внезапные изменения' },
+      { pronoun: 'ellos', example: 'Les asustan las alturas', translation: 'Их пугают высоты' },
+      { pronoun: 'yo', example: 'No me asustan las arañas', translation: 'Меня не пугают пауки', isNegative: true },
+      { pronoun: 'tú', example: '¿Te asustan los fantasmas?', translation: 'Тебя пугают призраки?', isQuestion: true }
+    ],
+    grammaticalExamples: [
+      {
+        tenseName: 'Presente de indicativo',
+        examples: [
+          { pronoun: 'yo', example: 'Me asustan los espacios cerrados', translation: 'Меня пугают закрытые пространства' },
+          { pronoun: 'tú', example: 'Te asustan las serpientes venenosas', translation: 'Тебя пугают ядовитые змеи' },
+          { pronoun: 'él', example: 'Le asustan los ruidos extraños', translation: 'Его пугают странные звуки' },
+          { pronoun: 'ella', example: 'Le asustan las tormentas fuertes', translation: 'Ее пугают сильные грозы' },
+          { pronoun: 'nosotros', example: 'Nos asustan los lugares oscuros', translation: 'Нас пугают темные места' },
+          { pronoun: 'vosotros', example: 'Os asustan los insectos', translation: 'Вас пугают насекомые' },
+          { pronoun: 'ellos', example: 'Les asustan los aviones', translation: 'Их пугают самолеты' },
+          { pronoun: 'yo', example: 'No me asustan los retos', translation: 'Меня не пугают вызовы', isNegative: true },
+          { pronoun: 'tú', example: '¿Te asustan los cambios?', translation: 'Тебя пугают изменения?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Pretérito perfecto compuesto',
+        examples: [
+          { pronoun: 'yo', example: 'Me ha asustado ese ruido', translation: 'Меня испугал этот звук' },
+          { pronoun: 'tú', example: 'Te ha asustado la noticia', translation: 'Тебя испугала новость' },
+          { pronoun: 'él', example: 'Le ha asustado el perro', translation: 'Его испугала собака' },
+          { pronoun: 'ella', example: 'Le ha asustado la situación', translation: 'Ее испугала ситуация' },
+          { pronoun: 'nosotros', example: 'Nos ha asustado el accidente', translation: 'Нас испугала авария' },
+          { pronoun: 'ellos', example: 'Les ha asustado la tormenta', translation: 'Их испугала гроза' },
+          { pronoun: 'yo', example: 'No me ha asustado nada', translation: 'Меня ничего не испугало', isNegative: true },
+          { pronoun: 'tú', example: '¿Te ha asustado algo?', translation: 'Тебя что-то испугало?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Pretérito indefinido',
+        examples: [
+          { pronoun: 'yo', example: 'Me asustó el trueno repentino', translation: 'Меня испугал внезапный гром' },
+          { pronoun: 'tú', example: 'Te asustó el grito fuerte', translation: 'Тебя испугал громкий крик' },
+          { pronoun: 'él', example: 'Le asustó el movimiento brusco', translation: 'Его испугало резкое движение' },
+          { pronoun: 'ella', example: 'Le asustó la figura oscura', translation: 'Ее испугала темная фигура' },
+          { pronoun: 'nosotros', example: 'Nos asustó el sonido extraño', translation: 'Нас испугал странный звук' },
+          { pronoun: 'ellos', example: 'Les asustó la explosión', translation: 'Их испугал взрыв' },
+          { pronoun: 'yo', example: 'No me asustó para nada', translation: 'Меня это совсем не испугало', isNegative: true },
+          { pronoun: 'tú', example: '¿Te asustó la película?', translation: 'Тебя испугал фильм?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Futuro próximo (ir a + infinitivo)',
+        examples: [
+          { pronoun: 'yo', example: 'Me va a asustar la película', translation: 'Меня испугает фильм' },
+          { pronoun: 'tú', example: 'Te va a asustar el examen', translation: 'Тебя испугает экзамен' },
+          { pronoun: 'él', example: 'Le va a asustar la noticia', translation: 'Его испугает новость' },
+          { pronoun: 'ella', example: 'Le va a asustar la altura', translation: 'Ее испугает высота' },
+          { pronoun: 'nosotros', example: 'Nos va a asustar el resultado', translation: 'Нас испугает результат' },
+          { pronoun: 'ellos', example: 'Les va a asustar la tormenta', translation: 'Их испугает гроза' },
+          { pronoun: 'yo', example: 'No me va a asustar', translation: 'Меня это не испугает', isNegative: true },
+          { pronoun: 'tú', example: '¿Te va a asustar?', translation: 'Тебя это испугает?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Presente progresivo',
+        examples: [
+          { pronoun: 'yo', example: 'Me está asustando la oscuridad', translation: 'Меня пугает темнота' },
+          { pronoun: 'tú', example: 'Te está asustando el ruido', translation: 'Тебя пугает шум' },
+          { pronoun: 'él', example: 'Le está asustando la situación', translation: 'Его пугает ситуация' },
+          { pronoun: 'ella', example: 'Le está asustando el silencio', translation: 'Ее пугает тишина' },
+          { pronoun: 'nosotros', example: 'Nos está asustando el clima', translation: 'Нас пугает погода' },
+          { pronoun: 'ellos', example: 'Les está asustando el panorama', translation: 'Их пугает панорама' },
+          { pronoun: 'yo', example: 'No me está asustando', translation: 'Меня это не пугает', isNegative: true },
+          { pronoun: 'tú', example: '¿Te está asustando?', translation: 'Тебя это пугает?', isQuestion: true }
+        ]
+      }
+    ]
+  },
+
+  // DOLER
+  {
+    word: 'doler',
+    partOfSpeech: PartOfSpeech.VERB,
+    languageCode: 'es',
+    translations: [
+      {
+        languageCode: 'ru',
+        translations: ['болеть', 'причинять боль', 'страдать']
+      }
+    ],
+    examples: [
+      { pronoun: 'yo', example: 'Me duele mucho la cabeza', translation: 'У меня сильно болит голова' },
+      { pronoun: 'tú', example: 'Te duelen las piernas', translation: 'У тебя болят ноги' },
+      { pronoun: 'él', example: 'Le duele el estómago', translation: 'У него болит живот' },
+      { pronoun: 'nosotros', example: 'Nos duelen los músculos', translation: 'У нас болят мышцы' },
+      { pronoun: 'ellos', example: 'Les duelen las muelas', translation: 'У них болят зубы' },
+      { pronoun: 'yo', example: 'No me duele nada', translation: 'У меня ничего не болит', isNegative: true },
+      { pronoun: 'tú', example: '¿Te duele algo?', translation: 'У тебя что-то болит?', isQuestion: true }
+    ],
+    grammaticalExamples: [
+      {
+        tenseName: 'Presente de indicativo',
+        examples: [
+          { pronoun: 'yo', example: 'Me duele la espalda baja', translation: 'У меня болит поясница' },
+          { pronoun: 'tú', example: 'Te duele el brazo derecho', translation: 'У тебя болит правая рука' },
+          { pronoun: 'él', example: 'Le duele la rodilla izquierda', translation: 'У него болит левое колено' },
+          { pronoun: 'ella', example: 'Le duele el cuello', translation: 'У нее болит шея' },
+          { pronoun: 'nosotros', example: 'Nos duele todo el cuerpo', translation: 'У нас болит все тело' },
+          { pronoun: 'vosotros', example: 'Os duelen los pies', translation: 'У вас болят ноги' },
+          { pronoun: 'ellos', example: 'Les duelen los ojos', translation: 'У них болят глаза' },
+          { pronoun: 'yo', example: 'No me duele ahora', translation: 'У меня сейчас не болит', isNegative: true },
+          { pronoun: 'tú', example: '¿Te duele mucho?', translation: 'У тебя сильно болит?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Pretérito perfecto compuesto',
+        examples: [
+          { pronoun: 'yo', example: 'Me ha dolido toda la noche', translation: 'У меня болело всю ночь' },
+          { pronoun: 'tú', example: 'Te ha dolido desde ayer', translation: 'У тебя болит со вчерашнего дня' },
+          { pronoun: 'él', example: 'Le ha dolido después del ejercicio', translation: 'У него болело после упражнений' },
+          { pronoun: 'ella', example: 'Le ha dolido todo el día', translation: 'У нее болело весь день' },
+          { pronoun: 'nosotros', example: 'Nos ha dolido mucho', translation: 'У нас сильно болело' },
+          { pronoun: 'ellos', example: 'Les ha dolido la garganta', translation: 'У них болело горло' },
+          { pronoun: 'yo', example: 'No me ha dolido nada', translation: 'У меня ничего не болело', isNegative: true },
+          { pronoun: 'tú', example: '¿Te ha dolido mucho?', translation: 'У тебя сильно болело?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Pretérito indefinido',
+        examples: [
+          { pronoun: 'yo', example: 'Me dolió todo el día', translation: 'У меня болело весь день' },
+          { pronoun: 'tú', example: 'Te dolió después de correr', translation: 'У тебя болело после бега' },
+          { pronoun: 'él', example: 'Le dolió durante horas', translation: 'У него болело часами' },
+          { pronoun: 'ella', example: 'Le dolió toda la semana', translation: 'У нее болело всю неделю' },
+          { pronoun: 'nosotros', example: 'Nos dolió por días', translation: 'У нас болело днями' },
+          { pronoun: 'ellos', example: 'Les dolió bastante', translation: 'У них довольно сильно болело' },
+          { pronoun: 'yo', example: 'No me dolió tanto', translation: 'У меня не так сильно болело', isNegative: true },
+          { pronoun: 'tú', example: '¿Te dolió ayer?', translation: 'У тебя вчера болело?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Futuro próximo (ir a + infinitivo)',
+        examples: [
+          { pronoun: 'yo', example: 'Me va a doler mañana', translation: 'У меня завтра будет болеть' },
+          { pronoun: 'tú', example: 'Te va a doler después', translation: 'У тебя будет болеть потом' },
+          { pronoun: 'él', example: 'Le va a doler la inyección', translation: 'У него будет болеть от укола' },
+          { pronoun: 'ella', example: 'Le va a doler la operación', translation: 'У нее будет болеть после операции' },
+          { pronoun: 'nosotros', example: 'Nos va a doler el ejercicio', translation: 'У нас будет болеть от упражнений' },
+          { pronoun: 'ellos', example: 'Les va a doler el tratamiento', translation: 'У них будет болеть от лечения' },
+          { pronoun: 'yo', example: 'No me va a doler', translation: 'У меня не будет болеть', isNegative: true },
+          { pronoun: 'tú', example: '¿Te va a doler?', translation: 'У тебя будет болеть?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Presente progresivo',
+        examples: [
+          { pronoun: 'yo', example: 'Me está doliendo ahora mismo', translation: 'У меня болит прямо сейчас' },
+          { pronoun: 'tú', example: 'Te está doliendo cada vez más', translation: 'У тебя болит все больше' },
+          { pronoun: 'él', example: 'Le está doliendo la herida', translation: 'У него болит рана' },
+          { pronoun: 'ella', example: 'Le está doliendo la muela', translation: 'У нее болит зуб' },
+          { pronoun: 'nosotros', example: 'Nos está doliendo mucho', translation: 'У нас сильно болит' },
+          { pronoun: 'ellos', example: 'Les está doliendo la cabeza', translation: 'У них болит голова' },
+          { pronoun: 'yo', example: 'No me está doliendo ya', translation: 'У меня уже не болит', isNegative: true },
+          { pronoun: 'tú', example: '¿Te está doliendo todavía?', translation: 'У тебя все еще болит?', isQuestion: true }
+        ]
+      }
+    ]
+  },
+
+  // CAER BIEN/MAL
+  {
+    word: 'caer bien',
+    partOfSpeech: PartOfSpeech.VERB,
+    languageCode: 'es',
+    translations: [
+      {
+        languageCode: 'ru',
+        translations: ['нравиться', 'симпатичен', 'производить впечатление']
+      }
+    ],
+    examples: [
+      { pronoun: 'yo', example: 'Me cae bien tu hermano', translation: 'Мне нравится твой брат' },
+      { pronoun: 'tú', example: 'Te caen bien mis amigos', translation: 'Тебе нравятся мои друзья' },
+      { pronoun: 'él', example: 'Le cae muy bien su jefe', translation: 'Ему очень нравится его начальник' },
+      { pronoun: 'nosotros', example: 'Nos caen bien nuestros vecinos', translation: 'Нам нравятся наши соседи' },
+      { pronoun: 'ellos', example: 'Les cae bien la profesora', translation: 'Им нравится учительница' },
+      { pronoun: 'yo', example: 'No me cae bien esa persona', translation: 'Мне не нравится этот человек', isNegative: true },
+      { pronoun: 'tú', example: '¿Te cae bien mi primo?', translation: 'Тебе нравится мой двоюродный брат?', isQuestion: true }
+    ],
+    grammaticalExamples: [
+      {
+        tenseName: 'Presente de indicativo',
+        examples: [
+          { pronoun: 'yo', example: 'Me cae muy bien mi compañero', translation: 'Мне очень нравится мой коллега' },
+          { pronoun: 'tú', example: 'Te cae bien la gente sincera', translation: 'Тебе нравятся искренние люди' },
+          { pronoun: 'él', example: 'Le cae bien su nuevo vecino', translation: 'Ему нравится его новый сосед' },
+          { pronoun: 'ella', example: 'Le cae bien su compañera', translation: 'Ей нравится ее коллега' },
+          { pronoun: 'nosotros', example: 'Nos cae bien el profesor', translation: 'Нам нравится профессор' },
+          { pronoun: 'vosotros', example: 'Os cae bien todo el mundo', translation: 'Вам нравятся все' },
+          { pronoun: 'ellos', example: 'Les cae bien su médico', translation: 'Им нравится их врач' },
+          { pronoun: 'yo', example: 'No me cae bien', translation: 'Он мне не нравится', isNegative: true },
+          { pronoun: 'tú', example: '¿Te cae bien?', translation: 'Тебе он нравится?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Pretérito perfecto compuesto',
+        examples: [
+          { pronoun: 'yo', example: 'Me ha caído bien desde el principio', translation: 'Он понравился мне с самого начала' },
+          { pronoun: 'tú', example: 'Te ha caído bien mi familia', translation: 'Тебе понравилась моя семья' },
+          { pronoun: 'él', example: 'Le ha caído bien el nuevo jefe', translation: 'Ему понравился новый начальник' },
+          { pronoun: 'ella', example: 'Le ha caído bien la chica', translation: 'Ей понравилась девушка' },
+          { pronoun: 'nosotros', example: 'Nos ha caído bien tu pareja', translation: 'Нам понравился твой партнер' },
+          { pronoun: 'ellos', example: 'Les ha caído bien el guía', translation: 'Им понравился гид' },
+          { pronoun: 'yo', example: 'No me ha caído bien', translation: 'Он мне не понравился', isNegative: true },
+          { pronoun: 'tú', example: '¿Te ha caído bien?', translation: 'Он тебе понравился?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Pretérito indefinido',
+        examples: [
+          { pronoun: 'yo', example: 'Me cayó muy bien tu amigo', translation: 'Мне очень понравился твой друг' },
+          { pronoun: 'tú', example: 'Te cayó bien el entrevistador', translation: 'Тебе понравился интервьюер' },
+          { pronoun: 'él', example: 'Le cayó bien la doctora', translation: 'Ему понравилась доктор' },
+          { pronoun: 'ella', example: 'Le cayó bien su suegra', translation: 'Ей понравилась свекровь' },
+          { pronoun: 'nosotros', example: 'Nos cayó bien el mesero', translation: 'Нам понравился официант' },
+          { pronoun: 'ellos', example: 'Les cayó bien el vendedor', translation: 'Им понравился продавец' },
+          { pronoun: 'yo', example: 'No me cayó bien al principio', translation: 'Он мне не понравился сначала', isNegative: true },
+          { pronoun: 'tú', example: '¿Te cayó bien?', translation: 'Он тебе понравился?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Futuro próximo (ir a + infinitivo)',
+        examples: [
+          { pronoun: 'yo', example: 'Me va a caer bien seguro', translation: 'Он мне точно понравится' },
+          { pronoun: 'tú', example: 'Te va a caer bien mi hermana', translation: 'Тебе понравится моя сестра' },
+          { pronoun: 'él', example: 'Le va a caer bien el instructor', translation: 'Ему понравится инструктор' },
+          { pronoun: 'ella', example: 'Le va a caer bien tu madre', translation: 'Ей понравится твоя мама' },
+          { pronoun: 'nosotros', example: 'Nos va a caer bien', translation: 'Он нам понравится' },
+          { pronoun: 'ellos', example: 'Les va a caer bien el equipo', translation: 'Им понравится команда' },
+          { pronoun: 'yo', example: 'No me va a caer bien', translation: 'Он мне не понравится', isNegative: true },
+          { pronoun: 'tú', example: '¿Te va a caer bien?', translation: 'Он тебе понравится?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Presente progresivo',
+        examples: [
+          { pronoun: 'yo', example: 'Me está cayendo muy bien', translation: 'Он мне начинает нравиться' },
+          { pronoun: 'tú', example: 'Te está cayendo bien poco a poco', translation: 'Он тебе постепенно нравится' },
+          { pronoun: 'él', example: 'Le está cayendo mejor ahora', translation: 'Сейчас он ему нравится больше' },
+          { pronoun: 'ella', example: 'Le está cayendo bien últimamente', translation: 'Он ей нравится в последнее время' },
+          { pronoun: 'nosotros', example: 'Nos está cayendo mejor', translation: 'Он нам нравится больше' },
+          { pronoun: 'ellos', example: 'Les está cayendo bien', translation: 'Он им начинает нравиться' },
+          { pronoun: 'yo', example: 'No me está cayendo bien', translation: 'Он мне не нравится', isNegative: true },
+          { pronoun: 'tú', example: '¿Te está cayendo bien?', translation: 'Он тебе нравится?', isQuestion: true }
+        ]
+      }
+    ]
+  },
+
+  // IMPORTAR
+  {
+    word: 'importar',
+    partOfSpeech: PartOfSpeech.VERB,
+    languageCode: 'es',
+    translations: [
+      {
+        languageCode: 'ru',
+        translations: ['иметь значение', 'быть важным', 'заботиться']
+      }
+    ],
+    examples: [
+      { pronoun: 'yo', example: 'Me importa mucho tu opinión', translation: 'Мне очень важно твое мнение' },
+      { pronoun: 'tú', example: 'Te importa la felicidad de otros', translation: 'Тебе важно счастье других' },
+      { pronoun: 'él', example: 'Le importa su familia ante todo', translation: 'Ему важна его семья прежде всего' },
+      { pronoun: 'nosotros', example: 'Nos importa el medio ambiente', translation: 'Нам важна окружающая среда' },
+      { pronoun: 'ellos', example: 'Les importan los resultados', translation: 'Им важны результаты' },
+      { pronoun: 'yo', example: 'No me importa lo que digan', translation: 'Мне не важно, что говорят', isNegative: true },
+      { pronoun: 'tú', example: '¿Te importa si fumo?', translation: 'Тебе не важно, если я покурю?', isQuestion: true }
+    ],
+    grammaticalExamples: [
+      {
+        tenseName: 'Presente de indicativo',
+        examples: [
+          { pronoun: 'yo', example: 'Me importa la salud de todos', translation: 'Мне важно здоровье всех' },
+          { pronoun: 'tú', example: 'Te importa hacer bien las cosas', translation: 'Тебе важно делать вещи хорошо' },
+          { pronoun: 'él', example: 'Le importa el futuro del país', translation: 'Ему важно будущее страны' },
+          { pronoun: 'ella', example: 'Le importa la educación de sus hijos', translation: 'Ей важно образование ее детей' },
+          { pronoun: 'nosotros', example: 'Nos importa la calidad del trabajo', translation: 'Нам важно качество работы' },
+          { pronoun: 'vosotros', example: 'Os importa el bienestar común', translation: 'Вам важно общее благополучие' },
+          { pronoun: 'ellos', example: 'Les importa el clima laboral', translation: 'Им важен рабочий климат' },
+          { pronoun: 'yo', example: 'No me importa el dinero', translation: 'Мне не важны деньги', isNegative: true },
+          { pronoun: 'tú', example: '¿Te importa el tiempo?', translation: 'Тебе важно время?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Pretérito perfecto compuesto',
+        examples: [
+          { pronoun: 'yo', example: 'Me ha importado siempre tu bienestar', translation: 'Мне всегда было важно твое благополучие' },
+          { pronoun: 'tú', example: 'Te ha importado mucho este proyecto', translation: 'Тебе был очень важен этот проект' },
+          { pronoun: 'él', example: 'Le ha importado el resultado', translation: 'Ему был важен результат' },
+          { pronoun: 'ella', example: 'Le ha importado la opinión pública', translation: 'Ей было важно общественное мнение' },
+          { pronoun: 'nosotros', example: 'Nos ha importado la decisión', translation: 'Нам было важно решение' },
+          { pronoun: 'ellos', example: 'Les ha importado el proceso', translation: 'Им был важен процесс' },
+          { pronoun: 'yo', example: 'No me ha importado nunca', translation: 'Мне это никогда не было важно', isNegative: true },
+          { pronoun: 'tú', example: '¿Te ha importado?', translation: 'Тебе это было важно?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Pretérito indefinido',
+        examples: [
+          { pronoun: 'yo', example: 'Me importó mucho ese tema', translation: 'Мне была очень важна эта тема' },
+          { pronoun: 'tú', example: 'Te importó su reacción', translation: 'Тебе была важна его реакция' },
+          { pronoun: 'él', example: 'Le importó el detalle', translation: 'Ему была важна деталь' },
+          { pronoun: 'ella', example: 'Le importó la primera impresión', translation: 'Ей было важно первое впечатление' },
+          { pronoun: 'nosotros', example: 'Nos importó el éxito', translation: 'Нам был важен успех' },
+          { pronoun: 'ellos', example: 'Les importó la victoria', translation: 'Им была важна победа' },
+          { pronoun: 'yo', example: 'No me importó en absoluto', translation: 'Мне было совсем не важно', isNegative: true },
+          { pronoun: 'tú', example: '¿Te importó el comentario?', translation: 'Тебе был важен комментарий?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Futuro próximo (ir a + infinitivo)',
+        examples: [
+          { pronoun: 'yo', example: 'Me va a importar el resultado', translation: 'Мне будет важен результат' },
+          { pronoun: 'tú', example: 'Te va a importar la decisión', translation: 'Тебе будет важно решение' },
+          { pronoun: 'él', example: 'Le va a importar tu respuesta', translation: 'Ему будет важен твой ответ' },
+          { pronoun: 'ella', example: 'Le va a importar la reunión', translation: 'Ей будет важна встреча' },
+          { pronoun: 'nosotros', example: 'Nos va a importar el cambio', translation: 'Нам будет важно изменение' },
+          { pronoun: 'ellos', example: 'Les va a importar el plan', translation: 'Им будет важен план' },
+          { pronoun: 'yo', example: 'No me va a importar', translation: 'Мне это не будет важно', isNegative: true },
+          { pronoun: 'tú', example: '¿Te va a importar?', translation: 'Тебе это будет важно?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Presente progresivo',
+        examples: [
+          { pronoun: 'yo', example: 'Me está importando cada vez más', translation: 'Мне это становится все важнее' },
+          { pronoun: 'tú', example: 'Te está importando demasiado', translation: 'Тебе это становится слишком важным' },
+          { pronoun: 'él', example: 'Le está importando ahora', translation: 'Ему это теперь важно' },
+          { pronoun: 'ella', example: 'Le está importando bastante', translation: 'Ей это довольно важно' },
+          { pronoun: 'nosotros', example: 'Nos está importando mucho', translation: 'Нам это очень важно' },
+          { pronoun: 'ellos', example: 'Les está importando poco', translation: 'Им это мало важно' },
+          { pronoun: 'yo', example: 'No me está importando ya', translation: 'Мне это уже не важно', isNegative: true },
+          { pronoun: 'tú', example: '¿Te está importando?', translation: 'Тебе это важно?', isQuestion: true }
+        ]
+      }
+    ]
+  },
+
+  // IMPRESIONAR
+  {
+    word: 'impresionar',
+    partOfSpeech: PartOfSpeech.VERB,
+    languageCode: 'es',
+    translations: [
+      {
+        languageCode: 'ru',
+        translations: ['впечатлять', 'поражать', 'производить впечатление']
+      }
+    ],
+    examples: [
+      { pronoun: 'yo', example: 'Me impresionan los edificios antiguos', translation: 'Меня впечатляют старинные здания' },
+      { pronoun: 'tú', example: 'Te impresiona la tecnología moderna', translation: 'Тебя впечатляет современная технология' },
+      { pronoun: 'él', example: 'Le impresiona el talento de ella', translation: 'Его впечатляет ее талант' },
+      { pronoun: 'nosotros', example: 'Nos impresionan los logros científicos', translation: 'Нас впечатляют научные достижения' },
+      { pronoun: 'ellos', example: 'Les impresiona la naturaleza salvaje', translation: 'Их впечатляет дикая природа' },
+      { pronoun: 'yo', example: 'No me impresiona fácilmente', translation: 'Меня нелегко впечатлить', isNegative: true },
+      { pronoun: 'tú', example: '¿Te impresiona el arte moderno?', translation: 'Тебя впечатляет современное искусство?', isQuestion: true }
+    ],
+    grammaticalExamples: [
+      {
+        tenseName: 'Presente de indicativo',
+        examples: [
+          { pronoun: 'yo', example: 'Me impresiona su conocimiento profundo', translation: 'Меня впечатляют его глубокие знания' },
+          { pronoun: 'tú', example: 'Te impresiona la velocidad del progreso', translation: 'Тебя впечатляет скорость прогресса' },
+          { pronoun: 'él', example: 'Le impresiona la arquitectura moderna', translation: 'Его впечатляет современная архитектура' },
+          { pronoun: 'ella', example: 'Le impresiona la música clásica', translation: 'Ее впечатляет классическая музыка' },
+          { pronoun: 'nosotros', example: 'Nos impresiona el trabajo en equipo', translation: 'Нас впечатляет командная работа' },
+          { pronoun: 'vosotros', example: 'Os impresiona la dedicación', translation: 'Вас впечатляет преданность' },
+          { pronoun: 'ellos', example: 'Les impresiona la creatividad', translation: 'Их впечатляет креативность' },
+          { pronoun: 'yo', example: 'No me impresiona eso', translation: 'Меня это не впечатляет', isNegative: true },
+          { pronoun: 'tú', example: '¿Te impresiona el resultado?', translation: 'Тебя впечатляет результат?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Pretérito perfecto compuesto',
+        examples: [
+          { pronoun: 'yo', example: 'Me ha impresionado tu presentación', translation: 'Меня впечатлила твоя презентация' },
+          { pronoun: 'tú', example: 'Te ha impresionado el espectáculo', translation: 'Тебя впечатлило представление' },
+          { pronoun: 'él', example: 'Le ha impresionado el discurso', translation: 'Его впечатлила речь' },
+          { pronoun: 'ella', example: 'Le ha impresionado la actuación', translation: 'Ее впечатлило выступление' },
+          { pronoun: 'nosotros', example: 'Nos ha impresionado el lugar', translation: 'Нас впечатлило место' },
+          { pronoun: 'ellos', example: 'Les ha impresionado el evento', translation: 'Их впечатлило мероприятие' },
+          { pronoun: 'yo', example: 'No me ha impresionado tanto', translation: 'Меня это не так впечатлило', isNegative: true },
+          { pronoun: 'tú', example: '¿Te ha impresionado?', translation: 'Тебя это впечатлило?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Pretérito indefinido',
+        examples: [
+          { pronoun: 'yo', example: 'Me impresionó mucho la ciudad', translation: 'Меня очень впечатлил город' },
+          { pronoun: 'tú', example: 'Te impresionó el concierto', translation: 'Тебя впечатлил концерт' },
+          { pronoun: 'él', example: 'Le impresionó la obra de teatro', translation: 'Его впечатлила пьеса' },
+          { pronoun: 'ella', example: 'Le impresionó la exhibición', translation: 'Ее впечатлила выставка' },
+          { pronoun: 'nosotros', example: 'Nos impresionó la experiencia', translation: 'Нас впечатлил опыт' },
+          { pronoun: 'ellos', example: 'Les impresionó el museo', translation: 'Их впечатлил музей' },
+          { pronoun: 'yo', example: 'No me impresionó nada', translation: 'Меня ничего не впечатлило', isNegative: true },
+          { pronoun: 'tú', example: '¿Te impresionó el show?', translation: 'Тебя впечатлило шоу?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Futuro próximo (ir a + infinitivo)',
+        examples: [
+          { pronoun: 'yo', example: 'Me va a impresionar el viaje', translation: 'Меня впечатлит поездка' },
+          { pronoun: 'tú', example: 'Te va a impresionar el lugar', translation: 'Тебя впечатлит место' },
+          { pronoun: 'él', example: 'Le va a impresionar la noticia', translation: 'Его впечатлит новость' },
+          { pronoun: 'ella', example: 'Le va a impresionar el proyecto', translation: 'Ее впечатлит проект' },
+          { pronoun: 'nosotros', example: 'Nos va a impresionar el plan', translation: 'Нас впечатлит план' },
+          { pronoun: 'ellos', example: 'Les va a impresionar la propuesta', translation: 'Их впечатлит предложение' },
+          { pronoun: 'yo', example: 'No me va a impresionar', translation: 'Меня это не впечатлит', isNegative: true },
+          { pronoun: 'tú', example: '¿Te va a impresionar?', translation: 'Тебя это впечатлит?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Presente progresivo',
+        examples: [
+          { pronoun: 'yo', example: 'Me está impresionando su trabajo', translation: 'Меня впечатляет его работа' },
+          { pronoun: 'tú', example: 'Te está impresionando el desarrollo', translation: 'Тебя впечатляет развитие' },
+          { pronoun: 'él', example: 'Le está impresionando el progreso', translation: 'Его впечатляет прогресс' },
+          { pronoun: 'ella', example: 'Le está impresionando el avance', translation: 'Ее впечатляет продвижение' },
+          { pronoun: 'nosotros', example: 'Nos está impresionando el cambio', translation: 'Нас впечатляет изменение' },
+          { pronoun: 'ellos', example: 'Les está impresionando la mejora', translation: 'Их впечатляет улучшение' },
+          { pronoun: 'yo', example: 'No me está impresionando', translation: 'Меня это не впечатляет', isNegative: true },
+          { pronoun: 'tú', example: '¿Te está impresionando?', translation: 'Тебя это впечатляет?', isQuestion: true }
+        ]
+      }
+    ]
+  },
+
+  // PARECER
+  {
+    word: 'parecer',
+    partOfSpeech: PartOfSpeech.VERB,
+    languageCode: 'es',
+    translations: [
+      {
+        languageCode: 'ru',
+        translations: ['казаться', 'выглядеть', 'представляться']
+      }
+    ],
+    examples: [
+      { pronoun: 'yo', example: 'Me parece una buena idea', translation: 'Мне кажется, это хорошая идея' },
+      { pronoun: 'tú', example: 'Te parece difícil el examen', translation: 'Тебе кажется экзамен сложным' },
+      { pronoun: 'él', example: 'Le parece interesante el proyecto', translation: 'Ему кажется проект интересным' },
+      { pronoun: 'nosotros', example: 'Nos parece justo el precio', translation: 'Нам кажется цена справедливой' },
+      { pronoun: 'ellos', example: 'Les parece extraña la situación', translation: 'Им кажется ситуация странной' },
+      { pronoun: 'yo', example: 'No me parece correcto', translation: 'Мне не кажется это правильным', isNegative: true },
+      { pronoun: 'tú', example: '¿Te parece bien el plan?', translation: 'Тебе кажется план хорошим?', isQuestion: true }
+    ],
+    grammaticalExamples: [
+      {
+        tenseName: 'Presente de indicativo',
+        examples: [
+          { pronoun: 'yo', example: 'Me parece perfecto el lugar', translation: 'Мне кажется место идеальным' },
+          { pronoun: 'tú', example: 'Te parece complicada la situación', translation: 'Тебе кажется ситуация сложной' },
+          { pronoun: 'él', example: 'Le parece muy importante el tema', translation: 'Ему кажется тема очень важной' },
+          { pronoun: 'ella', example: 'Le parece increíble la historia', translation: 'Ей кажется история невероятной' },
+          { pronoun: 'nosotros', example: 'Nos parece razonable la propuesta', translation: 'Нам кажется предложение разумным' },
+          { pronoun: 'vosotros', example: 'Os parece lógico el argumento', translation: 'Вам кажется аргумент логичным' },
+          { pronoun: 'ellos', example: 'Les parece necesario el cambio', translation: 'Им кажется изменение необходимым' },
+          { pronoun: 'yo', example: 'No me parece bien', translation: 'Мне не кажется это хорошим', isNegative: true },
+          { pronoun: 'tú', example: '¿Te parece suficiente?', translation: 'Тебе кажется достаточным?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Pretérito perfecto compuesto',
+        examples: [
+          { pronoun: 'yo', example: 'Me ha parecido excelente tu trabajo', translation: 'Мне показалась твоя работа отличной' },
+          { pronoun: 'tú', example: 'Te ha parecido interesante el libro', translation: 'Тебе показалась книга интересной' },
+          { pronoun: 'él', example: 'Le ha parecido útil la información', translation: 'Ему показалась информация полезной' },
+          { pronoun: 'ella', example: 'Le ha parecido hermoso el paisaje', translation: 'Ей показался пейзаж красивым' },
+          { pronoun: 'nosotros', example: 'Nos ha parecido justa la decisión', translation: 'Нам показалось решение справедливым' },
+          { pronoun: 'ellos', example: 'Les ha parecido correcto el método', translation: 'Им показался метод правильным' },
+          { pronoun: 'yo', example: 'No me ha parecido mal', translation: 'Мне не показалось плохим', isNegative: true },
+          { pronoun: 'tú', example: '¿Te ha parecido difícil?', translation: 'Тебе показалось сложным?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Pretérito indefinido',
+        examples: [
+          { pronoun: 'yo', example: 'Me pareció muy raro el comentario', translation: 'Мне показался комментарий очень странным' },
+          { pronoun: 'tú', example: 'Te pareció apropiada la respuesta', translation: 'Тебе показался ответ подходящим' },
+          { pronoun: 'él', example: 'Le pareció convincente el argumento', translation: 'Ему показался аргумент убедительным' },
+          { pronoun: 'ella', example: 'Le pareció fantástica la película', translation: 'Ей показался фильм фантастическим' },
+          { pronoun: 'nosotros', example: 'Nos pareció adecuado el horario', translation: 'Нам показался график подходящим' },
+          { pronoun: 'ellos', example: 'Les pareció acertada la elección', translation: 'Им показался выбор удачным' },
+          { pronoun: 'yo', example: 'No me pareció interesante', translation: 'Мне не показалось интересным', isNegative: true },
+          { pronoun: 'tú', example: '¿Te pareció buena la idea?', translation: 'Тебе показалась идея хорошей?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Futuro próximo (ir a + infinitivo)',
+        examples: [
+          { pronoun: 'yo', example: 'Me va a parecer extraño', translation: 'Мне это покажется странным' },
+          { pronoun: 'tú', example: 'Te va a parecer increíble', translation: 'Тебе это покажется невероятным' },
+          { pronoun: 'él', example: 'Le va a parecer interesante', translation: 'Ему это покажется интересным' },
+          { pronoun: 'ella', example: 'Le va a parecer perfecto', translation: 'Ей это покажется идеальным' },
+          { pronoun: 'nosotros', example: 'Nos va a parecer lógico', translation: 'Нам это покажется логичным' },
+          { pronoun: 'ellos', example: 'Les va a parecer correcto', translation: 'Им это покажется правильным' },
+          { pronoun: 'yo', example: 'No me va a parecer bien', translation: 'Мне это не покажется хорошим', isNegative: true },
+          { pronoun: 'tú', example: '¿Te va a parecer justo?', translation: 'Тебе это покажется справедливым?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Presente progresivo',
+        examples: [
+          { pronoun: 'yo', example: 'Me está pareciendo complicado', translation: 'Мне кажется это сложным' },
+          { pronoun: 'tú', example: 'Te está pareciendo difícil', translation: 'Тебе кажется это трудным' },
+          { pronoun: 'él', example: 'Le está pareciendo confuso', translation: 'Ему кажется это запутанным' },
+          { pronoun: 'ella', example: 'Le está pareciendo claro', translation: 'Ей кажется это ясным' },
+          { pronoun: 'nosotros', example: 'Nos está pareciendo obvio', translation: 'Нам кажется это очевидным' },
+          { pronoun: 'ellos', example: 'Les está pareciendo simple', translation: 'Им кажется это простым' },
+          { pronoun: 'yo', example: 'No me está pareciendo tan malo', translation: 'Мне не кажется это таким плохим', isNegative: true },
+          { pronoun: 'tú', example: '¿Te está pareciendo fácil?', translation: 'Тебе кажется это легким?', isQuestion: true }
+        ]
+      }
+    ]
+  },
+
+  // PREOCUPAR
+  {
+    word: 'preocupar',
+    partOfSpeech: PartOfSpeech.VERB,
+    languageCode: 'es',
+    translations: [
+      {
+        languageCode: 'ru',
+        translations: ['беспокоить', 'тревожить', 'волновать']
+      }
+    ],
+    examples: [
+      { pronoun: 'yo', example: 'Me preocupa tu salud', translation: 'Меня беспокоит твое здоровье' },
+      { pronoun: 'tú', example: 'Te preocupan los exámenes finales', translation: 'Тебя беспокоят выпускные экзамены' },
+      { pronoun: 'él', example: 'Le preocupa el futuro económico', translation: 'Его беспокоит экономическое будущее' },
+      { pronoun: 'nosotros', example: 'Nos preocupa el cambio climático', translation: 'Нас беспокоит изменение климата' },
+      { pronoun: 'ellos', example: 'Les preocupan sus hijos', translation: 'Их беспокоят их дети' },
+      { pronoun: 'yo', example: 'No me preocupa eso', translation: 'Меня это не беспокоит', isNegative: true },
+      { pronoun: 'tú', example: '¿Te preocupa la situación?', translation: 'Тебя беспокоит ситуация?', isQuestion: true }
+    ],
+    grammaticalExamples: [
+      {
+        tenseName: 'Presente de indicativo',
+        examples: [
+          { pronoun: 'yo', example: 'Me preocupa el estado del mundo', translation: 'Меня беспокоит состояние мира' },
+          { pronoun: 'tú', example: 'Te preocupa llegar tarde siempre', translation: 'Тебя беспокоит постоянно опаздывать' },
+          { pronoun: 'él', example: 'Le preocupa perder su trabajo', translation: 'Его беспокоит потеря работы' },
+          { pronoun: 'ella', example: 'Le preocupa la seguridad familiar', translation: 'Ее беспокоит семейная безопасность' },
+          { pronoun: 'nosotros', example: 'Nos preocupa la crisis actual', translation: 'Нас беспокоит текущий кризис' },
+          { pronoun: 'vosotros', example: 'Os preocupa el medio ambiente', translation: 'Вас беспокоит окружающая среда' },
+          { pronoun: 'ellos', example: 'Les preocupa el rendimiento escolar', translation: 'Их беспокоит школьная успеваемость' },
+          { pronoun: 'yo', example: 'No me preocupa nada', translation: 'Меня ничего не беспокоит', isNegative: true },
+          { pronoun: 'tú', example: '¿Te preocupa tu futuro?', translation: 'Тебя беспокоит твое будущее?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Pretérito perfecto compuesto',
+        examples: [
+          { pronoun: 'yo', example: 'Me ha preocupado tu silencio', translation: 'Меня беспокоило твое молчание' },
+          { pronoun: 'tú', example: 'Te ha preocupado el problema', translation: 'Тебя беспокоила проблема' },
+          { pronoun: 'él', example: 'Le ha preocupado la decisión', translation: 'Его беспокоило решение' },
+          { pronoun: 'ella', example: 'Le ha preocupado la noticia', translation: 'Ее беспокоила новость' },
+          { pronoun: 'nosotros', example: 'Nos ha preocupado la situación', translation: 'Нас беспокоила ситуация' },
+          { pronoun: 'ellos', example: 'Les ha preocupado el cambio', translation: 'Их беспокоило изменение' },
+          { pronoun: 'yo', example: 'No me ha preocupado tanto', translation: 'Меня это не так беспокоило', isNegative: true },
+          { pronoun: 'tú', example: '¿Te ha preocupado algo?', translation: 'Тебя что-то беспокоило?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Pretérito indefinido',
+        examples: [
+          { pronoun: 'yo', example: 'Me preocupó mucho tu ausencia', translation: 'Меня очень беспокоило твое отсутствие' },
+          { pronoun: 'tú', example: 'Te preocupó el resultado final', translation: 'Тебя беспокоил итоговый результат' },
+          { pronoun: 'él', example: 'Le preocupó la reacción negativa', translation: 'Его беспокоила негативная реакция' },
+          { pronoun: 'ella', example: 'Le preocupó el diagnóstico médico', translation: 'Ее беспокоил медицинский диагноз' },
+          { pronoun: 'nosotros', example: 'Nos preocupó la falta de información', translation: 'Нас беспокоила нехватка информации' },
+          { pronoun: 'ellos', example: 'Les preocupó el incidente grave', translation: 'Их беспокоил серьезный инцидент' },
+          { pronoun: 'yo', example: 'No me preocupó en absoluto', translation: 'Меня это совсем не беспокоило', isNegative: true },
+          { pronoun: 'tú', example: '¿Te preocupó la llamada?', translation: 'Тебя беспокоил звонок?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Futuro próximo (ir a + infinitivo)',
+        examples: [
+          { pronoun: 'yo', example: 'Me va a preocupar el examen', translation: 'Меня будет беспокоить экзамен' },
+          { pronoun: 'tú', example: 'Te va a preocupar la entrevista', translation: 'Тебя будет беспокоить интервью' },
+          { pronoun: 'él', example: 'Le va a preocupar la reunión', translation: 'Его будет беспокоить встреча' },
+          { pronoun: 'ella', example: 'Le va a preocupar el viaje', translation: 'Ее будет беспокоить поездка' },
+          { pronoun: 'nosotros', example: 'Nos va a preocupar la decisión', translation: 'Нас будет беспокоить решение' },
+          { pronoun: 'ellos', example: 'Les va a preocupar el cambio', translation: 'Их будет беспокоить изменение' },
+          { pronoun: 'yo', example: 'No me va a preocupar', translation: 'Меня это не будет беспокоить', isNegative: true },
+          { pronoun: 'tú', example: '¿Te va a preocupar?', translation: 'Тебя это будет беспокоить?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Presente progresivo',
+        examples: [
+          { pronoun: 'yo', example: 'Me está preocupando la situación económica', translation: 'Меня беспокоит экономическая ситуация' },
+          { pronoun: 'tú', example: 'Te está preocupando demasiado', translation: 'Тебя это слишком беспокоит' },
+          { pronoun: 'él', example: 'Le está preocupando el plazo', translation: 'Его беспокоит срок' },
+          { pronoun: 'ella', example: 'Le está preocupando el tema', translation: 'Ее беспокоит тема' },
+          { pronoun: 'nosotros', example: 'Nos está preocupando el problema', translation: 'Нас беспокоит проблема' },
+          { pronoun: 'ellos', example: 'Les está preocupando el futuro', translation: 'Их беспокоит будущее' },
+          { pronoun: 'yo', example: 'No me está preocupando', translation: 'Меня это не беспокоит', isNegative: true },
+          { pronoun: 'tú', example: '¿Te está preocupando mucho?', translation: 'Тебя это сильно беспокоит?', isQuestion: true }
+        ]
+      }
+    ]
+  },
+
+  // QUEDAR BIEN/MAL
+  {
+    word: 'quedar bien',
+    partOfSpeech: PartOfSpeech.VERB,
+    languageCode: 'es',
+    translations: [
+      {
+        languageCode: 'ru',
+        translations: ['подходить', 'быть к лицу', 'хорошо смотреться']
+      }
+    ],
+    examples: [
+      { pronoun: 'yo', example: 'Me queda bien este vestido', translation: 'Мне подходит это платье' },
+      { pronoun: 'tú', example: 'Te quedan bien los pantalones', translation: 'Тебе подходят брюки' },
+      { pronoun: 'él', example: 'Le queda muy bien el traje', translation: 'Ему очень идет костюм' },
+      { pronoun: 'nosotros', example: 'Nos quedan bien estos zapatos', translation: 'Нам подходят эти туфли' },
+      { pronoun: 'ellos', example: 'Les queda bien el uniforme', translation: 'Им подходит униформа' },
+      { pronoun: 'yo', example: 'No me queda bien este color', translation: 'Мне не подходит этот цвет', isNegative: true },
+      { pronoun: 'tú', example: '¿Te queda bien la talla?', translation: 'Тебе подходит размер?', isQuestion: true }
+    ],
+    grammaticalExamples: [
+      {
+        tenseName: 'Presente de indicativo',
+        examples: [
+          { pronoun: 'yo', example: 'Me queda perfecto el abrigo', translation: 'Мне идеально подходит пальто' },
+          { pronoun: 'tú', example: 'Te queda fenomenal ese peinado', translation: 'Тебе отлично идет эта прическа' },
+          { pronoun: 'él', example: 'Le queda estupendo el sombrero', translation: 'Ему прекрасно идет шляпа' },
+          { pronoun: 'ella', example: 'Le queda divino ese vestido', translation: 'Ей божественно идет это платье' },
+          { pronoun: 'nosotros', example: 'Nos quedan geniales las camisetas', translation: 'Нам отлично подходят футболки' },
+          { pronoun: 'vosotros', example: 'Os quedan bien las gafas', translation: 'Вам идут очки' },
+          { pronoun: 'ellos', example: 'Les quedan perfectos los zapatos', translation: 'Им идеально подходят туфли' },
+          { pronoun: 'yo', example: 'No me queda bien este estilo', translation: 'Мне не идет этот стиль', isNegative: true },
+          { pronoun: 'tú', example: '¿Te queda bien la chaqueta?', translation: 'Тебе подходит куртка?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Pretérito perfecto compuesto',
+        examples: [
+          { pronoun: 'yo', example: 'Me ha quedado bien el corte', translation: 'Мне подошла стрижка' },
+          { pronoun: 'tú', example: 'Te ha quedado bien el cambio', translation: 'Тебе подошло изменение' },
+          { pronoun: 'él', example: 'Le ha quedado bien el look', translation: 'Ему подошел образ' },
+          { pronoun: 'ella', example: 'Le ha quedado bien el maquillaje', translation: 'Ей подошел макияж' },
+          { pronoun: 'nosotros', example: 'Nos ha quedado bien el conjunto', translation: 'Нам подошел комплект' },
+          { pronoun: 'ellos', example: 'Les ha quedado bien la elección', translation: 'Им подошел выбор' },
+          { pronoun: 'yo', example: 'No me ha quedado bien', translation: 'Мне не подошло', isNegative: true },
+          { pronoun: 'tú', example: '¿Te ha quedado bien?', translation: 'Тебе подошло?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Pretérito indefinido',
+        examples: [
+          { pronoun: 'yo', example: 'Me quedó muy bien el vestido', translation: 'Мне очень подошло платье' },
+          { pronoun: 'tú', example: 'Te quedó perfecto el traje', translation: 'Тебе идеально подошел костюм' },
+          { pronoun: 'él', example: 'Le quedó estupenda la camisa', translation: 'Ему отлично подошла рубашка' },
+          { pronoun: 'ella', example: 'Le quedó hermoso el vestido', translation: 'Ей прекрасно подошло платье' },
+          { pronoun: 'nosotros', example: 'Nos quedó bien el uniforme', translation: 'Нам подошла униформа' },
+          { pronoun: 'ellos', example: 'Les quedó genial la ropa', translation: 'Им отлично подошла одежда' },
+          { pronoun: 'yo', example: 'No me quedó bien la talla', translation: 'Мне не подошел размер', isNegative: true },
+          { pronoun: 'tú', example: '¿Te quedó bien el pantalón?', translation: 'Тебе подошли брюки?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Futuro próximo (ir a + infinitivo)',
+        examples: [
+          { pronoun: 'yo', example: 'Me va a quedar bien la blusa', translation: 'Мне подойдет блузка' },
+          { pronoun: 'tú', example: 'Te va a quedar bien el vestido', translation: 'Тебе подойдет платье' },
+          { pronoun: 'él', example: 'Le va a quedar bien el traje', translation: 'Ему подойдет костюм' },
+          { pronoun: 'ella', example: 'Le va a quedar bien el color', translation: 'Ей подойдет цвет' },
+          { pronoun: 'nosotros', example: 'Nos va a quedar bien el estilo', translation: 'Нам подойдет стиль' },
+          { pronoun: 'ellos', example: 'Les va a quedar bien la ropa', translation: 'Им подойдет одежда' },
+          { pronoun: 'yo', example: 'No me va a quedar bien', translation: 'Мне не подойдет', isNegative: true },
+          { pronoun: 'tú', example: '¿Te va a quedar bien?', translation: 'Тебе подойдет?', isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Presente progresivo',
+        examples: [
+          { pronoun: 'yo', example: 'Me está quedando bien el look', translation: 'Мне идет этот образ' },
+          { pronoun: 'tú', example: 'Te está quedando bien el cambio', translation: 'Тебе идет изменение' },
+          { pronoun: 'él', example: 'Le está quedando bien el estilo', translation: 'Ему идет стиль' },
+          { pronoun: 'ella', example: 'Le está quedando bien el corte', translation: 'Ей идет стрижка' },
+          { pronoun: 'nosotros', example: 'Nos está quedando bien todo', translation: 'Нам все идет' },
+          { pronoun: 'ellos', example: 'Les está quedando bien la imagen', translation: 'Им идет образ' },
+          { pronoun: 'yo', example: 'No me está quedando bien', translation: 'Мне не идет', isNegative: true },
+          { pronoun: 'tú', example: '¿Te está quedando bien?', translation: 'Тебе идет?', isQuestion: true }
+        ]
+      }
+    ]
   }
 ]

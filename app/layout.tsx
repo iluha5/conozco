@@ -3,6 +3,7 @@ import { Inter, Ubuntu } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/components/providers/session-provider";
+import { TrainingWordsProvider } from "@/contexts/training-words-context";
 
 const inter = Inter({ subsets: ["latin", "cyrillic"] });
 const ubuntu = Ubuntu({
@@ -25,8 +26,10 @@ export default function RootLayout({
     <html lang="ru" suppressHydrationWarning>
       <body className={`${inter.className} ${ubuntu.variable}`} suppressHydrationWarning>
         <AuthProvider>
-          {children}
-          <Toaster />
+          <TrainingWordsProvider>
+            {children}
+            <Toaster />
+          </TrainingWordsProvider>
         </AuthProvider>
       </body>
     </html>

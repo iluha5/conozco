@@ -177,51 +177,33 @@ export function useStage5Settings() {
 }
 
 /**
- * Хук для работы с выбранными словами и языком
+ * Хук для работы с выбранным языком (сохраняется в localStorage)
+ * Выбранные слова теперь управляются через TrainingWordsContext
  */
 export function useTrainingSelection() {
   const { data: session } = useSession()
-  const [selectedWords, setSelectedWords] = useState<Set<string>>(new Set())
   const [selectedLanguage, setSelectedLanguage] = useState<string>('ALL')
   const [isLoaded, setIsLoaded] = useState(false)
 
-  // Загружаем при монтировании
+  // Загружаем язык при монтировании
   useEffect(() => {
     if (session?.user?.id) {
       const savedLanguage = localStorage.getItem(`training_${session.user.id}_selected-language`)
       if (savedLanguage) {
         setSelectedLanguage(savedLanguage)
       }
-
-      const savedWords = localStorage.getItem(`training_${session.user.id}_selected-words`)
-      if (savedWords) {
-        try {
-          const words = JSON.parse(savedWords)
-          setSelectedWords(new Set(words))
-        } catch (error) {
-          console.error('Error loading selected words:', error)
-        }
-      }
       setIsLoaded(true)
     }
   }, [session])
 
-  // Сохраняем при изменении (только после загрузки)
+  // Сохраняем язык при изменении (только после загрузки)
   useEffect(() => {
     if (session?.user?.id && isLoaded) {
       localStorage.setItem(`training_${session.user.id}_selected-language`, selectedLanguage)
     }
   }, [selectedLanguage, session, isLoaded])
 
-  useEffect(() => {
-    if (session?.user?.id && isLoaded) {
-      localStorage.setItem(`training_${session.user.id}_selected-words`, JSON.stringify([...selectedWords]))
-    }
-  }, [selectedWords, session, isLoaded])
-
   return {
-    selectedWords,
-    setSelectedWords,
     selectedLanguage,
     setSelectedLanguage,
     isLoaded,

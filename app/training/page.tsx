@@ -15,6 +15,7 @@ import { Stage6Training } from '@/components/training/stage6'
 import { WordsList } from '@/components/words-list'
 import { useToast } from '@/hooks/use-toast'
 import { useTrainingSettings, useTrainingSelection } from '@/hooks/use-training-settings'
+import { useTrainingWords } from '@/contexts/training-words-context'
 
 type Language = {
   id: string
@@ -88,7 +89,8 @@ type Word = {
 
 export default function TrainingPage() {
   const { settings: trainingSettings, isLoaded: settingsLoaded } = useTrainingSettings()
-  const { selectedWords, selectedLanguage, isLoaded: selectionLoaded } = useTrainingSelection()
+  const { selectedLanguage, isLoaded: selectionLoaded } = useTrainingSelection()
+  const { selectedWords } = useTrainingWords()
   const [words, setWords] = useState<Word[]>([])
   const [currentStage, setCurrentStage] = useState<number>(1)
   const [loading, setLoading] = useState(true)
