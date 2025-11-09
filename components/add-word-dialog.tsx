@@ -80,6 +80,9 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
     const [hasMore, setHasMore] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
     const [needsScroll, setNeedsScroll] = useState(false);
+    const [hasExactMatch, setHasExactMatch] = useState(false);
+    const [aiSearching, setAiSearching] = useState(false);
+    const [skipAutoSearch, setSkipAutoSearch] = useState(false);
     const { toast } = useToast();
 
     // Проверка, нужен ли скролл для попапа
@@ -97,26 +100,45 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
         return () => window.removeEventListener('resize', checkViewportSize);
     }, []);
 
+    // Проверка наличия точных совпадений
+    useEffect(() => {
+        if (!searchTerm.trim()) {
+            setHasExactMatch(false);
+            return;
+        }
+
+        const trimmedSearch = searchTerm.trim().toLowerCase();
+        const exactMatch = availableWords.find(
+            word => word.word.toLowerCase() === trimmedSearch,
+        );
+        setHasExactMatch(!!exactMatch);
+    }, [searchTerm, availableWords]);
+
     // Поиск слов при изменении параметров
     useEffect(() => {
-        if (open) {
+        if (open && !skipAutoSearch) {
             // Сброс и загрузка при изменении языка или поиска
             setOffset(0);
             setAvailableWords([]);
             setHasMore(true);
             handleSearch(0, true);
         }
-    }, [languageCode, searchTerm, open]);
+
+        // Сбрасываем флаг после пропуска
+        if (skipAutoSearch) {
+            setSkipAutoSearch(false);
+        }
+    }, [languageCode, searchTerm, open, skipAutoSearch]);
 
     // Функция для фильтрации слов по частям речи (клиентская фильтрация)
+    // ВАЖНО: Мы показываем ВСЕ слова, включая уже добавленные пользователем
+    // Уже добавленные слова визуально отличаются и не могут быть выбраны повторно
     const getFilteredWords = () => {
         if (selectedPartsOfSpeech.length === 0) {
-            return availableWords.filter(word => !word.isAddedByUser);
+            return availableWords; // Показываем все слова
         }
-        return availableWords.filter(
-            word =>
-                !word.isAddedByUser &&
-                selectedPartsOfSpeech.includes(word.partOfSpeech.name),
+        return availableWords.filter(word =>
+            selectedPartsOfSpeech.includes(word.partOfSpeech.name),
         );
     };
 
@@ -136,7 +158,10 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
     };
 
     const selectAllWords = () => {
-        const newSelections = getFilteredWords().map(word => word.id);
+        // Выбираем только слова, которые еще не добавлены пользователем
+        const newSelections = getFilteredWords()
+            .filter(word => !word.isAddedByUser)
+            .map(word => word.id);
         setSelectedWords(newSelections);
     };
 
@@ -239,6 +264,87 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
         handleSearch(offset, false);
     };
 
+    const handleAiSearch = async () => {
+        if (!searchTerm.trim()) {
+            toast({
+                title: 'Ошибка',
+                description: 'Введите слово для поиска',
+                variant: 'destructive',
+            });
+            return;
+        }
+
+        setAiSearching(true);
+
+        try {
+            const response = await fetch('/api/ai-search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    word: searchTerm.trim(),
+                    languageCode,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                const addedWord = searchTerm.trim();
+                toast({
+                    title: 'Успешно',
+                    description: `Слово "${addedWord}" добавлено${data.foundExamples > 0 ? ` с ${data.foundExamples} примерами` : ''}`,
+                });
+
+                // Блокируем автоматический поиск при очистке searchTerm
+                setSkipAutoSearch(true);
+
+                // Очищаем поле поиска
+                setSearchTerm('');
+
+                // Обновляем список слов пользователя на главной странице
+                onWordAdded();
+
+                // Даем время БД закоммитить транзакцию и обновляем список
+                setTimeout(async () => {
+                    setOffset(0);
+                    setHasMore(true);
+
+                    const params = new URLSearchParams({
+                        languageCode,
+                        limit: '30',
+                        offset: '0',
+                    });
+
+                    const response = await fetch(`/api/base-words?${params}`);
+                    if (response.ok) {
+                        const words = await response.json();
+                        setAvailableWords(words);
+                        setHasMore(words.length === 30);
+                        setOffset(words.length);
+                    }
+                }, 300);
+            } else {
+                toast({
+                    title: 'Ошибка',
+                    description:
+                        data.error || 'Не удалось найти или добавить слово',
+                    variant: 'destructive',
+                });
+            }
+        } catch (error) {
+            console.error('Error in AI search:', error);
+            toast({
+                title: 'Ошибка',
+                description: 'Произошла ошибка при поиске слова',
+                variant: 'destructive',
+            });
+        } finally {
+            setAiSearching(false);
+        }
+    };
+
     const handleAddWords = async () => {
         if (selectedWords.length === 0) {
             toast({
@@ -313,10 +419,22 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
         setAvailableWords([]);
         setOffset(0);
         setHasMore(true);
+        setSearchTerm('');
+        setSelectedPartsOfSpeech([]);
+        setSkipAutoSearch(false);
+        setHasExactMatch(false);
+    };
+
+    const handleOpenChange = (newOpen: boolean) => {
+        setOpen(newOpen);
+        if (!newOpen) {
+            // При закрытии диалога сбрасываем форму
+            resetForm();
+        }
     };
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogTrigger asChild>
                 <Button size="lg">
                     <PlusCircle className="w-4 h-4 mr-2" />
@@ -411,14 +529,51 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                             </Select>
                         </div>
 
-                        <div className="relative flex-1 min-w-[200px]">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                            <Input
-                                placeholder="Поиск..."
-                                value={searchTerm}
-                                onChange={e => setSearchTerm(e.target.value)}
-                                className="pl-10"
-                            />
+                        <div className="relative flex-1 min-w-[200px] flex gap-2">
+                            <div className="relative flex-1">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                                <Input
+                                    placeholder="Поиск..."
+                                    value={searchTerm}
+                                    onChange={e =>
+                                        setSearchTerm(e.target.value)
+                                    }
+                                    className="pl-10"
+                                    onKeyDown={e => {
+                                        if (
+                                            e.key === 'Enter' &&
+                                            !hasExactMatch &&
+                                            searchTerm.trim() &&
+                                            !aiSearching
+                                        ) {
+                                            handleAiSearch();
+                                        }
+                                    }}
+                                />
+                            </div>
+                            <Button
+                                variant="outline"
+                                size="default"
+                                onClick={handleAiSearch}
+                                disabled={
+                                    hasExactMatch ||
+                                    !searchTerm.trim() ||
+                                    aiSearching
+                                }
+                                title={
+                                    hasExactMatch
+                                        ? 'Слово найдено в базе'
+                                        : 'Найти через AI (LibreTranslate + Tatoeba)'
+                                }
+                            >
+                                {aiSearching ? (
+                                    <>
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                    </>
+                                ) : (
+                                    'Найти'
+                                )}
+                            </Button>
                         </div>
                     </div>
 
@@ -438,7 +593,9 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                                     onClick={selectAllWords}
                                     disabled={
                                         searching ||
-                                        getFilteredWords().length === 0
+                                        getFilteredWords().filter(
+                                            w => !w.isAddedByUser,
+                                        ).length === 0
                                     }
                                 >
                                     Выбрать все
@@ -481,14 +638,20 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                                     getFilteredWords().map(word => (
                                         <Card
                                             key={word.id}
-                                            className={`transition-all cursor-pointer ${
-                                                isWordSelected(word.id)
-                                                    ? 'ring-2 ring-primary bg-blue-50'
-                                                    : 'hover:bg-gray-50 bg-white'
+                                            className={`transition-all ${
+                                                word.isAddedByUser
+                                                    ? 'bg-gray-100 opacity-60 cursor-not-allowed'
+                                                    : isWordSelected(word.id)
+                                                      ? 'ring-2 ring-primary bg-blue-50 cursor-pointer'
+                                                      : 'hover:bg-gray-50 bg-white cursor-pointer'
                                             }`}
-                                            onClick={() =>
-                                                toggleWordSelection(word.id)
-                                            }
+                                            onClick={() => {
+                                                if (!word.isAddedByUser) {
+                                                    toggleWordSelection(
+                                                        word.id,
+                                                    );
+                                                }
+                                            }}
                                         >
                                             <CardHeader className="pb-2 pt-2">
                                                 <div className="flex items-center justify-between">
@@ -497,6 +660,9 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                                                             checked={isWordSelected(
                                                                 word.id,
                                                             )}
+                                                            disabled={
+                                                                word.isAddedByUser
+                                                            }
                                                             onChange={() => {}} // отключаем прямое взаимодействие с чекбоксом
                                                             className="shrink-0"
                                                         />
@@ -519,6 +685,12 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                                                                             .displayName,
                                                                     )}
                                                                 </span>
+                                                                {word.isAddedByUser && (
+                                                                    <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded shrink-0">
+                                                                        ✓ В
+                                                                        словаре
+                                                                    </span>
+                                                                )}
                                                             </CardTitle>
                                                             <div className="flex items-center gap-1">
                                                                 <span className="truncate text-sm text-gray-500">

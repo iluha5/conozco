@@ -85,6 +85,7 @@ model User {
   words         Word[]
   accounts      Account[]
   sessions      Session[]
+  apiRequestLogs ApiRequestLog[]
 
   @@index([email])
 }
@@ -256,5 +257,25 @@ model TrainingSession {
   word        Word     @relation(fields: [wordId], references: [id], onDelete: Cascade)
 
   @@index([wordId, stage])
+}
+
+// Логи запросов к внешним API (LibreTranslate, Tatoeba)
+model ApiRequestLog {
+  id            Int      @id @default(autoincrement())
+  userId        Int?     // ID пользователя (может быть null для системных запросов)
+  serviceName   String   // 'LibreTranslate' или 'Tatoeba'
+  requestType   String   // 'translate', 'search_examples', etc.
+  requestData   String   @db.Text // JSON с данными запроса
+  responseData  String?  @db.Text // JSON с ответом (null если ошибка)
+  statusCode    Int?     // HTTP статус код
+  errorMessage  String?  @db.Text // Сообщение об ошибке (если есть)
+  duration      Int?     // Длительность запроса в миллисекундах
+  createdAt     DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([serviceName, createdAt])
+  @@index([createdAt])
 }
 
