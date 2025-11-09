@@ -47,31 +47,22 @@
 ┌─────────────────────┐
 │       Word          │
 ├─────────────────────┤
-│ id: UUID            │◄────┐
-│ foreignWord: String │     │
-│ translation: String │     │
-│ language: Enum      │     │
-│ status: Enum        │     │
-│ examples: String[]  │     │
+│ id: Int             │◄────┐
+│ userId: Int         │     │
+│ baseWordId: Int?    │     │
+│ customWord: String? │     │
+│ customTranslation   │     │
+│ languageId: Int     │     │
+│ statusId: Int       │     │
 │ createdAt: DateTime │     │
 │ updatedAt: DateTime │     │
 └─────────────────────┘     │
                              │
 ┌─────────────────────┐     │
-│ TranslationCache    │     │
-├─────────────────────┤     │
-│ id: UUID            │     │
-│ sourceText: String  │     │
-│ sourceLanguage: Enum│     │
-│ translations: JSON  │     │
-│ createdAt: DateTime │     │
-└─────────────────────┘     │
-                             │
-┌─────────────────────┐     │
 │  TrainingSession    │     │
 ├─────────────────────┤     │
-│ id: UUID            │     │
-│ wordId: UUID        │─────┘
+│ id: Int             │     │
+│ wordId: Int         │─────┘
 │ stage: Int          │
 │ isCorrect: Boolean  │
 │ createdAt: DateTime │
@@ -80,9 +71,10 @@
 
 ### Индексы
 
-- `Word`: composite unique index на `(foreignWord, language)`
-- `Word`: compound index на `(language, status)` для быстрой фильтрации
-- `TranslationCache`: composite unique index на `(sourceText, sourceLanguage)`
+- `Word`: composite unique index на `(userId, baseWordId)` и `(userId, customWord, languageId)`
+- `Word`: compound index на `(userId, languageId, statusId)` для быстрой фильтрации
+- `BaseWord`: unique index на `(word, languageId)`
+- `WordTranslation`: unique index на `(baseWordId, languageId, priority)`
 - `TrainingSession`: compound index на `(wordId, stage)` для статистики
 
 ## Структура приложения
@@ -96,7 +88,7 @@
 
 /api/words                  - CRUD операции со словами
 /api/words/[id]            - Операции с конкретным словом
-/api/translations          - Получение переводов
+/api/base-words            - Получение слов из справочника
 /api/training              - Запись результатов тренировок
 ```
 
@@ -130,8 +122,9 @@ components/
 
 lib/
 ├── prisma.ts               - Prisma Client singleton
-├── translation-mock.ts     - Моки переводов
-└── utils.ts                - Вспомогательные функции
+├── auth.ts                 - NextAuth конфигурация
+├── utils.ts                - Вспомогательные функции
+└── word-data.ts            - Утилиты для работы со словами
 
 hooks/
 └── use-toast.ts            - Toast notifications hook
@@ -142,13 +135,12 @@ hooks/
 ### Добавление слова
 
 ```
-1. User вводит слово → AddWordDialog
-2. POST /api/translations
-   ├── Проверка TranslationCache
-   └── Если нет в кеше → Mock API → Сохранение в кеш
-3. User выбирает перевод
+1. User открывает AddWordDialog
+2. GET /api/base-words?languageCode=es&search=palabra
+   └── Загрузка слов из справочника BaseWord с переводами
+3. User выбирает слово из списка
 4. POST /api/words
-   └── Сохранение в таблицу Word
+   └── Сохранение в таблицу Word (с baseWordId)
 5. Обновление UI
 ```
 
@@ -163,14 +155,13 @@ hooks/
 5. Показ статистики
 ```
 
-### Кеширование переводов
+### Загрузка переводов
 
 ```
-Request → Check TranslationCache
-           ├── Found → Return from cache
-           └── Not found → Call Mock API
-                          └── Save to cache
-                          └── Return result
+Request → GET /api/base-words
+           └── Query BaseWord table
+               └── Include WordTranslation relations
+                   └── Return words with translations
 ```
 
 ## Масштабируемость
@@ -221,7 +212,7 @@ Request → Check TranslationCache
 - NextJS automatic code splitting
 - React Server Components
 - Database indexes
-- Translation caching
+- Efficient queries with relations
 
 ### Metrics
 - Response time: ~50-200ms (локально)

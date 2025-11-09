@@ -103,7 +103,7 @@ components/
 
 ---
 
-## 🔧 Backend - API (4 файла)
+## 🔧 Backend - API (5 файлов)
 
 ```
 app/api/
@@ -111,38 +111,41 @@ app/api/
 │   ├── 📄 route.ts                               - GET/POST /api/words
 │   └── [id]/
 │       └── 📄 route.ts                           - GET/PATCH/DELETE /api/words/:id
-├── translations/
-│   └── 📄 route.ts                               - POST /api/translations
+├── base-words/
+│   └── 📄 route.ts                               - GET /api/base-words
 └── training/
     └── 📄 route.ts                               - GET/POST /api/training
 ```
 
 ---
 
-## 📚 Библиотеки и утилиты (4 файла)
+## 📚 Библиотеки и утилиты (5+ файлов)
 
 ```
 lib/
 ├── 📄 prisma.ts             - Prisma Client singleton
-├── 📄 translation-mock.ts   - Моки Google Translate API
-└── 📄 utils.ts              - Вспомогательные функции
+├── 📄 auth.ts               - NextAuth конфигурация
+├── 📄 word-data.ts          - Утилиты для работы со словами
+├── 📄 utils.ts              - Вспомогательные функции
+└── 📄 words-seed-data*.ts   - Seed-данные для слов
 
 hooks/
-└── 📄 use-toast.ts          - React Hook для toast уведомлений
+├── 📄 use-toast.ts          - React Hook для toast уведомлений
+└── 📄 use-training-settings.ts - Hook для настроек тренировок
 ```
 
 ---
 
 ## 📊 Структура по типам файлов
 
-### TypeScript/TSX (28 файлов)
+### TypeScript/TSX (30+ файлов)
 ```
-Страницы:              5 файлов
-UI компоненты:         8 файлов
-Функциональные:        5 файлов
-API Routes:            4 файлов
-Библиотеки:            3 файла
-Hooks:                 1 файл
+Страницы:              5+ файлов
+UI компоненты:         8+ файлов
+Функциональные:        5+ файлов
+API Routes:            5+ файлов
+Библиотеки:            5+ файлов
+Hooks:                 2 файла
 Конфигурация:          2 файла
 ```
 
@@ -217,14 +220,14 @@ migration_lock.toml
 
 | Категория | Файлов | Примерные строки |
 |-----------|--------|------------------|
-| Frontend (страницы) | 5 | ~800 |
-| Frontend (компоненты) | 12 | ~1,500 |
-| Backend (API) | 4 | ~400 |
-| Библиотеки | 4 | ~300 |
-| База данных | 3 | ~200 |
+| Frontend (страницы) | 6+ | ~1,000 |
+| Frontend (компоненты) | 15+ | ~2,000 |
+| Backend (API) | 5+ | ~500 |
+| Библиотеки | 8+ | ~500 |
+| База данных | 3+ | ~300 |
 | Конфигурация | 9 | ~400 |
 | Документация | 7 | ~1,500 |
-| **ИТОГО** | **47** | **~5,100** |
+| **ИТОГО** | **50+** | **~6,200** |
 
 ---
 
