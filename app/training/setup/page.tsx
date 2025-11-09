@@ -93,6 +93,14 @@ export default function TrainingSetupPage() {
     updateStagesSettingsExpanded(!showStagesSettings)
   }
 
+  // Фильтрация слов по выбранному языку
+  const getFilteredWords = () => {
+    if (selectedLanguage === 'ALL') {
+      return words
+    }
+    return words.filter(word => word.language.code === selectedLanguage)
+  }
+
   useEffect(() => {
     fetchWords()
   }, [])
@@ -100,11 +108,17 @@ export default function TrainingSetupPage() {
   useEffect(() => {
     // Когда слова загружены, выбираем первые 12 по умолчанию (только при первой загрузке)
     if (words.length > 0 && selectedWords.size === 0 && isInitialSelection) {
-      const first12Words = words.slice(0, 12).map(word => word.id)
+      const filteredWords = getFilteredWords()
+      const first12Words = filteredWords.slice(0, 12).map(word => word.id)
       setSelectedWords(new Set(first12Words))
       setIsInitialSelection(false)
     }
   }, [words, selectedWords.size, isInitialSelection, setSelectedWords])
+
+  // Сброс видимых слов при изменении языка
+  useEffect(() => {
+    setVisibleWordsCount(12)
+  }, [selectedLanguage])
 
   const fetchWords = async () => {
     setIsLoadingWords(true)
@@ -126,7 +140,6 @@ export default function TrainingSetupPage() {
     }
   }
 
-
   const toggleWord = (wordId: string) => {
     setSelectedWords(prev => {
       const newSet = new Set(prev)
@@ -140,16 +153,19 @@ export default function TrainingSetupPage() {
   }
 
   const loadMoreWords = () => {
-    setVisibleWordsCount(prev => Math.min(prev + 12, 120))
+    const filteredWords = getFilteredWords()
+    setVisibleWordsCount(prev => Math.min(prev + 12, filteredWords.length))
   }
 
   const selectAllVisible = () => {
-    const visibleWordIds = words.slice(0, visibleWordsCount).map(word => word.id)
+    const filteredWords = getFilteredWords()
+    const visibleWordIds = filteredWords.slice(0, visibleWordsCount).map(word => word.id)
     setSelectedWords(prev => new Set([...prev, ...visibleWordIds]))
   }
 
   const deselectAll = () => {
-    const visibleWordIds = words.slice(0, visibleWordsCount).map(word => word.id)
+    const filteredWords = getFilteredWords()
+    const visibleWordIds = filteredWords.slice(0, visibleWordsCount).map(word => word.id)
     setSelectedWords(prev => {
       const newSet = new Set(prev)
       visibleWordIds.forEach(id => newSet.delete(id))
@@ -230,41 +246,38 @@ export default function TrainingSetupPage() {
               <CardTitle className="text-center text-2xl">Настройка тренировки</CardTitle>
             </CardHeader>
             <CardContent className="space-y-8">
-              {/* Выбор языка */}
-              <div>
-                <h3 className="text-lg font-semibold mb-4">Выберите язык для тренировки</h3>
-                <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
-                  <SelectTrigger className="w-full bg-white">
-                    <SelectValue placeholder="Выберите язык" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ALL">Все языки</SelectItem>
-                    <SelectItem value="en">🇬🇧 Английский</SelectItem>
-                    <SelectItem value="es">🇪🇸 Испанский</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
               {/* Выбор слов */}
               <div>
                 <h3 className="text-lg font-semibold mb-2">
                   Выберите слова для тренировки ({selectedWords.size} выбрано)
                 </h3>
-                <div className="flex gap-4 mb-4">
-                  <button
+                <div className="flex flex-wrap gap-2 mb-4">
+                  <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
+                    <SelectTrigger className="w-[140px]">
+                      <SelectValue placeholder="Выберите язык" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ALL">Все языки</SelectItem>
+                      <SelectItem value="en">🇬🇧 Англ</SelectItem>
+                      <SelectItem value="es">🇪🇸 Исп</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={selectAllVisible}
-                    className="text-sm text-blue-600 hover:text-blue-800 underline"
                     disabled={isLoadingWords}
                   >
                     Выбрать все
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={deselectAll}
-                    className="text-sm text-blue-600 hover:text-blue-800 underline"
                     disabled={isLoadingWords}
                   >
-                    Снять выделение
-                  </button>
+                    Снять
+                  </Button>
                 </div>
                 <div className="relative border rounded-lg p-4 h-[350px] overflow-y-auto">
                   {isLoadingWords ? (
@@ -274,9 +287,22 @@ export default function TrainingSetupPage() {
                         <p className="text-sm text-gray-600">Загрузка слов...</p>
                       </div>
                     </div>
+                  ) : getFilteredWords().length === 0 ? (
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-gray-500 text-center">
+                        Нет слов для выбранного языка.
+                        <br />
+                        <span className="text-sm">
+                          Добавьте слова на странице{' '}
+                          <Link href="/words" className="text-blue-600 hover:text-blue-800 underline">
+                            Мои слова
+                          </Link>
+                        </span>
+                      </p>
+                    </div>
                   ) : (
                     <div className="space-y-2">
-                      {words.slice(0, visibleWordsCount).map((word) => (
+                      {getFilteredWords().slice(0, visibleWordsCount).map((word) => (
                         <div
                           key={word.id}
                           className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded cursor-pointer"
@@ -303,14 +329,14 @@ export default function TrainingSetupPage() {
                           </div>
                         </div>
                       ))}
-                      {words.length > visibleWordsCount && (
+                      {getFilteredWords().length > visibleWordsCount && (
                         <div className="pt-2 border-t">
                           <Button
                             variant="outline"
                             onClick={loadMoreWords}
                             className="w-full"
                           >
-                            Показать еще ({Math.min(visibleWordsCount + 12, Math.min(words.length, 120)) - visibleWordsCount} слов)
+                            Показать еще ({Math.min(visibleWordsCount + 12, getFilteredWords().length) - visibleWordsCount} слов)
                           </Button>
                         </div>
                       )}
@@ -319,7 +345,7 @@ export default function TrainingSetupPage() {
                 </div>
                 {!isLoadingWords && (
                   <p className="text-xs text-gray-500 mt-2">
-                    Показано {Math.min(visibleWordsCount, words.length)} из {words.length} слов
+                    Показано {Math.min(visibleWordsCount, getFilteredWords().length)} из {getFilteredWords().length} слов
                   </p>
                 )}
               </div>
