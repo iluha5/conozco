@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useDebounce } from 'react-use';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -21,7 +22,7 @@ import {
 } from '@/components/ui/select';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { PlusCircle, Loader2, Search } from 'lucide-react';
+import { PlusCircle, Loader2, Search, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 type PartOfSpeech = {
@@ -86,6 +87,15 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
     const [skipAutoSearch, setSkipAutoSearch] = useState(false);
     const { toast } = useToast();
 
+    // Debounce поиска на 200мс для снижения количества запросов к серверу
+    useDebounce(
+        () => {
+            setDebouncedSearchTerm(searchTerm);
+        },
+        400,
+        [searchTerm],
+    );
+
     // Проверка, нужен ли скролл для попапа
     useEffect(() => {
         const checkViewportSize = () => {
@@ -101,15 +111,6 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
         return () => window.removeEventListener('resize', checkViewportSize);
     }, []);
 
-    // Debounce для поиска (200мс задержка)
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setDebouncedSearchTerm(searchTerm);
-        }, 200);
-
-        return () => clearTimeout(timer);
-    }, [searchTerm]);
-
     // Проверка наличия точных совпадений
     useEffect(() => {
         if (!searchTerm.trim()) {
@@ -124,7 +125,8 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
         setHasExactMatch(!!exactMatch);
     }, [searchTerm, availableWords]);
 
-    // Поиск слов при изменении параметров (с debounce)
+    // Поиск слов при изменении параметров
+    // Используем debouncedSearchTerm вместо searchTerm для снижения нагрузки
     useEffect(() => {
         if (open && !skipAutoSearch) {
             // Сброс и загрузка при изменении языка или поиска
@@ -138,6 +140,7 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
         if (skipAutoSearch) {
             setSkipAutoSearch(false);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [languageCode, debouncedSearchTerm, open, skipAutoSearch]);
 
     // Функция для фильтрации слов по частям речи (клиентская фильтрация)
@@ -231,7 +234,7 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                 offset: currentOffset.toString(),
             });
 
-            // Используем debouncedSearchTerm для API запроса
+            // Используем debouncedSearchTerm для запроса к серверу
             if (debouncedSearchTerm.trim()) {
                 params.set('search', debouncedSearchTerm.trim());
             }
@@ -308,12 +311,6 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                     description: `Слово "${addedWord}" добавлено${data.foundExamples > 0 ? ` с ${data.foundExamples} примерами` : ''}`,
                 });
 
-                // Блокируем автоматический поиск при очистке searchTerm
-                setSkipAutoSearch(true);
-
-                // Очищаем поле поиска
-                setSearchTerm('');
-
                 // Обновляем список слов пользователя на главной странице
                 onWordAdded();
 
@@ -327,6 +324,11 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                         limit: '30',
                         offset: '0',
                     });
+
+                    // Используем текущий searchTerm для показа добавленного слова
+                    if (searchTerm.trim()) {
+                        params.set('search', searchTerm.trim());
+                    }
 
                     const response = await fetch(`/api/base-words?${params}`);
                     if (response.ok) {
@@ -550,7 +552,7 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                                     onChange={e =>
                                         setSearchTerm(e.target.value)
                                     }
-                                    className="pl-10"
+                                    className="pl-10 pr-10"
                                     onKeyDown={e => {
                                         if (
                                             e.key === 'Enter' &&
@@ -562,6 +564,16 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                                         }
                                     }}
                                 />
+                                {searchTerm && (
+                                    <button
+                                        onClick={() => setSearchTerm('')}
+                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                        type="button"
+                                        aria-label="Очистить поиск"
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                )}
                             </div>
                             <Button
                                 variant="outline"
@@ -575,16 +587,14 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                                 title={
                                     hasExactMatch
                                         ? 'Слово найдено в базе'
-                                        : 'Найти через AI (LibreTranslate + Tatoeba)'
+                                        : 'Добавить слово через AI (LibreTranslate + Tatoeba)'
                                 }
+                                className="min-w-[120px]"
                             >
-                                {aiSearching ? (
-                                    <>
-                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                    </>
-                                ) : (
-                                    'Найти'
+                                {aiSearching && (
+                                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
                                 )}
+                                Добавить
                             </Button>
                         </div>
                     </div>
@@ -736,8 +746,17 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                                         </Card>
                                     ))
                                 ) : (
-                                    <div className="col-span-2 flex items-center justify-center text-gray-500">
-                                        Слова не найдены
+                                    <div className="col-span-2 flex flex-col items-center justify-start pt-2 text-center">
+                                        <p className="text-gray-500 mb-2">
+                                            Слова не найдены
+                                        </p>
+                                        <p className="text-sm text-gray-400">
+                                            Попробуйте добавить слово с помощью
+                                            кнопки{' '}
+                                            <span className="font-semibold text-gray-600">
+                                                &quot;Добавить&quot;
+                                            </span>
+                                        </p>
                                     </div>
                                 )}
                             </div>
