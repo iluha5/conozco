@@ -12,6 +12,7 @@ import type { SentenceTypeCode as SentenceTypeCodeEnum } from './words-seed-data
 export async function importWordsData(
     prisma: any,
     partsOfSpeechRecords: Record<string, any>,
+    wordSources: Record<string, { id: number }>,
 ) {
     // Импортируем данные слов из отдельного файла
     const { WORDS_DATA, SentenceTypeCode } = await import('./words-seed-data');
@@ -93,11 +94,13 @@ export async function importWordsData(
             },
             update: {
                 partOfSpeechId: partsOfSpeechRecords[wordData.partOfSpeech].id,
+                sourceId: wordSources['native'].id,
             },
             create: {
                 word: wordData.word,
                 partOfSpeechId: partsOfSpeechRecords[wordData.partOfSpeech].id,
                 languageId: language.id,
+                sourceId: wordSources['native'].id,
             },
         });
 

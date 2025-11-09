@@ -123,15 +123,26 @@ model Session {
   @@index([userId])
 }
 
+// Источник слова (провайдер)
+model WordSource {
+  id          Int        @id @default(autoincrement())
+  code        String     @unique // 'native', 'MYMEMORY'
+  displayName String     // 'Вручную', 'MyMemory Translation API'
+  
+  baseWords   BaseWord[]
+}
+
 // База слов (словарь)
 model BaseWord {
   id             Int      @id @default(autoincrement())
   word           String   // Иностранное слово
   partOfSpeechId Int      // ID части речи
   languageId     Int      // ID языка слова
+  sourceId       Int      // ID источника слова
 
   language             Language            @relation(fields: [languageId], references: [id])
   partOfSpeech         PartOfSpeech        @relation(fields: [partOfSpeechId], references: [id])
+  source               WordSource          @relation(fields: [sourceId], references: [id])
   translations         WordTranslation[]
   examples             WordExample[]
   grammaticalExamples  GrammaticalExample[]
@@ -139,6 +150,7 @@ model BaseWord {
 
   @@unique([word, languageId])
   @@index([languageId, partOfSpeechId])
+  @@index([sourceId])
 }
 
 // Переводы слов (до 3 самых популярных на каждый язык)

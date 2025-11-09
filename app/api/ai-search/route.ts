@@ -119,6 +119,18 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // Получаем источник MYMEMORY для AI-поиска
+        const myMemorySource = await prisma.wordSource.findUnique({
+            where: { code: 'MYMEMORY' },
+        });
+
+        if (!myMemorySource) {
+            return NextResponse.json(
+                { error: 'MYMEMORY source not found in database' },
+                { status: 500 },
+            );
+        }
+
         // Создаем или обновляем базовое слово в транзакции
         const result = await prisma.$transaction(async tx => {
             // Создаем или получаем базовое слово
@@ -130,6 +142,7 @@ export async function POST(request: NextRequest) {
                         word: trimmedWord,
                         languageId: language.id,
                         partOfSpeechId: defaultPartOfSpeech.id,
+                        sourceId: myMemorySource.id,
                     },
                     include: {
                         userWords: true,

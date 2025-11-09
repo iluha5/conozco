@@ -82,6 +82,26 @@ async function main() {
     }
     console.log('✅ Ensured sentence types');
 
+    // Create word sources
+    const wordSourcesData = [
+        { code: 'native', displayName: 'Вручную' },
+        { code: 'MYMEMORY', displayName: 'MyMemory Translation API' },
+    ];
+
+    const wordSources: Record<string, { id: number }> = {};
+
+    for (const source of wordSourcesData) {
+        const record = await prisma.wordSource.upsert({
+            where: { code: source.code },
+            update: {
+                displayName: source.displayName,
+            },
+            create: source,
+        });
+        wordSources[source.code] = { id: record.id };
+    }
+    console.log('✅ Ensured word sources');
+
     // Create languages
     const english = await prisma.language.upsert({
         where: { code: 'en' },
@@ -224,7 +244,7 @@ async function main() {
 
     // Import words data
     console.log('📚 Importing words data...');
-    await importWordsData(prisma, partsOfSpeechRecords);
+    await importWordsData(prisma, partsOfSpeechRecords, wordSources);
     console.log('✅ Words data imported successfully');
 
     console.log('🎉 Seeding completed!');
