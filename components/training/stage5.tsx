@@ -522,7 +522,7 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
                     // Это единственная ошибка или других нет - остаемся на ней, но перезагружаем карточку
                     setAnimationKey(prev => prev + 1);
                     setFadeIn(false);
-                    initializePhrase(currentPhrase!);
+                    initializePhrase();
                     setUserSentence([]);
                     setIsComplete(false);
                     setIsCorrect(null);

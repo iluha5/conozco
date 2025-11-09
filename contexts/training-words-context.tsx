@@ -11,7 +11,9 @@ import { useSession } from 'next-auth/react';
 
 type TrainingWordsContextType = {
     selectedWords: Set<string>;
-    setSelectedWords: (words: Set<string>) => void;
+    setSelectedWords: (
+        words: Set<string> | ((prev: Set<string>) => Set<string>),
+    ) => void;
     resetSelection: () => void;
 };
 
@@ -20,11 +22,23 @@ const TrainingWordsContext = createContext<
 >(undefined);
 
 export function TrainingWordsProvider({ children }: { children: ReactNode }) {
-    const [selectedWords, setSelectedWords] = useState<Set<string>>(new Set());
+    const [selectedWords, setSelectedWordsState] = useState<Set<string>>(
+        new Set(),
+    );
     const { data: session } = useSession();
 
+    const setSelectedWords = (
+        words: Set<string> | ((prev: Set<string>) => Set<string>),
+    ) => {
+        if (typeof words === 'function') {
+            setSelectedWordsState(prev => words(prev));
+        } else {
+            setSelectedWordsState(words);
+        }
+    };
+
     const resetSelection = () => {
-        setSelectedWords(new Set());
+        setSelectedWordsState(new Set());
     };
 
     return (

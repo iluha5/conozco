@@ -47,9 +47,11 @@ export async function importWordsData(
         return SentenceTypeCode.AFFIRMATIVE;
     };
 
-    const getSentenceTypeId = (flags: SentenceTypeFlags) => {
+    const getSentenceTypeId = (flags: SentenceTypeFlags): number => {
         const code = resolveSentenceTypeCode(flags);
-        const sentenceType = sentenceTypeByCode.get(code);
+        const sentenceType = sentenceTypeByCode.get(code) as
+            | { id: number }
+            | undefined;
 
         if (!sentenceType) {
             throw new Error(`Sentence type with code ${code} is not seeded`);

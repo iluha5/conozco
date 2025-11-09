@@ -200,7 +200,9 @@ export default function TrainingSetupPage() {
         const visibleWordIds = filteredWords
             .slice(0, visibleWordsCount)
             .map(word => word.id);
-        setSelectedWords(prev => new Set([...prev, ...visibleWordIds]));
+        setSelectedWords(
+            prev => new Set([...Array.from(prev), ...visibleWordIds]),
+        );
     };
 
     const deselectAll = () => {
@@ -223,7 +225,7 @@ export default function TrainingSetupPage() {
             // Не позволяем отключить последний этап
             if (newSet.size > 1) {
                 newSet.delete(stage);
-                updateEnabledStages([...newSet]);
+                updateEnabledStages(Array.from(newSet));
             } else {
                 toast({
                     title: 'Ошибка',
@@ -234,7 +236,7 @@ export default function TrainingSetupPage() {
             }
         } else {
             newSet.add(stage);
-            updateEnabledStages([...newSet]);
+            updateEnabledStages(Array.from(newSet));
         }
     };
 

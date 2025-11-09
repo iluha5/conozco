@@ -1,5 +1,6 @@
 // Экспортируем типы и енумы из файлов с данными
-export { PartOfSpeech, SentenceTypeCode, WordData } from './words-seed-data-es';
+export { PartOfSpeech, SentenceTypeCode } from './words-seed-data-es';
+export type { WordData } from './words-seed-data-es';
 
 // Импортируем данные слов для разных языков
 import { SPANISH_WORDS_DATA } from './words-seed-data-es';

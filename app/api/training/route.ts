@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
         }
 
         const sessions = await prisma.trainingSession.findMany({
-            where: { wordId },
+            where: { wordId: parseInt(wordId) },
             orderBy: {
                 createdAt: 'desc',
             },
