@@ -230,9 +230,9 @@ export default function TrainingSetupPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100">
       <Header />
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 pb-8 pt-4">
         <div className="max-w-2xl mx-auto">
-          <div className="mb-6">
+          <div className="mb-4">
             <Link href="/">
               <Button variant="ghost">
                 <ArrowLeft className="w-4 h-4 mr-2" />
@@ -264,7 +264,6 @@ export default function TrainingSetupPage() {
                   </Select>
                   <Button
                     variant="outline"
-                    size="sm"
                     onClick={selectAllVisible}
                     disabled={isLoadingWords}
                   >
@@ -272,7 +271,6 @@ export default function TrainingSetupPage() {
                   </Button>
                   <Button
                     variant="outline"
-                    size="sm"
                     onClick={deselectAll}
                     disabled={isLoadingWords}
                   >
@@ -329,20 +327,24 @@ export default function TrainingSetupPage() {
                           </div>
                         </div>
                       ))}
-                      {getFilteredWords().length > visibleWordsCount && (
-                        <div className="pt-2 border-t">
-                          <Button
-                            variant="outline"
-                            onClick={loadMoreWords}
-                            className="w-full"
-                          >
-                            Показать еще ({Math.min(visibleWordsCount + 12, getFilteredWords().length) - visibleWordsCount} слов)
-                          </Button>
-                        </div>
-                      )}
                     </div>
                   )}
                 </div>
+                {!isLoadingWords && getFilteredWords().length > 0 && (
+                  <div className="flex justify-center mt-3">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={loadMoreWords}
+                      disabled={getFilteredWords().length <= visibleWordsCount}
+                      className="text-sm"
+                    >
+                      {getFilteredWords().length > visibleWordsCount 
+                        ? `Показать еще (${Math.min(visibleWordsCount + 12, getFilteredWords().length) - visibleWordsCount} слов)`
+                        : 'Все слова показаны'}
+                    </Button>
+                  </div>
+                )}
                 {!isLoadingWords && (
                   <p className="text-xs text-gray-500 mt-2">
                     Показано {Math.min(visibleWordsCount, getFilteredWords().length)} из {getFilteredWords().length} слов
