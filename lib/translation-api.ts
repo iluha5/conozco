@@ -219,6 +219,17 @@ function filterTranslations(translations: string[]): string[] {
 }
 
 /**
+ * Проверяет, что предложение и перевод различаются
+ * (после нормализации - удаления знаков препинания и приведения к нижнему регистру)
+ */
+function areSentencesDifferent(sentence: string, translation: string): boolean {
+    const normalizedSentence = removePunctuation(sentence);
+    const normalizedTranslation = removePunctuation(translation);
+
+    return normalizedSentence !== normalizedTranslation;
+}
+
+/**
  * Переводит слово через MyMemory Translation API
  */
 export async function translateWord(
@@ -423,11 +434,16 @@ export async function searchExamples(
                     const translation = result.translations[1][0];
                     // Проверяем что перевод содержит текст
                     if (translation && translation.text) {
-                        examples.push({
-                            sentence: result.text,
-                            translation: translation.text,
-                            sentenceId: result.id,
-                        });
+                        // Проверяем что предложение и перевод различаются
+                        if (
+                            areSentencesDifferent(result.text, translation.text)
+                        ) {
+                            examples.push({
+                                sentence: result.text,
+                                translation: translation.text,
+                                sentenceId: result.id,
+                            });
+                        }
                     }
                 }
 
