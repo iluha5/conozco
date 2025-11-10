@@ -169,7 +169,7 @@ function delay(ms: number): Promise<void> {
 /**
  * Проверяет, содержит ли строка латинские символы
  */
-function hasLatinCharacters(text: string): boolean {
+export function hasLatinCharacters(text: string): boolean {
     // Проверяем наличие латинских букв (a-z, A-Z)
     return /[a-zA-Z]/.test(text);
 }
@@ -177,7 +177,7 @@ function hasLatinCharacters(text: string): boolean {
 /**
  * Удаляет все знаки препинания из строки для сравнения
  */
-function removePunctuation(text: string): string {
+export function removePunctuation(text: string): string {
     // Удаляем все символы кроме букв (кириллица, латиница), цифр и пробелов
     return text
         .replace(/[^а-яА-ЯёЁa-zA-Z0-9\s]/g, '')
@@ -188,7 +188,7 @@ function removePunctuation(text: string): string {
 /**
  * Фильтрует переводы по критериям качества
  */
-function filterTranslations(translations: string[]): string[] {
+export function filterTranslations(translations: string[]): string[] {
     if (translations.length === 0) {
         return translations;
     }
@@ -222,11 +222,76 @@ function filterTranslations(translations: string[]): string[] {
  * Проверяет, что предложение и перевод различаются
  * (после нормализации - удаления знаков препинания и приведения к нижнему регистру)
  */
-function areSentencesDifferent(sentence: string, translation: string): boolean {
+export function areSentencesDifferent(
+    sentence: string,
+    translation: string,
+): boolean {
     const normalizedSentence = removePunctuation(sentence);
     const normalizedTranslation = removePunctuation(translation);
 
     return normalizedSentence !== normalizedTranslation;
+}
+
+/**
+ * Проверяет, состоит ли текст только из одного слова
+ */
+export function isSingleWord(text: string): boolean {
+    const normalized = removePunctuation(text);
+    return !normalized.includes(' ') && normalized.length > 0;
+}
+
+/**
+ * Фильтрует дубликаты из массива примеров предложений
+ * Проверяет как предложения, так и переводы на дубликаты после нормализации
+ * Также фильтрует примеры из одного слова и совпадающие с исходным словом
+ */
+export function filterDuplicateExamples<
+    T extends { sentence: string; translation: string },
+>(examples: T[], originalWord?: string): T[] {
+    const seenSentences = new Set<string>();
+    const seenTranslations = new Set<string>();
+
+    // Нормализуем исходное слово/фразу для проверки
+    const normalizedOriginal = originalWord
+        ? removePunctuation(originalWord)
+        : null;
+
+    return examples.filter(example => {
+        const normalizedSentence = removePunctuation(example.sentence);
+        const normalizedTranslation = removePunctuation(example.translation);
+
+        // Фильтруем примеры из одного слова
+        if (
+            isSingleWord(example.sentence) ||
+            isSingleWord(example.translation)
+        ) {
+            return false;
+        }
+
+        // Фильтруем примеры, совпадающие с исходным словом/фразой
+        if (normalizedOriginal) {
+            if (
+                normalizedSentence === normalizedOriginal ||
+                normalizedTranslation === normalizedOriginal
+            ) {
+                return false;
+            }
+        }
+
+        // Проверяем дубликаты предложений
+        if (seenSentences.has(normalizedSentence)) {
+            return false;
+        }
+
+        // Проверяем дубликаты переводов
+        if (seenTranslations.has(normalizedTranslation)) {
+            return false;
+        }
+
+        seenSentences.add(normalizedSentence);
+        seenTranslations.add(normalizedTranslation);
+        return true;
+    });
 }
 
 /**
@@ -447,15 +512,21 @@ export async function searchExamples(
                     }
                 }
 
-                // Ограничиваем до 10 примеров
-                if (examples.length >= 10) {
+                // Ограничиваем до 15 примеров (с учетом возможных дубликатов)
+                if (examples.length >= 15) {
                     break;
                 }
             }
 
+            // Фильтруем дубликаты и ограничиваем до 10 примеров
+            const filteredExamples = filterDuplicateExamples(
+                examples,
+                word,
+            ).slice(0, 10);
+
             // Если нашли примеры - возвращаем
-            if (examples.length > 0) {
-                return examples;
+            if (filteredExamples.length > 0) {
+                return filteredExamples;
             }
 
             // Если это не последняя попытка и примеров нет - пробуем еще раз

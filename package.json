@@ -8,6 +8,9 @@
         "start": "next start -p 8000",
         "lint": "next lint",
         "type-check": "tsc --noEmit",
+        "test": "jest",
+        "test:watch": "jest --watch",
+        "test:coverage": "jest --coverage",
         "verify": "npm run type-check && npm run lint && npm run format:check",
         "format": "prettier --write .",
         "format:check": "prettier --check .",
@@ -51,6 +54,7 @@
     },
     "devDependencies": {
         "@types/bcryptjs": "^2.4.6",
+        "@types/jest": "^30.0.0",
         "@types/node": "^20.10.6",
         "@types/react": "^18.2.46",
         "@types/react-dom": "^18.2.18",
@@ -60,12 +64,14 @@
         "eslint-config-prettier": "^10.1.8",
         "eslint-plugin-prettier": "^5.5.4",
         "husky": "^9.1.7",
+        "jest": "^30.2.0",
         "lint-staged": "^16.2.6",
         "postcss": "^8.4.32",
         "prettier": "^3.6.2",
         "prisma": "^5.7.0",
         "tailwindcss": "^3.4.0",
         "tailwindcss-animate": "^1.0.7",
+        "ts-jest": "^29.4.5",
         "tsx": "^4.7.0",
         "typescript": "^5.3.3"
     }
