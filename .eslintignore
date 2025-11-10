@@ -15,6 +15,3 @@ prisma/migrations
 .env.local
 .env.production
 
-# Temporary files
-temp.ts
-

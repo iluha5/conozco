@@ -167,6 +167,58 @@ function delay(ms: number): Promise<void> {
 }
 
 /**
+ * Проверяет, содержит ли строка латинские символы
+ */
+function hasLatinCharacters(text: string): boolean {
+    // Проверяем наличие латинских букв (a-z, A-Z)
+    return /[a-zA-Z]/.test(text);
+}
+
+/**
+ * Удаляет все знаки препинания из строки для сравнения
+ */
+function removePunctuation(text: string): string {
+    // Удаляем все символы кроме букв (кириллица, латиница), цифр и пробелов
+    return text
+        .replace(/[^а-яА-ЯёЁa-zA-Z0-9\s]/g, '')
+        .toLowerCase()
+        .trim();
+}
+
+/**
+ * Фильтрует переводы по критериям качества
+ */
+function filterTranslations(translations: string[]): string[] {
+    if (translations.length === 0) {
+        return translations;
+    }
+
+    // Сохраняем оригинальные переводы на случай, если все будут отфильтрованы
+    const originalTranslations = [...translations];
+
+    // 1. Фильтруем переводы с латинскими символами
+    let filtered = translations.filter(t => !hasLatinCharacters(t));
+
+    // 2. Удаляем дубликаты (сравниваем без знаков препинания)
+    const seen = new Set<string>();
+    filtered = filtered.filter(translation => {
+        const normalized = removePunctuation(translation);
+        if (seen.has(normalized)) {
+            return false;
+        }
+        seen.add(normalized);
+        return true;
+    });
+
+    // 3. Если после фильтрации не осталось ни одного перевода - возвращаем первый оригинальный
+    if (filtered.length === 0) {
+        return [originalTranslations[0]];
+    }
+
+    return filtered;
+}
+
+/**
  * Переводит слово через MyMemory Translation API
  */
 export async function translateWord(
@@ -231,22 +283,30 @@ export async function translateWord(
             );
         }
 
-        // Получаем альтернативные переводы из matches
-        const alternatives: string[] = [];
+        // Собираем все переводы (главный + альтернативные из matches)
+        const allTranslations: string[] = [data.responseData.translatedText];
+
         if (data.matches && Array.isArray(data.matches)) {
             for (const match of data.matches) {
                 if (
                     match.translation &&
                     match.translation !== data.responseData.translatedText &&
-                    alternatives.length < 3
+                    allTranslations.length < 3 // Ограничиваем до 3 переводов
                 ) {
-                    alternatives.push(match.translation);
+                    allTranslations.push(match.translation);
                 }
             }
         }
 
+        // Применяем фильтрацию
+        const filteredTranslations = filterTranslations(allTranslations);
+
+        // Разделяем на главный и альтернативные
+        const mainTranslation = filteredTranslations[0];
+        const alternatives = filteredTranslations.slice(1);
+
         return {
-            mainTranslation: data.responseData.translatedText,
+            mainTranslation,
             alternatives,
         };
     } catch (error: any) {

@@ -29,5 +29,3 @@ coverage
 # Documentation (if you want to exclude)
 # *.md
 
-# Temporary files
-temp.ts
