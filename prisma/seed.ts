@@ -85,6 +85,7 @@ async function main() {
     // Create word sources
     const wordSourcesData = [
         { code: 'native', displayName: 'Вручную' },
+        { code: 'DEEPL', displayName: 'DeepL Translation API' },
         { code: 'MYMEMORY', displayName: 'MyMemory Translation API' },
         { code: 'TATOEBA', displayName: 'Tatoeba' },
     ];

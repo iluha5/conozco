@@ -1,28 +1,5 @@
-// Типы для MyMemory Translation API
-interface MyMemoryResponse {
-    responseData: {
-        translatedText: string;
-        match: number;
-    };
-    quotaFinished: boolean;
-    mtLangSupported: null | string;
-    responseDetails: string;
-    responseStatus: number;
-    matches: Array<{
-        id: string;
-        segment: string;
-        translation: string;
-        quality: string;
-        reference: string;
-        'usage-count': number;
-        subject: string;
-        'created-by': string;
-        'last-updated-by': string;
-        'create-date': string;
-        'last-update-date': string;
-        match: number;
-    }>;
-}
+import { translateWithDeepL } from './deepl-api';
+import { translateWithMyMemory } from './mymemory-api';
 
 // Типы для Tatoeba
 interface TatoebaSearchParams {
@@ -64,6 +41,7 @@ export interface TranslationResult {
     targetLanguage: string;
     mainTranslation: string;
     alternativeTranslations: string[];
+    source?: 'DEEPL' | 'MYMEMORY';
     examples: Array<{
         sentence: string;
         translation: string;
@@ -72,9 +50,6 @@ export interface TranslationResult {
 }
 
 // Конфигурация API
-// MyMemory Translation API - бесплатный, без API ключа
-const MYMEMORY_API_URL = 'https://api.mymemory.translated.net';
-const TRANSLATION_TIMEOUT = 10000; // 10 секунд
 const TATOEBA_API_URL = 'https://tatoeba.org/en/api_v0';
 const TATOEBA_MAX_RETRIES = 3;
 const TATOEBA_RETRY_DELAY = 2000; // 2 секунды
@@ -94,7 +69,7 @@ async function logApiRequest(
     requestData: any,
     responseData: any | null,
     statusCode: number | null,
-    errorMessage: string | null,
+    errorMessage: string | null | undefined,
     duration: number,
 ) {
     try {
@@ -295,7 +270,9 @@ export function filterDuplicateExamples<
 }
 
 /**
- * Переводит слово через MyMemory Translation API
+ * Переводит слово через DeepL API с fallback на MyMemory
+ * Сначала пытается получить перевод от DeepL (3 попытки)
+ * Если DeepL не удалось - использует MyMemory как fallback
  */
 export async function translateWord(
     word: string,
@@ -306,109 +283,55 @@ export async function translateWord(
     mainTranslation: string;
     alternatives: string[];
     error?: string;
+    source?: 'DEEPL' | 'MYMEMORY';
 }> {
-    const startTime = Date.now();
-    const langpair = `${sourceLanguage}|${targetLanguage}`;
-    const requestData = {
-        q: word,
-        langpair,
-    };
+    console.log(`[Translation] Starting translation for "${word}"`);
 
-    try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(
-            () => controller.abort(),
-            TRANSLATION_TIMEOUT,
-        );
+    // Пробуем DeepL (с 3 попытками)
+    const deeplResult = await translateWithDeepL(
+        word,
+        sourceLanguage,
+        targetLanguage,
+        userId,
+        3, // MAX_RETRIES
+    );
 
-        const params = new URLSearchParams({
-            q: word,
-            langpair,
-        });
-
-        const response = await fetch(`${MYMEMORY_API_URL}/get?${params}`, {
-            method: 'GET',
-            signal: controller.signal,
-        });
-
-        clearTimeout(timeoutId);
-
-        const duration = Date.now() - startTime;
-        const data: MyMemoryResponse = await response.json();
-
-        await logApiRequest(
-            userId,
-            'MyMemory',
-            'translate',
-            requestData,
-            data,
-            response.status,
-            null,
-            duration,
-        );
-
-        if (!response.ok) {
-            throw new Error(
-                `MyMemory API error: ${response.status} ${response.statusText}`,
-            );
-        }
-
-        if (data.responseStatus !== 200) {
-            throw new Error(
-                `MyMemory API error: ${data.responseDetails || 'Unknown error'}`,
-            );
-        }
-
-        // Собираем все переводы (главный + альтернативные из matches)
-        const allTranslations: string[] = [data.responseData.translatedText];
-
-        if (data.matches && Array.isArray(data.matches)) {
-            for (const match of data.matches) {
-                if (
-                    match.translation &&
-                    match.translation !== data.responseData.translatedText &&
-                    allTranslations.length < 3 // Ограничиваем до 3 переводов
-                ) {
-                    allTranslations.push(match.translation);
-                }
-            }
-        }
-
-        // Применяем фильтрацию
-        const filteredTranslations = filterTranslations(allTranslations);
-
-        // Разделяем на главный и альтернативные
-        const mainTranslation = filteredTranslations[0];
-        const alternatives = filteredTranslations.slice(1);
-
+    // Если DeepL успешно вернул перевод
+    if (deeplResult.mainTranslation && !deeplResult.error) {
+        console.log(`[Translation] DeepL translation successful`);
         return {
-            mainTranslation,
-            alternatives,
-        };
-    } catch (error: any) {
-        const duration = Date.now() - startTime;
-        const errorMessage =
-            error.name === 'AbortError'
-                ? 'Request timeout'
-                : error.message || 'Unknown error';
-
-        await logApiRequest(
-            userId,
-            'MyMemory',
-            'translate',
-            requestData,
-            null,
-            null,
-            errorMessage,
-            duration,
-        );
-
-        return {
-            mainTranslation: '',
-            alternatives: [],
-            error: errorMessage,
+            ...deeplResult,
+            source: 'DEEPL',
         };
     }
+
+    // Если DeepL не удалось - используем MyMemory как fallback
+    console.log(
+        `[Translation] DeepL failed: ${deeplResult.error}. Falling back to MyMemory...`,
+    );
+
+    const myMemoryResult = await translateWithMyMemory(
+        word,
+        sourceLanguage,
+        targetLanguage,
+        userId,
+    );
+
+    if (myMemoryResult.mainTranslation && !myMemoryResult.error) {
+        console.log(`[Translation] MyMemory fallback successful`);
+        return {
+            ...myMemoryResult,
+            source: 'MYMEMORY',
+        };
+    }
+
+    // Если оба сервиса не удалось
+    console.error(`[Translation] Both DeepL and MyMemory failed for "${word}"`);
+    return {
+        mainTranslation: '',
+        alternatives: [],
+        error: `DeepL: ${deeplResult.error}, MyMemory: ${myMemoryResult.error}`,
+    };
 }
 
 /**
@@ -626,6 +549,7 @@ export async function getWordData(
             targetLanguage,
             mainTranslation: translationResult.mainTranslation,
             alternativeTranslations: translationResult.alternatives,
+            source: translationResult.source,
             examples: examples.map(ex => ({
                 sentence: ex.sentence,
                 translation: ex.translation,

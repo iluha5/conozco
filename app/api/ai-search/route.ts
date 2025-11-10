@@ -120,6 +120,10 @@ export async function POST(request: NextRequest) {
         }
 
         // Получаем источники для AI-поиска
+        const deeplSource = await prisma.wordSource.findUnique({
+            where: { code: 'DEEPL' },
+        });
+
         const myMemorySource = await prisma.wordSource.findUnique({
             where: { code: 'MYMEMORY' },
         });
@@ -128,12 +132,16 @@ export async function POST(request: NextRequest) {
             where: { code: 'TATOEBA' },
         });
 
-        if (!myMemorySource || !tatoebaSource) {
+        if (!deeplSource || !myMemorySource || !tatoebaSource) {
             return NextResponse.json(
                 { error: 'Required word sources not found in database' },
                 { status: 500 },
             );
         }
+
+        // Определяем какой источник использовать для BaseWord (DeepL или MyMemory)
+        const wordSourceId =
+            wordData.source === 'DEEPL' ? deeplSource.id : myMemorySource.id;
 
         // Создаем или обновляем базовое слово в транзакции
         const result = await prisma.$transaction(async tx => {
@@ -146,7 +154,7 @@ export async function POST(request: NextRequest) {
                         word: trimmedWord,
                         languageId: language.id,
                         partOfSpeechId: defaultPartOfSpeech.id,
-                        sourceId: myMemorySource.id,
+                        sourceId: wordSourceId,
                     },
                     include: {
                         userWords: true,

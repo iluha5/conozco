@@ -126,8 +126,8 @@ model Session {
 // Источник слова (провайдер)
 model WordSource {
   id          Int        @id @default(autoincrement())
-  code        String     @unique // 'native', 'MYMEMORY', 'TATOEBA'
-  displayName String     // 'Вручную', 'MyMemory Translation API', 'Tatoeba'
+  code        String     @unique // 'native', 'DEEPL', 'MYMEMORY', 'TATOEBA'
+  displayName String     // 'Вручную', 'DeepL Translation API', 'MyMemory Translation API', 'Tatoeba'
   
   baseWords            BaseWord[]
   wordExamples         WordExample[]

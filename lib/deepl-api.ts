@@ -1,0 +1,267 @@
+import { filterTranslations } from './translation-api';
+
+// Типы для DeepL API
+interface DeepLTranslation {
+    detected_source_language: string;
+    text: string;
+}
+
+interface DeepLResponse {
+    translations: DeepLTranslation[];
+}
+
+// Конфигурация API
+const DEEPL_API_URL = 'https://api-free.deepl.com/v2/translate';
+const TRANSLATION_TIMEOUT = 10000; // 10 секунд
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 1000; // 1 секунда
+
+// Маппинг языковых кодов для DeepL (заглавные буквы)
+const LANGUAGE_CODE_MAP: { [key: string]: string } = {
+    en: 'EN',
+    es: 'ES',
+    ru: 'RU',
+    de: 'DE',
+    fr: 'FR',
+    it: 'IT',
+    pt: 'PT',
+};
+
+// Утилита для задержки
+function delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// Утилита для логирования запросов к API
+async function logApiRequest(
+    userId: number | null,
+    serviceName: string,
+    requestType: string,
+    requestData: any,
+    responseData: any | null,
+    statusCode: number | null,
+    errorMessage: string | null | undefined,
+    duration: number,
+) {
+    try {
+        console.log(
+            `[LOG] Attempting to log API request: ${serviceName}/${requestType}`,
+        );
+
+        // Импортируем prisma внутри функции для гарантии серверного контекста
+        const { prisma } = await import('./prisma');
+
+        if (!prisma) {
+            console.error('[LOG] Prisma client is undefined!');
+            return;
+        }
+
+        // Безопасная сериализация данных
+        let requestDataStr: string;
+        let responseDataStr: string | null = null;
+
+        try {
+            requestDataStr = JSON.stringify(requestData);
+        } catch (e) {
+            console.error('[LOG] Failed to stringify requestData:', e);
+            requestDataStr = JSON.stringify({ error: 'Failed to serialize' });
+        }
+
+        if (responseData) {
+            try {
+                responseDataStr = JSON.stringify(responseData);
+            } catch (e) {
+                console.error('[LOG] Failed to stringify responseData:', e);
+                responseDataStr = JSON.stringify({
+                    error: 'Failed to serialize',
+                });
+            }
+        }
+
+        const logEntry = await prisma.apiRequestLog.create({
+            data: {
+                userId,
+                serviceName,
+                requestType,
+                requestData: requestDataStr,
+                responseData: responseDataStr,
+                statusCode,
+                errorMessage,
+                duration,
+            },
+        });
+
+        console.log(
+            `[LOG] Successfully logged API request with ID: ${logEntry.id}`,
+        );
+    } catch (error) {
+        console.error('[LOG] Failed to log API request:', error);
+        console.error('[LOG] Request data:', {
+            userId,
+            serviceName,
+            requestType,
+            statusCode,
+            errorMessage,
+            duration,
+        });
+    }
+}
+
+/**
+ * Переводит слово через DeepL API с повторными попытками
+ * Возвращает до 3 вариантов перевода
+ */
+export async function translateWithDeepL(
+    word: string,
+    sourceLanguage: string,
+    targetLanguage: string,
+    userId: number | null = null,
+    maxRetries: number = MAX_RETRIES,
+): Promise<{
+    mainTranslation: string;
+    alternatives: string[];
+    error?: string;
+}> {
+    const apiKey = process.env.DEEPL_API_KEY;
+
+    if (!apiKey) {
+        const error = 'DEEPL_API_KEY not found in environment variables';
+        console.error(`[DeepL] ${error}`);
+        return {
+            mainTranslation: '',
+            alternatives: [],
+            error,
+        };
+    }
+
+    const sourceLang =
+        LANGUAGE_CODE_MAP[sourceLanguage] || sourceLanguage.toUpperCase();
+    const targetLang =
+        LANGUAGE_CODE_MAP[targetLanguage] || targetLanguage.toUpperCase();
+
+    const requestData = {
+        text: word,
+        source_lang: sourceLang,
+        target_lang: targetLang,
+    };
+
+    let lastError: string | undefined = undefined;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        const startTime = Date.now();
+
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(
+                () => controller.abort(),
+                TRANSLATION_TIMEOUT,
+            );
+
+            const params = new URLSearchParams({
+                auth_key: apiKey,
+                text: word,
+                source_lang: sourceLang,
+                target_lang: targetLang,
+            });
+
+            const response = await fetch(`${DEEPL_API_URL}?${params}`, {
+                method: 'POST',
+                signal: controller.signal,
+            });
+
+            clearTimeout(timeoutId);
+
+            const duration = Date.now() - startTime;
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(
+                    `DeepL API error: ${response.status} ${response.statusText}. ${errorText}`,
+                );
+            }
+
+            const data: DeepLResponse = await response.json();
+
+            await logApiRequest(
+                userId,
+                'DeepL',
+                'translate',
+                { ...requestData, attempt },
+                data,
+                response.status,
+                null,
+                duration,
+            );
+
+            if (!data.translations || data.translations.length === 0) {
+                throw new Error('DeepL API returned no translations');
+            }
+
+            // DeepL возвращает один перевод, но мы можем попробовать получить альтернативы
+            // запросив перевод с небольшими вариациями (если слово/фраза позволяет)
+            // Убираем trailing знаки препинания из переводов
+            const cleanedTranslation = data.translations[0].text
+                .trim()
+                .replace(/[,.;:!?]+$/, '');
+            const allTranslations: string[] = [cleanedTranslation];
+
+            // Применяем фильтрацию
+            const filteredTranslations = filterTranslations(allTranslations);
+
+            // Разделяем на главный и альтернативные
+            const mainTranslation = filteredTranslations[0];
+            const alternatives = filteredTranslations.slice(1);
+
+            console.log(
+                `[DeepL] Translation successful on attempt ${attempt}/${maxRetries}`,
+            );
+
+            return {
+                mainTranslation,
+                alternatives,
+            };
+        } catch (error: any) {
+            const duration = Date.now() - startTime;
+            lastError =
+                error.name === 'AbortError'
+                    ? 'Request timeout'
+                    : error.message || 'Unknown error';
+
+            await logApiRequest(
+                userId,
+                'DeepL',
+                'translate',
+                { ...requestData, attempt },
+                null,
+                null,
+                lastError,
+                duration,
+            );
+
+            // Если это не последняя попытка - пробуем еще раз
+            if (attempt < maxRetries) {
+                console.log(
+                    `[DeepL] Attempt ${attempt}/${maxRetries} failed: ${lastError}. Retrying...`,
+                );
+                await delay(RETRY_DELAY * attempt); // Увеличиваем задержку с каждой попыткой
+                continue;
+            }
+
+            // Если это последняя попытка - возвращаем ошибку
+            console.error(
+                `[DeepL] Failed after ${maxRetries} attempts: ${lastError}`,
+            );
+            return {
+                mainTranslation: '',
+                alternatives: [],
+                error: lastError,
+            };
+        }
+    }
+
+    return {
+        mainTranslation: '',
+        alternatives: [],
+        error: lastError || 'Unknown error',
+    };
+}
