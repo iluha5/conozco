@@ -61,12 +61,14 @@ model Language {
   code  String @unique // например: 'en', 'es', 'ru'
   name  String         // например: 'English', 'Spanish', 'Russian'
 
-  words                   Word[]
-  baseWords               BaseWord[]
-  pronouns                Pronoun[]
-  tenses                  Tense[]
-  wordTranslations        WordTranslation[]
-  partsOfSpeech           PartOfSpeech[]
+  words                         Word[]
+  baseWords                     BaseWord[]
+  pronouns                      Pronoun[]
+  tenses                        Tense[]
+  wordTranslations              WordTranslation[]
+  partsOfSpeech                 PartOfSpeech[]
+  apiRequestLogsSourceLanguage  ApiRequestLog[] @relation("ApiRequestLogSourceLanguage")
+  apiRequestLogsTargetLanguage  ApiRequestLog[] @relation("ApiRequestLogTargetLanguage")
 
   @@index([code])
 }
@@ -132,6 +134,7 @@ model WordSource {
   baseWords            BaseWord[]
   wordExamples         WordExample[]
   grammaticalExamples  GrammaticalExample[]
+  apiRequestLogs       ApiRequestLog[]
 }
 
 // База слов (словарь)
@@ -279,23 +282,30 @@ model TrainingSession {
   @@index([wordId, stage])
 }
 
-// Логи запросов к внешним API (LibreTranslate, Tatoeba)
+// Логи запросов к внешним API (DeepL, MyMemory, Tatoeba)
 model ApiRequestLog {
-  id            Int      @id @default(autoincrement())
-  userId        Int?     // ID пользователя (может быть null для системных запросов)
-  serviceName   String   // 'LibreTranslate' или 'Tatoeba'
-  requestType   String   // 'translate', 'search_examples', etc.
-  requestData   String   @db.Text // JSON с данными запроса
-  responseData  String?  @db.Text // JSON с ответом (null если ошибка)
-  statusCode    Int?     // HTTP статус код
-  errorMessage  String?  @db.Text // Сообщение об ошибке (если есть)
-  duration      Int?     // Длительность запроса в миллисекундах
-  createdAt     DateTime @default(now())
+  id                Int         @id @default(autoincrement())
+  userId            Int?        // ID пользователя (может быть null для системных запросов)
+  sourceId          Int         // ID источника (WordSource: DEEPL, MYMEMORY, TATOEBA)
+  sourceLanguageId  Int?        // ID языка исходного слова (null для запросов без перевода)
+  targetLanguageId  Int?        // ID языка перевода (null для запросов без перевода)
+  requestType       String      // 'translate', 'search_examples', etc.
+  requestData       String      @db.Text // JSON с данными запроса
+  responseData      String?     @db.Text // JSON с ответом (null если ошибка)
+  statusCode        Int?        // HTTP статус код
+  errorMessage      String?     @db.Text // Сообщение об ошибке (если есть)
+  duration          Int?        // Длительность запроса в миллисекундах
+  createdAt         DateTime    @default(now())
 
-  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user            User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  source          WordSource  @relation(fields: [sourceId], references: [id], onDelete: Restrict)
+  sourceLanguage  Language?   @relation("ApiRequestLogSourceLanguage", fields: [sourceLanguageId], references: [id], onDelete: SetNull)
+  targetLanguage  Language?   @relation("ApiRequestLogTargetLanguage", fields: [targetLanguageId], references: [id], onDelete: SetNull)
 
   @@index([userId])
-  @@index([serviceName, createdAt])
+  @@index([sourceId, createdAt])
+  @@index([sourceLanguageId])
+  @@index([targetLanguageId])
   @@index([createdAt])
 }
 

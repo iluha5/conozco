@@ -32,21 +32,93 @@ function delay(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+// Утилита для получения ID источника по коду
+async function getSourceId(sourceCode: string): Promise<number | null> {
+    try {
+        const { prisma } = await import('./prisma');
+
+        if (!prisma) {
+            console.error('[LOG] Prisma client is undefined!');
+            return null;
+        }
+
+        const source = await prisma.wordSource.findUnique({
+            where: { code: sourceCode },
+            select: { id: true },
+        });
+
+        return source?.id || null;
+    } catch (error) {
+        console.error(
+            `[LOG] Failed to get sourceId for "${sourceCode}":`,
+            error,
+        );
+        return null;
+    }
+}
+
+// Утилита для получения ID языка по коду
+async function getLanguageId(languageCode: string): Promise<number | null> {
+    try {
+        const { prisma } = await import('./prisma');
+
+        if (!prisma) {
+            console.error('[LOG] Prisma client is undefined!');
+            return null;
+        }
+
+        const language = await prisma.language.findUnique({
+            where: { code: languageCode },
+            select: { id: true },
+        });
+
+        return language?.id || null;
+    } catch (error) {
+        console.error(
+            `[LOG] Failed to get languageId for "${languageCode}":`,
+            error,
+        );
+        return null;
+    }
+}
+
 // Утилита для логирования запросов к API
 async function logApiRequest(
     userId: number | null,
-    serviceName: string,
+    sourceCode: string, // 'DEEPL', 'MYMEMORY', 'TATOEBA'
     requestType: string,
     requestData: any,
     responseData: any | null,
     statusCode: number | null,
     errorMessage: string | null | undefined,
     duration: number,
+    sourceLanguageCode?: string, // Код исходного языка (например: 'es', 'en')
+    targetLanguageCode?: string, // Код целевого языка (например: 'ru')
 ) {
     try {
         console.log(
-            `[LOG] Attempting to log API request: ${serviceName}/${requestType}`,
+            `[LOG] Attempting to log API request: ${sourceCode}/${requestType}`,
         );
+
+        // Получаем sourceId
+        const sourceId = await getSourceId(sourceCode);
+
+        if (!sourceId) {
+            console.error(`[LOG] Failed to get sourceId for "${sourceCode}"`);
+            return;
+        }
+
+        // Получаем language IDs если они указаны
+        let sourceLanguageId: number | null | undefined = undefined;
+        let targetLanguageId: number | null | undefined = undefined;
+
+        if (sourceLanguageCode) {
+            sourceLanguageId = await getLanguageId(sourceLanguageCode);
+        }
+
+        if (targetLanguageCode) {
+            targetLanguageId = await getLanguageId(targetLanguageCode);
+        }
 
         // Импортируем prisma внутри функции для гарантии серверного контекста
         const { prisma } = await import('./prisma');
@@ -81,7 +153,9 @@ async function logApiRequest(
         const logEntry = await prisma.apiRequestLog.create({
             data: {
                 userId,
-                serviceName,
+                sourceId,
+                sourceLanguageId,
+                targetLanguageId,
                 requestType,
                 requestData: requestDataStr,
                 responseData: responseDataStr,
@@ -98,7 +172,7 @@ async function logApiRequest(
         console.error('[LOG] Failed to log API request:', error);
         console.error('[LOG] Request data:', {
             userId,
-            serviceName,
+            sourceCode,
             requestType,
             statusCode,
             errorMessage,
@@ -184,13 +258,15 @@ export async function translateWithDeepL(
 
             await logApiRequest(
                 userId,
-                'DeepL',
+                'DEEPL',
                 'translate',
                 { ...requestData, attempt },
                 data,
                 response.status,
                 null,
                 duration,
+                sourceLanguage,
+                targetLanguage,
             );
 
             if (!data.translations || data.translations.length === 0) {
@@ -229,13 +305,15 @@ export async function translateWithDeepL(
 
             await logApiRequest(
                 userId,
-                'DeepL',
+                'DEEPL',
                 'translate',
                 { ...requestData, attempt },
                 null,
                 null,
                 lastError,
                 duration,
+                sourceLanguage,
+                targetLanguage,
             );
 
             // Если это не последняя попытка - пробуем еще раз
