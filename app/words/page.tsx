@@ -118,6 +118,14 @@ export default function WordsPage() {
         setFilteredWords(filtered);
     };
 
+    // Функция для получения слов, отфильтрованных только по языку
+    const getWordsByLanguage = () => {
+        if (selectedLanguage === 'ALL') {
+            return words;
+        }
+        return words.filter(word => word.language.code === selectedLanguage);
+    };
+
     const handleAddWord = async () => {
         await fetchWords();
     };
@@ -171,7 +179,7 @@ export default function WordsPage() {
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">
-                                {words.length}
+                                {getWordsByLanguage().length}
                             </div>
                         </CardContent>
                     </Card>
@@ -192,7 +200,7 @@ export default function WordsPage() {
                         <CardContent>
                             <div className="text-2xl font-bold text-orange-600">
                                 {
-                                    words.filter(
+                                    getWordsByLanguage().filter(
                                         w => w.status === 'NOT_LEARNED',
                                     ).length
                                 }
@@ -216,8 +224,9 @@ export default function WordsPage() {
                         <CardContent>
                             <div className="text-2xl font-bold text-green-600">
                                 {
-                                    words.filter(w => w.status === 'LEARNED')
-                                        .length
+                                    getWordsByLanguage().filter(
+                                        w => w.status === 'LEARNED',
+                                    ).length
                                 }
                             </div>
                         </CardContent>
@@ -239,7 +248,7 @@ export default function WordsPage() {
                         </SelectContent>
                     </Select>
                     <div className="text-sm text-gray-600">
-                        Отображено:{' '}
+                        Показано:{' '}
                         <span className="font-semibold text-gray-900">
                             {filteredWords.length}
                         </span>
