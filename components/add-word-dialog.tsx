@@ -722,7 +722,7 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                                     getFilteredWords().map(word => (
                                         <Card
                                             key={word.id}
-                                            className={`transition-all cursor-pointer ${
+                                            className={`transition-all cursor-pointer h-fit ${
                                                 isWordSelected(word.id)
                                                     ? 'ring-2 ring-primary bg-blue-50'
                                                     : 'hover:bg-gray-50 bg-white'
