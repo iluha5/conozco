@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useDebounce } from 'react-use';
 import { Button } from '@/components/ui/button';
 import {
@@ -86,6 +86,7 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
     const [aiSearching, setAiSearching] = useState(false);
     const [skipAutoSearch, setSkipAutoSearch] = useState(false);
     const { toast } = useToast();
+    const searchInputRef = useRef<HTMLInputElement>(null);
 
     // Debounce поиска на 200мс для снижения количества запросов к серверу
     useDebounce(
@@ -125,6 +126,19 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
         setHasExactMatch(!!exactMatch);
     }, [searchTerm, availableWords]);
 
+    // Инициализация selectedWords на основе isAddedByUser
+    useEffect(() => {
+        // Автоматически выбираем все слова, которые уже добавлены пользователем
+        const addedWords = availableWords
+            .filter(word => word.isAddedByUser)
+            .map(word => word.id);
+        setSelectedWords(prev => {
+            // Объединяем существующие выборы с новыми добавленными словами
+            const combinedSet = new Set([...prev, ...addedWords]);
+            return Array.from(combinedSet);
+        });
+    }, [availableWords]);
+
     // Поиск слов при изменении параметров
     // Используем debouncedSearchTerm вместо searchTerm для снижения нагрузки
     useEffect(() => {
@@ -162,6 +176,8 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
     };
 
     // Функции для работы с выбранными словами
+    // Теперь выбранные слова - это те, которые должны быть в списке пользователя
+    // Слова с isAddedByUser=true по умолчанию считаются выбранными
     const toggleWordSelection = (baseWordId: string) => {
         setSelectedWords(prev =>
             prev.includes(baseWordId)
@@ -171,10 +187,8 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
     };
 
     const selectAllWords = () => {
-        // Выбираем только слова, которые еще не добавлены пользователем
-        const newSelections = getFilteredWords()
-            .filter(word => !word.isAddedByUser)
-            .map(word => word.id);
+        // Выбираем все слова
+        const newSelections = getFilteredWords().map(word => word.id);
         setSelectedWords(newSelections);
     };
 
@@ -182,6 +196,7 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
         setSelectedWords([]);
     };
 
+    // Слово выбрано, если оно в selectedWords
     const isWordSelected = (baseWordId: string) => {
         return selectedWords.includes(baseWordId);
     };
@@ -306,13 +321,14 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
 
             if (response.ok) {
                 const addedWord = searchTerm.trim();
+                const message = data.alreadyExists
+                    ? `Слово "${addedWord}" уже есть в базе${data.foundExamples > 0 ? ` (${data.foundExamples} примеров)` : ''}`
+                    : `Слово "${addedWord}" добавлено в базу${data.foundExamples > 0 ? ` с ${data.foundExamples} примерами` : ''}`;
+
                 toast({
                     title: 'Успешно',
-                    description: `Слово "${addedWord}" добавлено${data.foundExamples > 0 ? ` с ${data.foundExamples} примерами` : ''}`,
+                    description: message,
                 });
-
-                // Обновляем список слов пользователя на главной странице
-                onWordAdded();
 
                 // Даем время БД закоммитить транзакцию и обновляем список
                 setTimeout(async () => {
@@ -359,22 +375,30 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
     };
 
     const handleAddWords = async () => {
-        if (selectedWords.length === 0) {
-            toast({
-                title: 'Ошибка',
-                description: 'Выберите слова для добавления',
-                variant: 'destructive',
-            });
-            return;
-        }
-
         setLoading(true);
-        let successCount = 0;
+        let addedCount = 0;
+        let removedCount = 0;
         let errorCount = 0;
 
         try {
-            // Добавляем слова по одному
-            for (const baseWordId of selectedWords) {
+            // Определяем, какие слова нужно добавить, а какие удалить
+            const wordsToAdd: string[] = [];
+            const wordsToRemove: string[] = [];
+
+            for (const word of availableWords) {
+                const isSelected = selectedWords.includes(word.id);
+
+                if (word.isAddedByUser && !isSelected) {
+                    // Слово было добавлено, но теперь не выбрано - нужно удалить
+                    wordsToRemove.push(word.id);
+                } else if (!word.isAddedByUser && isSelected) {
+                    // Слово не было добавлено, но теперь выбрано - нужно добавить
+                    wordsToAdd.push(word.id);
+                }
+            }
+
+            // Добавляем слова
+            for (const baseWordId of wordsToAdd) {
                 const wordData = availableWords.find(w => w.id === baseWordId);
                 if (!wordData) continue;
 
@@ -392,34 +416,72 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                 });
 
                 if (response.ok) {
-                    successCount++;
+                    addedCount++;
                 } else {
                     errorCount++;
                     console.error('Error adding word:', baseWordId);
                 }
             }
 
-            if (successCount > 0) {
+            // Удаляем слова
+            for (const baseWordId of wordsToRemove) {
+                // Нужно найти userWordId, чтобы удалить
+                // Получаем список пользовательских слов
+                const userWordsResponse = await fetch('/api/words');
+                if (userWordsResponse.ok) {
+                    const userWords = await userWordsResponse.json();
+                    const userWord = userWords.find(
+                        (w: any) => w.baseWordId === baseWordId,
+                    );
+
+                    if (userWord) {
+                        const response = await fetch(
+                            `/api/words/${userWord.id}`,
+                            {
+                                method: 'DELETE',
+                            },
+                        );
+
+                        if (response.ok) {
+                            removedCount++;
+                        } else {
+                            errorCount++;
+                            console.error('Error removing word:', baseWordId);
+                        }
+                    }
+                }
+            }
+
+            if (addedCount > 0 || removedCount > 0) {
+                const messages = [];
+                if (addedCount > 0) messages.push(`Добавлено ${addedCount}`);
+                if (removedCount > 0) messages.push(`Удалено ${removedCount}`);
+
                 toast({
                     title: 'Успешно',
-                    description: `Добавлено ${successCount} слов${errorCount > 0 ? `, ${errorCount} ошибок` : ''}`,
+                    description: `${messages.join(', ')}${errorCount > 0 ? `, ${errorCount} ошибок` : ''}`,
                 });
                 setSelectedWords([]);
                 onWordAdded();
                 // Обновляем список слов, не закрывая попап
                 handleSearch(0, true);
+            } else if (errorCount === 0) {
+                toast({
+                    title: 'Информация',
+                    description: 'Нет изменений для сохранения',
+                });
             } else {
                 toast({
                     title: 'Ошибка',
-                    description: 'Не удалось добавить ни одного слова',
+                    description: 'Не удалось выполнить операции',
                     variant: 'destructive',
                 });
             }
         } catch (error) {
-            console.error('Error adding words:', error);
+            console.error('Error managing words:', error);
             toast({
                 title: 'Ошибка',
-                description: 'Не удалось добавить слова',
+                description: 'Не удалось выполнить операции',
                 variant: 'destructive',
             });
         } finally {
@@ -547,6 +609,7 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                             <div className="relative flex-1">
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                                 <Input
+                                    ref={searchInputRef}
                                     placeholder="Поиск..."
                                     value={searchTerm}
                                     onChange={e =>
@@ -566,7 +629,10 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                                 />
                                 {searchTerm && (
                                     <button
-                                        onClick={() => setSearchTerm('')}
+                                        onClick={() => {
+                                            setSearchTerm('');
+                                            searchInputRef.current?.focus();
+                                        }}
                                         className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                                         type="button"
                                         aria-label="Очистить поиск"
@@ -615,9 +681,7 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                                     onClick={selectAllWords}
                                     disabled={
                                         searching ||
-                                        getFilteredWords().filter(
-                                            w => !w.isAddedByUser,
-                                        ).length === 0
+                                        getFilteredWords().length === 0
                                     }
                                 >
                                     Выбрать все
@@ -626,9 +690,7 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                                     variant="outline"
                                     size="sm"
                                     onClick={deselectAllWords}
-                                    disabled={
-                                        searching || selectedWords.length === 0
-                                    }
+                                    disabled={searching}
                                 >
                                     Отменить выбор
                                 </Button>
@@ -660,20 +722,14 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                                     getFilteredWords().map(word => (
                                         <Card
                                             key={word.id}
-                                            className={`transition-all ${
-                                                word.isAddedByUser
-                                                    ? 'bg-gray-100 opacity-60 cursor-not-allowed'
-                                                    : isWordSelected(word.id)
-                                                      ? 'ring-2 ring-primary bg-blue-50 cursor-pointer'
-                                                      : 'hover:bg-gray-50 bg-white cursor-pointer'
+                                            className={`transition-all cursor-pointer ${
+                                                isWordSelected(word.id)
+                                                    ? 'ring-2 ring-primary bg-blue-50'
+                                                    : 'hover:bg-gray-50 bg-white'
                                             }`}
-                                            onClick={() => {
-                                                if (!word.isAddedByUser) {
-                                                    toggleWordSelection(
-                                                        word.id,
-                                                    );
-                                                }
-                                            }}
+                                            onClick={() =>
+                                                toggleWordSelection(word.id)
+                                            }
                                         >
                                             <CardHeader className="pb-2 pt-2">
                                                 <div className="flex items-center justify-between">
@@ -682,9 +738,6 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                                                             checked={isWordSelected(
                                                                 word.id,
                                                             )}
-                                                            disabled={
-                                                                word.isAddedByUser
-                                                            }
                                                             onChange={() => {}} // отключаем прямое взаимодействие с чекбоксом
                                                             className="shrink-0"
                                                         />
@@ -707,12 +760,6 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                                                                             .displayName,
                                                                     )}
                                                                 </span>
-                                                                {word.isAddedByUser && (
-                                                                    <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded shrink-0">
-                                                                        ✓ В
-                                                                        словаре
-                                                                    </span>
-                                                                )}
                                                             </CardTitle>
                                                             <div className="flex items-center gap-1">
                                                                 <span className="truncate text-sm text-gray-500">
@@ -780,17 +827,14 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                     <Button variant="outline" onClick={() => setOpen(false)}>
                         Отмена
                     </Button>
-                    <Button
-                        onClick={handleAddWords}
-                        disabled={loading || selectedWords.length === 0}
-                    >
+                    <Button onClick={handleAddWords} disabled={loading}>
                         {loading ? (
                             <>
                                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                Добавление...
+                                Сохранение...
                             </>
                         ) : (
-                            `Добавить ${selectedWords.length} ${selectedWords.length === 1 ? 'слово' : 'слов'}`
+                            'Применить изменения'
                         )}
                     </Button>
                 </DialogFooter>

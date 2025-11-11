@@ -72,18 +72,38 @@ export async function POST(request: NextRequest) {
                 },
             },
             include: {
-                userWords: {
-                    where: { userId },
+                partOfSpeech: true,
+                language: true,
+                translations: {
+                    where: { language: { code: 'ru' } },
+                    orderBy: { priority: 'asc' },
+                },
+                examples: {
+                    include: {
+                        pronoun: true,
+                        sentenceType: true,
+                    },
+                },
+                grammaticalExamples: {
+                    include: {
+                        pronoun: true,
+                        tense: true,
+                        sentenceType: true,
+                    },
                 },
             },
         });
 
-        if (existingBaseWord && existingBaseWord.userWords.length > 0) {
+        // Если слово уже существует в базе, просто возвращаем его
+        if (existingBaseWord) {
             return NextResponse.json(
                 {
-                    error: 'This word is already in your vocabulary',
+                    success: true,
+                    baseWord: existingBaseWord,
+                    foundExamples: existingBaseWord.examples?.length || 0,
+                    alreadyExists: true,
                 },
-                { status: 409 },
+                { status: 200 },
             );
         }
 
@@ -143,29 +163,17 @@ export async function POST(request: NextRequest) {
         const wordSourceId =
             wordData.source === 'DEEPL' ? deeplSource.id : myMemorySource.id;
 
-        // Создаем или обновляем базовое слово в транзакции
+        // Создаем базовое слово в транзакции
         const result = await prisma.$transaction(async tx => {
-            // Создаем или получаем базовое слово
-            let baseWord = existingBaseWord;
-
-            if (!baseWord) {
-                baseWord = await tx.baseWord.create({
-                    data: {
-                        word: trimmedWord,
-                        languageId: language.id,
-                        partOfSpeechId: defaultPartOfSpeech.id,
-                        sourceId: wordSourceId,
-                    },
-                    include: {
-                        userWords: true,
-                    },
-                });
-            }
-
-            // Гарантируем что baseWord не null
-            if (!baseWord) {
-                throw new Error('Failed to create or find base word');
-            }
+            // Создаем базовое слово
+            const baseWord = await tx.baseWord.create({
+                data: {
+                    word: trimmedWord,
+                    languageId: language.id,
+                    partOfSpeechId: defaultPartOfSpeech.id,
+                    sourceId: wordSourceId,
+                },
+            });
 
             // Получаем язык для переводов (русский)
             const targetLanguage = await tx.language.findUnique({
@@ -259,72 +267,40 @@ export async function POST(request: NextRequest) {
                 }
             }
 
-            // Добавляем слово в словарь пользователя
-            const userWord = await tx.word.create({
-                data: {
-                    userId,
-                    baseWordId: baseWord.id,
-                    languageId: language.id,
-                    customTranslation: wordData.mainTranslation,
-                },
+            // Возвращаем базовое слово с дополнительными данными
+            const completeBaseWord = await tx.baseWord.findUnique({
+                where: { id: baseWord.id },
                 include: {
-                    status: true,
+                    partOfSpeech: true,
                     language: true,
-                    baseWord: {
+                    translations: {
+                        where: { language: { code: 'ru' } },
+                        orderBy: { priority: 'asc' },
+                    },
+                    examples: {
                         include: {
-                            partOfSpeech: true,
-                            translations: {
-                                where: { language: { code: 'ru' } },
-                                orderBy: { priority: 'asc' },
-                            },
-                            examples: {
-                                include: {
-                                    pronoun: true,
-                                    sentenceType: true,
-                                },
-                            },
-                            grammaticalExamples: {
-                                include: {
-                                    pronoun: true,
-                                    tense: true,
-                                    sentenceType: true,
-                                },
-                            },
+                            pronoun: true,
+                            sentenceType: true,
+                        },
+                    },
+                    grammaticalExamples: {
+                        include: {
+                            pronoun: true,
+                            tense: true,
+                            sentenceType: true,
                         },
                     },
                 },
             });
 
-            return userWord;
+            return completeBaseWord;
         });
 
-        // Нормализуем ответ
-        const { status, ...rest } = result as any;
-        const normalized = {
-            ...rest,
-            status: status.code,
-            baseWord: rest.baseWord
-                ? {
-                      ...rest.baseWord,
-                      examples: rest.baseWord.examples.map((example: any) => ({
-                          ...example,
-                          sentenceType: example.sentenceType,
-                      })),
-                      grammaticalExamples:
-                          rest.baseWord.grammaticalExamples.map(
-                              (example: any) => ({
-                                  ...example,
-                                  sentenceType: example.sentenceType,
-                              }),
-                          ),
-                  }
-                : undefined,
-        };
-
+        // Возвращаем результат
         return NextResponse.json(
             {
                 success: true,
-                word: normalized,
+                baseWord: result,
                 foundExamples: wordData.examples.length,
             },
             { status: 201 },
