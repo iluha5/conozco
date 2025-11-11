@@ -283,6 +283,59 @@ export function WordsList({
         }
     };
 
+    const handleBulkDelete = async () => {
+        if (readOnly) return;
+
+        if (selectedWords.length === 0) {
+            toast({
+                title: 'Ошибка',
+                description: 'Выберите слова для удаления',
+                variant: 'destructive',
+            });
+            return;
+        }
+
+        let successCount = 0;
+        let errorCount = 0;
+
+        try {
+            for (const wordId of selectedWords) {
+                const response = await fetch(`/api/words/${wordId}`, {
+                    method: 'DELETE',
+                });
+
+                if (response.ok) {
+                    successCount++;
+                } else {
+                    errorCount++;
+                }
+            }
+
+            if (successCount > 0) {
+                toast({
+                    title: 'Успешно',
+                    description: `${successCount} слов удалено${errorCount > 0 ? `, ${errorCount} ошибок` : ''}`,
+                    variant: 'success',
+                });
+                setSelectedWords([]);
+                await onWordsChange?.();
+            } else {
+                toast({
+                    title: 'Ошибка',
+                    description: 'Не удалось удалить ни одно слово',
+                    variant: 'destructive',
+                });
+            }
+        } catch (error) {
+            console.error('Error deleting words:', error);
+            toast({
+                title: 'Ошибка',
+                description: 'Не удалось удалить слова',
+                variant: 'destructive',
+            });
+        }
+    };
+
     const getLanguageFlag = (language: Language) => {
         return language.code === 'en' ? '🇬🇧' : '🇪🇸';
     };
@@ -339,7 +392,7 @@ export function WordsList({
                                 readOnly
                             }
                         >
-                            Выделить все
+                            Выбрать все
                         </Button>
                         <Button
                             variant="outline"
@@ -347,7 +400,16 @@ export function WordsList({
                             onClick={deselectAllWords}
                             disabled={selectedWords.length === 0 || readOnly}
                         >
-                            Отменить выделение
+                            Снять
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={handleBulkDelete}
+                            disabled={selectedWords.length === 0 || readOnly}
+                        >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Удалить ({selectedWords.length})
                         </Button>
                     </div>
                     <div className="flex gap-2">

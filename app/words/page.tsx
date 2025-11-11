@@ -155,7 +155,14 @@ export default function WordsPage() {
                 </div>
 
                 <div className="flex gap-4 mb-6">
-                    <Card className="flex-1 max-w-[140px]">
+                    <Card
+                        className={`flex-1 max-w-[140px] cursor-pointer transition-all hover:shadow-md ${
+                            selectedStatus === 'ALL'
+                                ? 'ring-2 ring-black shadow-md'
+                                : ''
+                        }`}
+                        onClick={() => setSelectedStatus('ALL')}
+                    >
                         <CardHeader className="pb-2">
                             <CardTitle className="text-sm font-medium">
                                 Всего слов
@@ -168,7 +175,14 @@ export default function WordsPage() {
                         </CardContent>
                     </Card>
 
-                    <Card className="flex-1 max-w-[140px]">
+                    <Card
+                        className={`flex-1 max-w-[140px] cursor-pointer transition-all hover:shadow-md ${
+                            selectedStatus === 'NOT_LEARNED'
+                                ? 'ring-2 ring-orange-500 shadow-md'
+                                : ''
+                        }`}
+                        onClick={() => setSelectedStatus('NOT_LEARNED')}
+                    >
                         <CardHeader className="pb-2">
                             <CardTitle className="text-sm font-medium">
                                 Не выучено
@@ -185,7 +199,14 @@ export default function WordsPage() {
                         </CardContent>
                     </Card>
 
-                    <Card className="flex-1 max-w-[140px]">
+                    <Card
+                        className={`flex-1 max-w-[140px] cursor-pointer transition-all hover:shadow-md ${
+                            selectedStatus === 'LEARNED'
+                                ? 'ring-2 ring-green-500 shadow-md'
+                                : ''
+                        }`}
+                        onClick={() => setSelectedStatus('LEARNED')}
+                    >
                         <CardHeader className="pb-2">
                             <CardTitle className="text-sm font-medium">
                                 Выучено
@@ -214,22 +235,6 @@ export default function WordsPage() {
                             <SelectItem value="ALL">Все языки</SelectItem>
                             <SelectItem value="en">🇬🇧 Английский</SelectItem>
                             <SelectItem value="es">🇪🇸 Испанский</SelectItem>
-                        </SelectContent>
-                    </Select>
-
-                    <Select
-                        value={selectedStatus}
-                        onValueChange={setSelectedStatus}
-                    >
-                        <SelectTrigger className="w-[200px] bg-white">
-                            <SelectValue placeholder="Статус" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="ALL">Все статусы</SelectItem>
-                            <SelectItem value="NOT_LEARNED">
-                                Не выучено
-                            </SelectItem>
-                            <SelectItem value="LEARNED">Выучено</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
