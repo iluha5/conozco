@@ -112,6 +112,16 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
         return () => window.removeEventListener('resize', checkViewportSize);
     }, []);
 
+    // Автоматический фокус на поле поиска при открытии попапа
+    useEffect(() => {
+        if (open) {
+            // Небольшая задержка для корректной работы с анимацией диалога
+            setTimeout(() => {
+                searchInputRef.current?.focus();
+            }, 100);
+        }
+    }, [open]);
+
     // Проверка наличия точных совпадений
     useEffect(() => {
         if (!searchTerm.trim()) {
