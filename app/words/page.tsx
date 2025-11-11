@@ -16,6 +16,7 @@ import { ArrowLeft } from 'lucide-react';
 import { AddWordDialog } from '@/components/add-word-dialog';
 import { WordsList } from '@/components/words-list';
 import { useToast } from '@/hooks/use-toast';
+import { useTrainingSelection } from '@/hooks/use-training-settings';
 
 type Language = {
     id: number;
@@ -67,7 +68,7 @@ type Word = {
 export default function WordsPage() {
     const [words, setWords] = useState<Word[]>([]);
     const [filteredWords, setFilteredWords] = useState<Word[]>([]);
-    const [selectedLanguage, setSelectedLanguage] = useState<string>('ALL');
+    const { selectedLanguage, setSelectedLanguage } = useTrainingSelection();
     const [selectedStatus, setSelectedStatus] = useState<string>('NOT_LEARNED');
     const [loading, setLoading] = useState(true);
     const [isClient, setIsClient] = useState(false);
