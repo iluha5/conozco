@@ -24,6 +24,7 @@ import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { PlusCircle, Loader2, Search, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useTrainingSelection } from '@/hooks/use-training-settings';
 
 type PartOfSpeech = {
     id: string;
@@ -68,7 +69,13 @@ type AddWordDialogProps = {
 
 export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
     const [open, setOpen] = useState(false);
-    const [languageCode, setLanguageCode] = useState<'en' | 'es'>('es');
+    const { selectedLanguage, setSelectedLanguage } = useTrainingSelection();
+    // Преобразуем selectedLanguage для использования в диалоге
+    // Если 'ALL', используем 'es' по умолчанию
+    const languageCode: 'en' | 'es' =
+        selectedLanguage === 'en' || selectedLanguage === 'es'
+            ? selectedLanguage
+            : 'es';
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
     const [selectedPartsOfSpeech, setSelectedPartsOfSpeech] = useState<
@@ -539,7 +546,7 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                         <Select
                             value={languageCode}
                             onValueChange={(value: 'en' | 'es') =>
-                                setLanguageCode(value)
+                                setSelectedLanguage(value)
                             }
                         >
                             <SelectTrigger className="w-[100px]">
