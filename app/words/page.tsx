@@ -224,7 +224,7 @@ export default function WordsPage() {
                     </Card>
                 </div>
 
-                <div className="flex gap-4 mb-6">
+                <div className="flex items-center gap-4 mb-6">
                     <Select
                         value={selectedLanguage}
                         onValueChange={setSelectedLanguage}
@@ -238,6 +238,12 @@ export default function WordsPage() {
                             <SelectItem value="es">🇪🇸 Испанский</SelectItem>
                         </SelectContent>
                     </Select>
+                    <div className="text-sm text-gray-600">
+                        Отображено:{' '}
+                        <span className="font-semibold text-gray-900">
+                            {filteredWords.length}
+                        </span>
+                    </div>
                 </div>
 
                 {loading ? (
