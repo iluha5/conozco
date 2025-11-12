@@ -214,6 +214,25 @@ async function main() {
     }
     console.log('✅ Created parts of speech for English');
 
+    // Create parts of speech for Russian
+    for (const pos of partsOfSpeechData) {
+        await prisma.partOfSpeech.upsert({
+            where: {
+                name_languageId: {
+                    name: pos.name,
+                    languageId: russian.id,
+                },
+            },
+            update: {},
+            create: {
+                name: pos.name,
+                displayName: pos.displayName,
+                languageId: russian.id,
+            },
+        });
+    }
+    console.log('✅ Created parts of speech for Russian');
+
     // Hash passwords
     const adminPasswordHash = await bcrypt.hash('12345678', 10);
     const userPasswordHash = await bcrypt.hash('12345678', 10);

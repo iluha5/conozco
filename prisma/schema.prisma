@@ -50,6 +50,7 @@ model PartOfSpeech {
 
   language     Language     @relation(fields: [languageId], references: [id])
   baseWords    BaseWord[]
+  customTranslations CustomTranslation[]
 
   @@unique([name, languageId])
   @@index([languageId])
@@ -69,6 +70,8 @@ model Language {
   partsOfSpeech                 PartOfSpeech[]
   apiRequestLogsSourceLanguage  ApiRequestLog[] @relation("ApiRequestLogSourceLanguage")
   apiRequestLogsTargetLanguage  ApiRequestLog[] @relation("ApiRequestLogTargetLanguage")
+  customTranslationsOriginal    CustomTranslation[] @relation("CustomTranslationOriginalLanguage")
+  customTranslationsTranslation CustomTranslation[] @relation("CustomTranslationTranslationLanguage")
 
   @@index([code])
 }
@@ -88,6 +91,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   apiRequestLogs ApiRequestLog[]
+  customTranslations CustomTranslation[]
 
   @@index([email])
 }
@@ -262,11 +266,38 @@ model Word {
   language         Language            @relation(fields: [languageId], references: [id], onDelete: Restrict)
   baseWord         BaseWord?           @relation(fields: [baseWordId], references: [id])
   trainingSessions TrainingSession[]
+  customTranslations CustomTranslation[]
 
   @@unique([userId, baseWordId]) // Пользователь может добавить базовое слово только один раз
   @@unique([userId, customWord, languageId]) // Кастомное слово уникально для пользователя и языка
   @@index([userId, languageId, statusId])
   @@index([languageId])
+}
+
+// Кастомный перевод слова/фразы пользователем
+model CustomTranslation {
+  id                  Int      @id @default(autoincrement())
+  wordId              Int      // ID слова
+  userId              Int      // ID пользователя
+  partOfSpeechId      Int?     // ID части речи (может быть null)
+  originalLanguageId  Int      // ID языка оригинала
+  translationLanguageId Int    // ID языка перевода
+  translation         String   // Перевод
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  // Связи
+  word                Word         @relation(fields: [wordId], references: [id], onDelete: Cascade)
+  user                User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  partOfSpeech        PartOfSpeech? @relation(fields: [partOfSpeechId], references: [id], onDelete: SetNull)
+  originalLanguage    Language     @relation("CustomTranslationOriginalLanguage", fields: [originalLanguageId], references: [id], onDelete: Restrict)
+  translationLanguage Language     @relation("CustomTranslationTranslationLanguage", fields: [translationLanguageId], references: [id], onDelete: Restrict)
+
+  @@unique([wordId, userId]) // Только один кастомный перевод на слово для каждого пользователя
+  @@index([wordId])
+  @@index([userId])
+  @@index([originalLanguageId])
+  @@index([translationLanguageId])
 }
 
 // Сессии тренировок для отслеживания прогресса

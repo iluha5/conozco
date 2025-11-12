@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
 const serializeWord = (word: any) => {
-    const { status, baseWord, ...rest } = word;
+    const { status, baseWord, customTranslations, ...rest } = word;
 
     return {
         ...rest,
@@ -24,6 +24,34 @@ const serializeWord = (word: any) => {
                   ),
               }
             : undefined,
+        customTranslations: Array.isArray(customTranslations)
+            ? customTranslations.map((ct: any) => ({
+                  id: ct.id,
+                  translation: ct.translation,
+                  partOfSpeechId: ct.partOfSpeechId,
+                  partOfSpeech: ct.partOfSpeech
+                      ? {
+                            id: ct.partOfSpeech.id,
+                            name: ct.partOfSpeech.name,
+                            displayName: ct.partOfSpeech.displayName,
+                        }
+                      : null,
+                  originalLanguage: ct.originalLanguage
+                      ? {
+                            id: ct.originalLanguage.id,
+                            code: ct.originalLanguage.code,
+                            name: ct.originalLanguage.name,
+                        }
+                      : null,
+                  translationLanguage: ct.translationLanguage
+                      ? {
+                            id: ct.translationLanguage.id,
+                            code: ct.translationLanguage.code,
+                            name: ct.translationLanguage.name,
+                        }
+                      : null,
+              }))
+            : [],
     };
 };
 
@@ -90,6 +118,17 @@ export async function GET(
                             },
                         },
                     },
+                },
+                customTranslations: {
+                    where: {
+                        userId: parseInt(session.user.id),
+                    },
+                    include: {
+                        partOfSpeech: true,
+                        originalLanguage: true,
+                        translationLanguage: true,
+                    },
+                    take: 1,
                 },
                 trainingSessions: {
                     orderBy: {
@@ -161,6 +200,9 @@ export async function PATCH(
                 id: wordId,
                 userId: parseInt(session.user.id),
             },
+            include: {
+                language: true,
+            },
         });
 
         if (!existingWord) {
@@ -204,6 +246,84 @@ export async function PATCH(
             delete data.status;
         }
 
+        // Обработка кастомного перевода
+        let customTranslationData = null;
+        if (body.customTranslation !== undefined) {
+            // Если customTranslation === null, удаляем кастомный перевод
+            if (body.customTranslation === null) {
+                await prisma.customTranslation.deleteMany({
+                    where: {
+                        wordId: wordId,
+                        userId: parseInt(session.user.id),
+                    },
+                });
+            } else if (
+                typeof body.customTranslation === 'object' &&
+                body.customTranslation.translation
+            ) {
+                // Создаем или обновляем кастомный перевод
+                const translationData = body.customTranslation;
+
+                // Получаем языки
+                const originalLanguage = await prisma.language.findUnique({
+                    where: {
+                        code:
+                            translationData.originalLanguageCode ||
+                            existingWord.language.code,
+                    },
+                });
+                const translationLanguage = await prisma.language.findUnique({
+                    where: {
+                        code: translationData.translationLanguageCode || 'ru',
+                    },
+                });
+
+                if (!originalLanguage || !translationLanguage) {
+                    return NextResponse.json(
+                        { error: 'Invalid language code' },
+                        { status: 400 },
+                    );
+                }
+
+                // Проверяем partOfSpeechId если передан
+                let partOfSpeechId = null;
+                if (translationData.partOfSpeechId) {
+                    const partOfSpeech = await prisma.partOfSpeech.findUnique({
+                        where: { id: translationData.partOfSpeechId },
+                    });
+                    if (partOfSpeech) {
+                        partOfSpeechId = partOfSpeech.id;
+                    }
+                }
+
+                customTranslationData = await prisma.customTranslation.upsert({
+                    where: {
+                        wordId_userId: {
+                            wordId: wordId,
+                            userId: parseInt(session.user.id),
+                        },
+                    },
+                    create: {
+                        wordId: wordId,
+                        userId: parseInt(session.user.id),
+                        partOfSpeechId: partOfSpeechId,
+                        originalLanguageId: originalLanguage.id,
+                        translationLanguageId: translationLanguage.id,
+                        translation: translationData.translation,
+                    },
+                    update: {
+                        partOfSpeechId: partOfSpeechId,
+                        originalLanguageId: originalLanguage.id,
+                        translationLanguageId: translationLanguage.id,
+                        translation: translationData.translation,
+                    },
+                });
+            }
+
+            // Удаляем customTranslation из data, чтобы не пытаться обновить Word
+            delete data.customTranslation;
+        }
+
         const word = await prisma.word.update({
             where: { id: wordId },
             data,
@@ -230,6 +350,17 @@ export async function PATCH(
                             },
                         },
                     },
+                },
+                customTranslations: {
+                    where: {
+                        userId: parseInt(session.user.id),
+                    },
+                    include: {
+                        partOfSpeech: true,
+                        originalLanguage: true,
+                        translationLanguage: true,
+                    },
+                    take: 1,
                 },
             },
         });

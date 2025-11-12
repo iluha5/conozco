@@ -80,6 +80,17 @@ export async function GET(request: NextRequest) {
                         },
                     },
                 },
+                customTranslations: {
+                    where: {
+                        userId: parseInt(session.user.id),
+                    },
+                    include: {
+                        partOfSpeech: true,
+                        originalLanguage: true,
+                        translationLanguage: true,
+                    },
+                    take: 1,
+                },
                 trainingSessions: {
                     orderBy: {
                         createdAt: 'desc',
@@ -90,7 +101,7 @@ export async function GET(request: NextRequest) {
         });
 
         const serializedWords = words.map((word: any) => {
-            const { status, baseWord, ...restWord } = word;
+            const { status, baseWord, customTranslations, ...restWord } = word;
 
             return {
                 ...restWord,
@@ -110,14 +121,53 @@ export async function GET(request: NextRequest) {
                           ),
                       }
                     : undefined,
+                customTranslations: Array.isArray(customTranslations)
+                    ? customTranslations.map((ct: any) => ({
+                          id: ct.id,
+                          translation: ct.translation,
+                          partOfSpeechId: ct.partOfSpeechId,
+                          partOfSpeech: ct.partOfSpeech
+                              ? {
+                                    id: ct.partOfSpeech.id,
+                                    name: ct.partOfSpeech.name,
+                                    displayName: ct.partOfSpeech.displayName,
+                                }
+                              : null,
+                          originalLanguage: ct.originalLanguage
+                              ? {
+                                    id: ct.originalLanguage.id,
+                                    code: ct.originalLanguage.code,
+                                    name: ct.originalLanguage.name,
+                                }
+                              : null,
+                          translationLanguage: ct.translationLanguage
+                              ? {
+                                    id: ct.translationLanguage.id,
+                                    code: ct.translationLanguage.code,
+                                    name: ct.translationLanguage.name,
+                                }
+                              : null,
+                      }))
+                    : [],
             };
         });
 
         return NextResponse.json(serializedWords);
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error fetching words:', error);
+        console.error('Error details:', {
+            message: error?.message,
+            stack: error?.stack,
+            name: error?.name,
+        });
         return NextResponse.json(
-            { error: 'Internal server error' },
+            {
+                error: 'Internal server error',
+                details:
+                    process.env.NODE_ENV === 'development'
+                        ? error?.message
+                        : undefined,
+            },
             { status: 500 },
         );
     }
