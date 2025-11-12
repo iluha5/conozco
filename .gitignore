@@ -41,3 +41,11 @@ next-env.d.ts
 prepared-words.txt
 temp.ts
 
+# Cursor automation logs
+scripts/cursor/logs/
+*.log
+
+# Cursor CLI output files
+cursor_output/
+!cursor_output/.gitkeep
+

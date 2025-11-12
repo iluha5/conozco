@@ -1,0 +1,27 @@
+Please review the codebase for potential improvements:
+
+1. Check for code quality issues
+2. Identify potential bugs or security vulnerabilities
+3. Suggest performance optimizations
+4. Review code consistency and best practices
+
+Focus on:
+- Type safety in TypeScript files
+- Error handling patterns
+- Code duplication
+- Unused imports or variables
+
+Provide a summary report with prioritized recommendations.
+
+CRITICAL INSTRUCTIONS FOR FILE OUTPUT:
+- Save ALL output files (reports, recommendations, code reviews, analysis documents) to the 'cursor_output' directory in the project root
+- Use filenames with timestamps in format YYYYMMDD (year-month-day)
+- The current date is YYYYMMDD - use this exact format in all filenames
+- Example filenames (replace YYYYMMDD with actual date):
+  * cursor_output/CODE_REVIEW_YYYYMMDD.md
+  * cursor_output/RECOMMENDATIONS_YYYYMMDD.md
+  * cursor_output/ANALYSIS_YYYYMMDD.md
+- Always include the date in YYYYMMDD format in the filename
+- Create separate files for different types of reports if needed
+- Ensure all files are saved in the cursor_output directory, not in the project root
+

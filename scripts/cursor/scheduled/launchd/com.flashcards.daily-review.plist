@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.flashcards.daily-review</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/ilya_rovda/.nvm/versions/node/v22.18.0/bin/node</string>
+        <string>/Users/ilya_rovda/Documents/projects/flash-cards/scripts/cursor/scheduled/daily-code-review.mjs</string>
+    </array>
+    <key>WorkingDirectory</key>
+    <string>/Users/ilya_rovda/Documents/projects/flash-cards</string>
+    <key>StandardOutPath</key>
+    <string>/Users/ilya_rovda/Documents/projects/flash-cards/scripts/cursor/logs/daily-review.out</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/ilya_rovda/Documents/projects/flash-cards/scripts/cursor/logs/daily-review.err</string>
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>9</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+    <key>RunAtLoad</key>
+    <false/>
+</dict>
+</plist>
