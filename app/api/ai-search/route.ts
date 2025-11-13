@@ -258,6 +258,7 @@ export async function POST(request: NextRequest) {
                                     pronounId: defaultPronoun.id,
                                     example: example.sentence,
                                     translation: example.translation,
+                                    translationLanguageId: targetLanguage.id,
                                     sentenceTypeId: defaultSentenceType.id,
                                     sourceId: tatoebaSource.id,
                                 },

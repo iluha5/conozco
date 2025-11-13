@@ -174,6 +174,15 @@ export async function importWordsData(
             pronounRecords[pronoun] = pronounRecord;
         }
 
+        // Получить русский язык для переводов примеров
+        const russianLanguage = await prisma.language.findUnique({
+            where: { code: 'ru' },
+        });
+
+        if (!russianLanguage) {
+            throw new Error('Russian language not found in database');
+        }
+
         // Добавить простые примеры
         for (const example of wordData.examples) {
             if (pronounRecords[example.pronoun]) {
@@ -183,6 +192,7 @@ export async function importWordsData(
                         pronounId: pronounRecords[example.pronoun].id,
                         example: example.example,
                         translation: example.translation,
+                        translationLanguageId: russianLanguage.id,
                         sentenceTypeId: getSentenceTypeId(example),
                         sourceId: wordSources['native'].id,
                     },

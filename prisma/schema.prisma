@@ -72,6 +72,7 @@ model Language {
   apiRequestLogsTargetLanguage  ApiRequestLog[] @relation("ApiRequestLogTargetLanguage")
   customTranslationsOriginal    CustomTranslation[] @relation("CustomTranslationOriginalLanguage")
   customTranslationsTranslation CustomTranslation[] @relation("CustomTranslationTranslationLanguage")
+  wordExamplesTranslationLanguage WordExample[] @relation("WordExampleTranslationLanguage")
 
   @@index([code])
 }
@@ -199,6 +200,7 @@ model WordExample {
   pronounId     Int      // ID местоимения
   example       String   // Пример предложения
   translation   String   // Перевод на русский
+  translationLanguageId Int // ID языка перевода
   sentenceTypeId Int
   sourceId      Int      // ID источника примера
   sentenceType  SentenceType @relation(fields: [sentenceTypeId], references: [id])
@@ -206,10 +208,12 @@ model WordExample {
   baseWord      BaseWord @relation(fields: [baseWordId], references: [id], onDelete: Cascade)
   pronoun       Pronoun  @relation(fields: [pronounId], references: [id])
   source        WordSource @relation(fields: [sourceId], references: [id])
+  translationLanguage Language @relation("WordExampleTranslationLanguage", fields: [translationLanguageId], references: [id])
 
   @@index([baseWordId])
   @@index([sentenceTypeId])
   @@index([sourceId])
+  @@index([translationLanguageId])
 }
 
 // Грамматические времена
