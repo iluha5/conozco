@@ -90,8 +90,8 @@
 2. Создает промпт для Cursor CLI с запросом на:
     - 3 качественных перевода слова
     - 5 случайных предложений с этим словом (не больше 6 слов каждое)
-3. Сохраняет промпт в файл `temp/prompt-{word}-{timestamp}.txt`
-4. Создает инструкции в файле `temp/cursor-instructions-{word}-{timestamp}.txt`
+3. Сохраняет промпт в файл `temp/{counter}-{word}-prompt-{timestamp}.txt`
+4. Создает инструкции в файле `temp/{counter}-{word}-cursor-instructions-{timestamp}.txt`
 
 **Использование:**
 
@@ -101,9 +101,9 @@
 
 **Выходные файлы:**
 
-- `temp/prompt-{word}-{timestamp}.txt` - промпт для Cursor CLI
-- `temp/cursor-instructions-{word}-{timestamp}.txt` - инструкции по использованию
-- `logs/process-word-cursor-{timestamp}.log` - лог выполнения
+- `temp/{counter}-{word}-prompt-{timestamp}.txt` - промпт для Cursor CLI
+- `temp/{counter}-{word}-cursor-instructions-{timestamp}.txt` - инструкции по использованию
+- `logs/{counter}-process-word-cursor-{timestamp}.log` - лог выполнения
 
 ### 4. execute-cursor-prompt.mjs - Автоматическое выполнение промпта через Cursor Agent
 
@@ -111,7 +111,7 @@
 
 **Требования:**
 
-- Должен существовать хотя бы один файл `temp/prompt-{word}-{timestamp}.txt`
+- Должен существовать хотя бы один файл `temp/{counter}-{word}-prompt-{timestamp}.txt`
 - Cursor Agent должен быть доступен в PATH (автоматически обнаруживается в `/Applications/Cursor.app`)
 
 **Что делает скрипт:**
@@ -121,7 +121,7 @@
 3. Извлекает слово из промпта
 4. Выполняет `cursor agent --print --output-format json` с промптом через stdin
 5. Парсит ответ от Cursor Agent и извлекает чистый JSON
-6. Сохраняет результат в `temp/cursor-result-{word}-{timestamp}.json`
+6. Сохраняет результат в `temp/{counter}-{word}-cursor-result-{timestamp}.json`
 
 **Использование:**
 
@@ -131,8 +131,8 @@
 
 **Выходные файлы:**
 
-- `temp/cursor-result-{word}-{timestamp}.json` - чистый JSON результат
-- `logs/execute-cursor-prompt-{timestamp}.log` - лог выполнения
+- `temp/{counter}-{word}-cursor-result-{timestamp}.json` - чистый JSON результат
+- `logs/{counter}-execute-cursor-prompt-{timestamp}.log` - лог выполнения
 
 ### 5. run-full-pipeline.sh - Полный автоматизированный pipeline
 
@@ -168,15 +168,15 @@ scripts/process-external-words/
 ├── temp/                    # Временные файлы и JSON для импорта
 │   ├── external-words-output.json
 │   ├── example-word-data.json
-│   ├── prompt-{word}-{timestamp}.txt
-│   ├── cursor-instructions-{word}-{timestamp}.txt
-│   ├── cursor-result-{word}-{timestamp}.json (ожидается от Cursor)
+│   ├── {counter}-{word}-prompt-{timestamp}.txt
+│   ├── {counter}-{word}-cursor-instructions-{timestamp}.txt
+│   ├── {counter}-{word}-cursor-result-{timestamp}.json (ожидается от Cursor)
 │   └── cursor-result-example.json (пример успешного результата)
-├── logs/                    # Лог-файлы с timestamp
-│   ├── get-external-words-YYYY-MM-DDTHH-MM-SS.log
-│   ├── import-word-data-YYYY-MM-DDTHH-MM-SS.log
-│   ├── process-word-cursor-YYYY-MM-DDTHH-MM-SS.log
-│   └── execute-cursor-prompt-YYYY-MM-DDTHH-MM-SS.log
+├── logs/                    # Лог-файлы с counter и timestamp
+│   ├── {counter}-get-external-words-{timestamp}.log
+│   ├── {counter}-import-word-data-{timestamp}.log
+│   ├── {counter}-process-word-cursor-{timestamp}.log
+│   └── {counter}-execute-cursor-prompt-{timestamp}.log
 ├── get-external-words.mjs   # Скрипт получения внешних слов
 ├── import-word-data.mjs     # Скрипт импорта данных
 ├── process-word-with-cursor.mjs # Скрипт подготовки промпта для Cursor

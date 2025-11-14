@@ -30,14 +30,14 @@ fi
 
 # Step 4: Import result to database
 echo "💾 Step 4: Importing result to database..."
-# Find the latest cursor result file
-LATEST_RESULT=$(ls -t temp/cursor-result-*.json 2>/dev/null | head -1)
+# Find the latest cursor result file (support both old and new naming schemes)
+LATEST_RESULT=$(ls -t temp/*-cursor-result-*.json temp/cursor-result-*.json 2>/dev/null | head -1)
 if [ -z "$LATEST_RESULT" ]; then
     echo "❌ No cursor result file found"
     exit 1
 fi
 
-echo "📄 Importing file: $LATEST_RESULT"
+echo "📄 Importing file: $(basename "$LATEST_RESULT")"
 ./run-import.sh "$LATEST_RESULT"
 if [ $? -ne 0 ]; then
     echo "❌ Failed to import data"

@@ -14,9 +14,24 @@ const inputFilePath = path.join(
 );
 const outputDir = path.join(__dirname, 'temp');
 
+// Счетчик пайплайна
+const counterFile = path.join(__dirname, 'temp', 'pipeline-counter.txt');
+let counter = 1;
+
+async function getCurrentCounter() {
+    try {
+        const counterData = await fs.readFile(counterFile, 'utf8');
+        return parseInt(counterData.trim());
+    } catch (error) {
+        // Файл не существует, начинаем с 1
+        return 1;
+    }
+}
+
 // Создаем timestamp для лог-файла
 const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
-const logFileName = `process-word-cursor-${timestamp}.log`;
+const currentCounter = await getCurrentCounter();
+const logFileName = `${currentCounter}-process-word-cursor-${timestamp}.log`;
 const logFilePath = path.join(__dirname, 'logs', logFileName);
 
 async function log(message) {
@@ -180,7 +195,7 @@ Format your response as a simple JSON object with this structure:
 Make sure all translations are accurate and contextually appropriate. All sentences should be natural, grammatically correct, and demonstrate different uses of the word. Avoid any meta-commentary or explanations - just provide the JSON.`;
 
     // Сохраняем промпт в файл
-    const promptFile = path.join(outputDir, `prompt-${word}-${timestamp}.txt`);
+    const promptFile = path.join(outputDir, `${currentCounter}-${word}-prompt-${timestamp}.txt`);
     await fs.writeFile(promptFile, prompt, 'utf8');
 
     await log(`📝 Created prompt file: ${promptFile}`);
@@ -188,7 +203,7 @@ Make sure all translations are accurate and contextually appropriate. All senten
     // Создаем инструкции для выполнения
     const instructionsFile = path.join(
         outputDir,
-        `cursor-instructions-${word}-${timestamp}.txt`,
+        `${currentCounter}-${word}-cursor-instructions-${timestamp}.txt`,
     );
     const instructions = `# Instructions for processing word "${word}"
 #

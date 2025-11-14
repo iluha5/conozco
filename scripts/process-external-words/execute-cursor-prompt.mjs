@@ -10,9 +10,24 @@ const __dirname = path.dirname(__filename);
 // Пути к файлам
 const tempDir = path.join(__dirname, 'temp');
 
+// Счетчик пайплайна
+const counterFile = path.join(__dirname, 'temp', 'pipeline-counter.txt');
+let counter = 1;
+
+async function getCurrentCounter() {
+    try {
+        const counterData = await fs.readFile(counterFile, 'utf8');
+        return parseInt(counterData.trim());
+    } catch (error) {
+        // Файл не существует, начинаем с 1
+        return 1;
+    }
+}
+
 // Создаем timestamp для лог-файла
 const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
-const logFileName = `execute-cursor-prompt-${timestamp}.log`;
+const currentCounter = await getCurrentCounter();
+const logFileName = `${currentCounter}-execute-cursor-prompt-${timestamp}.log`;
 const logFilePath = path.join(__dirname, 'logs', logFileName);
 
 async function log(message) {
@@ -25,7 +40,7 @@ async function findLatestPromptFile() {
     try {
         const files = await fs.readdir(tempDir);
         const promptFiles = files.filter(
-            file => file.startsWith('prompt-') && file.endsWith('.txt'),
+            file => (file.startsWith('prompt-') || /^\d+-.*-prompt-.*\.txt$/.test(file)) && file.endsWith('.txt'),
         );
 
         if (promptFiles.length === 0) {
@@ -83,7 +98,7 @@ async function extractWordFromPromptContent(promptContent) {
 }
 
 async function executeCursorAgent(promptContent, word) {
-    const resultFileName = `cursor-result-${word}-${timestamp}.json`;
+            const resultFileName = `${currentCounter}-${word}-cursor-result-${timestamp}.json`;
     const resultFilePath = path.join(tempDir, resultFileName);
 
     // Используем cursor agent с --print --output-format json

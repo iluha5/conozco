@@ -9,9 +9,26 @@ const prisma = new PrismaClient();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Счетчик пайплайна
+const counterFile = path.join(__dirname, 'temp', 'pipeline-counter.txt');
+let counter = 1;
+
+async function getNextCounter() {
+    try {
+        const counterData = await fs.readFile(counterFile, 'utf8');
+        counter = parseInt(counterData.trim()) + 1;
+    } catch (error) {
+        // Файл не существует, начинаем с 1
+        counter = 1;
+    }
+    await fs.writeFile(counterFile, counter.toString());
+    return counter;
+}
+
 // Создаем timestamp для лог-файла
 const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
-const logFileName = `get-external-words-${timestamp}.log`;
+const currentCounter = await getNextCounter();
+const logFileName = `${currentCounter}-get-external-words-${timestamp}.log`;
 const logFilePath = path.join(__dirname, 'logs', logFileName);
 
 async function log(message) {
