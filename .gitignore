@@ -43,6 +43,7 @@ temp.ts
 
 # Cursor automation logs
 scripts/cursor/logs/
+scripts/process-external-words/logs
 *.log
 
 # Cursor CLI output files
