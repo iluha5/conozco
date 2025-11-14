@@ -18,6 +18,12 @@ export const CURSOR_OUTPUT_DIR = join(PROJECT_ROOT, 'cursor_output');
 export const CURSOR_AGENT_CMD = 'cursor-agent';
 export const CURSOR_AGENT_TIMEOUT = 3600 * 1000; // Timeout in milliseconds (1 hour)
 
+// AI Model configuration
+// To change the model used by scripts, modify DEFAULT_AI_MODEL below
+// Available models: 'grok-code-fast-1' (Grok from xAI) or 'sonnet-4.5' (Claude from Anthropic)
+export const DEFAULT_AI_MODEL = 'grok-code-fast-1'; // Default model for processing
+export const SUPPORTED_MODELS = ['grok-code-fast-1', 'sonnet-4.5']; // Available models
+
 // Default execution options
 export const DEFAULT_NON_INTERACTIVE = false;
 export const DEFAULT_LOG_OUTPUT = true;

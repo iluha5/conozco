@@ -9,12 +9,16 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
 import { readdirSync, unlinkSync, statSync } from 'fs';
-import { PROJECT_ROOT, LOGS_DIR, LOG_RETENTION_DAYS } from '../config.mjs';
+import {
+    PROJECT_ROOT,
+    LOGS_DIR,
+    LOG_RETENTION_DAYS,
+} from '../cursor/config.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const CURSOR_SCRIPT = join(__dirname, '../run-prompt.mjs');
+const CURSOR_SCRIPT = join(__dirname, '../cursor/run-prompt.mjs');
 
 async function cleanupOldLogs() {
     try {

@@ -49,3 +49,9 @@ scripts/cursor/logs/
 cursor_output/
 !cursor_output/.gitkeep
 
+# Cursor CLI temporary files
+scripts/cursor/temp/
+
+# temp
+temp
+backups
