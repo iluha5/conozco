@@ -65,8 +65,9 @@ async function processWordWithCursor(wordData) {
     // Базовый промпт
     let prompt = `You are a professional linguist and translator. For the ${language} word "${word}", please provide:
 
-1. THREE high-quality, accurate translations to ${translationLanguage}
-2. FIVE random, natural sentences using this word (each sentence should be no more than 6 words long)`;
+1. The part of speech (one word: noun, verb, adjective, adverb, pronoun, preposition, conjunction, interjection)
+2. THREE high-quality, accurate translations to ${translationLanguage}
+3. FIVE random, natural sentences using this word (each sentence should be no more than 6 words long)`;
 
     // Расширенный промпт для глаголов
     if (partOfSpeech === 'VERB') {
@@ -76,7 +77,7 @@ async function processWordWithCursor(wordData) {
 
 Since "${word}" is a Spanish verb, please also provide additional grammatical examples:
 
-3. Examples in different tenses:
+4. Examples in different tenses:
    - Presente de indicativo (Present Indicative) - 2 examples with translations
    - Futuro próximo (ir a + infinitivo) - 2 examples with translations
    - Pretérito indefinido (Simple Past) - 2 examples with translations
@@ -86,6 +87,7 @@ Since "${word}" is a Spanish verb, please also provide additional grammatical ex
 Format your response as a simple JSON object with this structure:
 {
   "word": "${word}",
+  "partOfSpeech": "verb",
   "translations": ["translation1", "translation2", "translation3"],
   "sentences": [
     {"text": "sentence1", "translation": "translation1"},
@@ -117,7 +119,7 @@ Format your response as a simple JSON object with this structure:
 
 Since "${word}" is an English verb, please also provide additional grammatical examples:
 
-3. Examples in different tenses:
+4. Examples in different tenses:
    - Present Simple - 2 examples with translations
    - Past Simple - 2 examples with translations
    - Future Simple - 2 examples with translations
@@ -127,6 +129,7 @@ Since "${word}" is an English verb, please also provide additional grammatical e
 Format your response as a simple JSON object with this structure:
 {
   "word": "${word}",
+  "partOfSpeech": "verb",
   "translations": ["translation1", "translation2", "translation3"],
   "sentences": [
     {"text": "sentence1", "translation": "translation1"},
@@ -160,6 +163,7 @@ Format your response as a simple JSON object with this structure:
 Format your response as a simple JSON object with this structure:
 {
   "word": "${word}",
+  "partOfSpeech": "noun",
   "translations": ["translation1", "translation2", "translation3"],
   "sentences": [
     {"text": "sentence1", "translation": "translation1"},

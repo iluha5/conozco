@@ -179,6 +179,11 @@ async function executeCursorAgent(promptContent, word) {
             await log(
                 `✅ Result is valid JSON with word: "${parsedResult.word || 'unknown'}"`,
             );
+            if (parsedResult.partOfSpeech) {
+                await log(
+                    `✅ Detected part of speech: ${parsedResult.partOfSpeech}`,
+                );
+            }
             if (parsedResult.grammaticalExamples) {
                 await log(`✅ Found grammatical examples for verb`);
             }

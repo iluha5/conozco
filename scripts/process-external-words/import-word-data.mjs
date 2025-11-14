@@ -20,11 +20,28 @@ async function log(message) {
     await fs.appendFile(logFilePath, logEntry);
 }
 
+// Маппинг частей речи от Cursor к нашей БД
+const partOfSpeechMapping = {
+    noun: 'NOUN',
+    verb: 'VERB',
+    adjective: 'ADJECTIVE',
+    adverb: 'ADVERB',
+    pronoun: 'PRONOUN',
+    preposition: 'PREPOSITION',
+    conjunction: 'CONJUNCTION',
+    interjection: 'INTERJECTION',
+};
+
 function transformCursorResultToWordData(cursorResult) {
     // Получаем язык слова из контекста (предполагаем испанский)
     // В реальном сценарии это нужно получать из файла промпта или параметров
     const sourceLanguage = 'es'; // Испанский
     const targetLanguage = 'ru'; // Русский
+
+    // Получаем часть речи из ответа Cursor с маппингом
+    const cursorPOS = cursorResult.partOfSpeech || 'noun'; // По умолчанию существительное
+    const dbPartOfSpeech =
+        partOfSpeechMapping[cursorPOS.toLowerCase()] || 'NOUN';
 
     // Преобразуем предложения в формат импорта
     const examples = cursorResult.sentences.map((sentence, index) => {
@@ -187,7 +204,7 @@ function transformCursorResultToWordData(cursorResult) {
 
     return {
         word: cursorResult.word,
-        partOfSpeech: 'VERB', // Заглушка, можно определить автоматически
+        partOfSpeech: dbPartOfSpeech, // Используем определенную Cursor часть речи
         languageCode: sourceLanguage,
         translations: [
             {
