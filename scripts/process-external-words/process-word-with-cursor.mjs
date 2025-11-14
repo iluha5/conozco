@@ -77,23 +77,38 @@ async function processWordWithCursor(wordData) {
 Since "${word}" is a Spanish verb, please also provide additional grammatical examples:
 
 3. Examples in different tenses:
-   - Presente de indicativo (Present Indicative)
-   - Futuro próximo (ir a + infinitivo)
-   - Pretérito indefinido (Simple Past)
-   - One negative sentence
-   - One question sentence
+   - Presente de indicativo (Present Indicative) - 2 examples with translations
+   - Futuro próximo (ir a + infinitivo) - 2 examples with translations
+   - Pretérito indefinido (Simple Past) - 2 examples with translations
+   - One negative sentence with translation
+   - One question sentence with translation
 
 Format your response as a simple JSON object with this structure:
 {
   "word": "${word}",
   "translations": ["translation1", "translation2", "translation3"],
-  "sentences": ["sentence1", "sentence2", "sentence3", "sentence4", "sentence5"],
+  "sentences": [
+    {"text": "sentence1", "translation": "translation1"},
+    {"text": "sentence2", "translation": "translation2"},
+    {"text": "sentence3", "translation": "translation3"},
+    {"text": "sentence4", "translation": "translation4"},
+    {"text": "sentence5", "translation": "translation5"}
+  ],
   "grammaticalExamples": {
-    "Presente de indicativo": ["example1", "example2"],
-    "Futuro próximo": ["example1", "example2"],
-    "Pretérito indefinido": ["example1", "example2"],
-    "negative": "negative sentence",
-    "question": "question sentence"
+    "Presente de indicativo": [
+      {"text": "example1", "translation": "translation1"},
+      {"text": "example2", "translation": "translation2"}
+    ],
+    "Futuro próximo": [
+      {"text": "example1", "translation": "translation1"},
+      {"text": "example2", "translation": "translation2"}
+    ],
+    "Pretérito indefinido": [
+      {"text": "example1", "translation": "translation1"},
+      {"text": "example2", "translation": "translation2"}
+    ],
+    "negative": {"text": "negative sentence", "translation": "negative translation"},
+    "question": {"text": "question sentence", "translation": "question translation"}
   }
 }`;
         } else if (languageCode === 'en') {
@@ -103,35 +118,56 @@ Format your response as a simple JSON object with this structure:
 Since "${word}" is an English verb, please also provide additional grammatical examples:
 
 3. Examples in different tenses:
-   - Present Simple
-   - Past Simple
-   - Future Simple
-   - One negative sentence
-   - One question sentence
+   - Present Simple - 2 examples with translations
+   - Past Simple - 2 examples with translations
+   - Future Simple - 2 examples with translations
+   - One negative sentence with translation
+   - One question sentence with translation
 
 Format your response as a simple JSON object with this structure:
 {
   "word": "${word}",
   "translations": ["translation1", "translation2", "translation3"],
-  "sentences": ["sentence1", "sentence2", "sentence3", "sentence4", "sentence5"],
+  "sentences": [
+    {"text": "sentence1", "translation": "translation1"},
+    {"text": "sentence2", "translation": "translation2"},
+    {"text": "sentence3", "translation": "translation3"},
+    {"text": "sentence4", "translation": "translation4"},
+    {"text": "sentence5", "translation": "translation5"}
+  ],
   "grammaticalExamples": {
-    "Present Simple": ["example1", "example2"],
-    "Past Simple": ["example1", "example2"],
-    "Future Simple": ["example1", "example2"],
-    "negative": "negative sentence",
-    "question": "question sentence"
+    "Present Simple": [
+      {"text": "example1", "translation": "translation1"},
+      {"text": "example2", "translation": "translation2"}
+    ],
+    "Past Simple": [
+      {"text": "example1", "translation": "translation1"},
+      {"text": "example2", "translation": "translation2"}
+    ],
+    "Future Simple": [
+      {"text": "example1", "translation": "translation1"},
+      {"text": "example2", "translation": "translation2"}
+    ],
+    "negative": {"text": "negative sentence", "translation": "negative translation"},
+    "question": {"text": "question sentence", "translation": "question translation"}
   }
 }`;
         }
     } else {
-        // Для не-глаголов используем базовый промпт
+        // Для не-глаголов используем базовый промпт с переводами
         prompt += `
 
 Format your response as a simple JSON object with this structure:
 {
   "word": "${word}",
   "translations": ["translation1", "translation2", "translation3"],
-  "sentences": ["sentence1", "sentence2", "sentence3", "sentence4", "sentence5"]
+  "sentences": [
+    {"text": "sentence1", "translation": "translation1"},
+    {"text": "sentence2", "translation": "translation2"},
+    {"text": "sentence3", "translation": "translation3"},
+    {"text": "sentence4", "translation": "translation4"},
+    {"text": "sentence5", "translation": "translation5"}
+  ]
 }`;
     }
 

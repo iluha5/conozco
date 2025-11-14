@@ -27,14 +27,23 @@ function transformCursorResultToWordData(cursorResult) {
     const targetLanguage = 'ru'; // Русский
 
     // Преобразуем предложения в формат импорта
-    const examples = cursorResult.sentences.map((sentence, index) => ({
-        pronoun: 'yo', // Заглушка, можно улучшить
-        example: sentence,
-        translation: `Перевод ${index + 1}`, // Заглушка, в реальности нужно переводить
-        sentenceTypeCode: 'AFFIRMATIVE',
-        isNegative: false,
-        isQuestion: sentence.includes('?'),
-    }));
+    const examples = cursorResult.sentences.map((sentence, index) => {
+        // Проверяем, является ли sentence объектом или строкой (для обратной совместимости)
+        const text = typeof sentence === 'object' ? sentence.text : sentence;
+        const translation =
+            typeof sentence === 'object'
+                ? sentence.translation
+                : `Перевод ${index + 1}`;
+
+        return {
+            pronoun: 'yo', // Заглушка, можно улучшить
+            example: text,
+            translation: translation,
+            sentenceTypeCode: 'AFFIRMATIVE',
+            isNegative: false,
+            isQuestion: text.includes('?'),
+        };
+    });
 
     // Преобразуем grammaticalExamples, если они есть (для глаголов)
     let grammaticalExamples = [];
@@ -46,13 +55,20 @@ function transformCursorResultToWordData(cursorResult) {
                 cursorResult.grammaticalExamples[
                     'Presente de indicativo'
                 ].forEach(example => {
+                    const text =
+                        typeof example === 'object' ? example.text : example;
+                    const translation =
+                        typeof example === 'object'
+                            ? example.translation
+                            : `Перевод примера`;
+
                     grammaticalExamples.push({
                         tenseName: 'Presente de indicativo',
                         examples: [
                             {
                                 pronoun: 'yo',
-                                example: example,
-                                translation: `Перевод примера`, // Заглушка
+                                example: text,
+                                translation: translation,
                                 sentenceTypeCode: 'AFFIRMATIVE',
                                 isNegative: false,
                                 isQuestion: false,
@@ -66,13 +82,22 @@ function transformCursorResultToWordData(cursorResult) {
             if (cursorResult.grammaticalExamples['Futuro próximo']) {
                 cursorResult.grammaticalExamples['Futuro próximo'].forEach(
                     example => {
+                        const text =
+                            typeof example === 'object'
+                                ? example.text
+                                : example;
+                        const translation =
+                            typeof example === 'object'
+                                ? example.translation
+                                : `Перевод примера`;
+
                         grammaticalExamples.push({
                             tenseName: 'Futuro próximo',
                             examples: [
                                 {
                                     pronoun: 'yo',
-                                    example: example,
-                                    translation: `Перевод примера`, // Заглушка
+                                    example: text,
+                                    translation: translation,
                                     sentenceTypeCode: 'AFFIRMATIVE',
                                     isNegative: false,
                                     isQuestion: false,
@@ -88,13 +113,20 @@ function transformCursorResultToWordData(cursorResult) {
                 cursorResult.grammaticalExamples[
                     'Pretérito indefinido'
                 ].forEach(example => {
+                    const text =
+                        typeof example === 'object' ? example.text : example;
+                    const translation =
+                        typeof example === 'object'
+                            ? example.translation
+                            : `Перевод примера`;
+
                     grammaticalExamples.push({
                         tenseName: 'Pretérito indefinido',
                         examples: [
                             {
                                 pronoun: 'yo',
-                                example: example,
-                                translation: `Перевод примера`, // Заглушка
+                                example: text,
+                                translation: translation,
                                 sentenceTypeCode: 'AFFIRMATIVE',
                                 isNegative: false,
                                 isQuestion: false,
@@ -106,10 +138,21 @@ function transformCursorResultToWordData(cursorResult) {
 
             // Отрицательное предложение
             if (cursorResult.grammaticalExamples.negative) {
+                const negativeExample =
+                    cursorResult.grammaticalExamples.negative;
+                const text =
+                    typeof negativeExample === 'object'
+                        ? negativeExample.text
+                        : negativeExample;
+                const translation =
+                    typeof negativeExample === 'object'
+                        ? negativeExample.translation
+                        : `Отрицательный перевод`;
+
                 examples.push({
                     pronoun: 'yo',
-                    example: cursorResult.grammaticalExamples.negative,
-                    translation: `Отрицательный перевод`,
+                    example: text,
+                    translation: translation,
                     sentenceTypeCode: 'NEGATIVE',
                     isNegative: true,
                     isQuestion: false,
@@ -118,10 +161,21 @@ function transformCursorResultToWordData(cursorResult) {
 
             // Вопросительное предложение
             if (cursorResult.grammaticalExamples.question) {
+                const questionExample =
+                    cursorResult.grammaticalExamples.question;
+                const text =
+                    typeof questionExample === 'object'
+                        ? questionExample.text
+                        : questionExample;
+                const translation =
+                    typeof questionExample === 'object'
+                        ? questionExample.translation
+                        : `Вопросительный перевод`;
+
                 examples.push({
                     pronoun: 'yo',
-                    example: cursorResult.grammaticalExamples.question,
-                    translation: `Вопросительный перевод`,
+                    example: text,
+                    translation: translation,
                     sentenceTypeCode: 'QUESTION',
                     isNegative: false,
                     isQuestion: true,
