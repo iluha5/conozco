@@ -24,16 +24,30 @@ async function log(message) {
 async function findLatestPromptFile() {
     try {
         const files = await fs.readdir(tempDir);
-        const promptFiles = files
-            .filter(file => file.startsWith('prompt-') && file.endsWith('.txt'))
-            .sort()
-            .reverse(); // Сортируем по убыванию (новые файлы первыми)
+        const promptFiles = files.filter(
+            file => file.startsWith('prompt-') && file.endsWith('.txt'),
+        );
 
         if (promptFiles.length === 0) {
             throw new Error('No prompt files found in temp directory');
         }
 
-        const latestPromptFile = path.join(tempDir, promptFiles[0]);
+        // Сортируем по дате модификации файла (новые первыми)
+        const sortedPromptFiles = await Promise.all(
+            promptFiles.map(async file => {
+                const filePath = path.join(tempDir, file);
+                const stats = await fs.stat(filePath);
+                return {
+                    name: file,
+                    path: filePath,
+                    mtime: stats.mtime,
+                };
+            }),
+        );
+
+        sortedPromptFiles.sort((a, b) => b.mtime - a.mtime);
+
+        const latestPromptFile = sortedPromptFiles[0].path;
         await log(`📁 Found latest prompt file: ${latestPromptFile}`);
 
         return latestPromptFile;
@@ -51,7 +65,9 @@ async function readPromptContent(promptFilePath) {
         await log(`📖 Read prompt content (${content.length} characters)`);
         return content;
     } catch (error) {
-        throw new Error(`Error reading prompt file ${promptFilePath}: ${error.message}`);
+        throw new Error(
+            `Error reading prompt file ${promptFilePath}: ${error.message}`,
+        );
     }
 }
 
@@ -81,7 +97,7 @@ async function executeCursorAgent(promptContent, word) {
         const childProcess = spawn(cursorCommand, {
             cwd: process.cwd(),
             stdio: ['pipe', 'pipe', 'pipe'], // stdin, stdout, stderr
-            shell: true
+            shell: true,
         });
 
         let stdout = '';
@@ -92,17 +108,17 @@ async function executeCursorAgent(promptContent, word) {
         childProcess.stdin.end();
 
         // Собираем вывод
-        childProcess.stdout.on('data', (data) => {
+        childProcess.stdout.on('data', data => {
             stdout += data.toString();
         });
 
-        childProcess.stderr.on('data', (data) => {
+        childProcess.stderr.on('data', data => {
             stderr += data.toString();
         });
 
         // Ждем завершения
         await new Promise((resolve, reject) => {
-            childProcess.on('close', (code) => {
+            childProcess.on('close', code => {
                 if (code === 0) {
                     resolve();
                 } else {
@@ -130,7 +146,9 @@ async function executeCursorAgent(promptContent, word) {
                 const resultText = parsedResponse.result;
 
                 // Ищем JSON блок в тексте
-                const jsonMatch = resultText.match(/```json\s*(\{[\s\S]*?\})\s*```/);
+                const jsonMatch = resultText.match(
+                    /```json\s*(\{[\s\S]*?\})\s*```/,
+                );
                 if (jsonMatch) {
                     cleanJson = jsonMatch[1];
                     await log(`✅ Extracted JSON from Cursor response`);
@@ -139,7 +157,10 @@ async function executeCursorAgent(promptContent, word) {
                     const jsonStart = resultText.indexOf('{');
                     const jsonEnd = resultText.lastIndexOf('}');
                     if (jsonStart !== -1 && jsonEnd !== -1) {
-                        cleanJson = resultText.substring(jsonStart, jsonEnd + 1);
+                        cleanJson = resultText.substring(
+                            jsonStart,
+                            jsonEnd + 1,
+                        );
                         await log(`✅ Extracted JSON from text`);
                     } else {
                         throw new Error('Could not find JSON in response');
@@ -155,17 +176,22 @@ async function executeCursorAgent(promptContent, word) {
 
             // Проверяем, что результат валидный JSON
             const parsedResult = JSON.parse(cleanJson);
-            await log(`✅ Result is valid JSON with word: "${parsedResult.word || 'unknown'}"`);
-
+            await log(
+                `✅ Result is valid JSON with word: "${parsedResult.word || 'unknown'}"`,
+            );
+            if (parsedResult.grammaticalExamples) {
+                await log(`✅ Found grammatical examples for verb`);
+            }
         } catch (parseError) {
-            await log(`⚠️ Warning: Could not parse JSON: ${parseError.message}`);
+            await log(
+                `⚠️ Warning: Could not parse JSON: ${parseError.message}`,
+            );
             // Сохраняем оригинальный ответ как есть
             await fs.writeFile(resultFilePath, stdout, 'utf8');
             await log(`💾 Raw result saved to: ${resultFilePath}`);
         }
 
         return resultFilePath;
-
     } catch (error) {
         await log(`❌ Error executing cursor agent: ${error.message}`);
         throw error;
@@ -191,7 +217,6 @@ async function main() {
         await log(`🎉 Execution completed successfully!`);
         await log(`📝 Log saved to: ${logFilePath}`);
         await log(`📄 Result available at: ${resultFilePath}`);
-
     } catch (error) {
         await log(`❌ Script failed: ${error.message}`);
         console.error('Error details:', error);

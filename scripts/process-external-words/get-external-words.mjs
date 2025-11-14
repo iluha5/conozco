@@ -30,19 +30,20 @@ async function main() {
             where: {
                 source: {
                     code: {
-                        not: 'native'
-                    }
-                }
+                        not: 'native',
+                    },
+                },
             },
             take: 10,
             include: {
                 language: true,
+                partOfSpeech: true,
                 translations: {
                     include: {
-                        language: true
-                    }
-                }
-            }
+                        language: true,
+                    },
+                },
+            },
         });
 
         await log(`✅ Found ${externalWords.length} external words`);
@@ -56,10 +57,14 @@ async function main() {
 
         for (const word of externalWords) {
             // Получаем уникальные языки переводов
-            const translationLanguages = [...new Set(word.translations.map(t => t.language.code))];
+            const translationLanguages = [
+                ...new Set(word.translations.map(t => t.language.code)),
+            ];
 
             for (const translationLangCode of translationLanguages) {
-                const translationLang = word.translations.find(t => t.language.code === translationLangCode)?.language;
+                const translationLang = word.translations.find(
+                    t => t.language.code === translationLangCode,
+                )?.language;
 
                 if (translationLang) {
                     simplifiedWords.push({
@@ -68,20 +73,24 @@ async function main() {
                         language: {
                             id: word.language.id,
                             code: word.language.code,
-                            name: word.language.name
+                            name: word.language.name,
                         },
                         translationLanguage: {
                             id: translationLang.id,
                             code: translationLang.code,
-                            name: translationLang.name
-                        }
+                            name: translationLang.name,
+                        },
                     });
                 }
             }
         }
 
         // Путь к выходному файлу
-        const outputPath = path.join(__dirname, 'temp', 'external-words-output.json');
+        const outputPath = path.join(
+            __dirname,
+            'temp',
+            'external-words-output.json',
+        );
 
         // Проверяем и удаляем существующий файл, если он есть
         try {
@@ -90,16 +99,21 @@ async function main() {
             await fs.unlink(outputPath);
         } catch (error) {
             // Файл не существует, это нормально
-            await log(`📄 Output file does not exist, will create new one: ${outputPath}`);
+            await log(
+                `📄 Output file does not exist, will create new one: ${outputPath}`,
+            );
         }
 
         // Записываем результат в JSON файл
-        await fs.writeFile(outputPath, JSON.stringify(simplifiedWords, null, 2), 'utf8');
+        await fs.writeFile(
+            outputPath,
+            JSON.stringify(simplifiedWords, null, 2),
+            'utf8',
+        );
 
         await log(`💾 Results saved to: ${outputPath}`);
         await log(`📊 Total word-language pairs: ${simplifiedWords.length}`);
         await log(`📝 Log saved to: ${logFilePath}`);
-
     } catch (error) {
         await log(`❌ Error getting external words: ${error.message}`);
         process.exit(1);

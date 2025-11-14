@@ -33,8 +33,103 @@ function transformCursorResultToWordData(cursorResult) {
         translation: `Перевод ${index + 1}`, // Заглушка, в реальности нужно переводить
         sentenceTypeCode: 'AFFIRMATIVE',
         isNegative: false,
-        isQuestion: sentence.includes('?')
+        isQuestion: sentence.includes('?'),
     }));
+
+    // Преобразуем grammaticalExamples, если они есть (для глаголов)
+    let grammaticalExamples = [];
+    if (cursorResult.grammaticalExamples) {
+        // Для испанского языка
+        if (sourceLanguage === 'es') {
+            // Presente de indicativo
+            if (cursorResult.grammaticalExamples['Presente de indicativo']) {
+                cursorResult.grammaticalExamples[
+                    'Presente de indicativo'
+                ].forEach(example => {
+                    grammaticalExamples.push({
+                        tenseName: 'Presente de indicativo',
+                        examples: [
+                            {
+                                pronoun: 'yo',
+                                example: example,
+                                translation: `Перевод примера`, // Заглушка
+                                sentenceTypeCode: 'AFFIRMATIVE',
+                                isNegative: false,
+                                isQuestion: false,
+                            },
+                        ],
+                    });
+                });
+            }
+
+            // Futuro próximo
+            if (cursorResult.grammaticalExamples['Futuro próximo']) {
+                cursorResult.grammaticalExamples['Futuro próximo'].forEach(
+                    example => {
+                        grammaticalExamples.push({
+                            tenseName: 'Futuro próximo',
+                            examples: [
+                                {
+                                    pronoun: 'yo',
+                                    example: example,
+                                    translation: `Перевод примера`, // Заглушка
+                                    sentenceTypeCode: 'AFFIRMATIVE',
+                                    isNegative: false,
+                                    isQuestion: false,
+                                },
+                            ],
+                        });
+                    },
+                );
+            }
+
+            // Pretérito indefinido
+            if (cursorResult.grammaticalExamples['Pretérito indefinido']) {
+                cursorResult.grammaticalExamples[
+                    'Pretérito indefinido'
+                ].forEach(example => {
+                    grammaticalExamples.push({
+                        tenseName: 'Pretérito indefinido',
+                        examples: [
+                            {
+                                pronoun: 'yo',
+                                example: example,
+                                translation: `Перевод примера`, // Заглушка
+                                sentenceTypeCode: 'AFFIRMATIVE',
+                                isNegative: false,
+                                isQuestion: false,
+                            },
+                        ],
+                    });
+                });
+            }
+
+            // Отрицательное предложение
+            if (cursorResult.grammaticalExamples.negative) {
+                examples.push({
+                    pronoun: 'yo',
+                    example: cursorResult.grammaticalExamples.negative,
+                    translation: `Отрицательный перевод`,
+                    sentenceTypeCode: 'NEGATIVE',
+                    isNegative: true,
+                    isQuestion: false,
+                });
+            }
+
+            // Вопросительное предложение
+            if (cursorResult.grammaticalExamples.question) {
+                examples.push({
+                    pronoun: 'yo',
+                    example: cursorResult.grammaticalExamples.question,
+                    translation: `Вопросительный перевод`,
+                    sentenceTypeCode: 'QUESTION',
+                    isNegative: false,
+                    isQuestion: true,
+                });
+            }
+        }
+        // Аналогично можно добавить обработку для английского языка
+    }
 
     return {
         word: cursorResult.word,
@@ -43,11 +138,11 @@ function transformCursorResultToWordData(cursorResult) {
         translations: [
             {
                 languageCode: targetLanguage,
-                translations: cursorResult.translations
-            }
+                translations: cursorResult.translations,
+            },
         ],
         examples: examples,
-        grammaticalExamples: [] // Пустой массив, можно расширить позже
+        grammaticalExamples: grammaticalExamples,
     };
 }
 
@@ -400,7 +495,9 @@ async function main() {
             const transformedData = transformCursorResultToWordData(rawData);
             wordDataArray = [transformedData];
         } else {
-            throw new Error('Invalid data format: expected array or Cursor result object');
+            throw new Error(
+                'Invalid data format: expected array or Cursor result object',
+            );
         }
 
         await log(`📊 Found ${wordDataArray.length} words to import`);

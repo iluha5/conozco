@@ -54,24 +54,88 @@ async function readExternalWordsOutput() {
 async function processWordWithCursor(wordData) {
     const word = wordData.word;
     const language = wordData.language.name;
+    const languageCode = wordData.language.code;
     const translationLanguage = wordData.translationLanguage.name;
+    const partOfSpeech = wordData.partOfSpeech?.name || 'NOUN'; // По умолчанию существительное
 
     await log(
-        `🎯 Processing word: "${word}" (${language} -> ${translationLanguage})`,
+        `🎯 Processing word: "${word}" (${language} -> ${translationLanguage}, POS: ${partOfSpeech})`,
     );
 
-    // Создаем промпт для Cursor CLI
-    const prompt = `You are a professional linguist and translator. For the ${language} word "${word}", please provide:
+    // Базовый промпт
+    let prompt = `You are a professional linguist and translator. For the ${language} word "${word}", please provide:
 
 1. THREE high-quality, accurate translations to ${translationLanguage}
-2. FIVE random, natural sentences using this word (each sentence should be no more than 6 words long)
+2. FIVE random, natural sentences using this word (each sentence should be no more than 6 words long)`;
+
+    // Расширенный промпт для глаголов
+    if (partOfSpeech === 'VERB') {
+        if (languageCode === 'es') {
+            // Испанский глагол
+            prompt += `
+
+Since "${word}" is a Spanish verb, please also provide additional grammatical examples:
+
+3. Examples in different tenses:
+   - Presente de indicativo (Present Indicative)
+   - Futuro próximo (ir a + infinitivo)
+   - Pretérito indefinido (Simple Past)
+   - One negative sentence
+   - One question sentence
+
+Format your response as a simple JSON object with this structure:
+{
+  "word": "${word}",
+  "translations": ["translation1", "translation2", "translation3"],
+  "sentences": ["sentence1", "sentence2", "sentence3", "sentence4", "sentence5"],
+  "grammaticalExamples": {
+    "Presente de indicativo": ["example1", "example2"],
+    "Futuro próximo": ["example1", "example2"],
+    "Pretérito indefinido": ["example1", "example2"],
+    "negative": "negative sentence",
+    "question": "question sentence"
+  }
+}`;
+        } else if (languageCode === 'en') {
+            // Английский глагол
+            prompt += `
+
+Since "${word}" is an English verb, please also provide additional grammatical examples:
+
+3. Examples in different tenses:
+   - Present Simple
+   - Past Simple
+   - Future Simple
+   - One negative sentence
+   - One question sentence
+
+Format your response as a simple JSON object with this structure:
+{
+  "word": "${word}",
+  "translations": ["translation1", "translation2", "translation3"],
+  "sentences": ["sentence1", "sentence2", "sentence3", "sentence4", "sentence5"],
+  "grammaticalExamples": {
+    "Present Simple": ["example1", "example2"],
+    "Past Simple": ["example1", "example2"],
+    "Future Simple": ["example1", "example2"],
+    "negative": "negative sentence",
+    "question": "question sentence"
+  }
+}`;
+        }
+    } else {
+        // Для не-глаголов используем базовый промпт
+        prompt += `
 
 Format your response as a simple JSON object with this structure:
 {
   "word": "${word}",
   "translations": ["translation1", "translation2", "translation3"],
   "sentences": ["sentence1", "sentence2", "sentence3", "sentence4", "sentence5"]
-}
+}`;
+    }
+
+    prompt += `
 
 Make sure all translations are accurate and contextually appropriate. All sentences should be natural, grammatically correct, and demonstrate different uses of the word. Avoid any meta-commentary or explanations - just provide the JSON.`;
 
