@@ -6,7 +6,7 @@ echo "🚀 Running complete external words processing pipeline..."
 
 # Step 1: Get external words
 echo "📥 Step 1: Getting external words..."
-./run-external-words.sh
+./process-external-words/run-external-words.sh
 if [ $? -ne 0 ]; then
     echo "❌ Failed to get external words"
     exit 1
@@ -14,7 +14,7 @@ fi
 
 # Step 2: Process word with cursor (create prompt)
 echo "🤖 Step 2: Creating prompt..."
-./run-process-cursor.sh
+./process-external-words/run-process-cursor.sh
 if [ $? -ne 0 ]; then
     echo "❌ Failed to create prompt"
     exit 1
@@ -22,7 +22,7 @@ fi
 
 # Step 3: Execute cursor prompt
 echo "⚡ Step 3: Executing prompt with Cursor Agent..."
-./run-execute-cursor.sh
+./process-external-words/run-execute-cursor.sh
 if [ $? -ne 0 ]; then
     echo "❌ Failed to execute prompt"
     exit 1
@@ -38,7 +38,7 @@ if [ -z "$LATEST_RESULT" ]; then
 fi
 
 echo "📄 Importing file: $(basename "$LATEST_RESULT")"
-./run-import.sh "$LATEST_RESULT"
+./process-external-words/run-import.sh "$LATEST_RESULT"
 if [ $? -ne 0 ]; then
     echo "❌ Failed to import data"
     exit 1

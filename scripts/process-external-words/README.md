@@ -161,6 +161,45 @@
 - Автоматическое извлечение JSON из ответа Cursor Agent
 - Сохранение чистого JSON без дополнительного текста
 
+### 6. run-multiple-pipelines.mjs - Множественные запуски pipeline
+
+**Описание:** Запускает полный pipeline несколько раз подряд с задержкой между запусками.
+
+**Использование:**
+
+```bash
+# Запустить 10 раз (по умолчанию)
+node run-multiple-pipelines.mjs
+
+# Запустить указанное количество раз
+node run-multiple-pipelines.mjs 5
+```
+
+**Параметры:**
+
+- `number_of_runs` (опционально): Количество запусков pipeline (по умолчанию: 10)
+
+**Особенности:**
+
+- Между запусками задержка 30 секунд
+- Каждый запуск обрабатывает одно слово
+- При ошибке в одном запуске останавливает выполнение
+- Показывает прогресс выполнения
+
+**Пример вывода:**
+
+```
+🚀 Starting 5 pipeline runs...
+
+🏃 Starting pipeline run 1/5
+══════════════════════════════════════════════════
+✅ Pipeline run 1/5 completed successfully
+⏳ Waiting 30 seconds before next run...
+...
+🎉 All pipeline runs completed successfully!
+📊 Processed 5 words through the pipeline
+```
+
 ## Структура папок
 
 ```
@@ -186,6 +225,7 @@ scripts/process-external-words/
 ├── run-process-cursor.sh   # Запуск подготовки промпта
 ├── run-execute-cursor.sh   # Запуск выполнения промпта
 ├── run-full-pipeline.sh    # Полный автоматизированный pipeline
+├── run-multiple-pipelines.mjs # Множественные запуски pipeline
 └── README.md               # Эта документация
 ```
 
