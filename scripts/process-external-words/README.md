@@ -105,6 +105,62 @@
 - `temp/cursor-instructions-{word}-{timestamp}.txt` - инструкции по использованию
 - `logs/process-word-cursor-{timestamp}.log` - лог выполнения
 
+### 4. execute-cursor-prompt.mjs - Автоматическое выполнение промпта через Cursor Agent
+
+**Описание:** Автоматически находит последний созданный промпт-файл и выполняет его через Cursor Agent CLI, получая результат в чистом JSON формате.
+
+**Требования:**
+
+- Должен существовать хотя бы один файл `temp/prompt-{word}-{timestamp}.txt`
+- Cursor Agent должен быть доступен в PATH (автоматически обнаруживается в `/Applications/Cursor.app`)
+
+**Что делает скрипт:**
+
+1. Находит последний промпт-файл по timestamp
+2. Читает содержимое промпта
+3. Извлекает слово из промпта
+4. Выполняет `cursor agent --print --output-format json` с промптом через stdin
+5. Парсит ответ от Cursor Agent и извлекает чистый JSON
+6. Сохраняет результат в `temp/cursor-result-{word}-{timestamp}.json`
+
+**Использование:**
+
+```bash
+./scripts/process-external-words/run-execute-cursor.sh
+```
+
+**Выходные файлы:**
+
+- `temp/cursor-result-{word}-{timestamp}.json` - чистый JSON результат
+- `logs/execute-cursor-prompt-{timestamp}.log` - лог выполнения
+
+### 5. run-full-pipeline.sh - Полный автоматизированный pipeline
+
+**Описание:** Выполняет весь процесс обработки внешних слов от начала до конца в автоматическом режиме.
+
+**Что делает скрипт:**
+
+1. Извлекает внешние слова из базы данных
+2. Создает промпт для обработки первого слова
+3. Автоматически выполняет промпт через Cursor Agent
+4. Импортирует результат обратно в базу данных
+
+**Использование:**
+
+```bash
+./scripts/process-external-words/run-full-pipeline.sh
+```
+
+**Особенности:**
+
+- Полностью автоматизированный процесс
+- Не требует ручного вмешательства
+- Обрабатывает по одному слову за раз
+- При повторном запуске возьмет следующее слово из списка
+- Полностью автоматическое выполнение без ручного вмешательства
+- Автоматическое извлечение JSON из ответа Cursor Agent
+- Сохранение чистого JSON без дополнительного текста
+
 ## Структура папок
 
 ```
@@ -114,17 +170,22 @@ scripts/process-external-words/
 │   ├── example-word-data.json
 │   ├── prompt-{word}-{timestamp}.txt
 │   ├── cursor-instructions-{word}-{timestamp}.txt
-│   └── cursor-result-{word}-{timestamp}.json (ожидается от Cursor)
+│   ├── cursor-result-{word}-{timestamp}.json (ожидается от Cursor)
+│   └── cursor-result-example.json (пример успешного результата)
 ├── logs/                    # Лог-файлы с timestamp
 │   ├── get-external-words-YYYY-MM-DDTHH-MM-SS.log
 │   ├── import-word-data-YYYY-MM-DDTHH-MM-SS.log
-│   └── process-word-cursor-YYYY-MM-DDTHH-MM-SS.log
+│   ├── process-word-cursor-YYYY-MM-DDTHH-MM-SS.log
+│   └── execute-cursor-prompt-YYYY-MM-DDTHH-MM-SS.log
 ├── get-external-words.mjs   # Скрипт получения внешних слов
 ├── import-word-data.mjs     # Скрипт импорта данных
 ├── process-word-with-cursor.mjs # Скрипт подготовки промпта для Cursor
-├── run.sh                   # Запуск получения слов
+├── execute-cursor-prompt.mjs # Скрипт выполнения промпта через Cursor
+├── run-external-words.sh    # Запуск получения слов
 ├── run-import.sh           # Запуск импорта данных
 ├── run-process-cursor.sh   # Запуск подготовки промпта
+├── run-execute-cursor.sh   # Запуск выполнения промпта
+├── run-full-pipeline.sh    # Полный автоматизированный pipeline
 └── README.md               # Эта документация
 ```
 
@@ -143,4 +204,25 @@ scripts/process-external-words/
 
 - **get-external-words.mjs**: Извлечение слов, полученных из внешних источников (API DeepL, MyMemory, Tatoeba) для последующей обработки LLM-моделями
 - **import-word-data.mjs**: Импорт обработанных данных обратно в базу данных с полной поддержкой всех связей и отношений
-- **process-word-with-cursor.mjs**: Подготовка промптов для обработки слов через Cursor CLI с последующим импортом результатов
+- **process-word-with-cursor.mjs**: Подготовка промптов для обработки слов через Cursor IDE
+- **execute-cursor-prompt.mjs**: Полностью автоматическое выполнение промптов через Cursor Agent CLI
+- **run-full-pipeline.sh**: Полностью автоматизированный pipeline обработки слов
+
+## Полный рабочий процесс
+
+### Вариант 1: Полностью автоматический (рекомендуется)
+
+```bash
+./scripts/process-external-words/run-full-pipeline.sh
+```
+
+Выполняет все шаги автоматически от начала до конца.
+
+### Вариант 2: Пошаговое выполнение
+
+1. **`./run-external-words.sh`** → извлекает внешние слова → `external-words-output.json`
+2. **`./run-process-cursor.sh`** → создает промпт → `prompt-*.txt`
+3. **`./run-execute-cursor.sh`** → автоматически выполняет промпт через Cursor Agent → `cursor-result-*.json`
+4. **`./run-import.sh cursor-result-*.json`** → импортирует данные в БД
+
+**Весь процесс полностью автоматизирован и не требует ручного вмешательства!** 🚀

@@ -20,6 +20,37 @@ async function log(message) {
     await fs.appendFile(logFilePath, logEntry);
 }
 
+function transformCursorResultToWordData(cursorResult) {
+    // Получаем язык слова из контекста (предполагаем испанский)
+    // В реальном сценарии это нужно получать из файла промпта или параметров
+    const sourceLanguage = 'es'; // Испанский
+    const targetLanguage = 'ru'; // Русский
+
+    // Преобразуем предложения в формат импорта
+    const examples = cursorResult.sentences.map((sentence, index) => ({
+        pronoun: 'yo', // Заглушка, можно улучшить
+        example: sentence,
+        translation: `Перевод ${index + 1}`, // Заглушка, в реальности нужно переводить
+        sentenceTypeCode: 'AFFIRMATIVE',
+        isNegative: false,
+        isQuestion: sentence.includes('?')
+    }));
+
+    return {
+        word: cursorResult.word,
+        partOfSpeech: 'VERB', // Заглушка, можно определить автоматически
+        languageCode: sourceLanguage,
+        translations: [
+            {
+                languageCode: targetLanguage,
+                translations: cursorResult.translations
+            }
+        ],
+        examples: examples,
+        grammaticalExamples: [] // Пустой массив, можно расширить позже
+    };
+}
+
 async function getOrCreateLanguage(languageCode) {
     let language = await prisma.language.findUnique({
         where: { code: languageCode },
@@ -358,7 +389,19 @@ async function main() {
     try {
         // Читаем JSON файл
         const jsonData = await fs.readFile(jsonFilePath, 'utf8');
-        const wordDataArray = JSON.parse(jsonData);
+        let rawData = JSON.parse(jsonData);
+
+        // Преобразуем данные в массив, если пришел одиночный объект
+        let wordDataArray = [];
+        if (Array.isArray(rawData)) {
+            wordDataArray = rawData;
+        } else if (rawData.word && rawData.translations && rawData.sentences) {
+            // Преобразуем формат от Cursor agent в формат импорта
+            const transformedData = transformCursorResultToWordData(rawData);
+            wordDataArray = [transformedData];
+        } else {
+            throw new Error('Invalid data format: expected array or Cursor result object');
+        }
 
         await log(`📊 Found ${wordDataArray.length} words to import`);
 

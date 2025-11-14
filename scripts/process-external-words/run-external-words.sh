@@ -5,4 +5,4 @@
 echo "🚀 Running external words retrieval script..."
 
 # Run the JavaScript ES module script using node
-node ./get-external-words.mjs
+node get-external-words.mjs
