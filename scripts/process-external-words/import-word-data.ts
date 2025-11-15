@@ -492,65 +492,41 @@ async function importWordData(wordData: WordData): Promise<boolean> {
         await log(`📝 Updated part of speech for: ${wordData.word}`);
     }
 
-    // Добавляем переводы (только новые, не существующие)
+    // Удаляем все существующие переводы для этого слова
+    await prisma.wordTranslation.deleteMany({
+        where: {
+            baseWordId: baseWord.id,
+        },
+    });
+    await log(`🗑️ Cleared existing translations for: ${wordData.word}`);
+
+    // Добавляем новые переводы (не более 3 на язык)
     for (const translationGroup of wordData.translations) {
         const translationLanguage = await getOrCreateLanguage(
             translationGroup.languageCode,
         );
 
-        // Получаем максимальный существующий priority для этого слова и языка
-        const maxPriorityResult = await prisma.wordTranslation.findFirst({
-            where: {
-                baseWordId: baseWord.id,
-                languageId: translationLanguage.id,
-            },
-            orderBy: {
-                priority: 'desc',
-            },
-            select: {
-                priority: true,
-            },
-        });
-
-        let nextPriority = (maxPriorityResult?.priority || 0) + 1;
-
+        let priority = 1;
         for (const translation of translationGroup.translations.slice(0, 3)) {
-            // Проверяем, существует ли уже такой перевод
-            const existingTranslation = await prisma.wordTranslation.findFirst({
-                where: {
+            await prisma.wordTranslation.create({
+                data: {
                     baseWordId: baseWord.id,
                     languageId: translationLanguage.id,
                     translation: translation,
+                    priority: priority++,
                 },
             });
-
-            if (!existingTranslation) {
-                await prisma.wordTranslation.create({
-                    data: {
-                        baseWordId: baseWord.id,
-                        languageId: translationLanguage.id,
-                        translation: translation,
-                        priority: nextPriority++,
-                    },
-                });
-                await log(
-                    `➕ Added new translation: "${translation}" for ${wordData.word}`,
-                );
-            } else {
-                await log(
-                    `⏭️ Translation already exists: "${translation}" for ${wordData.word}`,
-                );
-            }
+            await log(
+                `➕ Added translation: "${translation}" for ${wordData.word}`,
+            );
         }
     }
 
     await log(`✅ Processed translations for: ${wordData.word}`);
 
     // Удаляем существующие примеры и грамматические примеры для этого слова
-    if (baseWord) {
-        await clearWordExamples(baseWord.id);
-        await log(`🗑️ Cleared existing examples for: ${wordData.word}`);
-    }
+    await clearWordExamples(baseWord.id);
+    await log(`🗑️ Cleared existing examples for: ${wordData.word}`);
 
     // Добавляем примеры (всегда новые, так как старые удалены)
     for (const example of wordData.examples) {
@@ -637,6 +613,15 @@ async function importWordData(wordData: WordData): Promise<boolean> {
     }
 
     await log(`✅ Added grammatical examples for: ${wordData.word}`);
+
+    // Обновляем source слова на 'native', чтобы оно не попадалось в следующий пайплайн
+    const nativeSource = await getWordSource('native');
+    await prisma.baseWord.update({
+        where: { id: baseWord.id },
+        data: { sourceId: nativeSource.id },
+    });
+    await log(`🏷️ Updated source to 'native' for word: ${wordData.word}`);
+
     await log(
         `🎉 Successfully updated word: ${wordData.word} (ID: ${baseWord.id})`,
     );
