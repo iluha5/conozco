@@ -27,14 +27,47 @@ async function getNextCounter(): Promise<number> {
 
 // Глобальные переменные для логов (будут инициализированы асинхронно)
 let logFilePath = '';
+let tempOutputPath = '';
 let currentCounter = 1;
 let timestamp = '';
+let dateFolder = '';
+
+async function ensureDateFolder(
+    basePath: string,
+    dateStr: string,
+): Promise<string> {
+    const datePath = path.join(basePath, dateStr);
+    try {
+        await fs.access(datePath);
+    } catch (error) {
+        // Папка не существует, создаем ее
+        await fs.mkdir(datePath, { recursive: true });
+    }
+    return datePath;
+}
 
 async function initializeLogger(): Promise<void> {
-    timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+    const now = new Date();
+    timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, -5);
+    dateFolder = now.toISOString().slice(0, 10); // YYYY-MM-DD
+
     currentCounter = await getNextCounter();
+
+    // Создаем папки с датами
+    const logsDatePath = await ensureDateFolder(
+        path.join(__dirname, 'logs'),
+        dateFolder,
+    );
+    const tempDatePath = await ensureDateFolder(
+        path.join(__dirname, 'temp'),
+        dateFolder,
+    );
+
     const logFileName = `${currentCounter}-get-external-words-${timestamp}.log`;
-    logFilePath = path.join(__dirname, 'logs', logFileName);
+    logFilePath = path.join(logsDatePath, logFileName);
+
+    const tempFileName = 'external-words-output.json';
+    tempOutputPath = path.join(tempDatePath, tempFileName);
 }
 
 async function log(message: string): Promise<void> {
@@ -126,33 +159,26 @@ async function main(): Promise<void> {
             }
         }
 
-        // Путь к выходному файлу
-        const outputPath = path.join(
-            __dirname,
-            'temp',
-            'external-words-output.json',
-        );
-
         // Проверяем и удаляем существующий файл, если он есть
         try {
-            await fs.access(outputPath);
-            await log(`🗑️ Removing existing output file: ${outputPath}`);
-            await fs.unlink(outputPath);
+            await fs.access(tempOutputPath);
+            await log(`🗑️ Removing existing output file: ${tempOutputPath}`);
+            await fs.unlink(tempOutputPath);
         } catch (error) {
             // Файл не существует, это нормально
             await log(
-                `📄 Output file does not exist, will create new one: ${outputPath}`,
+                `📄 Output file does not exist, will create new one: ${tempOutputPath}`,
             );
         }
 
         // Записываем результат в JSON файл
         await fs.writeFile(
-            outputPath,
+            tempOutputPath,
             JSON.stringify(simplifiedWords, null, 2),
             'utf8',
         );
 
-        await log(`💾 Results saved to: ${outputPath}`);
+        await log(`💾 Results saved to: ${tempOutputPath}`);
         await log(`📊 Total word-language pairs: ${simplifiedWords.length}`);
         await log(`📝 Log saved to: ${logFilePath}`);
     } catch (error) {

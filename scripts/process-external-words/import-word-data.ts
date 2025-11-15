@@ -89,12 +89,37 @@ async function getCurrentCounter(): Promise<number> {
 let logFilePath = '';
 let currentCounter = 1;
 let timestamp = '';
+let dateFolder = '';
+
+async function ensureDateFolder(
+    basePath: string,
+    dateStr: string,
+): Promise<string> {
+    const datePath = path.join(basePath, dateStr);
+    try {
+        await fs.access(datePath);
+    } catch (error) {
+        // Папка не существует, создаем ее
+        await fs.mkdir(datePath, { recursive: true });
+    }
+    return datePath;
+}
 
 async function initializeLogger(): Promise<void> {
-    timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+    const now = new Date();
+    timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, -5);
+    dateFolder = now.toISOString().slice(0, 10); // YYYY-MM-DD
+
     currentCounter = await getCurrentCounter();
+
+    // Создаем папки с датами
+    const logsDatePath = await ensureDateFolder(
+        path.join(__dirname, 'logs'),
+        dateFolder,
+    );
+
     const logFileName = `${currentCounter}-import-word-data-${timestamp}.log`;
-    logFilePath = path.join(__dirname, 'logs', logFileName);
+    logFilePath = path.join(logsDatePath, logFileName);
 }
 
 async function log(message: string): Promise<void> {

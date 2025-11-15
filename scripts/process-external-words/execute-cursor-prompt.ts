@@ -28,12 +28,37 @@ async function getCurrentCounter(): Promise<number> {
 let logFilePath = '';
 let currentCounter = 1;
 let timestamp = '';
+let dateFolder = '';
+
+async function ensureDateFolder(
+    basePath: string,
+    dateStr: string,
+): Promise<string> {
+    const datePath = path.join(basePath, dateStr);
+    try {
+        await fs.access(datePath);
+    } catch (error) {
+        // Папка не существует, создаем ее
+        await fs.mkdir(datePath, { recursive: true });
+    }
+    return datePath;
+}
 
 async function initializeLogger(): Promise<void> {
-    timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+    const now = new Date();
+    timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, -5);
+    dateFolder = now.toISOString().slice(0, 10); // YYYY-MM-DD
+
     currentCounter = await getCurrentCounter();
+
+    // Создаем папки с датами
+    const logsDatePath = await ensureDateFolder(
+        path.join(__dirname, 'logs'),
+        dateFolder,
+    );
+
     const logFileName = `${currentCounter}-execute-cursor-prompt-${timestamp}.log`;
-    logFilePath = path.join(__dirname, 'logs', logFileName);
+    logFilePath = path.join(logsDatePath, logFileName);
 }
 
 async function log(message: string): Promise<void> {
@@ -52,7 +77,12 @@ interface PromptFile {
 
 async function findLatestPromptFile(): Promise<string> {
     try {
-        const files = await fs.readdir(tempDir);
+        // Ищем в папке с текущей датой
+        const tempDatePath = await ensureDateFolder(
+            path.join(__dirname, 'temp'),
+            dateFolder,
+        );
+        const files = await fs.readdir(tempDatePath);
         const promptFiles = files.filter(
             file =>
                 (file.startsWith('prompt-') ||
@@ -67,7 +97,7 @@ async function findLatestPromptFile(): Promise<string> {
         // Сортируем по дате модификации файла (новые первыми)
         const sortedPromptFiles: PromptFile[] = await Promise.all(
             promptFiles.map(async file => {
-                const filePath = path.join(tempDir, file);
+                const filePath = path.join(tempDatePath, file);
                 const stats = await fs.stat(filePath);
                 return {
                     name: file,
@@ -90,7 +120,7 @@ async function findLatestPromptFile(): Promise<string> {
             'code' in error &&
             error.code === 'ENOENT'
         ) {
-            throw new Error(`Temp directory ${tempDir} does not exist`);
+            throw new Error(`Temp directory does not exist`);
         }
         throw error;
     }
@@ -127,8 +157,14 @@ async function executeCursorAgent(
     promptContent: string,
     word: string,
 ): Promise<string> {
+    // Создаем папку с датой для temp файлов
+    const tempDatePath = await ensureDateFolder(
+        path.join(__dirname, 'temp'),
+        dateFolder,
+    );
+
     const resultFileName = `${currentCounter}-${word}-cursor-result-${timestamp}.json`;
-    const resultFilePath = path.join(tempDir, resultFileName);
+    const resultFilePath = path.join(tempDatePath, resultFileName);
 
     // Используем cursor agent с --print --output-format json
     const cursorCommand = `/Applications/Cursor.app/Contents/Resources/app/bin/cursor agent --print --output-format json`;

@@ -7,12 +7,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Пути к файлам
-const inputFilePath = path.join(
-    __dirname,
-    'temp',
-    'external-words-output.json',
-);
-const outputDir = path.join(__dirname, 'temp');
+let inputFilePath = '';
+let outputDir = '';
 
 // Счетчик пайплайна
 const counterFile = path.join(__dirname, 'temp', 'pipeline-counter.txt');
@@ -32,12 +28,45 @@ async function getCurrentCounter(): Promise<number> {
 let logFilePath = '';
 let currentCounter = 1;
 let timestamp = '';
+let dateFolder = '';
+
+async function ensureDateFolder(
+    basePath: string,
+    dateStr: string,
+): Promise<string> {
+    const datePath = path.join(basePath, dateStr);
+    try {
+        await fs.access(datePath);
+    } catch (error) {
+        // Папка не существует, создаем ее
+        await fs.mkdir(datePath, { recursive: true });
+    }
+    return datePath;
+}
 
 async function initializeLogger(): Promise<void> {
-    timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+    const now = new Date();
+    timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, -5);
+    dateFolder = now.toISOString().slice(0, 10); // YYYY-MM-DD
+
     currentCounter = await getCurrentCounter();
+
+    // Создаем папки с датами
+    const logsDatePath = await ensureDateFolder(
+        path.join(__dirname, 'logs'),
+        dateFolder,
+    );
+    const tempDatePath = await ensureDateFolder(
+        path.join(__dirname, 'temp'),
+        dateFolder,
+    );
+
     const logFileName = `${currentCounter}-process-word-cursor-${timestamp}.log`;
-    logFilePath = path.join(__dirname, 'logs', logFileName);
+    logFilePath = path.join(logsDatePath, logFileName);
+
+    // Устанавливаем пути для входных и выходных файлов
+    inputFilePath = path.join(tempDatePath, 'external-words-output.json');
+    outputDir = tempDatePath;
 }
 
 async function log(message: string): Promise<void> {
@@ -235,9 +264,15 @@ Format your response as a simple JSON object with this structure:
 
 Make sure all translations are accurate and contextually appropriate. All sentences should be natural, grammatically correct, and demonstrate different uses of the word. Avoid any meta-commentary or explanations - just provide the JSON.`;
 
+    // Создаем папку с датой для temp файлов
+    const tempDatePath = await ensureDateFolder(
+        path.join(__dirname, 'temp'),
+        dateFolder,
+    );
+
     // Сохраняем промпт в файл
     const promptFile = path.join(
-        outputDir,
+        tempDatePath,
         `${currentCounter}-${word}-prompt-${timestamp}.txt`,
     );
     await fs.writeFile(promptFile, prompt, 'utf8');
@@ -246,7 +281,7 @@ Make sure all translations are accurate and contextually appropriate. All senten
 
     // Создаем инструкции для выполнения
     const instructionsFile = path.join(
-        outputDir,
+        tempDatePath,
         `${currentCounter}-${word}-cursor-instructions-${timestamp}.txt`,
     );
     const instructions = `# Instructions for processing word "${word}"
