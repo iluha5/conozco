@@ -144,6 +144,30 @@ npm run prisma:studio
 npm run prisma:generate
 ```
 
+### Резервное копирование базы данных
+
+```bash
+# Создать резервную копию базы данных
+npm run db:backup
+
+# Или через shell скрипт
+./scripts/backup-db.sh
+
+# Файлы резервных копий сохраняются в папку backups/
+# вместе с файлами метаданных (.info)
+```
+
+**Требования:** Docker и запущенный контейнер с БД
+
+```bash
+# Убедиться, что контейнер запущен
+docker compose up -d postgres
+docker ps | grep flashcards-db
+
+# Запустить бэкап
+npm run db:backup
+```
+
 ### Docker
 
 ```bash
