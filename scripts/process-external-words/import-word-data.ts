@@ -20,9 +20,15 @@ interface CursorResult {
     translations: string[];
     sentences: (string | { text: string; translation: string })[];
     grammaticalExamples?: {
-        'Presente de indicativo'?: (string | { text: string; translation: string })[];
+        'Presente de indicativo'?: (
+            | string
+            | { text: string; translation: string }
+        )[];
         'Futuro próximo'?: (string | { text: string; translation: string })[];
-        'Pretérito indefinido'?: (string | { text: string; translation: string })[];
+        'Pretérito indefinido'?: (
+            | string
+            | { text: string; translation: string }
+        )[];
         negative?: string | { text: string; translation: string };
         question?: string | { text: string; translation: string };
     };
@@ -315,7 +321,10 @@ async function getOrCreateLanguage(languageCode: string) {
     return language;
 }
 
-async function getOrCreatePartOfSpeech(partOfSpeechName: string, languageId: number) {
+async function getOrCreatePartOfSpeech(
+    partOfSpeechName: string,
+    languageId: number,
+) {
     let partOfSpeech = await prisma.partOfSpeech.findUnique({
         where: {
             name_languageId: {
@@ -433,7 +442,7 @@ async function getWordSource(sourceCode: string = 'native') {
 
 async function deleteExistingWordData(word: string, languageId: number) {
     // Находим существующее слово
-    const existingWord = await prisma.baseWord.findUnique({
+    const existingWord = (await prisma.baseWord.findUnique({
         where: {
             word_languageId: {
                 word: word,
@@ -445,7 +454,7 @@ async function deleteExistingWordData(word: string, languageId: number) {
             examples: true,
             grammaticalExamples: true,
         },
-    }) as any;
+    })) as any;
 
     if (existingWord) {
         await log(`🗑️ Deleting existing word data for: ${word}`);
@@ -662,7 +671,8 @@ async function main() {
         await log(`🎉 Import completed successfully!`);
         await log(`📝 Log saved to: ${logFilePath}`);
     } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorMessage =
+            error instanceof Error ? error.message : String(error);
         await log(`❌ Error importing word data: ${errorMessage}`);
         console.error('Full error:', error);
         process.exit(1);

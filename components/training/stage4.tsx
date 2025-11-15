@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, XCircle, Settings, ChevronRight } from 'lucide-react';
@@ -112,24 +112,7 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
         return () => clearTimeout(timer);
     }, [animationKey]);
 
-    useEffect(() => {
-        if (currentWord) {
-            // Генерируем новый ключ для принудительного перемонтирования компонента
-            setAnimationKey(prev => prev + 1);
-            setFadeIn(false);
-
-            initializeLetters();
-            setUserWord([]);
-            setIsComplete(false);
-            setIsCorrect(null);
-            setTotalErrors(0);
-            setFlashingLetter(null);
-            setBackgroundFlash(null);
-            setShowResultPopup(false);
-        }
-    }, [currentIndex, settings.difficulty]);
-
-    const initializeLetters = () => {
+    const initializeLetters = useCallback(() => {
         const word = currentWord.baseWord?.word || currentWord.customWord || '';
         const wordLetters = word.split('');
 
@@ -148,7 +131,24 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
             selected: false,
         }));
         setLetters(letterStates);
-    };
+    }, [currentWord, settings.difficulty]);
+
+    useEffect(() => {
+        if (currentWord) {
+            // Генерируем новый ключ для принудительного перемонтирования компонента
+            setAnimationKey(prev => prev + 1);
+            setFadeIn(false);
+
+            initializeLetters();
+            setUserWord([]);
+            setIsComplete(false);
+            setIsCorrect(null);
+            setTotalErrors(0);
+            setFlashingLetter(null);
+            setBackgroundFlash(null);
+            setShowResultPopup(false);
+        }
+    }, [currentIndex, settings.difficulty, currentWord, initializeLetters]);
 
     const getRandomLetters = (
         count: number,

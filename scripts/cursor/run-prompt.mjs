@@ -153,20 +153,20 @@ async function main() {
         );
     }
 
-  // Read prompt content
-  let promptContent;
-  try {
-    promptContent = readFileSync(promptPath, 'utf-8');
-    
-    // Add timestamp to prompt if it contains placeholder instructions
-    const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-    promptContent = promptContent.replace(
-      /YYYYMMDD/g,
-      timestamp
-    );
-  } catch (err) {
-    error(`Failed to read prompt file: ${err.message}`);
-  }
+    // Read prompt content
+    let promptContent;
+    try {
+        promptContent = readFileSync(promptPath, 'utf-8');
+
+        // Add timestamp to prompt if it contains placeholder instructions
+        const timestamp = new Date()
+            .toISOString()
+            .slice(0, 10)
+            .replace(/-/g, '');
+        promptContent = promptContent.replace(/YYYYMMDD/g, timestamp);
+    } catch (err) {
+        error(`Failed to read prompt file: ${err.message}`);
+    }
 
     // Setup log file if logging is enabled
     let logFile = null;
@@ -232,20 +232,20 @@ async function main() {
     // Change to project root
     process.chdir(PROJECT_ROOT);
 
-  // Ensure cursor output directory exists
-  if (!existsSync(CURSOR_OUTPUT_DIR)) {
-    mkdirSync(CURSOR_OUTPUT_DIR, { recursive: true });
-  }
+    // Ensure cursor output directory exists
+    if (!existsSync(CURSOR_OUTPUT_DIR)) {
+        mkdirSync(CURSOR_OUTPUT_DIR, { recursive: true });
+    }
 
-  // Generate timestamp for filename reference
-  const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-  const exampleFilename = `CODE_REVIEW_${timestamp}.md`;
+    // Generate timestamp for filename reference
+    const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    const exampleFilename = `CODE_REVIEW_${timestamp}.md`;
 
-  // Execute cursor-agent
-  log('Executing cursor-agent...', 'green');
-  console.log(`Output files will be saved to: ${CURSOR_OUTPUT_DIR}`);
-  console.log(`Example filename format: ${exampleFilename}`);
-  console.log('');
+    // Execute cursor-agent
+    log('Executing cursor-agent...', 'green');
+    console.log(`Output files will be saved to: ${CURSOR_OUTPUT_DIR}`);
+    console.log(`Example filename format: ${exampleFilename}`);
+    console.log('');
 
     return new Promise(resolve => {
         let logStream = null;

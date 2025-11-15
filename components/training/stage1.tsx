@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Volume2, ChevronRight, Settings } from 'lucide-react';
@@ -90,18 +90,7 @@ export function Stage1Training({ words, onComplete }: Stage1Props) {
         return () => clearTimeout(timer);
     }, [animationKey]);
 
-    useEffect(() => {
-        // Автоматическая озвучка при появлении нового слова
-        if (currentWord) {
-            // Генерируем новый ключ для принудительного перемонтирования компонента
-            setAnimationKey(prev => prev + 1);
-            setFadeIn(false);
-            setShowTranslation(false);
-            speakWord();
-        }
-    }, [currentIndex]);
-
-    const speakWord = () => {
+    const speakWord = useCallback(() => {
         if ('speechSynthesis' in window && currentWord) {
             const word =
                 currentWord.baseWord?.word || currentWord.customWord || '';
@@ -111,7 +100,18 @@ export function Stage1Training({ words, onComplete }: Stage1Props) {
             utterance.rate = 0.8;
             window.speechSynthesis.speak(utterance);
         }
-    };
+    }, [currentWord]);
+
+    useEffect(() => {
+        // Автоматическая озвучка при появлении нового слова
+        if (currentWord) {
+            // Генерируем новый ключ для принудительного перемонтирования компонента
+            setAnimationKey(prev => prev + 1);
+            setFadeIn(false);
+            setShowTranslation(false);
+            speakWord();
+        }
+    }, [currentIndex, currentWord, speakWord]);
 
     const handleNext = async () => {
         // Записываем результат тренировки

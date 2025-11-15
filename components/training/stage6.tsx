@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -108,27 +108,7 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
 
     const currentWord = baseWords[currentIndex];
 
-    useEffect(() => {
-        if (currentWord) {
-            // Генерируем новый ключ для принудительного перемонтирования компонента
-            setAnimationKey(prev => prev + 1);
-            setFadeIn(false);
-
-            initializeLetters();
-            setUserWord([]);
-            setIsComplete(false);
-            setIsCorrect(null);
-            setTotalErrors(0);
-            setFlashingLetter(null);
-            setBackgroundFlash(null);
-            setShowResultPopup(false);
-            setHasPlayedOnce(false);
-            // Auto-play the word once when loading a new word
-            setTimeout(() => speakWord(), 500); // Small delay to allow UI to render
-        }
-    }, [currentIndex]);
-
-    const initializeLetters = () => {
+    const initializeLetters = useCallback(() => {
         const word = currentWord.baseWord?.word || '';
         const wordLetters = word.split('');
         const shuffled = [...wordLetters].sort(() => Math.random() - 0.5);
@@ -150,7 +130,7 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
             selected: false,
         }));
         setLetters(letterStates);
-    };
+    }, [currentWord]);
 
     const handleLetterClick = async (index: number) => {
         const letter = letters[index].letter;
@@ -301,7 +281,7 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
         await completeWord(false);
     };
 
-    const speakWord = () => {
+    const speakWord = useCallback(() => {
         if (!currentWord?.baseWord?.word) return;
 
         setIsPlaying(true);
@@ -332,7 +312,7 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
         };
 
         speechSynthesis.speak(utterance);
-    };
+    }, [currentWord]);
 
     // Функция для поиска следующей ошибки (с текущими результатами)
     const findNextErrorWithResults = (

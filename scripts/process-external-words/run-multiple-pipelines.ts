@@ -51,7 +51,8 @@ function runPipeline(runNumber: number): Promise<void> {
         });
 
         child.on('error', error => {
-            const errorMessage = error instanceof Error ? error.message : String(error);
+            const errorMessage =
+                error instanceof Error ? error.message : String(error);
             console.error(
                 `❌ Error running pipeline ${runNumber}/${numRuns}:`,
                 errorMessage,
@@ -82,7 +83,8 @@ async function main(): Promise<void> {
         console.log('\n🎉 All pipeline runs completed successfully!');
         console.log(`📊 Processed ${numRuns} words through the pipeline`);
     } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorMessage =
+            error instanceof Error ? error.message : String(error);
         console.error('\n💥 Pipeline execution failed:', errorMessage);
         process.exit(1);
     }

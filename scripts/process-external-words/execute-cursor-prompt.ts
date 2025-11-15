@@ -84,7 +84,12 @@ async function findLatestPromptFile(): Promise<string> {
 
         return latestPromptFile;
     } catch (error) {
-        if (error && typeof error === 'object' && 'code' in error && error.code === 'ENOENT') {
+        if (
+            error &&
+            typeof error === 'object' &&
+            'code' in error &&
+            error.code === 'ENOENT'
+        ) {
             throw new Error(`Temp directory ${tempDir} does not exist`);
         }
         throw error;
@@ -97,7 +102,8 @@ async function readPromptContent(promptFilePath: string): Promise<string> {
         await log(`📖 Read prompt content (${content.length} characters)`);
         return content;
     } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorMessage =
+            error instanceof Error ? error.message : String(error);
         throw new Error(
             `Error reading prompt file ${promptFilePath}: ${errorMessage}`,
         );
@@ -226,10 +232,11 @@ async function executeCursorAgent(
                 await log(`✅ Found grammatical examples for verb`);
             }
         } catch (parseError) {
-            const errorMessage = parseError instanceof Error ? parseError.message : String(parseError);
-            await log(
-                `⚠️ Warning: Could not parse JSON: ${errorMessage}`,
-            );
+            const errorMessage =
+                parseError instanceof Error
+                    ? parseError.message
+                    : String(parseError);
+            await log(`⚠️ Warning: Could not parse JSON: ${errorMessage}`);
             // Сохраняем оригинальный ответ как есть
             await fs.writeFile(resultFilePath, stdout, 'utf8');
             await log(`💾 Raw result saved to: ${resultFilePath}`);
@@ -237,7 +244,8 @@ async function executeCursorAgent(
 
         return resultFilePath;
     } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorMessage =
+            error instanceof Error ? error.message : String(error);
         await log(`❌ Error executing cursor agent: ${errorMessage}`);
         throw error;
     }
@@ -264,7 +272,8 @@ async function main(): Promise<void> {
         await log(`📝 Log saved to: ${logFilePath}`);
         await log(`📄 Result available at: ${resultFilePath}`);
     } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorMessage =
+            error instanceof Error ? error.message : String(error);
         await log(`❌ Script failed: ${errorMessage}`);
         console.error('Error details:', error);
         process.exit(1);

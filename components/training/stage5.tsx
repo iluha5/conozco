@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChevronRight, CheckCircle, XCircle, Settings } from 'lucide-react';
@@ -219,28 +219,124 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
         return () => clearTimeout(timer);
     }, [animationKey]);
 
-    useEffect(() => {
-        if (
-            currentWord &&
-            wordPhrases.length > currentIndex &&
-            wordPhrases[currentIndex].length > 0
-        ) {
-            // Генерируем новый ключ для принудительного перемонтирования компонента
-            setAnimationKey(prev => prev + 1);
-            setFadeIn(false);
+    const getExtraWords = useCallback(
+        (
+            currentPronoun: string,
+            languageCode: string,
+            currentPhraseWords: string[],
+        ): string[] => {
+            const extraWords: string[] = [];
 
-            initializePhrase();
-            setUserSentence([]);
-            setIsComplete(false);
-            setIsCorrect(null);
-            setTotalErrors(0);
-            setFlashingWord(null);
-            setBackgroundFlash(null);
-            setShowResultPopup(false);
-        }
-    }, [currentIndex, currentPhraseIndex, wordPhrases]);
+            // Собираем все слова из всех фраз всех слов
+            const allWordsFromPhrases: string[] = [];
+            const allPronouns: string[] = [];
 
-    const initializePhrase = () => {
+            words.forEach(word => {
+                if (!word.baseWord) return;
+
+                // Собираем слова из примеров
+                if (word.baseWord.examples) {
+                    word.baseWord.examples.forEach(example => {
+                        allWordsFromPhrases.push(
+                            ...example.example
+                                .split(' ')
+                                .map(w =>
+                                    w.toLowerCase().replace(/[¿?¡!.,;:]/g, ''),
+                                ),
+                        );
+                    });
+                }
+
+                // Собираем слова из грамматических примеров
+                if (word.baseWord.grammaticalExamples) {
+                    word.baseWord.grammaticalExamples.forEach(example => {
+                        allWordsFromPhrases.push(
+                            ...example.example
+                                .split(' ')
+                                .map(w =>
+                                    w.toLowerCase().replace(/[¿?¡!.,;:]/g, ''),
+                                ),
+                        );
+                    });
+                }
+            });
+
+            // Фильтруем слова, исключая слова из текущей фразы и местоимения
+            const filteredWords = allWordsFromPhrases.filter(word => {
+                return (
+                    !currentPhraseWords.includes(word) &&
+                    word.length > 1 &&
+                    ![
+                        'the',
+                        'a',
+                        'an',
+                        'and',
+                        'or',
+                        'but',
+                        'in',
+                        'on',
+                        'at',
+                        'to',
+                        'for',
+                        'of',
+                        'with',
+                        'by',
+                        'from',
+                        'up',
+                        'down',
+                        'over',
+                        'under',
+                        'into',
+                        'onto',
+                        'out',
+                        'off',
+                        'through',
+                        'during',
+                        'before',
+                        'after',
+                        'above',
+                        'below',
+                        'between',
+                        'among',
+                        'throughout',
+                        'against',
+                        'along',
+                        'around',
+                        'behind',
+                        'beside',
+                        'near',
+                        'next',
+                        'inside',
+                        'outside',
+                        'within',
+                        'without',
+                        'across',
+                        'along',
+                        'around',
+                        'behind',
+                        'beside',
+                        'near',
+                        'next',
+                        'inside',
+                        'outside',
+                        'within',
+                        'without',
+                        'across',
+                    ].includes(word)
+                );
+            });
+
+            // Убираем дубликаты
+            const uniqueWords = Array.from(new Set(filteredWords));
+
+            // Выбираем 5 случайных слов
+            const shuffled = uniqueWords.sort(() => Math.random() - 0.5);
+            return shuffled.slice(0, 5);
+        },
+        [words],
+    );
+
+    const initializePhrase = useCallback(() => {
         if (
             wordPhrases.length <= currentIndex ||
             wordPhrases[currentIndex].length <= currentPhraseIndex
@@ -266,88 +362,40 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
             selected: false,
         }));
         setAvailableWords(wordStates);
-    };
+    }, [
+        wordPhrases,
+        currentIndex,
+        currentPhraseIndex,
+        currentWord,
+        getExtraWords,
+    ]);
 
-    const getExtraWords = (
-        currentPronoun: string,
-        languageCode: string,
-        currentPhraseWords: string[],
-    ): string[] => {
-        const extraWords: string[] = [];
+    useEffect(() => {
+        if (
+            currentWord &&
+            wordPhrases.length > currentIndex &&
+            wordPhrases[currentIndex].length > 0
+        ) {
+            // Генерируем новый ключ для принудительного перемонтирования компонента
+            setAnimationKey(prev => prev + 1);
+            setFadeIn(false);
 
-        // Собираем все слова из всех фраз всех слов
-        const allWordsFromPhrases: string[] = [];
-        const allPronouns: string[] = [];
-
-        words.forEach(word => {
-            if (!word.baseWord) return;
-
-            // Собираем слова из примеров
-            if (word.baseWord.examples) {
-                word.baseWord.examples.forEach(example => {
-                    allWordsFromPhrases.push(
-                        ...example.example
-                            .split(' ')
-                            .map(w =>
-                                w.toLowerCase().replace(/[¿?¡!.,;:]/g, ''),
-                            ),
-                    );
-                    allPronouns.push(example.pronoun.pronoun);
-                });
-            }
-
-            // Собираем слова из грамматических примеров
-            if (word.baseWord.grammaticalExamples) {
-                word.baseWord.grammaticalExamples.forEach(example => {
-                    allWordsFromPhrases.push(
-                        ...example.example
-                            .split(' ')
-                            .map(w =>
-                                w.toLowerCase().replace(/[¿?¡!.,;:]/g, ''),
-                            ),
-                    );
-                    allPronouns.push(example.pronoun.pronoun);
-                });
-            }
-        });
-
-        // Убираем дубликаты и пустые строки
-        const uniqueWordsSet = new Set(
-            allWordsFromPhrases.filter(w => w && w.length > 0),
-        );
-        const uniqueWords = Array.from(uniqueWordsSet);
-        const uniquePronounsSet = new Set(
-            allPronouns.filter(p => p !== currentPronoun),
-        );
-        const uniquePronouns = Array.from(uniquePronounsSet);
-
-        // Выбираем 1 местоимение (не совпадающее с текущим)
-        if (uniquePronouns.length > 0) {
-            const randomPronoun =
-                uniquePronouns[
-                    Math.floor(Math.random() * uniquePronouns.length)
-                ];
-            extraWords.push(randomPronoun);
+            initializePhrase();
+            setUserSentence([]);
+            setIsComplete(false);
+            setIsCorrect(null);
+            setTotalErrors(0);
+            setFlashingWord(null);
+            setBackgroundFlash(null);
+            setShowResultPopup(false);
         }
-
-        // Выбираем 2 случайных слова (не местоимения и не из текущей фразы)
-        const nonPronounWords = uniqueWords.filter(
-            word =>
-                !uniquePronouns.includes(word) &&
-                !currentPhraseWords.includes(word),
-        );
-
-        if (nonPronounWords.length >= 2) {
-            const shuffled = [...nonPronounWords].sort(
-                () => Math.random() - 0.5,
-            );
-            extraWords.push(...shuffled.slice(0, 2));
-        } else if (nonPronounWords.length === 1) {
-            extraWords.push(nonPronounWords[0]);
-        }
-
-        return extraWords;
-    };
+    }, [
+        currentIndex,
+        currentPhraseIndex,
+        wordPhrases,
+        currentWord,
+        initializePhrase,
+    ]);
 
     const handleWordClick = async (index: number) => {
         if (isComplete) return;

@@ -99,7 +99,7 @@ async function main(): Promise<void> {
         for (const word of externalWords) {
             // Получаем уникальные языки переводов
             const translationLanguages = Array.from(
-                new Set(word.translations.map(t => t.language.code))
+                new Set(word.translations.map(t => t.language.code)),
             );
 
             for (const translationLangCode of translationLanguages) {
@@ -156,7 +156,8 @@ async function main(): Promise<void> {
         await log(`📊 Total word-language pairs: ${simplifiedWords.length}`);
         await log(`📝 Log saved to: ${logFilePath}`);
     } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorMessage =
+            error instanceof Error ? error.message : String(error);
         await log(`❌ Error getting external words: ${errorMessage}`);
         process.exit(1);
     }

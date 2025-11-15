@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -124,39 +124,14 @@ export default function TrainingSetupPage() {
     };
 
     // Фильтрация слов по выбранному языку
-    const getFilteredWords = () => {
+    const getFilteredWords = useCallback(() => {
         if (selectedLanguage === 'ALL') {
             return words;
         }
         return words.filter(word => word.language.code === selectedLanguage);
-    };
+    }, [words, selectedLanguage]);
 
-    useEffect(() => {
-        fetchWords();
-    }, []);
-
-    useEffect(() => {
-        // Когда слова загружены, выбираем первые 12 по умолчанию (только при первой загрузке)
-        if (
-            words.length > 0 &&
-            selectedWords.size === 0 &&
-            isInitialSelection
-        ) {
-            const filteredWords = getFilteredWords();
-            const first12Words = filteredWords
-                .slice(0, 12)
-                .map(word => word.id);
-            setSelectedWords(new Set(first12Words));
-            setIsInitialSelection(false);
-        }
-    }, [words, selectedWords.size, isInitialSelection, setSelectedWords]);
-
-    // Сброс видимых слов при изменении языка
-    useEffect(() => {
-        setVisibleWordsCount(12);
-    }, [selectedLanguage]);
-
-    const fetchWords = async () => {
+    const fetchWords = useCallback(async () => {
         setIsLoadingWords(true);
         try {
             const response = await fetch(
@@ -176,7 +151,38 @@ export default function TrainingSetupPage() {
         } finally {
             setIsLoadingWords(false);
         }
-    };
+    }, [toast]);
+
+    useEffect(() => {
+        fetchWords();
+    }, [fetchWords]);
+
+    useEffect(() => {
+        // Когда слова загружены, выбираем первые 12 по умолчанию (только при первой загрузке)
+        if (
+            words.length > 0 &&
+            selectedWords.size === 0 &&
+            isInitialSelection
+        ) {
+            const filteredWords = getFilteredWords();
+            const first12Words = filteredWords
+                .slice(0, 12)
+                .map(word => word.id);
+            setSelectedWords(new Set(first12Words));
+            setIsInitialSelection(false);
+        }
+    }, [
+        words,
+        selectedWords.size,
+        isInitialSelection,
+        setSelectedWords,
+        getFilteredWords,
+    ]);
+
+    // Сброс видимых слов при изменении языка
+    useEffect(() => {
+        setVisibleWordsCount(12);
+    }, [selectedLanguage]);
 
     const toggleWord = (wordId: string) => {
         setSelectedWords(prev => {

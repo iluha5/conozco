@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, XCircle } from 'lucide-react';
@@ -85,6 +85,90 @@ export function Stage2Training({ words, onComplete }: Stage2Props) {
         return () => clearTimeout(timer);
     }, [animationKey]);
 
+    const generateOptions = useCallback(() => {
+        const correctTranslation =
+            currentWord.customTranslation ||
+            (currentWord.baseWord?.translations &&
+            currentWord.baseWord.translations.length > 0
+                ? currentWord.baseWord.translations[0].translation
+                : '');
+        const otherWords = words.filter((w, idx) => idx !== currentIndex);
+
+        // Выбираем 3 случайных неправильных ответа
+        const shuffledOthers = [...otherWords].sort(() => Math.random() - 0.5);
+        const wrongOptions = shuffledOthers
+            .slice(0, 3)
+            .map(
+                w =>
+                    w.customTranslation ||
+                    (w.baseWord?.translations &&
+                    w.baseWord.translations.length > 0
+                        ? w.baseWord.translations[0].translation
+                        : ''),
+            );
+
+        // Комбинируем с правильным ответом и перемешиваем
+        const allOptions = [...wrongOptions, correctTranslation].sort(
+            () => Math.random() - 0.5,
+        );
+        setOptions(allOptions);
+    }, [currentWord, words, currentIndex]);
+
+    const handleNext = useCallback(() => {
+        if (currentIndex < words.length - 1) {
+            setCurrentIndex(currentIndex + 1);
+        } else {
+            // Завершили все слова первый раз
+            setHasCompletedFirstRound(true);
+
+            // Проверяем, есть ли ошибки
+            const errorIndices = exerciseResults
+                .map((result, idx) => (result === false ? idx : -1))
+                .filter(idx => idx !== -1);
+
+            if (errorIndices.length > 0) {
+                // Есть ошибки - переходим в режим исправления
+                setIsRetryMode(true);
+                setCurrentIndex(errorIndices[0]);
+            } else {
+                // Все правильно - завершаем этап
+                onComplete();
+                setCurrentIndex(0);
+                setStats({ correct: 0, total: 0 });
+                setIsRetryMode(false);
+                setHasCompletedFirstRound(false);
+            }
+        }
+    }, [currentIndex, words.length, exerciseResults, onComplete]);
+
+    // Функция для поиска следующей ошибки (с текущими результатами)
+    const findNextErrorWithResults = (
+        startIndex: number,
+        results: (boolean | null)[],
+    ) => {
+        // Ищем следующую ошибку после текущего индекса
+        for (let i = startIndex + 1; i < results.length; i++) {
+            if (results[i] === false) {
+                return i;
+            }
+        }
+        // Если не нашли, ищем с начала до текущего индекса
+        for (let i = 0; i <= startIndex; i++) {
+            if (results[i] === false) {
+                return i;
+            }
+        }
+        return -1; // Ошибок больше нет
+    };
+
+    // Функция для поиска следующей ошибки (использует текущее состояние)
+    const findNextError = useCallback(
+        (startIndex: number) => {
+            return findNextErrorWithResults(startIndex, exerciseResults);
+        },
+        [exerciseResults],
+    );
+
     useEffect(() => {
         if (currentWord) {
             // Генерируем новый ключ для принудительного перемонтирования компонента
@@ -98,7 +182,7 @@ export function Stage2Training({ words, onComplete }: Stage2Props) {
             setSelectedOption(null);
             setIsCorrect(null);
         }
-    }, [currentIndex]);
+    }, [currentIndex, currentWord, generateOptions]);
 
     // Автоматический переход к следующему слову: 1сек при правильном ответе, 2сек при неправильном
     useEffect(() => {
@@ -154,36 +238,17 @@ export function Stage2Training({ words, onComplete }: Stage2Props) {
 
             return () => clearTimeout(timer);
         }
-    }, [selectedOption, currentIndex, isCorrect, isRetryMode, exerciseResults]);
-
-    const generateOptions = () => {
-        const correctTranslation =
-            currentWord.customTranslation ||
-            (currentWord.baseWord?.translations &&
-            currentWord.baseWord.translations.length > 0
-                ? currentWord.baseWord.translations[0].translation
-                : '');
-        const otherWords = words.filter((w, idx) => idx !== currentIndex);
-
-        // Выбираем 3 случайных неправильных ответа
-        const shuffledOthers = [...otherWords].sort(() => Math.random() - 0.5);
-        const wrongOptions = shuffledOthers
-            .slice(0, 3)
-            .map(
-                w =>
-                    w.customTranslation ||
-                    (w.baseWord?.translations &&
-                    w.baseWord.translations.length > 0
-                        ? w.baseWord.translations[0].translation
-                        : ''),
-            );
-
-        // Комбинируем с правильным ответом и перемешиваем
-        const allOptions = [...wrongOptions, correctTranslation].sort(
-            () => Math.random() - 0.5,
-        );
-        setOptions(allOptions);
-    };
+    }, [
+        selectedOption,
+        currentIndex,
+        isCorrect,
+        isRetryMode,
+        exerciseResults,
+        findNextError,
+        generateOptions,
+        handleNext,
+        onComplete,
+    ]);
 
     const handleSelectOption = async (option: string) => {
         if (selectedOption !== null) return; // Уже выбрано
@@ -222,58 +287,6 @@ export function Stage2Training({ words, onComplete }: Stage2Props) {
             correct: prev.correct + (correct ? 1 : 0),
             total: prev.total + 1,
         }));
-    };
-
-    const handleNext = () => {
-        if (currentIndex < words.length - 1) {
-            setCurrentIndex(currentIndex + 1);
-        } else {
-            // Завершили все слова первый раз
-            setHasCompletedFirstRound(true);
-
-            // Проверяем, есть ли ошибки
-            const errorIndices = exerciseResults
-                .map((result, idx) => (result === false ? idx : -1))
-                .filter(idx => idx !== -1);
-
-            if (errorIndices.length > 0) {
-                // Есть ошибки - переходим в режим исправления
-                setIsRetryMode(true);
-                setCurrentIndex(errorIndices[0]);
-            } else {
-                // Все правильно - завершаем этап
-                onComplete();
-                setCurrentIndex(0);
-                setStats({ correct: 0, total: 0 });
-                setIsRetryMode(false);
-                setHasCompletedFirstRound(false);
-            }
-        }
-    };
-
-    // Функция для поиска следующей ошибки (с текущими результатами)
-    const findNextErrorWithResults = (
-        startIndex: number,
-        results: (boolean | null)[],
-    ) => {
-        // Ищем следующую ошибку после текущего индекса
-        for (let i = startIndex + 1; i < results.length; i++) {
-            if (results[i] === false) {
-                return i;
-            }
-        }
-        // Если не нашли, ищем с начала до текущего индекса
-        for (let i = 0; i <= startIndex; i++) {
-            if (results[i] === false) {
-                return i;
-            }
-        }
-        return -1; // Ошибок больше нет
-    };
-
-    // Функция для поиска следующей ошибки (использует текущее состояние)
-    const findNextError = (startIndex: number) => {
-        return findNextErrorWithResults(startIndex, exerciseResults);
     };
 
     if (!currentWord) {

@@ -89,17 +89,25 @@ async function readExternalWordsOutput(): Promise<WordData> {
 
         return firstWord;
     } catch (error) {
-        if (error && typeof error === 'object' && 'code' in error && error.code === 'ENOENT') {
+        if (
+            error &&
+            typeof error === 'object' &&
+            'code' in error &&
+            error.code === 'ENOENT'
+        ) {
             throw new Error(`File ${inputFilePath} does not exist`);
         }
-        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorMessage =
+            error instanceof Error ? error.message : String(error);
         throw new Error(
             `Error reading or parsing ${inputFilePath}: ${errorMessage}`,
         );
     }
 }
 
-async function processWordWithCursor(wordData: WordData): Promise<ProcessResult> {
+async function processWordWithCursor(
+    wordData: WordData,
+): Promise<ProcessResult> {
     const word = wordData.word;
     const language = wordData.language.name;
     const languageCode = wordData.language.code;
@@ -228,7 +236,10 @@ Format your response as a simple JSON object with this structure:
 Make sure all translations are accurate and contextually appropriate. All sentences should be natural, grammatically correct, and demonstrate different uses of the word. Avoid any meta-commentary or explanations - just provide the JSON.`;
 
     // Сохраняем промпт в файл
-    const promptFile = path.join(outputDir, `${currentCounter}-${word}-prompt-${timestamp}.txt`);
+    const promptFile = path.join(
+        outputDir,
+        `${currentCounter}-${word}-prompt-${timestamp}.txt`,
+    );
     await fs.writeFile(promptFile, prompt, 'utf8');
 
     await log(`📝 Created prompt file: ${promptFile}`);
@@ -288,7 +299,8 @@ async function main(): Promise<void> {
         await log(`📝 Log saved to: ${logFilePath}`);
         await log(`📄 Result file: ${result.promptFile}`);
     } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorMessage =
+            error instanceof Error ? error.message : String(error);
         await log(`❌ Script failed: ${errorMessage}`);
         console.error('Error details:', error);
         process.exit(1);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -74,16 +74,7 @@ export default function WordsPage() {
     const [isClient, setIsClient] = useState(false);
     const { toast } = useToast();
 
-    useEffect(() => {
-        setIsClient(true);
-        fetchWords();
-    }, []);
-
-    useEffect(() => {
-        filterWords();
-    }, [words, selectedLanguage, selectedStatus]);
-
-    const fetchWords = async () => {
+    const fetchWords = useCallback(async () => {
         try {
             const response = await fetch('/api/words');
             if (response.ok) {
@@ -100,9 +91,9 @@ export default function WordsPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [toast]);
 
-    const filterWords = () => {
+    const filterWords = useCallback(() => {
         let filtered = words;
 
         if (selectedLanguage !== 'ALL') {
@@ -116,7 +107,16 @@ export default function WordsPage() {
         }
 
         setFilteredWords(filtered);
-    };
+    }, [words, selectedLanguage, selectedStatus]);
+
+    useEffect(() => {
+        setIsClient(true);
+        fetchWords();
+    }, [fetchWords]);
+
+    useEffect(() => {
+        filterWords();
+    }, [words, selectedLanguage, selectedStatus, filterWords]);
 
     // Функция для получения слов, отфильтрованных только по языку
     const getWordsByLanguage = () => {

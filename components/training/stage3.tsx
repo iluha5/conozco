@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ProgressDots } from './progress-dots';
@@ -98,11 +98,7 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
         setExerciseResults(new Array(words.length).fill(null));
     }, [words.length]);
 
-    useEffect(() => {
-        initializePairs();
-    }, [currentBatch, isRetryMode]);
-
-    const initializePairs = () => {
+    const initializePairs = useCallback(() => {
         const newPairs: MatchPair[] = currentWords.map(word => {
             const globalIndex = words.findIndex(w => w.id === word.id);
             const hasError = exerciseResults[globalIndex] === false;
@@ -133,7 +129,11 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
         setSelectedTranslation(null);
         setErrorForeign(null);
         setErrorTranslation(null);
-    };
+    }, [currentWords, words, exerciseResults, isRetryMode]);
+
+    useEffect(() => {
+        initializePairs();
+    }, [currentBatch, isRetryMode, initializePairs]);
 
     const handleForeignClick = (foreign: string) => {
         const pair = pairs.find(p => p.foreign === foreign);
@@ -261,27 +261,42 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
     const allMatched = pairs.every(p => p.matched);
 
     // Функция для поиска следующей ошибки (батчи с ошибками)
-    const findNextErrorBatch = (startBatch: number) => {
-        // Ищем следующий батч с ошибками после текущего
-        for (let i = startBatch + 1; i < totalBatches; i++) {
-            const batchStart = i * wordsPerBatch;
-            const batchEnd = Math.min((i + 1) * wordsPerBatch, words.length);
-            const batchResults = exerciseResults.slice(batchStart, batchEnd);
-            if (batchResults.some(r => r === false)) {
-                return i;
+    const findNextErrorBatch = useCallback(
+        (startBatch: number) => {
+            // Ищем следующий батч с ошибками после текущего
+            for (let i = startBatch + 1; i < totalBatches; i++) {
+                const batchStart = i * wordsPerBatch;
+                const batchEnd = Math.min(
+                    (i + 1) * wordsPerBatch,
+                    words.length,
+                );
+                const batchResults = exerciseResults.slice(
+                    batchStart,
+                    batchEnd,
+                );
+                if (batchResults.some(r => r === false)) {
+                    return i;
+                }
             }
-        }
-        // Если не нашли, ищем с начала до текущего батча
-        for (let i = 0; i <= startBatch; i++) {
-            const batchStart = i * wordsPerBatch;
-            const batchEnd = Math.min((i + 1) * wordsPerBatch, words.length);
-            const batchResults = exerciseResults.slice(batchStart, batchEnd);
-            if (batchResults.some(r => r === false)) {
-                return i;
+            // Если не нашли, ищем с начала до текущего батча
+            for (let i = 0; i <= startBatch; i++) {
+                const batchStart = i * wordsPerBatch;
+                const batchEnd = Math.min(
+                    (i + 1) * wordsPerBatch,
+                    words.length,
+                );
+                const batchResults = exerciseResults.slice(
+                    batchStart,
+                    batchEnd,
+                );
+                if (batchResults.some(r => r === false)) {
+                    return i;
+                }
             }
-        }
-        return -1; // Ошибок больше нет
-    };
+            return -1; // Ошибок больше нет
+        },
+        [totalBatches, wordsPerBatch, words.length, exerciseResults],
+    );
 
     // Автоматический переход к следующей группе или завершение этапа
     useEffect(() => {
@@ -346,6 +361,8 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
         onComplete,
         isRetryMode,
         exerciseResults,
+        findNextErrorBatch,
+        initializePairs,
     ]);
 
     return (

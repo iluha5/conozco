@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -104,31 +104,15 @@ export default function TrainingPage() {
     const [completedWords, setCompletedWords] = useState<Word[]>([]);
     const { toast } = useToast();
 
-    const enabledStages = trainingSettings
-        ? new Set(trainingSettings.enabledStages)
-        : new Set([1, 2, 3, 4, 5, 6]);
+    const enabledStages = useMemo(
+        () =>
+            trainingSettings
+                ? new Set(trainingSettings.enabledStages)
+                : new Set([1, 2, 3, 4, 5, 6]),
+        [trainingSettings],
+    );
 
-    useEffect(() => {
-        if (settingsLoaded && selectionLoaded) {
-            fetchWords();
-        }
-    }, [settingsLoaded, selectionLoaded]);
-
-    useEffect(() => {
-        filterTrainingWords();
-    }, [words, selectedLanguage, selectedWords]);
-
-    useEffect(() => {
-        // Если текущий этап отключен, переключаемся на первый доступный
-        if (!isStageEnabled(currentStage)) {
-            const firstEnabled = Array.from(enabledStages).sort()[0];
-            if (firstEnabled) {
-                setCurrentStage(firstEnabled);
-            }
-        }
-    }, [enabledStages, currentStage]);
-
-    const fetchWords = async () => {
+    const fetchWords = useCallback(async () => {
         setLoading(true);
         try {
             const response = await fetch('/api/words?status=NOT_LEARNED');
@@ -146,11 +130,14 @@ export default function TrainingPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [toast]);
 
-    const isStageEnabled = (stage: number) => enabledStages.has(stage);
+    const isStageEnabled = useCallback(
+        (stage: number) => enabledStages.has(stage),
+        [enabledStages],
+    );
 
-    const filterTrainingWords = () => {
+    const filterTrainingWords = useCallback(() => {
         let filtered = words.filter(w => w.status === 'NOT_LEARNED');
 
         if (selectedLanguage !== 'ALL') {
@@ -165,7 +152,27 @@ export default function TrainingPage() {
         }
 
         setTrainingWords(filtered);
-    };
+    }, [words, selectedLanguage, selectedWords]);
+
+    useEffect(() => {
+        if (settingsLoaded && selectionLoaded) {
+            fetchWords();
+        }
+    }, [settingsLoaded, selectionLoaded, fetchWords]);
+
+    useEffect(() => {
+        filterTrainingWords();
+    }, [words, selectedLanguage, selectedWords, filterTrainingWords]);
+
+    useEffect(() => {
+        // Если текущий этап отключен, переключаемся на первый доступный
+        if (!isStageEnabled(currentStage)) {
+            const firstEnabled = Array.from(enabledStages).sort()[0];
+            if (firstEnabled) {
+                setCurrentStage(firstEnabled);
+            }
+        }
+    }, [enabledStages, currentStage, isStageEnabled]);
 
     const handleStageComplete = async () => {
         const enabledStagesArray = Array.from(enabledStages).sort();
