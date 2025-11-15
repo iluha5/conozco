@@ -1,0 +1,25 @@
+Return ONLY valid JSON for the word "${word}". No explanations, no markdown, just JSON:
+
+{
+  "word": "${word}",
+  "partOfSpeech": "noun",
+  "languageCode": "${languageCode}",
+  "translations": [
+    {"languageCode": "ru", "translations": ["стеллаж", "полка"]},
+    {"languageCode": "en", "translations": ["bookshelf", "shelf"]}
+  ],
+  "examples": [
+    {
+      "pronoun": "yo",
+      "example": "Tengo una estantería nueva",
+      "translations": [
+        {"languageCode": "ru", "translation": "У меня новая полка"},
+        {"languageCode": "en", "translation": "I have a new shelf"}
+      ],
+      "sentenceTypeCode": "AFFIRMATIVE",
+      "isNegative": false,
+      "isQuestion": false
+    }
+  ],
+  "grammaticalExamples": []
+}

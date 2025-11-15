@@ -17,6 +17,7 @@ let counter = 1;
 interface CursorResult {
     word: string;
     partOfSpeech?: string;
+    languageCode?: string;
     translations: string[];
     sentences: (string | { text: string; translation: string })[];
     grammaticalExamples?: {
@@ -45,7 +46,10 @@ interface WordData {
     examples: {
         pronoun: string;
         example: string;
-        translation: string;
+        translations: {
+            languageCode: string;
+            translation: string;
+        }[];
         sentenceTypeCode: string;
         isNegative: boolean;
         isQuestion: boolean;
@@ -55,7 +59,10 @@ interface WordData {
         examples: {
             pronoun: string;
             example: string;
-            translation: string;
+            translations: {
+                languageCode: string;
+                translation: string;
+            }[];
             sentenceTypeCode: string;
             isNegative: boolean;
             isQuestion: boolean;
@@ -68,7 +75,10 @@ interface GrammaticalExample {
     examples: {
         pronoun: string;
         example: string;
-        translation: string;
+        translations: {
+            languageCode: string;
+            translation: string;
+        }[];
         sentenceTypeCode: string;
         isNegative: boolean;
         isQuestion: boolean;
@@ -143,29 +153,45 @@ const partOfSpeechMapping: Record<string, string> = {
 };
 
 function transformCursorResultToWordData(cursorResult: CursorResult): WordData {
-    // Получаем язык слова из контекста (предполагаем испанский)
-    // В реальном сценарии это нужно получать из файла промпта или параметров
-    const sourceLanguage = 'es'; // Испанский
-    const targetLanguage = 'ru'; // Русский
+    // Получаем язык слова из контекста
+    const sourceLanguage = cursorResult.languageCode || 'es';
+
+    // Определяем целевые языки для переводов в зависимости от исходного языка
+    const getTargetLanguages = (sourceLang: string): string[] => {
+        if (sourceLang === 'es') {
+            return ['ru', 'en']; // Испанский -> русский и английский
+        } else if (sourceLang === 'en') {
+            return ['ru', 'es']; // Английский -> русский и испанский
+        }
+        return ['ru']; // По умолчанию только русский
+    };
+
+    const targetLanguages = getTargetLanguages(sourceLanguage);
 
     // Получаем часть речи из ответа Cursor с маппингом
-    const cursorPOS = cursorResult.partOfSpeech || 'noun'; // По умолчанию существительное
+    const cursorPOS = cursorResult.partOfSpeech || 'noun';
     const dbPartOfSpeech =
         partOfSpeechMapping[cursorPOS.toLowerCase()] || 'NOUN';
 
-    // Преобразуем предложения в формат импорта
+    // Преобразуем предложения в формат импорта с множественными переводами
     const examples = cursorResult.sentences.map((sentence, index) => {
-        // Проверяем, является ли sentence объектом или строкой (для обратной совместимости)
         const text = typeof sentence === 'object' ? sentence.text : sentence;
-        const translation =
-            typeof sentence === 'object'
-                ? sentence.translation
-                : `Перевод ${index + 1}`;
+
+        // Создаем переводы для всех целевых языков
+        const translations = targetLanguages.map(lang => ({
+            languageCode: lang,
+            translation:
+                typeof sentence === 'object' && sentence.translation
+                    ? lang === 'ru'
+                        ? sentence.translation
+                        : `Translation to ${lang}`
+                    : `Translation ${index + 1} to ${lang}`,
+        }));
 
         return {
             pronoun: 'yo', // Заглушка, можно улучшить
             example: text,
-            translation: translation,
+            translations: translations,
             sentenceTypeCode: 'AFFIRMATIVE',
             isNegative: false,
             isQuestion: text.includes('?'),
@@ -173,97 +199,70 @@ function transformCursorResultToWordData(cursorResult: CursorResult): WordData {
     });
 
     // Преобразуем grammaticalExamples, если они есть (для глаголов)
-    let grammaticalExamples: GrammaticalExample[] = [];
+    let grammaticalExamples: {
+        tenseName: string;
+        examples: {
+            pronoun: string;
+            example: string;
+            translations: {
+                languageCode: string;
+                translation: string;
+            }[];
+            sentenceTypeCode: string;
+            isNegative: boolean;
+            isQuestion: boolean;
+        }[];
+    }[] = [];
     if (cursorResult.grammaticalExamples) {
-        // Для испанского языка
+        // Обработка грамматических примеров
         if (sourceLanguage === 'es') {
-            // Presente de indicativo
-            if (cursorResult.grammaticalExamples['Presente de indicativo']) {
-                cursorResult.grammaticalExamples[
-                    'Presente de indicativo'
-                ].forEach(example => {
-                    const text =
-                        typeof example === 'object' ? example.text : example;
-                    const translation =
-                        typeof example === 'object'
-                            ? example.translation
-                            : `Перевод примера`;
-
-                    grammaticalExamples.push({
-                        tenseName: 'Presente de indicativo',
-                        examples: [
-                            {
-                                pronoun: 'yo',
-                                example: text,
-                                translation: translation,
-                                sentenceTypeCode: 'AFFIRMATIVE',
-                                isNegative: false,
-                                isQuestion: false,
-                            },
-                        ],
-                    });
-                });
-            }
-
-            // Futuro próximo
-            if (cursorResult.grammaticalExamples['Futuro próximo']) {
-                cursorResult.grammaticalExamples['Futuro próximo'].forEach(
-                    example => {
+            // Обработка различных времен для испанского
+            [
+                'Presente de indicativo',
+                'Futuro próximo',
+                'Pretérito indefinido',
+            ].forEach(tenseName => {
+                const examples =
+                    cursorResult.grammaticalExamples?.[
+                        tenseName as keyof typeof cursorResult.grammaticalExamples
+                    ];
+                if (examples && Array.isArray(examples)) {
+                    examples.forEach((example: any) => {
                         const text =
                             typeof example === 'object'
                                 ? example.text
                                 : example;
-                        const translation =
-                            typeof example === 'object'
-                                ? example.translation
-                                : `Перевод примера`;
+
+                        // Создаем переводы для всех целевых языков
+                        const translations = targetLanguages.map(lang => ({
+                            languageCode: lang,
+                            translation:
+                                typeof example === 'object' &&
+                                example.translation
+                                    ? lang === 'ru'
+                                        ? example.translation
+                                        : `Translation to ${lang}`
+                                    : `${tenseName} translation to ${lang}`,
+                        }));
 
                         grammaticalExamples.push({
-                            tenseName: 'Futuro próximo',
+                            tenseName: tenseName,
                             examples: [
                                 {
                                     pronoun: 'yo',
                                     example: text,
-                                    translation: translation,
+                                    translations: translations,
                                     sentenceTypeCode: 'AFFIRMATIVE',
                                     isNegative: false,
                                     isQuestion: false,
                                 },
                             ],
                         });
-                    },
-                );
-            }
-
-            // Pretérito indefinido
-            if (cursorResult.grammaticalExamples['Pretérito indefinido']) {
-                cursorResult.grammaticalExamples[
-                    'Pretérito indefinido'
-                ].forEach(example => {
-                    const text =
-                        typeof example === 'object' ? example.text : example;
-                    const translation =
-                        typeof example === 'object'
-                            ? example.translation
-                            : `Перевод примера`;
-
-                    grammaticalExamples.push({
-                        tenseName: 'Pretérito indefinido',
-                        examples: [
-                            {
-                                pronoun: 'yo',
-                                example: text,
-                                translation: translation,
-                                sentenceTypeCode: 'AFFIRMATIVE',
-                                isNegative: false,
-                                isQuestion: false,
-                            },
-                        ],
                     });
-                });
-            }
+                }
+            });
 
-            // Отрицательное предложение
+            // Отрицательные и вопросительные примеры добавляем в основной массив examples
             if (cursorResult.grammaticalExamples.negative) {
                 const negativeExample =
                     cursorResult.grammaticalExamples.negative;
@@ -271,22 +270,28 @@ function transformCursorResultToWordData(cursorResult: CursorResult): WordData {
                     typeof negativeExample === 'object'
                         ? negativeExample.text
                         : negativeExample;
-                const translation =
-                    typeof negativeExample === 'object'
-                        ? negativeExample.translation
-                        : `Отрицательный перевод`;
+
+                const translations = targetLanguages.map(lang => ({
+                    languageCode: lang,
+                    translation:
+                        typeof negativeExample === 'object' &&
+                        negativeExample.translation
+                            ? lang === 'ru'
+                                ? negativeExample.translation
+                                : `Negative translation to ${lang}`
+                            : `Negative translation to ${lang}`,
+                }));
 
                 examples.push({
                     pronoun: 'yo',
                     example: text,
-                    translation: translation,
+                    translations: translations,
                     sentenceTypeCode: 'NEGATIVE',
                     isNegative: true,
                     isQuestion: false,
                 });
             }
 
-            // Вопросительное предложение
             if (cursorResult.grammaticalExamples.question) {
                 const questionExample =
                     cursorResult.grammaticalExamples.question;
@@ -294,15 +299,22 @@ function transformCursorResultToWordData(cursorResult: CursorResult): WordData {
                     typeof questionExample === 'object'
                         ? questionExample.text
                         : questionExample;
-                const translation =
-                    typeof questionExample === 'object'
-                        ? questionExample.translation
-                        : `Вопросительный перевод`;
+
+                const translations = targetLanguages.map(lang => ({
+                    languageCode: lang,
+                    translation:
+                        typeof questionExample === 'object' &&
+                        questionExample.translation
+                            ? lang === 'ru'
+                                ? questionExample.translation
+                                : `Question translation to ${lang}`
+                            : `Question translation to ${lang}`,
+                }));
 
                 examples.push({
                     pronoun: 'yo',
                     example: text,
-                    translation: translation,
+                    translations: translations,
                     sentenceTypeCode: 'QUESTION',
                     isNegative: false,
                     isQuestion: true,
@@ -312,16 +324,17 @@ function transformCursorResultToWordData(cursorResult: CursorResult): WordData {
         // Аналогично можно добавить обработку для английского языка
     }
 
+    // Создаем массив переводов слова для всех целевых языков
+    const wordTranslations = targetLanguages.map(lang => ({
+        languageCode: lang,
+        translations: cursorResult.translations, // Используем те же переводы для всех языков
+    }));
+
     return {
         word: cursorResult.word,
-        partOfSpeech: dbPartOfSpeech, // Используем определенную Cursor часть речи
+        partOfSpeech: dbPartOfSpeech,
         languageCode: sourceLanguage,
-        translations: [
-            {
-                languageCode: targetLanguage,
-                translations: cursorResult.translations,
-            },
-        ],
+        translations: wordTranslations,
         examples: examples,
         grammaticalExamples: grammaticalExamples,
     };
@@ -575,17 +588,24 @@ async function importWordData(wordData: WordData): Promise<boolean> {
             example.isQuestion || false,
         );
 
-        await prisma.wordExample.create({
-            data: {
-                baseWordId: baseWord.id,
-                pronounId: pronoun.id,
-                example: example.example,
-                translation: example.translation,
-                translationLanguageId: language.id, // Используем язык слова для перевода
-                sentenceTypeId: sentenceType.id,
-                sourceId: wordSource.id,
-            },
-        });
+        // Создаем отдельную запись для каждого языка перевода
+        for (const translation of example.translations) {
+            const translationLanguage = await getOrCreateLanguage(
+                translation.languageCode,
+            );
+
+            await prisma.wordExample.create({
+                data: {
+                    baseWordId: baseWord.id,
+                    pronounId: pronoun.id,
+                    example: example.example,
+                    translation: translation.translation,
+                    translationLanguageId: translationLanguage.id,
+                    sentenceTypeId: sentenceType.id,
+                    sourceId: wordSource.id,
+                },
+            });
+        }
     }
 
     await log(
@@ -623,17 +643,25 @@ async function importWordData(wordData: WordData): Promise<boolean> {
                 example.isQuestion || false,
             );
 
-            await prisma.grammaticalExample.create({
-                data: {
-                    baseWordId: baseWord.id,
-                    tenseId: tense.id,
-                    pronounId: pronoun.id,
-                    example: example.example,
-                    translation: example.translation,
-                    sentenceTypeId: sentenceType.id,
-                    sourceId: wordSource.id,
-                },
-            });
+            // Создаем отдельную запись для каждого языка перевода
+            for (const translation of example.translations) {
+                const translationLanguage = await getOrCreateLanguage(
+                    translation.languageCode,
+                );
+
+                await prisma.grammaticalExample.create({
+                    data: {
+                        baseWordId: baseWord.id,
+                        tenseId: tense.id,
+                        pronounId: pronoun.id,
+                        example: example.example,
+                        translation: translation.translation,
+                        translationLanguageId: translationLanguage.id,
+                        sentenceTypeId: sentenceType.id,
+                        sourceId: wordSource.id,
+                    },
+                });
+            }
         }
     }
 
@@ -680,13 +708,22 @@ async function main() {
         let wordDataArray: WordData[] = [];
         if (Array.isArray(rawData)) {
             wordDataArray = rawData;
+        } else if (
+            rawData.word &&
+            rawData.partOfSpeech &&
+            rawData.languageCode &&
+            rawData.translations &&
+            rawData.examples
+        ) {
+            // Новый формат WordData от Cursor agent
+            wordDataArray = [rawData as WordData];
         } else if (rawData.word && rawData.translations && rawData.sentences) {
-            // Преобразуем формат от Cursor agent в формат импорта
+            // Старый формат CursorResult - преобразуем
             const transformedData = transformCursorResultToWordData(rawData);
             wordDataArray = [transformedData];
         } else {
             throw new Error(
-                'Invalid data format: expected array or Cursor result object',
+                'Invalid data format: expected array, WordData object, or Cursor result object',
             );
         }
 

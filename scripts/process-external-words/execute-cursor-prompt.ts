@@ -140,10 +140,26 @@ async function readPromptContent(promptFilePath: string): Promise<string> {
     }
 }
 
+async function extractWordFromPromptFileName(
+    promptFilePath: string,
+): Promise<string> {
+    // Извлекаем слово из имени файла: формат counter-word-prompt-timestamp.txt
+    const fileName = path.basename(promptFilePath, '.txt');
+    const match = fileName.match(/^\d+-(.+)-prompt-/);
+    if (!match) {
+        throw new Error(
+            `Could not extract word from prompt file name: ${fileName}`,
+        );
+    }
+    const word = match[1];
+    await log(`🔤 Extracted word from file name: "${word}"`);
+    return word;
+}
+
 async function extractWordFromPromptContent(
     promptContent: string,
 ): Promise<string> {
-    // Ищем слово в промпте по паттерну: For the Spanish word "word"
+    // Резервная функция: ищем слово в промпте по паттерну: For the Spanish word "word"
     const match = promptContent.match(/For the \w+ word "([^"]+)"/);
     if (!match) {
         throw new Error('Could not extract word from prompt content');
@@ -298,8 +314,8 @@ async function main(): Promise<void> {
         // Читаем содержимое промпта
         const promptContent = await readPromptContent(promptFilePath);
 
-        // Извлекаем слово из промпта
-        const word = await extractWordFromPromptContent(promptContent);
+        // Извлекаем слово из имени файла промпта
+        const word = await extractWordFromPromptFileName(promptFilePath);
 
         // Выполняем промпт через Cursor Agent
         const resultFilePath = await executeCursorAgent(promptContent, word);

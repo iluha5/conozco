@@ -73,6 +73,7 @@ model Language {
   customTranslationsOriginal    CustomTranslation[] @relation("CustomTranslationOriginalLanguage")
   customTranslationsTranslation CustomTranslation[] @relation("CustomTranslationTranslationLanguage")
   wordExamplesTranslationLanguage WordExample[] @relation("WordExampleTranslationLanguage")
+  grammaticalExamplesTranslationLanguage GrammaticalExample[] @relation("GrammaticalExampleTranslationLanguage")
 
   @@index([code])
 }
@@ -237,6 +238,7 @@ model GrammaticalExample {
   pronounId     Int      // ID местоимения
   example       String   // Пример в данном времени
   translation   String   // Перевод на русский
+  translationLanguageId Int // ID языка перевода
   sentenceTypeId Int
   sourceId      Int      // ID источника примера
   sentenceType  SentenceType @relation(fields: [sentenceTypeId], references: [id])
@@ -245,11 +247,13 @@ model GrammaticalExample {
   tense         Tense    @relation(fields: [tenseId], references: [id])
   pronoun       Pronoun  @relation(fields: [pronounId], references: [id])
   source        WordSource @relation(fields: [sourceId], references: [id])
+  translationLanguage Language @relation("GrammaticalExampleTranslationLanguage", fields: [translationLanguageId], references: [id])
 
   @@index([baseWordId, tenseId])
   @@index([tenseId])
   @@index([sentenceTypeId])
   @@index([sourceId])
+  @@index([translationLanguageId])
 }
 
 // Таблица слов для изучения (пользовательские слова)

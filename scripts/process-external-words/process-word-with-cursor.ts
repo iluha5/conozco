@@ -147,122 +147,28 @@ async function processWordWithCursor(
         `🎯 Processing word: "${word}" (${language} -> ${translationLanguage}, POS: ${partOfSpeech})`,
     );
 
-    // Базовый промпт
-    let prompt = `You are a professional linguist and translator. For the ${language} word "${word}", please provide:
+    // Читаем промпт из файла process-external-words-simple.txt
+    const promptTemplatePath = path.join(
+        __dirname,
+        '..',
+        'cursor',
+        'prompts',
+        'process-external-words-simple.txt',
+    );
+    let prompt = '';
 
-1. The part of speech (one word: noun, verb, adjective, adverb, pronoun, preposition, conjunction, interjection)
-2. THREE high-quality, accurate translations to ${translationLanguage}
-3. FIVE random, natural sentences using this word (each sentence should be no more than 6 words long)`;
-
-    // Расширенный промпт для глаголов
-    if (partOfSpeech === 'VERB') {
-        if (languageCode === 'es') {
-            // Испанский глагол
-            prompt += `
-
-Since "${word}" is a Spanish verb, please also provide additional grammatical examples:
-
-4. Examples in different tenses:
-   - Presente de indicativo (Present Indicative) - 2 examples with translations
-   - Futuro próximo (ir a + infinitivo) - 2 examples with translations
-   - Pretérito indefinido (Simple Past) - 2 examples with translations
-   - One negative sentence with translation
-   - One question sentence with translation
-
-Format your response as a simple JSON object with this structure:
-{
-  "word": "${word}",
-  "partOfSpeech": "verb",
-  "translations": ["translation1", "translation2", "translation3"],
-  "sentences": [
-    {"text": "sentence1", "translation": "translation1"},
-    {"text": "sentence2", "translation": "translation2"},
-    {"text": "sentence3", "translation": "translation3"},
-    {"text": "sentence4", "translation": "translation4"},
-    {"text": "sentence5", "translation": "translation5"}
-  ],
-  "grammaticalExamples": {
-    "Presente de indicativo": [
-      {"text": "example1", "translation": "translation1"},
-      {"text": "example2", "translation": "translation2"}
-    ],
-    "Futuro próximo": [
-      {"text": "example1", "translation": "translation1"},
-      {"text": "example2", "translation": "translation2"}
-    ],
-    "Pretérito indefinido": [
-      {"text": "example1", "translation": "translation1"},
-      {"text": "example2", "translation": "translation2"}
-    ],
-    "negative": {"text": "negative sentence", "translation": "negative translation"},
-    "question": {"text": "question sentence", "translation": "question translation"}
-  }
-}`;
-        } else if (languageCode === 'en') {
-            // Английский глагол
-            prompt += `
-
-Since "${word}" is an English verb, please also provide additional grammatical examples:
-
-4. Examples in different tenses:
-   - Present Simple - 2 examples with translations
-   - Past Simple - 2 examples with translations
-   - Future Simple - 2 examples with translations
-   - One negative sentence with translation
-   - One question sentence with translation
-
-Format your response as a simple JSON object with this structure:
-{
-  "word": "${word}",
-  "partOfSpeech": "verb",
-  "translations": ["translation1", "translation2", "translation3"],
-  "sentences": [
-    {"text": "sentence1", "translation": "translation1"},
-    {"text": "sentence2", "translation": "translation2"},
-    {"text": "sentence3", "translation": "translation3"},
-    {"text": "sentence4", "translation": "translation4"},
-    {"text": "sentence5", "translation": "translation5"}
-  ],
-  "grammaticalExamples": {
-    "Present Simple": [
-      {"text": "example1", "translation": "translation1"},
-      {"text": "example2", "translation": "translation2"}
-    ],
-    "Past Simple": [
-      {"text": "example1", "translation": "translation1"},
-      {"text": "example2", "translation": "translation2"}
-    ],
-    "Future Simple": [
-      {"text": "example1", "translation": "translation1"},
-      {"text": "example2", "translation": "translation2"}
-    ],
-    "negative": {"text": "negative sentence", "translation": "negative translation"},
-    "question": {"text": "question sentence", "translation": "question translation"}
-  }
-}`;
-        }
-    } else {
-        // Для не-глаголов используем базовый промпт с переводами
-        prompt += `
-
-Format your response as a simple JSON object with this structure:
-{
-  "word": "${word}",
-  "partOfSpeech": "noun",
-  "translations": ["translation1", "translation2", "translation3"],
-  "sentences": [
-    {"text": "sentence1", "translation": "translation1"},
-    {"text": "sentence2", "translation": "translation2"},
-    {"text": "sentence3", "translation": "translation3"},
-    {"text": "sentence4", "translation": "translation4"},
-    {"text": "sentence5", "translation": "translation5"}
-  ]
-}`;
+    try {
+        prompt = await fs.readFile(promptTemplatePath, 'utf8');
+        await log(`📖 Read prompt template from: ${promptTemplatePath}`);
+    } catch (error) {
+        await log(`❌ Error reading prompt template: ${error}`);
+        throw new Error(`Failed to read prompt template: ${error}`);
     }
 
-    prompt += `
-
-Make sure all translations are accurate and contextually appropriate. All sentences should be natural, grammatically correct, and demonstrate different uses of the word. Avoid any meta-commentary or explanations - just provide the JSON.`;
+    // Заменяем плейсхолдеры в промпте
+    prompt = prompt.replace(/\$\{word\}/g, word);
+    prompt = prompt.replace(/\$\{language\}/g, language);
+    prompt = prompt.replace(/\$\{languageCode\}/g, languageCode);
 
     // Создаем папку с датой для temp файлов
     const tempDatePath = await ensureDateFolder(

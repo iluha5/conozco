@@ -1,0 +1,103 @@
+{
+    "word": "estantería",
+    "partOfSpeech": "noun",
+    "languageCode": "es",
+    "translations": [
+        {
+            "languageCode": "ru",
+            "translations": ["стеллаж", "книжная полка", "полка"]
+        },
+        {
+            "languageCode": "en",
+            "translations": ["bookshelf", "shelf", "bookcase"]
+        }
+    ],
+    "examples": [
+        {
+            "pronoun": "yo",
+            "example": "Tengo una estantería llena de libros",
+            "translations": [
+                {
+                    "languageCode": "ru",
+                    "translation": "У меня есть стеллаж, полный книг"
+                },
+                {
+                    "languageCode": "en",
+                    "translation": "I have a bookshelf full of books"
+                }
+            ],
+            "sentenceTypeCode": "AFFIRMATIVE",
+            "isNegative": false,
+            "isQuestion": false
+        },
+        {
+            "pronoun": "tú",
+            "example": "La estantería está en la pared",
+            "translations": [
+                {
+                    "languageCode": "ru",
+                    "translation": "Стеллаж находится на стене"
+                },
+                {
+                    "languageCode": "en",
+                    "translation": "The bookshelf is on the wall"
+                }
+            ],
+            "sentenceTypeCode": "AFFIRMATIVE",
+            "isNegative": false,
+            "isQuestion": false
+        },
+        {
+            "pronoun": "él",
+            "example": "Compré una estantería nueva para mi oficina",
+            "translations": [
+                {
+                    "languageCode": "ru",
+                    "translation": "Я купил новый стеллаж для своего офиса"
+                },
+                {
+                    "languageCode": "en",
+                    "translation": "I bought a new bookshelf for my office"
+                }
+            ],
+            "sentenceTypeCode": "AFFIRMATIVE",
+            "isNegative": false,
+            "isQuestion": false
+        },
+        {
+            "pronoun": "nosotros",
+            "example": "¿Dónde está la estantería?",
+            "translations": [
+                {
+                    "languageCode": "ru",
+                    "translation": "Где находится стеллаж?"
+                },
+                {
+                    "languageCode": "en",
+                    "translation": "Where is the bookshelf?"
+                }
+            ],
+            "sentenceTypeCode": "QUESTION",
+            "isNegative": false,
+            "isQuestion": true
+        },
+        {
+            "pronoun": "ellos",
+            "example": "No hay espacio en la estantería",
+            "translations": [
+                {
+                    "languageCode": "ru",
+                    "translation": "На стеллаже нет места"
+                },
+                {
+                    "languageCode": "en",
+                    "translation": "There is no space on the bookshelf"
+                }
+            ],
+            "sentenceTypeCode": "AFFIRMATIVE",
+            "isNegative": true,
+            "isQuestion": false
+        }
+    ],
+    "grammaticalExamples": []
+}
