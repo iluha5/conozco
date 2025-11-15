@@ -440,52 +440,17 @@ async function getWordSource(sourceCode: string = 'native') {
     return source;
 }
 
-async function deleteExistingWordData(word: string, languageId: number) {
-    // Находим существующее слово
-    const existingWord = (await prisma.baseWord.findUnique({
-        where: {
-            word_languageId: {
-                word: word,
-                languageId: languageId,
-            },
-        },
-        include: {
-            translations: true,
-            examples: true,
-            grammaticalExamples: true,
-        },
-    })) as any;
-
-    if (existingWord) {
-        await log(`🗑️ Deleting existing word data for: ${word}`);
-
-        // Удаляем связанные данные
-        if (existingWord.translations.length > 0) {
-            await prisma.wordTranslation.deleteMany({
-                where: { baseWordId: existingWord.id },
-            });
-        }
-
-        if (existingWord.examples.length > 0) {
-            await prisma.wordExample.deleteMany({
-                where: { baseWordId: existingWord.id },
-            });
-        }
-
-        if (existingWord.grammaticalExamples.length > 0) {
-            await prisma.grammaticalExample.deleteMany({
-                where: { baseWordId: existingWord.id },
-            });
-        }
-
-        // Удаляем само слово
-        await prisma.baseWord.delete({
-            where: { id: existingWord.id },
-        });
-    }
+async function clearWordExamples(baseWordId: number) {
+    // Удаляем существующие примеры и грамматические примеры для слова
+    await prisma.wordExample.deleteMany({
+        where: { baseWordId: baseWordId },
+    });
+    await prisma.grammaticalExample.deleteMany({
+        where: { baseWordId: baseWordId },
+    });
 }
 
-async function importWordData(wordData: WordData) {
+async function importWordData(wordData: WordData): Promise<boolean> {
     await log(`🔄 Processing word: ${wordData.word}`);
 
     // Получаем или создаем базовые сущности
@@ -496,47 +461,98 @@ async function importWordData(wordData: WordData) {
     );
     const wordSource = await getWordSource('native'); // Используем native для импортированных данных
 
-    // Удаляем существующие данные для этого слова
-    await deleteExistingWordData(wordData.word, language.id);
-
-    // Создаем новое слово
-    const baseWord = await prisma.baseWord.create({
-        data: {
-            word: wordData.word,
-            partOfSpeechId: partOfSpeech.id,
-            languageId: language.id,
-            sourceId: wordSource.id,
+    // Ищем существующее слово
+    const baseWord = await prisma.baseWord.findUnique({
+        where: {
+            word_languageId: {
+                word: wordData.word,
+                languageId: language.id,
+            },
         },
     });
 
-    await log(`✅ Created base word: ${wordData.word} (ID: ${baseWord.id})`);
+    if (!baseWord) {
+        await log(
+            `⚠️ Word not found in database: ${wordData.word} (language: ${wordData.languageCode})`,
+        );
+        await log(
+            `⏭️ Skipping word: ${wordData.word} - it must be created first`,
+        );
+        return false; // Пропускаем слово, которое не существует в БД
+    }
 
-    // Добавляем переводы
+    await log(`📝 Found existing word: ${wordData.word} (ID: ${baseWord.id})`);
+
+    // Обновляем часть речи, если она изменилась
+    if (baseWord.partOfSpeechId !== partOfSpeech.id) {
+        await prisma.baseWord.update({
+            where: { id: baseWord.id },
+            data: { partOfSpeechId: partOfSpeech.id },
+        });
+        await log(`📝 Updated part of speech for: ${wordData.word}`);
+    }
+
+    // Добавляем переводы (только новые, не существующие)
     for (const translationGroup of wordData.translations) {
         const translationLanguage = await getOrCreateLanguage(
             translationGroup.languageCode,
         );
 
-        for (
-            let i = 0;
-            i < translationGroup.translations.length && i < 3;
-            i++
-        ) {
-            const translation = translationGroup.translations[i];
-            await prisma.wordTranslation.create({
-                data: {
+        // Получаем максимальный существующий priority для этого слова и языка
+        const maxPriorityResult = await prisma.wordTranslation.findFirst({
+            where: {
+                baseWordId: baseWord.id,
+                languageId: translationLanguage.id,
+            },
+            orderBy: {
+                priority: 'desc',
+            },
+            select: {
+                priority: true,
+            },
+        });
+
+        let nextPriority = (maxPriorityResult?.priority || 0) + 1;
+
+        for (const translation of translationGroup.translations.slice(0, 3)) {
+            // Проверяем, существует ли уже такой перевод
+            const existingTranslation = await prisma.wordTranslation.findFirst({
+                where: {
                     baseWordId: baseWord.id,
                     languageId: translationLanguage.id,
                     translation: translation,
-                    priority: i + 1,
                 },
             });
+
+            if (!existingTranslation) {
+                await prisma.wordTranslation.create({
+                    data: {
+                        baseWordId: baseWord.id,
+                        languageId: translationLanguage.id,
+                        translation: translation,
+                        priority: nextPriority++,
+                    },
+                });
+                await log(
+                    `➕ Added new translation: "${translation}" for ${wordData.word}`,
+                );
+            } else {
+                await log(
+                    `⏭️ Translation already exists: "${translation}" for ${wordData.word}`,
+                );
+            }
         }
     }
 
-    await log(`✅ Added translations for: ${wordData.word}`);
+    await log(`✅ Processed translations for: ${wordData.word}`);
 
-    // Добавляем примеры
+    // Удаляем существующие примеры и грамматические примеры для этого слова
+    if (baseWord) {
+        await clearWordExamples(baseWord.id);
+        await log(`🗑️ Cleared existing examples for: ${wordData.word}`);
+    }
+
+    // Добавляем примеры (всегда новые, так как старые удалены)
     for (const example of wordData.examples) {
         const pronoun = await getOrCreatePronoun(example.pronoun, language.id);
 
@@ -575,7 +591,7 @@ async function importWordData(wordData: WordData) {
         `✅ Added ${wordData.examples.length} examples for: ${wordData.word}`,
     );
 
-    // Добавляем грамматические примеры
+    // Добавляем грамматические примеры (всегда новые, так как старые удалены)
     for (const grammaticalExample of wordData.grammaticalExamples) {
         const tense = await getOrCreateTense(
             grammaticalExample.tenseName,
@@ -621,7 +637,10 @@ async function importWordData(wordData: WordData) {
     }
 
     await log(`✅ Added grammatical examples for: ${wordData.word}`);
-    await log(`🎉 Successfully imported word: ${wordData.word}`);
+    await log(
+        `🎉 Successfully updated word: ${wordData.word} (ID: ${baseWord.id})`,
+    );
+    return true;
 }
 
 async function main() {
@@ -661,14 +680,28 @@ async function main() {
             );
         }
 
-        await log(`📊 Found ${wordDataArray.length} words to import`);
+        await log(`📊 Found ${wordDataArray.length} words to process`);
+
+        let processedCount = 0;
+        let skippedCount = 0;
 
         // Обрабатываем каждое слово
         for (const wordData of wordDataArray) {
-            await importWordData(wordData);
+            const success = await importWordData(wordData);
+            if (success) {
+                processedCount++;
+            } else {
+                skippedCount++;
+            }
         }
 
-        await log(`🎉 Import completed successfully!`);
+        await log(`🎉 Import completed!`);
+        await log(`📊 Processed: ${processedCount} words`);
+        if (skippedCount > 0) {
+            await log(
+                `⚠️ Skipped: ${skippedCount} words (not found in database)`,
+            );
+        }
         await log(`📝 Log saved to: ${logFilePath}`);
     } catch (error) {
         const errorMessage =
