@@ -4,5 +4,5 @@
 
 echo "🚀 Running word processing with Cursor CLI..."
 
-# Run the JavaScript ES module script using node
-node ./process-word-with-cursor.mjs
+# Run the TypeScript script using tsx
+npx tsx ./process-word-with-cursor.ts

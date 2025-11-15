@@ -18,7 +18,7 @@ const outputDir = path.join(__dirname, 'temp');
 const counterFile = path.join(__dirname, 'temp', 'pipeline-counter.txt');
 let counter = 1;
 
-async function getCurrentCounter() {
+async function getCurrentCounter(): Promise<number> {
     try {
         const counterData = await fs.readFile(counterFile, 'utf8');
         return parseInt(counterData.trim());
@@ -28,22 +28,54 @@ async function getCurrentCounter() {
     }
 }
 
-// Создаем timestamp для лог-файла
-const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
-const currentCounter = await getCurrentCounter();
-const logFileName = `${currentCounter}-process-word-cursor-${timestamp}.log`;
-const logFilePath = path.join(__dirname, 'logs', logFileName);
+// Глобальные переменные для логов (будут инициализированы асинхронно)
+let logFilePath = '';
+let currentCounter = 1;
+let timestamp = '';
 
-async function log(message) {
-    const logEntry = `[${new Date().toISOString()}] ${message}\n`;
-    console.log(message);
-    await fs.appendFile(logFilePath, logEntry);
+async function initializeLogger(): Promise<void> {
+    timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+    currentCounter = await getCurrentCounter();
+    const logFileName = `${currentCounter}-process-word-cursor-${timestamp}.log`;
+    logFilePath = path.join(__dirname, 'logs', logFileName);
 }
 
-async function readExternalWordsOutput() {
+async function log(message: string): Promise<void> {
+    const logEntry = `[${new Date().toISOString()}] ${message}\n`;
+    console.log(message);
+    if (logFilePath) {
+        await fs.appendFile(logFilePath, logEntry);
+    }
+}
+
+interface WordData {
+    id: string;
+    word: string;
+    language: {
+        id: string;
+        code: string;
+        name: string;
+    };
+    translationLanguage: {
+        id: string;
+        code: string;
+        name: string;
+    };
+    partOfSpeech?: {
+        name: string;
+    };
+}
+
+interface ProcessResult {
+    word: string;
+    promptFile: string;
+    instructionsFile: string;
+}
+
+async function readExternalWordsOutput(): Promise<WordData> {
     try {
         const data = await fs.readFile(inputFilePath, 'utf8');
-        const words = JSON.parse(data);
+        const words: WordData[] = JSON.parse(data);
 
         // Проверяем структуру файла
         if (!Array.isArray(words) || words.length === 0) {
@@ -57,16 +89,17 @@ async function readExternalWordsOutput() {
 
         return firstWord;
     } catch (error) {
-        if (error.code === 'ENOENT') {
+        if (error && typeof error === 'object' && 'code' in error && error.code === 'ENOENT') {
             throw new Error(`File ${inputFilePath} does not exist`);
         }
+        const errorMessage = error instanceof Error ? error.message : String(error);
         throw new Error(
-            `Error reading or parsing ${inputFilePath}: ${error.message}`,
+            `Error reading or parsing ${inputFilePath}: ${errorMessage}`,
         );
     }
 }
 
-async function processWordWithCursor(wordData) {
+async function processWordWithCursor(wordData: WordData): Promise<ProcessResult> {
     const word = wordData.word;
     const language = wordData.language.name;
     const languageCode = wordData.language.code;
@@ -239,7 +272,8 @@ Word: ${word} (${language} -> ${translationLanguage})`;
     };
 }
 
-async function main() {
+async function main(): Promise<void> {
+    await initializeLogger();
     await log('🚀 Starting word processing with Cursor CLI');
 
     try {
@@ -252,9 +286,10 @@ async function main() {
 
         await log(`🎉 Processing completed successfully!`);
         await log(`📝 Log saved to: ${logFilePath}`);
-        await log(`📄 Result file: ${result.outputFile}`);
+        await log(`📄 Result file: ${result.promptFile}`);
     } catch (error) {
-        await log(`❌ Script failed: ${error.message}`);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        await log(`❌ Script failed: ${errorMessage}`);
         console.error('Error details:', error);
         process.exit(1);
     }

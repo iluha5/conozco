@@ -4,5 +4,5 @@
 
 echo "🚀 Running external words retrieval script..."
 
-# Run the JavaScript ES module script using node
-node get-external-words.mjs
+# Run the TypeScript script using tsx
+npx tsx get-external-words.ts

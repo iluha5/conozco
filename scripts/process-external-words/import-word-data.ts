@@ -13,7 +13,63 @@ const __dirname = path.dirname(__filename);
 const counterFile = path.join(__dirname, 'temp', 'pipeline-counter.txt');
 let counter = 1;
 
-async function getCurrentCounter() {
+// Type definitions
+interface CursorResult {
+    word: string;
+    partOfSpeech?: string;
+    translations: string[];
+    sentences: (string | { text: string; translation: string })[];
+    grammaticalExamples?: {
+        'Presente de indicativo'?: (string | { text: string; translation: string })[];
+        'Futuro próximo'?: (string | { text: string; translation: string })[];
+        'Pretérito indefinido'?: (string | { text: string; translation: string })[];
+        negative?: string | { text: string; translation: string };
+        question?: string | { text: string; translation: string };
+    };
+}
+
+interface WordData {
+    word: string;
+    partOfSpeech: string;
+    languageCode: string;
+    translations: {
+        languageCode: string;
+        translations: string[];
+    }[];
+    examples: {
+        pronoun: string;
+        example: string;
+        translation: string;
+        sentenceTypeCode: string;
+        isNegative: boolean;
+        isQuestion: boolean;
+    }[];
+    grammaticalExamples: {
+        tenseName: string;
+        examples: {
+            pronoun: string;
+            example: string;
+            translation: string;
+            sentenceTypeCode: string;
+            isNegative: boolean;
+            isQuestion: boolean;
+        }[];
+    }[];
+}
+
+interface GrammaticalExample {
+    tenseName: string;
+    examples: {
+        pronoun: string;
+        example: string;
+        translation: string;
+        sentenceTypeCode: string;
+        isNegative: boolean;
+        isQuestion: boolean;
+    }[];
+}
+
+async function getCurrentCounter(): Promise<number> {
     try {
         const counterData = await fs.readFile(counterFile, 'utf8');
         return parseInt(counterData.trim());
@@ -23,20 +79,28 @@ async function getCurrentCounter() {
     }
 }
 
-// Создаем timestamp для лог-файла
-const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
-const currentCounter = await getCurrentCounter();
-const logFileName = `${currentCounter}-import-word-data-${timestamp}.log`;
-const logFilePath = path.join(__dirname, 'logs', logFileName);
+// Глобальные переменные для логов (будут инициализированы асинхронно)
+let logFilePath = '';
+let currentCounter = 1;
+let timestamp = '';
 
-async function log(message) {
+async function initializeLogger(): Promise<void> {
+    timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+    currentCounter = await getCurrentCounter();
+    const logFileName = `${currentCounter}-import-word-data-${timestamp}.log`;
+    logFilePath = path.join(__dirname, 'logs', logFileName);
+}
+
+async function log(message: string): Promise<void> {
     const logEntry = `[${new Date().toISOString()}] ${message}\n`;
     console.log(message);
-    await fs.appendFile(logFilePath, logEntry);
+    if (logFilePath) {
+        await fs.appendFile(logFilePath, logEntry);
+    }
 }
 
 // Маппинг частей речи от Cursor к нашей БД
-const partOfSpeechMapping = {
+const partOfSpeechMapping: Record<string, string> = {
     noun: 'NOUN',
     verb: 'VERB',
     adjective: 'ADJECTIVE',
@@ -47,7 +111,7 @@ const partOfSpeechMapping = {
     interjection: 'INTERJECTION',
 };
 
-function transformCursorResultToWordData(cursorResult) {
+function transformCursorResultToWordData(cursorResult: CursorResult): WordData {
     // Получаем язык слова из контекста (предполагаем испанский)
     // В реальном сценарии это нужно получать из файла промпта или параметров
     const sourceLanguage = 'es'; // Испанский
@@ -78,7 +142,7 @@ function transformCursorResultToWordData(cursorResult) {
     });
 
     // Преобразуем grammaticalExamples, если они есть (для глаголов)
-    let grammaticalExamples = [];
+    let grammaticalExamples: GrammaticalExample[] = [];
     if (cursorResult.grammaticalExamples) {
         // Для испанского языка
         if (sourceLanguage === 'es') {
@@ -232,7 +296,7 @@ function transformCursorResultToWordData(cursorResult) {
     };
 }
 
-async function getOrCreateLanguage(languageCode) {
+async function getOrCreateLanguage(languageCode: string) {
     let language = await prisma.language.findUnique({
         where: { code: languageCode },
     });
@@ -251,7 +315,7 @@ async function getOrCreateLanguage(languageCode) {
     return language;
 }
 
-async function getOrCreatePartOfSpeech(partOfSpeechName, languageId) {
+async function getOrCreatePartOfSpeech(partOfSpeechName: string, languageId: number) {
     let partOfSpeech = await prisma.partOfSpeech.findUnique({
         where: {
             name_languageId: {
@@ -279,9 +343,9 @@ async function getOrCreatePartOfSpeech(partOfSpeechName, languageId) {
 }
 
 async function getOrCreateSentenceType(
-    sentenceTypeCode,
-    isNegative = false,
-    isQuestion = false,
+    sentenceTypeCode: string,
+    isNegative: boolean = false,
+    isQuestion: boolean = false,
 ) {
     let sentenceType = await prisma.sentenceType.findUnique({
         where: { code: sentenceTypeCode },
@@ -303,7 +367,7 @@ async function getOrCreateSentenceType(
     return sentenceType;
 }
 
-async function getOrCreatePronoun(pronoun, languageId) {
+async function getOrCreatePronoun(pronoun: string, languageId: number) {
     let pronounRecord = await prisma.pronoun.findUnique({
         where: {
             pronoun_languageId: {
@@ -329,7 +393,7 @@ async function getOrCreatePronoun(pronoun, languageId) {
     return pronounRecord;
 }
 
-async function getOrCreateTense(tenseName, languageId) {
+async function getOrCreateTense(tenseName: string, languageId: number) {
     let tense = await prisma.tense.findUnique({
         where: {
             name_languageId: {
@@ -355,7 +419,7 @@ async function getOrCreateTense(tenseName, languageId) {
     return tense;
 }
 
-async function getWordSource(sourceCode = 'native') {
+async function getWordSource(sourceCode: string = 'native') {
     let source = await prisma.wordSource.findUnique({
         where: { code: sourceCode },
     });
@@ -367,7 +431,7 @@ async function getWordSource(sourceCode = 'native') {
     return source;
 }
 
-async function deleteExistingWordData(word, languageId) {
+async function deleteExistingWordData(word: string, languageId: number) {
     // Находим существующее слово
     const existingWord = await prisma.baseWord.findUnique({
         where: {
@@ -381,7 +445,7 @@ async function deleteExistingWordData(word, languageId) {
             examples: true,
             grammaticalExamples: true,
         },
-    });
+    }) as any;
 
     if (existingWord) {
         await log(`🗑️ Deleting existing word data for: ${word}`);
@@ -412,7 +476,7 @@ async function deleteExistingWordData(word, languageId) {
     }
 }
 
-async function importWordData(wordData) {
+async function importWordData(wordData: WordData) {
     await log(`🔄 Processing word: ${wordData.word}`);
 
     // Получаем или создаем базовые сущности
@@ -552,12 +616,14 @@ async function importWordData(wordData) {
 }
 
 async function main() {
+    await initializeLogger();
+
     const args = process.argv.slice(2);
 
     if (args.length !== 1) {
-        console.error('Usage: node import-word-data.mjs <path-to-json-file>');
+        console.error('Usage: node import-word-data.ts <path-to-json-file>');
         console.error(
-            'Example: node import-word-data.mjs ./temp/word-data.json',
+            'Example: node import-word-data.ts ./temp/word-data.json',
         );
         process.exit(1);
     }
@@ -573,7 +639,7 @@ async function main() {
         let rawData = JSON.parse(jsonData);
 
         // Преобразуем данные в массив, если пришел одиночный объект
-        let wordDataArray = [];
+        let wordDataArray: WordData[] = [];
         if (Array.isArray(rawData)) {
             wordDataArray = rawData;
         } else if (rawData.word && rawData.translations && rawData.sentences) {
@@ -596,7 +662,8 @@ async function main() {
         await log(`🎉 Import completed successfully!`);
         await log(`📝 Log saved to: ${logFilePath}`);
     } catch (error) {
-        await log(`❌ Error importing word data: ${error.message}`);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        await log(`❌ Error importing word data: ${errorMessage}`);
         console.error('Full error:', error);
         process.exit(1);
     }
@@ -604,7 +671,8 @@ async function main() {
 
 main()
     .catch(async e => {
-        await log(`❌ Script error: ${e.message}`);
+        const errorMessage = e instanceof Error ? e.message : String(e);
+        console.error(`❌ Script error: ${errorMessage}`);
         console.error('Full error:', e);
         process.exit(1);
     })

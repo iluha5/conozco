@@ -16,7 +16,7 @@ if (isNaN(numRuns) || numRuns <= 0) {
     console.error(
         '❌ Invalid number of runs. Please provide a positive integer.',
     );
-    console.log('Usage: node run-multiple-pipelines.mjs [number_of_runs]');
+    console.log('Usage: node run-multiple-pipelines.ts [number_of_runs]');
     console.log('Default: 10 runs');
     process.exit(1);
 }
@@ -25,7 +25,7 @@ console.log(`🚀 Starting ${numRuns} pipeline runs...`);
 console.log('');
 
 // Функция для запуска одного пайплайна
-function runPipeline(runNumber) {
+function runPipeline(runNumber: number): Promise<void> {
     return new Promise((resolve, reject) => {
         console.log(`\n🏃 Starting pipeline run ${runNumber}/${numRuns}`);
         console.log('═'.repeat(50));
@@ -51,9 +51,10 @@ function runPipeline(runNumber) {
         });
 
         child.on('error', error => {
+            const errorMessage = error instanceof Error ? error.message : String(error);
             console.error(
                 `❌ Error running pipeline ${runNumber}/${numRuns}:`,
-                error.message,
+                errorMessage,
             );
             reject(error);
         });
@@ -61,12 +62,12 @@ function runPipeline(runNumber) {
 }
 
 // Функция для задержки
-function delay(ms) {
+function delay(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 // Основная функция
-async function main() {
+async function main(): Promise<void> {
     try {
         for (let i = 1; i <= numRuns; i++) {
             await runPipeline(i);
@@ -81,7 +82,8 @@ async function main() {
         console.log('\n🎉 All pipeline runs completed successfully!');
         console.log(`📊 Processed ${numRuns} words through the pipeline`);
     } catch (error) {
-        console.error('\n💥 Pipeline execution failed:', error.message);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.error('\n💥 Pipeline execution failed:', errorMessage);
         process.exit(1);
     }
 }

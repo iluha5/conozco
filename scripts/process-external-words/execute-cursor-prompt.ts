@@ -14,7 +14,7 @@ const tempDir = path.join(__dirname, 'temp');
 const counterFile = path.join(__dirname, 'temp', 'pipeline-counter.txt');
 let counter = 1;
 
-async function getCurrentCounter() {
+async function getCurrentCounter(): Promise<number> {
     try {
         const counterData = await fs.readFile(counterFile, 'utf8');
         return parseInt(counterData.trim());
@@ -24,23 +24,40 @@ async function getCurrentCounter() {
     }
 }
 
-// Создаем timestamp для лог-файла
-const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
-const currentCounter = await getCurrentCounter();
-const logFileName = `${currentCounter}-execute-cursor-prompt-${timestamp}.log`;
-const logFilePath = path.join(__dirname, 'logs', logFileName);
+// Глобальные переменные для логов (будут инициализированы асинхронно)
+let logFilePath = '';
+let currentCounter = 1;
+let timestamp = '';
 
-async function log(message) {
-    const logEntry = `[${new Date().toISOString()}] ${message}\n`;
-    console.log(message);
-    await fs.appendFile(logFilePath, logEntry);
+async function initializeLogger(): Promise<void> {
+    timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+    currentCounter = await getCurrentCounter();
+    const logFileName = `${currentCounter}-execute-cursor-prompt-${timestamp}.log`;
+    logFilePath = path.join(__dirname, 'logs', logFileName);
 }
 
-async function findLatestPromptFile() {
+async function log(message: string): Promise<void> {
+    const logEntry = `[${new Date().toISOString()}] ${message}\n`;
+    console.log(message);
+    if (logFilePath) {
+        await fs.appendFile(logFilePath, logEntry);
+    }
+}
+
+interface PromptFile {
+    name: string;
+    path: string;
+    mtime: Date;
+}
+
+async function findLatestPromptFile(): Promise<string> {
     try {
         const files = await fs.readdir(tempDir);
         const promptFiles = files.filter(
-            file => (file.startsWith('prompt-') || /^\d+-.*-prompt-.*\.txt$/.test(file)) && file.endsWith('.txt'),
+            file =>
+                (file.startsWith('prompt-') ||
+                    /^\d+-.*-prompt-.*\.txt$/.test(file)) &&
+                file.endsWith('.txt'),
         );
 
         if (promptFiles.length === 0) {
@@ -48,7 +65,7 @@ async function findLatestPromptFile() {
         }
 
         // Сортируем по дате модификации файла (новые первыми)
-        const sortedPromptFiles = await Promise.all(
+        const sortedPromptFiles: PromptFile[] = await Promise.all(
             promptFiles.map(async file => {
                 const filePath = path.join(tempDir, file);
                 const stats = await fs.stat(filePath);
@@ -60,33 +77,36 @@ async function findLatestPromptFile() {
             }),
         );
 
-        sortedPromptFiles.sort((a, b) => b.mtime - a.mtime);
+        sortedPromptFiles.sort((a, b) => b.mtime.getTime() - a.mtime.getTime());
 
         const latestPromptFile = sortedPromptFiles[0].path;
         await log(`📁 Found latest prompt file: ${latestPromptFile}`);
 
         return latestPromptFile;
     } catch (error) {
-        if (error.code === 'ENOENT') {
+        if (error && typeof error === 'object' && 'code' in error && error.code === 'ENOENT') {
             throw new Error(`Temp directory ${tempDir} does not exist`);
         }
         throw error;
     }
 }
 
-async function readPromptContent(promptFilePath) {
+async function readPromptContent(promptFilePath: string): Promise<string> {
     try {
         const content = await fs.readFile(promptFilePath, 'utf8');
         await log(`📖 Read prompt content (${content.length} characters)`);
         return content;
     } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
         throw new Error(
-            `Error reading prompt file ${promptFilePath}: ${error.message}`,
+            `Error reading prompt file ${promptFilePath}: ${errorMessage}`,
         );
     }
 }
 
-async function extractWordFromPromptContent(promptContent) {
+async function extractWordFromPromptContent(
+    promptContent: string,
+): Promise<string> {
     // Ищем слово в промпте по паттерну: For the Spanish word "word"
     const match = promptContent.match(/For the \w+ word "([^"]+)"/);
     if (!match) {
@@ -97,8 +117,11 @@ async function extractWordFromPromptContent(promptContent) {
     return word;
 }
 
-async function executeCursorAgent(promptContent, word) {
-            const resultFileName = `${currentCounter}-${word}-cursor-result-${timestamp}.json`;
+async function executeCursorAgent(
+    promptContent: string,
+    word: string,
+): Promise<string> {
+    const resultFileName = `${currentCounter}-${word}-cursor-result-${timestamp}.json`;
     const resultFilePath = path.join(tempDir, resultFileName);
 
     // Используем cursor agent с --print --output-format json
@@ -132,7 +155,7 @@ async function executeCursorAgent(promptContent, word) {
         });
 
         // Ждем завершения
-        await new Promise((resolve, reject) => {
+        await new Promise<void>((resolve, reject) => {
             childProcess.on('close', code => {
                 if (code === 0) {
                     resolve();
@@ -203,8 +226,9 @@ async function executeCursorAgent(promptContent, word) {
                 await log(`✅ Found grammatical examples for verb`);
             }
         } catch (parseError) {
+            const errorMessage = parseError instanceof Error ? parseError.message : String(parseError);
             await log(
-                `⚠️ Warning: Could not parse JSON: ${parseError.message}`,
+                `⚠️ Warning: Could not parse JSON: ${errorMessage}`,
             );
             // Сохраняем оригинальный ответ как есть
             await fs.writeFile(resultFilePath, stdout, 'utf8');
@@ -213,12 +237,14 @@ async function executeCursorAgent(promptContent, word) {
 
         return resultFilePath;
     } catch (error) {
-        await log(`❌ Error executing cursor agent: ${error.message}`);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        await log(`❌ Error executing cursor agent: ${errorMessage}`);
         throw error;
     }
 }
 
-async function main() {
+async function main(): Promise<void> {
+    await initializeLogger();
     await log('🚀 Starting Cursor Agent execution script');
 
     try {
@@ -238,7 +264,8 @@ async function main() {
         await log(`📝 Log saved to: ${logFilePath}`);
         await log(`📄 Result available at: ${resultFilePath}`);
     } catch (error) {
-        await log(`❌ Script failed: ${error.message}`);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        await log(`❌ Script failed: ${errorMessage}`);
         console.error('Error details:', error);
         process.exit(1);
     }

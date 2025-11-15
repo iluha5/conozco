@@ -13,7 +13,7 @@ const __dirname = path.dirname(__filename);
 const counterFile = path.join(__dirname, 'temp', 'pipeline-counter.txt');
 let counter = 1;
 
-async function getNextCounter() {
+async function getNextCounter(): Promise<number> {
     try {
         const counterData = await fs.readFile(counterFile, 'utf8');
         counter = parseInt(counterData.trim()) + 1;
@@ -25,19 +25,43 @@ async function getNextCounter() {
     return counter;
 }
 
-// Создаем timestamp для лог-файла
-const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
-const currentCounter = await getNextCounter();
-const logFileName = `${currentCounter}-get-external-words-${timestamp}.log`;
-const logFilePath = path.join(__dirname, 'logs', logFileName);
+// Глобальные переменные для логов (будут инициализированы асинхронно)
+let logFilePath = '';
+let currentCounter = 1;
+let timestamp = '';
 
-async function log(message) {
-    const logEntry = `[${new Date().toISOString()}] ${message}\n`;
-    console.log(message);
-    await fs.appendFile(logFilePath, logEntry);
+async function initializeLogger(): Promise<void> {
+    timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+    currentCounter = await getNextCounter();
+    const logFileName = `${currentCounter}-get-external-words-${timestamp}.log`;
+    logFilePath = path.join(__dirname, 'logs', logFileName);
 }
 
-async function main() {
+async function log(message: string): Promise<void> {
+    const logEntry = `[${new Date().toISOString()}] ${message}\n`;
+    console.log(message);
+    if (logFilePath) {
+        await fs.appendFile(logFilePath, logEntry);
+    }
+}
+
+interface SimplifiedWord {
+    id: string;
+    word: string;
+    language: {
+        id: string;
+        code: string;
+        name: string;
+    };
+    translationLanguage: {
+        id: string;
+        code: string;
+        name: string;
+    };
+}
+
+async function main(): Promise<void> {
+    await initializeLogger();
     await log('🚀 Starting external words retrieval script');
     await log('🔍 Getting external words from BaseWord...');
 
@@ -70,13 +94,13 @@ async function main() {
         await log(`📝 Found words: ${wordList}`);
 
         // Создаем упрощенный массив с только нужными полями
-        const simplifiedWords = [];
+        const simplifiedWords: SimplifiedWord[] = [];
 
         for (const word of externalWords) {
             // Получаем уникальные языки переводов
-            const translationLanguages = [
-                ...new Set(word.translations.map(t => t.language.code)),
-            ];
+            const translationLanguages = Array.from(
+                new Set(word.translations.map(t => t.language.code))
+            );
 
             for (const translationLangCode of translationLanguages) {
                 const translationLang = word.translations.find(
@@ -85,15 +109,15 @@ async function main() {
 
                 if (translationLang) {
                     simplifiedWords.push({
-                        id: word.id,
+                        id: word.id.toString(),
                         word: word.word,
                         language: {
-                            id: word.language.id,
+                            id: word.language.id.toString(),
                             code: word.language.code,
                             name: word.language.name,
                         },
                         translationLanguage: {
-                            id: translationLang.id,
+                            id: translationLang.id.toString(),
                             code: translationLang.code,
                             name: translationLang.name,
                         },
@@ -132,14 +156,15 @@ async function main() {
         await log(`📊 Total word-language pairs: ${simplifiedWords.length}`);
         await log(`📝 Log saved to: ${logFilePath}`);
     } catch (error) {
-        await log(`❌ Error getting external words: ${error.message}`);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        await log(`❌ Error getting external words: ${errorMessage}`);
         process.exit(1);
     }
 }
 
 main()
     .catch(async e => {
-        await log(`❌ Script error: ${e.message}`);
+        console.error(`❌ Script error: ${e.message}`);
         process.exit(1);
     })
     .finally(async () => {

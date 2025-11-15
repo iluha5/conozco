@@ -4,5 +4,5 @@
 
 echo "🚀 Running Cursor prompt execution script..."
 
-# Run the JavaScript ES module script using node
-node execute-cursor-prompt.mjs
+# Run the TypeScript script using tsx
+npx tsx execute-cursor-prompt.ts

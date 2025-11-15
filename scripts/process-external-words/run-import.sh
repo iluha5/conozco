@@ -10,5 +10,5 @@ fi
 
 echo "🚀 Running word data import script..."
 
-# Run the JavaScript ES module script using node
-node ./import-word-data.mjs "$1"
+# Run the TypeScript script using tsx
+npx tsx ./import-word-data.ts "$1"
