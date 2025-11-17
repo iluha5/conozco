@@ -181,8 +181,10 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
         if (selectedPartsOfSpeech.length === 0) {
             return availableWords; // Показываем все слова
         }
-        return availableWords.filter(word =>
-            selectedPartsOfSpeech.includes(word.partOfSpeech.name),
+        return availableWords.filter(
+            word =>
+                word.partOfSpeech &&
+                selectedPartsOfSpeech.includes(word.partOfSpeech.name),
         );
     };
 
@@ -767,13 +769,15 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                                                                             .code,
                                                                     )}
                                                                 </span>
-                                                                <span className="text-xs bg-gray-100 px-2 py-1 rounded shrink-0">
-                                                                    {getPartOfSpeechAbbrev(
-                                                                        word
-                                                                            .partOfSpeech
-                                                                            .displayName,
-                                                                    )}
-                                                                </span>
+                                                                {word.partOfSpeech && (
+                                                                    <span className="text-xs bg-gray-100 px-2 py-1 rounded shrink-0">
+                                                                        {getPartOfSpeechAbbrev(
+                                                                            word
+                                                                                .partOfSpeech
+                                                                                .displayName,
+                                                                        )}
+                                                                    </span>
+                                                                )}
                                                             </CardTitle>
                                                             <div className="flex items-center gap-1">
                                                                 <span className="truncate text-sm text-gray-500">

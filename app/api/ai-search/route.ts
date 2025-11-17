@@ -157,9 +157,15 @@ export async function POST(request: NextRequest) {
             const baseWord = await tx.baseWord.create({
                 data: {
                     word: trimmedWord,
-                    languageId: language.id,
-                    partOfSpeechId: partOfSpeechId,
-                    sourceId: wordSourceId,
+                    language: {
+                        connect: { id: language.id },
+                    },
+                    partOfSpeech: partOfSpeechId
+                        ? { connect: { id: partOfSpeechId } }
+                        : undefined,
+                    source: {
+                        connect: { id: wordSourceId },
+                    },
                 },
             });
 
