@@ -450,32 +450,31 @@ export function WordsList({
                                             <span className="text-sm shrink-0">
                                                 {getLanguageFlag(word.language)}
                                             </span>
-                                            <span className="text-xs bg-gray-100 px-2 py-1 rounded shrink-0">
-                                                {(() => {
-                                                    // Приоритет: часть речи из кастомного перевода, затем из baseWord
-                                                    const customPartOfSpeech =
-                                                        word
-                                                            .customTranslations?.[0]
-                                                            ?.partOfSpeech;
-                                                    const basePartOfSpeech =
-                                                        word.baseWord
-                                                            ?.partOfSpeech;
+                                            {(() => {
+                                                // Приоритет: часть речи из кастомного перевода, затем из baseWord
+                                                const customPartOfSpeech =
+                                                    word.customTranslations?.[0]
+                                                        ?.partOfSpeech;
+                                                const basePartOfSpeech =
+                                                    word.baseWord?.partOfSpeech;
 
-                                                    if (customPartOfSpeech) {
-                                                        return getPartOfSpeechAbbrev(
-                                                            customPartOfSpeech.displayName,
-                                                        );
-                                                    } else if (
-                                                        basePartOfSpeech
-                                                    ) {
-                                                        return getPartOfSpeechAbbrev(
-                                                            basePartOfSpeech.displayName,
-                                                        );
-                                                    } else {
-                                                        return 'Слово';
-                                                    }
-                                                })()}
-                                            </span>
+                                                const partOfSpeech =
+                                                    customPartOfSpeech ||
+                                                    basePartOfSpeech;
+
+                                                // Не показываем плашку, если часть речи неизвестна
+                                                if (!partOfSpeech) {
+                                                    return null;
+                                                }
+
+                                                return (
+                                                    <span className="text-xs bg-gray-100 px-2 py-1 rounded shrink-0">
+                                                        {getPartOfSpeechAbbrev(
+                                                            partOfSpeech.displayName,
+                                                        )}
+                                                    </span>
+                                                );
+                                            })()}
                                         </CardTitle>
                                         <div className="flex items-center gap-1">
                                             <span

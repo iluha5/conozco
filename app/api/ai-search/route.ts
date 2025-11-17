@@ -123,21 +123,9 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Определяем часть речи (по умолчанию - существительное)
+        // Часть речи по умолчанию - null (неизвестна)
         // В будущем можно добавить определение части речи через AI
-        const defaultPartOfSpeech = await prisma.partOfSpeech.findFirst({
-            where: {
-                name: 'NOUN',
-                languageId: language.id,
-            },
-        });
-
-        if (!defaultPartOfSpeech) {
-            return NextResponse.json(
-                { error: 'Default part of speech not found' },
-                { status: 500 },
-            );
-        }
+        const partOfSpeechId = null;
 
         // Получаем источники для AI-поиска
         const deeplSource = await prisma.wordSource.findUnique({
@@ -170,7 +158,7 @@ export async function POST(request: NextRequest) {
                 data: {
                     word: trimmedWord,
                     languageId: language.id,
-                    partOfSpeechId: defaultPartOfSpeech.id,
+                    partOfSpeechId: partOfSpeechId,
                     sourceId: wordSourceId,
                 },
             });

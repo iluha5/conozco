@@ -1507,7 +1507,9 @@ async function main() {
         for (const wordRecord of externalWords) {
             const word = wordRecord.word;
             const languageCode = wordRecord.language.code;
-            const partOfSpeech = mapPartOfSpeech(wordRecord.partOfSpeech.name);
+            const partOfSpeech = wordRecord.partOfSpeech
+                ? mapPartOfSpeech(wordRecord.partOfSpeech.name)
+                : PartOfSpeech.NOUN; // Default to NOUN if part of speech is unknown
             const targetLangs = getTargetLanguages(languageCode);
 
             console.log(
