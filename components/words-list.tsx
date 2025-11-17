@@ -19,7 +19,6 @@ type Word = {
     userId: string | number;
     baseWordId?: string | number;
     customWord?: string;
-    customTranslation?: string;
     languageId: string | number;
     language: Language;
     status: 'NOT_LEARNED' | 'LEARNED';

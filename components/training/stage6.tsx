@@ -23,7 +23,6 @@ type Word = {
     userId: string;
     baseWordId?: string;
     customWord?: string;
-    customTranslation?: string;
     languageId: string;
     language: Language;
     status: 'NOT_LEARNED' | 'LEARNED';

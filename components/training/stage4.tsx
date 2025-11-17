@@ -19,7 +19,6 @@ type Word = {
     userId: string;
     baseWordId?: string;
     customWord?: string;
-    customTranslation?: string;
     languageId: string;
     language: Language;
     status: 'NOT_LEARNED' | 'LEARNED';
@@ -53,6 +52,10 @@ type Word = {
             };
         }>;
     };
+    customTranslations?: Array<{
+        id: number;
+        translation: string;
+    }>;
 };
 
 type Stage4Props = {
@@ -433,12 +436,14 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
                 <CardContent className="space-y-6">
                     <div className="text-center mb-6">
                         <p className="text-4xl font-bold text-purple-600 mb-2 font-ubuntu">
-                            {currentWord.customTranslation ||
-                                (currentWord.baseWord?.translations &&
-                                currentWord.baseWord.translations.length > 0
-                                    ? currentWord.baseWord.translations[0]
-                                          .translation
-                                    : 'Нет перевода')}
+                            {currentWord.customTranslations &&
+                            currentWord.customTranslations.length > 0
+                                ? currentWord.customTranslations[0].translation
+                                : currentWord.baseWord?.translations &&
+                                    currentWord.baseWord.translations.length > 0
+                                  ? currentWord.baseWord.translations[0]
+                                        .translation
+                                  : 'Нет перевода'}
                         </p>
                     </div>
 

@@ -262,7 +262,6 @@ model Word {
   userId        Int         // Связь с пользователем
   baseWordId    Int?        // Связь с базовым словом (если выбрано из словаря)
   customWord    String?     // Кастомное слово (если добавлено вручную)
-  customTranslation String? // Кастомный перевод
   languageId    Int         // ID языка слова
   statusId      Int         @default(1)
   status        WordStatus  @relation(fields: [statusId], references: [id])

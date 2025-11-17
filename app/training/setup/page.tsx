@@ -41,7 +41,6 @@ type Word = {
     userId: string;
     baseWordId?: string;
     customWord?: string;
-    customTranslation?: string;
     languageId: string;
     language: Language;
     status: 'NOT_LEARNED' | 'LEARNED';
@@ -397,20 +396,19 @@ export default function TrainingSetupPage() {
                                                                     →
                                                                 </span>
                                                                 <span className="text-sm text-purple-600 truncate">
-                                                                    {word.customTranslation ||
-                                                                        (word
-                                                                            .baseWord
-                                                                            ?.translations &&
-                                                                        word
-                                                                            .baseWord
-                                                                            .translations
-                                                                            .length >
-                                                                            0
-                                                                            ? word
-                                                                                  .baseWord
-                                                                                  .translations[0]
-                                                                                  .translation
-                                                                            : 'Нет перевода')}
+                                                                    {word
+                                                                        .baseWord
+                                                                        ?.translations &&
+                                                                    word
+                                                                        .baseWord
+                                                                        .translations
+                                                                        .length >
+                                                                        0
+                                                                        ? word
+                                                                              .baseWord
+                                                                              .translations[0]
+                                                                              .translation
+                                                                        : 'Нет перевода'}
                                                                 </span>
                                                             </div>
                                                         </div>

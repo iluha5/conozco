@@ -19,7 +19,6 @@ type Word = {
     userId: string;
     baseWordId?: string;
     customWord?: string;
-    customTranslation?: string;
     languageId: string;
     language: Language;
     status: 'NOT_LEARNED' | 'LEARNED';
@@ -53,6 +52,10 @@ type Word = {
             };
         }>;
     };
+    customTranslations?: Array<{
+        id: number;
+        translation: string;
+    }>;
 };
 
 type Stage1Props = {
@@ -204,15 +207,18 @@ export function Stage1Training({ words, onComplete }: Stage1Props) {
                             >
                                 <div className="space-y-4 text-center">
                                     <p className="text-3xl text-purple-600 font-semibold">
-                                        {currentWord.customTranslation ||
-                                            (currentWord.baseWord
-                                                ?.translations &&
-                                            currentWord.baseWord.translations
-                                                .length > 0
-                                                ? currentWord.baseWord
-                                                      .translations[0]
-                                                      .translation
-                                                : 'Нет перевода')}
+                                        {currentWord.customTranslations &&
+                                        currentWord.customTranslations.length >
+                                            0
+                                            ? currentWord.customTranslations[0]
+                                                  .translation
+                                            : currentWord.baseWord
+                                                    ?.translations &&
+                                                currentWord.baseWord
+                                                    .translations.length > 0
+                                              ? currentWord.baseWord
+                                                    .translations[0].translation
+                                              : 'Нет перевода'}
                                     </p>
                                     {settings.showExamples &&
                                         currentWord.baseWord?.examples &&

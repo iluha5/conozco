@@ -17,7 +17,6 @@ type Word = {
     userId: string;
     baseWordId?: string;
     customWord?: string;
-    customTranslation?: string;
     languageId: string;
     language: Language;
     status: 'NOT_LEARNED' | 'LEARNED';
@@ -51,11 +50,26 @@ type Word = {
             };
         }>;
     };
+    customTranslations?: Array<{
+        id: number;
+        translation: string;
+    }>;
 };
 
 type Stage2Props = {
     words: Word[];
     onComplete: () => void;
+};
+
+// Helper function to get translation
+const getTranslation = (word: Word): string => {
+    if (word.customTranslations && word.customTranslations.length > 0) {
+        return word.customTranslations[0].translation;
+    }
+    if (word.baseWord?.translations && word.baseWord.translations.length > 0) {
+        return word.baseWord.translations[0].translation;
+    }
+    return '';
 };
 
 export function Stage2Training({ words, onComplete }: Stage2Props) {
@@ -86,33 +100,23 @@ export function Stage2Training({ words, onComplete }: Stage2Props) {
     }, [animationKey]);
 
     const generateOptions = useCallback(() => {
-        const correctTranslation =
-            currentWord.customTranslation ||
-            (currentWord.baseWord?.translations &&
-            currentWord.baseWord.translations.length > 0
-                ? currentWord.baseWord.translations[0].translation
-                : '');
+        const correctTranslation = getTranslation(currentWord);
         const otherWords = words.filter((w, idx) => idx !== currentIndex);
 
         // Выбираем 3 случайных неправильных ответа
         const shuffledOthers = [...otherWords].sort(() => Math.random() - 0.5);
         const wrongOptions = shuffledOthers
             .slice(0, 3)
-            .map(
-                w =>
-                    w.customTranslation ||
-                    (w.baseWord?.translations &&
-                    w.baseWord.translations.length > 0
-                        ? w.baseWord.translations[0].translation
-                        : ''),
-            );
+            .map(w => getTranslation(w))
+            .filter(t => t !== correctTranslation && t !== '');
 
-        // Комбинируем с правильным ответом и перемешиваем
+        // Добавляем правильный ответ и перемешиваем
         const allOptions = [...wrongOptions, correctTranslation].sort(
             () => Math.random() - 0.5,
         );
+
         setOptions(allOptions);
-    }, [currentWord, words, currentIndex]);
+    }, [currentWord, currentIndex, words]);
 
     const handleNext = useCallback(() => {
         if (currentIndex < words.length - 1) {
@@ -254,12 +258,7 @@ export function Stage2Training({ words, onComplete }: Stage2Props) {
         if (selectedOption !== null) return; // Уже выбрано
 
         setSelectedOption(option);
-        const correctTranslation =
-            currentWord.customTranslation ||
-            (currentWord.baseWord?.translations &&
-            currentWord.baseWord.translations.length > 0
-                ? currentWord.baseWord.translations[0].translation
-                : '');
+        const correctTranslation = getTranslation(currentWord);
         const correct = option === correctTranslation;
         setIsCorrect(correct);
 
@@ -329,12 +328,7 @@ export function Stage2Training({ words, onComplete }: Stage2Props) {
                         {options.map((option, index) => {
                             const isSelected = selectedOption === option;
                             const correctTranslation =
-                                currentWord.customTranslation ||
-                                (currentWord.baseWord?.translations &&
-                                currentWord.baseWord.translations.length > 0
-                                    ? currentWord.baseWord.translations[0]
-                                          .translation
-                                    : '');
+                                getTranslation(currentWord);
                             const isCorrectOption =
                                 option === correctTranslation;
 

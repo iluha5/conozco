@@ -426,9 +426,6 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                     },
                     body: JSON.stringify({
                         baseWordId: baseWordId,
-                        // Используем первый (самый популярный) перевод
-                        customTranslation:
-                            wordData.translations[0]?.translation || undefined,
                     }),
                 });
 

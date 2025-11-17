@@ -16,7 +16,6 @@ type Word = {
     userId: string;
     baseWordId?: string;
     customWord?: string;
-    customTranslation?: string;
     languageId: string;
     language: Language;
     status: 'NOT_LEARNED' | 'LEARNED';
@@ -50,6 +49,10 @@ type Word = {
             };
         }>;
     };
+    customTranslations?: Array<{
+        id: number;
+        translation: string;
+    }>;
 };
 
 type Stage3Props = {
@@ -107,11 +110,13 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
                 id: word.id,
                 foreign: word.baseWord?.word || word.customWord || '',
                 translation:
-                    word.customTranslation ||
-                    (word.baseWord?.translations &&
-                    word.baseWord.translations.length > 0
-                        ? word.baseWord.translations[0].translation
-                        : 'Нет перевода'),
+                    word.customTranslations &&
+                    word.customTranslations.length > 0
+                        ? word.customTranslations[0].translation
+                        : word.baseWord?.translations &&
+                            word.baseWord.translations.length > 0
+                          ? word.baseWord.translations[0].translation
+                          : 'Нет перевода',
                 matched: false,
                 errorCount: hasError && isRetryMode ? 0 : 0, // Сбрасываем счетчик ошибок при повторении
             };

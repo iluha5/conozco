@@ -197,7 +197,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const { baseWordId, customTranslation } = await request.json();
+        const { baseWordId } = await request.json();
 
         if (!baseWordId) {
             return NextResponse.json(
@@ -249,7 +249,6 @@ export async function POST(request: NextRequest) {
             data: {
                 userId: parseInt(session.user.id),
                 baseWordId: baseWord.id,
-                customTranslation: customTranslation?.trim() || null,
                 languageId: baseWord.languageId,
             },
             include: {
