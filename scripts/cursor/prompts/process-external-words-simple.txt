@@ -1,20 +1,69 @@
-Return ONLY valid JSON for the word "${word}". No explanations, no markdown, just JSON:
+You are a linguistic expert. Analyze and generate data for the word "${word}" in ${language}.
 
+IMPORTANT: First, determine if "${word}" is a VERB based on your linguistic knowledge, regardless of any database information. Trust your own analysis.
+
+Return ONLY valid JSON. No explanations, no markdown, just JSON:
+
+STRUCTURE FOR NON-VERBS (nouns, adjectives, adverbs, etc.):
 {
   "word": "${word}",
-  "partOfSpeech": "noun",
+  "partOfSpeech": "noun",  // or "adjective", "adverb", "preposition", "conjunction", etc.
   "languageCode": "${languageCode}",
   "translations": [
-    {"languageCode": "ru", "translations": ["стеллаж", "полка"]},
-    {"languageCode": "en", "translations": ["bookshelf", "shelf"]}
+    {"languageCode": "ru", "translations": ["перевод1", "перевод2"]},
+    {"languageCode": "en", "translations": ["translation1", "translation2"]}
   ],
   "examples": [
     {
       "pronoun": "yo",
-      "example": "Tengo una estantería nueva",
+      "example": "Tengo una casa nueva",
       "translations": [
-        {"languageCode": "ru", "translation": "У меня новая полка"},
-        {"languageCode": "en", "translation": "I have a new shelf"}
+        {"languageCode": "ru", "translation": "У меня новый дом"},
+        {"languageCode": "en", "translation": "I have a new house"}
+      ],
+      "sentenceTypeCode": "AFFIRMATIVE",
+      "isNegative": false,
+      "isQuestion": false
+    },
+    {
+      "pronoun": "tú",
+      "example": "Tu casa es grande",
+      "translations": [
+        {"languageCode": "ru", "translation": "Твой дом большой"},
+        {"languageCode": "en", "translation": "Your house is big"}
+      ],
+      "sentenceTypeCode": "AFFIRMATIVE",
+      "isNegative": false,
+      "isQuestion": false
+    },
+    {
+      "pronoun": "él",
+      "example": "¿Dónde está tu casa?",
+      "translations": [
+        {"languageCode": "ru", "translation": "Где твой дом?"},
+        {"languageCode": "en", "translation": "Where is your house?"}
+      ],
+      "sentenceTypeCode": "QUESTION",
+      "isNegative": false,
+      "isQuestion": true
+    },
+    {
+      "pronoun": "nosotros",
+      "example": "No tenemos casa",
+      "translations": [
+        {"languageCode": "ru", "translation": "У нас нет дома"},
+        {"languageCode": "en", "translation": "We don't have a house"}
+      ],
+      "sentenceTypeCode": "NEGATIVE",
+      "isNegative": true,
+      "isQuestion": false
+    },
+    {
+      "pronoun": "ellos",
+      "example": "Ellos tienen casa grande",
+      "translations": [
+        {"languageCode": "ru", "translation": "У них большой дом"},
+        {"languageCode": "en", "translation": "They have a big house"}
       ],
       "sentenceTypeCode": "AFFIRMATIVE",
       "isNegative": false,
@@ -23,3 +72,227 @@ Return ONLY valid JSON for the word "${word}". No explanations, no markdown, jus
   ],
   "grammaticalExamples": []
 }
+
+STRUCTURE FOR VERBS:
+{
+  "word": "${word}",
+  "partOfSpeech": "verb",
+  "languageCode": "${languageCode}",
+  "translations": [
+    {"languageCode": "ru", "translations": ["говорить", "сказать", "разговаривать"]},
+    {"languageCode": "en", "translations": ["speak", "talk", "say"]}
+  ],
+  "examples": [
+    {
+      "pronoun": "yo",
+      "example": "Yo hablo español",
+      "translations": [
+        {"languageCode": "ru", "translation": "Я говорю по-испански"},
+        {"languageCode": "en", "translation": "I speak Spanish"}
+      ],
+      "sentenceTypeCode": "AFFIRMATIVE",
+      "isNegative": false,
+      "isQuestion": false
+    },
+    {
+      "pronoun": "tú",
+      "example": "Tú hablas muy bien",
+      "translations": [
+        {"languageCode": "ru", "translation": "Ты говоришь очень хорошо"},
+        {"languageCode": "en", "translation": "You speak very well"}
+      ],
+      "sentenceTypeCode": "AFFIRMATIVE",
+      "isNegative": false,
+      "isQuestion": false
+    },
+    {
+      "pronoun": "él",
+      "example": "¿Él habla inglés?",
+      "translations": [
+        {"languageCode": "ru", "translation": "Он говорит по-английски?"},
+        {"languageCode": "en", "translation": "Does he speak English?"}
+      ],
+      "sentenceTypeCode": "QUESTION",
+      "isNegative": false,
+      "isQuestion": true
+    },
+    {
+      "pronoun": "nosotros",
+      "example": "Nosotros no hablamos francés",
+      "translations": [
+        {"languageCode": "ru", "translation": "Мы не говорим по-французски"},
+        {"languageCode": "en", "translation": "We don't speak French"}
+      ],
+      "sentenceTypeCode": "NEGATIVE",
+      "isNegative": true,
+      "isQuestion": false
+    },
+    {
+      "pronoun": "ellos",
+      "example": "Ellos hablan rápido",
+      "translations": [
+        {"languageCode": "ru", "translation": "Они говорят быстро"},
+        {"languageCode": "en", "translation": "They speak fast"}
+      ],
+      "sentenceTypeCode": "AFFIRMATIVE",
+      "isNegative": false,
+      "isQuestion": false
+    }
+  ],
+  "grammaticalExamples": [
+    {
+      "tenseName": "Presente de indicativo",
+      "examples": [
+        {
+          "pronoun": "yo",
+          "example": "Yo hablo",
+          "translations": [
+            {"languageCode": "ru", "translation": "Я говорю"},
+            {"languageCode": "en", "translation": "I speak"}
+          ],
+          "sentenceTypeCode": "AFFIRMATIVE",
+          "isNegative": false,
+          "isQuestion": false
+        },
+        {
+          "pronoun": "tú",
+          "example": "¿Tú hablas?",
+          "translations": [
+            {"languageCode": "ru", "translation": "Ты говоришь?"},
+            {"languageCode": "en", "translation": "Do you speak?"}
+          ],
+          "sentenceTypeCode": "QUESTION",
+          "isNegative": false,
+          "isQuestion": true
+        },
+        {
+          "pronoun": "él",
+          "example": "Él no habla",
+          "translations": [
+            {"languageCode": "ru", "translation": "Он не говорит"},
+            {"languageCode": "en", "translation": "He doesn't speak"}
+          ],
+          "sentenceTypeCode": "NEGATIVE",
+          "isNegative": true,
+          "isQuestion": false
+        },
+        {
+          "pronoun": "nosotros",
+          "example": "Nosotros hablamos",
+          "translations": [
+            {"languageCode": "ru", "translation": "Мы говорим"},
+            {"languageCode": "en", "translation": "We speak"}
+          ],
+          "sentenceTypeCode": "AFFIRMATIVE",
+          "isNegative": false,
+          "isQuestion": false
+        },
+        {
+          "pronoun": "vosotros",
+          "example": "Vosotros habláis",
+          "translations": [
+            {"languageCode": "ru", "translation": "Вы говорите"},
+            {"languageCode": "en", "translation": "You speak"}
+          ],
+          "sentenceTypeCode": "AFFIRMATIVE",
+          "isNegative": false,
+          "isQuestion": false
+        },
+        {
+          "pronoun": "ellos",
+          "example": "Ellos hablan",
+          "translations": [
+            {"languageCode": "ru", "translation": "Они говорят"},
+            {"languageCode": "en", "translation": "They speak"}
+          ],
+          "sentenceTypeCode": "AFFIRMATIVE",
+          "isNegative": false,
+          "isQuestion": false
+        }
+      ]
+    },
+    {
+      "tenseName": "Pretérito indefinido",
+      "examples": [
+        {
+          "pronoun": "yo",
+          "example": "Yo hablé",
+          "translations": [
+            {"languageCode": "ru", "translation": "Я говорил"},
+            {"languageCode": "en", "translation": "I spoke"}
+          ],
+          "sentenceTypeCode": "AFFIRMATIVE",
+          "isNegative": false,
+          "isQuestion": false
+        }
+      ]
+    },
+    {
+      "tenseName": "Futuro próximo",
+      "examples": [
+        {
+          "pronoun": "tú",
+          "example": "Tú vas a hablar",
+          "translations": [
+            {"languageCode": "ru", "translation": "Ты будешь говорить"},
+            {"languageCode": "en", "translation": "You will speak"}
+          ],
+          "sentenceTypeCode": "AFFIRMATIVE",
+          "isNegative": false,
+          "isQuestion": false
+        }
+      ]
+    }
+  ]
+}
+
+RULES FOR GRAMMATICAL EXAMPLES (ONLY FOR VERBS):
+
+1. PRESENT TENSE (Presente de indicativo for Spanish, Present Simple for English):
+   - Generate examples for ALL pronouns:
+     * Spanish: yo, tú, él, nosotros, vosotros, ellos
+     * English: I, you, he, we, you, they
+   - Randomly select ONE pronoun for NEGATIVE form (isNegative: true, sentenceTypeCode: "NEGATIVE")
+   - Randomly select ONE different pronoun for QUESTION form (isQuestion: true, sentenceTypeCode: "QUESTION")
+   - All other pronouns should be AFFIRMATIVE (isNegative: false, isQuestion: false, sentenceTypeCode: "AFFIRMATIVE")
+   - Use correct verb conjugation for each pronoun
+
+2. PAST TENSE (Pretérito indefinido for Spanish, Past Simple for English):
+   - Generate example for only ONE pronoun (choose: yo/tú/él for Spanish, I/you/he for English)
+   - Must be AFFIRMATIVE form only
+   - Use correct past tense conjugation
+
+3. FUTURE TENSE (Futuro próximo "ir a + infinitive" for Spanish, Future Simple "will + verb" for English):
+   - Generate example for only ONE pronoun (choose: yo/tú/él for Spanish, I/you/he for English)
+   - Must be AFFIRMATIVE form only
+   - Spanish: use "ir a + infinitive" construction (e.g., "Yo voy a hablar")
+   - English: use "will + verb" construction (e.g., "I will speak")
+
+4. SENTENCE STRUCTURE:
+   - Keep sentences simple: pronoun + verb form (+ minimal context if needed)
+   - Ensure grammatically correct conjugations
+   - Generate accurate translations for Russian AND English (or Russian and Spanish for English words)
+
+5. IF NOT A VERB:
+   - Set "partOfSpeech" to the correct value (noun, adjective, adverb, etc.)
+   - Set "grammaticalExamples" to empty array []
+   - Still provide regular "examples" with sentences using the word
+
+RULES FOR EXAMPLES (FOR ALL WORDS):
+- Generate AT LEAST 5 examples in the "examples" array (minimum 5, can be more)
+- Include variety in sentence types:
+  * At least 2 affirmative sentences
+  * At least 1 question (isQuestion: true, sentenceTypeCode: "QUESTION")
+  * At least 1 negative sentence (isNegative: true, sentenceTypeCode: "NEGATIVE")
+  * Remaining examples can be any type (affirmative, question, or negative)
+- Keep sentences simple and natural (maximum 6-7 words)
+- Use commonly used phrases and contexts
+- Ensure all translations are accurate and natural
+
+IMPORTANT NOTES:
+- Analyze "${word}" linguistically to determine if it's a verb
+- Trust your own linguistic analysis over database classification
+- Ensure all verb conjugations are grammatically correct
+- Provide natural, commonly used translations
+- Keep sentence structures simple and clear
+- ALWAYS generate at least 5 examples for any word

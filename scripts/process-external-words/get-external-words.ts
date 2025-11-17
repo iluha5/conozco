@@ -91,6 +91,9 @@ interface SimplifiedWord {
         code: string;
         name: string;
     };
+    partOfSpeech?: {
+        name: string;
+    };
 }
 
 async function main(): Promise<void> {
@@ -135,12 +138,14 @@ async function main(): Promise<void> {
                 new Set(word.translations.map(t => t.language.code)),
             );
 
-            for (const translationLangCode of translationLanguages) {
-                const translationLang = word.translations.find(
-                    t => t.language.code === translationLangCode,
-                )?.language;
+            // Если у слова нет переводов, используем дефолтный язык перевода (русский)
+            if (translationLanguages.length === 0) {
+                // Получаем или создаем русский язык как целевой язык перевода
+                const russianLanguage = await prisma.language.findUnique({
+                    where: { code: 'ru' },
+                });
 
-                if (translationLang) {
+                if (russianLanguage) {
                     simplifiedWords.push({
                         id: word.id.toString(),
                         word: word.word,
@@ -150,11 +155,49 @@ async function main(): Promise<void> {
                             name: word.language.name,
                         },
                         translationLanguage: {
-                            id: translationLang.id.toString(),
-                            code: translationLang.code,
-                            name: translationLang.name,
+                            id: russianLanguage.id.toString(),
+                            code: russianLanguage.code,
+                            name: russianLanguage.name,
                         },
+                        partOfSpeech: word.partOfSpeech
+                            ? {
+                                  name: word.partOfSpeech.name,
+                              }
+                            : undefined,
                     });
+                } else {
+                    await log(
+                        `⚠️ Warning: Russian language not found in database for word: ${word.word}`,
+                    );
+                }
+            } else {
+                // Если есть переводы, создаем пары как раньше
+                for (const translationLangCode of translationLanguages) {
+                    const translationLang = word.translations.find(
+                        t => t.language.code === translationLangCode,
+                    )?.language;
+
+                    if (translationLang) {
+                        simplifiedWords.push({
+                            id: word.id.toString(),
+                            word: word.word,
+                            language: {
+                                id: word.language.id.toString(),
+                                code: word.language.code,
+                                name: word.language.name,
+                            },
+                            translationLanguage: {
+                                id: translationLang.id.toString(),
+                                code: translationLang.code,
+                                name: translationLang.name,
+                            },
+                            partOfSpeech: word.partOfSpeech
+                                ? {
+                                      name: word.partOfSpeech.name,
+                                  }
+                                : undefined,
+                        });
+                    }
                 }
             }
         }
