@@ -131,6 +131,21 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
         setLetters(letterStates);
     }, [currentWord]);
 
+    // Инициализируем буквы при смене слова
+    useEffect(() => {
+        initializeLetters();
+        setUserWord([]);
+        setIsComplete(false);
+        setIsCorrect(null);
+        setBackgroundFlash(null);
+        setShowResultPopup(false);
+        setTotalErrors(0);
+        setFlashingLetter(null);
+        setHasPlayedOnce(false);
+        setAnimationKey(prev => prev + 1);
+        setFadeIn(false);
+    }, [currentIndex, initializeLetters]);
+
     const handleLetterClick = async (index: number) => {
         const letter = letters[index].letter;
         const correctWord = currentWord.baseWord?.word || '';
