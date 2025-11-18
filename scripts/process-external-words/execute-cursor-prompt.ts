@@ -190,8 +190,9 @@ async function executeCursorAgent(
 
     try {
         // Выполняем cursor agent с промптом через stdin
+        // IMPORTANT: Set cwd to tempDatePath so Cursor Agent saves any files there
         const childProcess = spawn(cursorCommand, {
-            cwd: process.cwd(),
+            cwd: tempDatePath,
             stdio: ['pipe', 'pipe', 'pipe'], // stdin, stdout, stderr
             shell: true,
         });

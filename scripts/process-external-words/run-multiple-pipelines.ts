@@ -75,8 +75,8 @@ async function main(): Promise<void> {
 
             // Добавляем задержку между запусками (кроме последнего)
             if (i < numRuns) {
-                console.log(`⏳ Waiting 30 seconds before next run...`);
-                await delay(30000); // 30 секунд
+                console.log(`⏳ Waiting 5 seconds before next run...`);
+                await delay(5000); // 5 секунд
             }
         }
 
