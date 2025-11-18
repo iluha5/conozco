@@ -4,6 +4,14 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { Header } from '@/components/header';
 import { ArrowLeft } from 'lucide-react';
 import { Stage1Training } from '@/components/training/stage1';
@@ -101,6 +109,7 @@ export default function TrainingPage() {
     const [trainingWords, setTrainingWords] = useState<Word[]>([]);
     const [trainingCompleted, setTrainingCompleted] = useState(false);
     const [completedWords, setCompletedWords] = useState<Word[]>([]);
+    const [isExitDialogOpen, setIsExitDialogOpen] = useState(false);
     const { toast } = useToast();
 
     const enabledStages = useMemo(
@@ -243,59 +252,89 @@ export default function TrainingPage() {
         window.location.href = '/training/setup';
     };
 
+    const handleConfirmExit = () => {
+        setIsExitDialogOpen(false);
+        window.location.href = '/';
+    };
+
     const renderTrainingScreen = () => (
         <>
-            <div className="mb-6 flex items-center justify-between">
-                <Link href="/">
-                    <Button variant="ghost">
-                        <ArrowLeft className="w-4 h-4 mr-2" />
-                        Назад
-                    </Button>
-                </Link>
-                <Link href="/training/setup">
-                    <Button variant="outline">Начать сначала</Button>
-                </Link>
+            <div className="mb-8 flex items-center justify-between gap-4">
+                <h1 className="text-4xl font-bold text-gray-900 truncate">
+                    Тренировка
+                </h1>
+                <Button
+                    variant="outline"
+                    onClick={() => setIsExitDialogOpen(true)}
+                    className="flex-shrink-0"
+                >
+                    Завершить
+                </Button>
             </div>
 
-            <h1 className="text-4xl font-bold text-gray-900 mb-8">
-                Тренировка
-            </h1>
-
-            <div className="flex gap-4 mb-6 justify-center flex-wrap">
-                {Array.from(enabledStages)
-                    .sort()
-                    .map((stage, index) => (
-                        <Card
-                            key={stage}
-                            className={`cursor-pointer transition-all aspect-square flex flex-col justify-center max-w-[120px] ${
-                                currentStage === stage
-                                    ? 'ring-2 ring-purple-600 bg-purple-50'
-                                    : 'hover:bg-gray-50'
-                            }`}
-                            onClick={() => setCurrentStage(stage)}
+            <Dialog open={isExitDialogOpen} onOpenChange={setIsExitDialogOpen}>
+                <DialogContent className="!left-4 !right-4 !translate-x-0 !w-auto sm:!left-[50%] sm:!right-auto sm:!translate-x-[-50%] sm:!w-full">
+                    <DialogHeader>
+                        <DialogTitle>Завершить тренировку?</DialogTitle>
+                        <DialogDescription>
+                            Результаты текущей тренировки будут сброшены.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="gap-2">
+                        <Button
+                            variant="outline"
+                            onClick={() => setIsExitDialogOpen(false)}
                         >
-                            <CardHeader className="flex-1 flex items-center justify-center">
-                                <CardTitle className="text-center">
-                                    <span className="md:hidden text-3xl font-bold">
-                                        {index + 1}
-                                    </span>
-                                    <span className="hidden md:inline text-sm">
-                                        Этап {index + 1}
-                                    </span>
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="pt-0 hidden md:block">
-                                <p className="text-xs text-center text-gray-600">
-                                    {stage === 1 && 'Просмотр + озвучка'}
-                                    {stage === 2 && 'Выбор перевода'}
-                                    {stage === 3 && 'Сопоставление'}
-                                    {stage === 4 && 'Составление слова'}
-                                    {stage === 5 && 'Составление предложения'}
-                                    {stage === 6 && 'Составление по голосу'}
-                                </p>
-                            </CardContent>
-                        </Card>
-                    ))}
+                            Отмена
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={handleConfirmExit}
+                        >
+                            Завершить
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <div className="mb-6 overflow-x-auto py-2">
+                <div className="flex gap-2 md:gap-4 justify-center min-w-max px-4">
+                    {Array.from(enabledStages)
+                        .sort()
+                        .map((stage, index) => (
+                            <Card
+                                key={stage}
+                                className={`cursor-pointer transition-all aspect-square flex flex-col justify-center w-[50px] md:w-[120px] flex-shrink-0 ${
+                                    currentStage === stage
+                                        ? 'ring-2 ring-purple-600 bg-purple-50'
+                                        : 'hover:bg-gray-50'
+                                }`}
+                                onClick={() => setCurrentStage(stage)}
+                            >
+                                <CardHeader className="flex-1 flex items-center justify-center p-1 md:p-6">
+                                    <CardTitle className="text-center">
+                                        <span className="md:hidden text-xl font-bold">
+                                            {index + 1}
+                                        </span>
+                                        <span className="hidden md:inline text-sm">
+                                            Этап {index + 1}
+                                        </span>
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="pt-0 hidden md:block">
+                                    <p className="text-xs text-center text-gray-600">
+                                        {stage === 1 && 'Просмотр + озвучка'}
+                                        {stage === 2 && 'Выбор перевода'}
+                                        {stage === 3 && 'Сопоставление'}
+                                        {stage === 4 && 'Составление слова'}
+                                        {stage === 5 &&
+                                            'Составление предложения'}
+                                        {stage === 6 && 'Составление по голосу'}
+                                    </p>
+                                </CardContent>
+                            </Card>
+                        ))}
+                </div>
             </div>
 
             {loading ? (
