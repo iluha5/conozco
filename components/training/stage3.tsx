@@ -66,6 +66,7 @@ type MatchPair = {
     translation: string;
     matched: boolean;
     errorCount?: number;
+    resultIndex?: number; // Индекс в массиве currentBatchResults
 };
 
 export function Stage3Training({ words, onComplete }: Stage3Props) {
@@ -86,8 +87,12 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
     const [exerciseResults, setExerciseResults] = useState<(boolean | null)[]>(
         [],
     );
+    const [currentBatchResults, setCurrentBatchResults] = useState<
+        (boolean | null)[]
+    >([]);
     const [isRetryMode, setIsRetryMode] = useState(false);
     const [hasCompletedFirstRound, setHasCompletedFirstRound] = useState(false);
+    const [refreshKey, setRefreshKey] = useState(0);
 
     const wordsPerBatch = 10;
     const totalBatches = Math.ceil(words.length / wordsPerBatch);
@@ -101,8 +106,13 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
         setExerciseResults(new Array(words.length).fill(null));
     }, [words.length]);
 
-    const initializePairs = useCallback(() => {
-        const newPairs: MatchPair[] = currentWords.map(word => {
+    useEffect(() => {
+        const currentBatchWords = words.slice(
+            currentBatch * wordsPerBatch,
+            (currentBatch + 1) * wordsPerBatch,
+        );
+
+        const newPairs: MatchPair[] = currentBatchWords.map(word => {
             const globalIndex = words.findIndex(w => w.id === word.id);
             const hasError = exerciseResults[globalIndex] === false;
 
@@ -124,6 +134,9 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
 
         setPairs(newPairs);
 
+        // Инициализируем массив результатов для текущего батча
+        setCurrentBatchResults(new Array(currentBatchWords.length).fill(null));
+
         // Перемешиваем переводы
         const translations = newPairs
             .map(p => p.translation)
@@ -134,11 +147,7 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
         setSelectedTranslation(null);
         setErrorForeign(null);
         setErrorTranslation(null);
-    }, [currentWords, words, exerciseResults, isRetryMode]);
-
-    useEffect(() => {
-        initializePairs();
-    }, [currentBatch, isRetryMode, initializePairs]);
+    }, [currentBatch, words, isRetryMode, refreshKey]);
 
     const handleForeignClick = (foreign: string) => {
         const pair = pairs.find(p => p.foreign === foreign);
@@ -168,12 +177,33 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
         );
 
         if (pair) {
+            // Определяем индекс для записи результата
+            let resultIndex: number;
+
+            if (pair.resultIndex !== undefined) {
+                // Пара уже была отмечена (с ошибкой) - используем тот же индекс
+                resultIndex = pair.resultIndex;
+            } else {
+                // Находим следующий свободный индекс для записи результата
+                resultIndex = currentBatchResults.findIndex(r => r === null);
+            }
+
             // Правильное совпадение
             setPairs(prev =>
-                prev.map(p => (p.id === pair.id ? { ...p, matched: true } : p)),
+                prev.map(p =>
+                    p.id === pair.id ? { ...p, matched: true, resultIndex } : p,
+                ),
             );
 
-            // Находим глобальный индекс слова
+            if (resultIndex !== -1) {
+                setCurrentBatchResults(prev => {
+                    const newResults = [...prev];
+                    newResults[resultIndex] = true;
+                    return newResults;
+                });
+            }
+
+            // Находим глобальный индекс слова для общих результатов
             const globalIndex = words.findIndex(w => w.id === pair.id);
             if (globalIndex !== -1) {
                 // В режиме повторения, если слово было с ошибкой - меняем на зеленое
@@ -221,26 +251,57 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
             const wordPair = pairs.find(p => p.foreign === foreign);
             if (wordPair) {
                 // Увеличиваем счетчик ошибок для этой пары
-                setPairs(prev =>
-                    prev.map(p =>
-                        p.id === wordPair.id
-                            ? { ...p, errorCount: (p.errorCount || 0) + 1 }
-                            : p,
-                    ),
-                );
+                const currentErrorCount = (wordPair.errorCount || 0) + 1;
 
                 // Находим глобальный индекс слова
                 const globalIndex = words.findIndex(w => w.id === wordPair.id);
-                if (globalIndex !== -1) {
-                    // Отмечаем как ошибку только если превышен лимит ошибок (3)
-                    const currentErrorCount = (wordPair.errorCount || 0) + 1;
-                    if (currentErrorCount >= 3) {
+
+                // Отмечаем как ошибку только если превышен лимит ошибок (3) и еще не отмечено
+                if (
+                    currentErrorCount >= 3 &&
+                    wordPair.resultIndex === undefined
+                ) {
+                    // Находим следующий свободный индекс для записи результата
+                    const nextResultIndex = currentBatchResults.findIndex(
+                        r => r === null,
+                    );
+                    if (nextResultIndex !== -1) {
+                        setCurrentBatchResults(prev => {
+                            const newResults = [...prev];
+                            newResults[nextResultIndex] = false;
+                            return newResults;
+                        });
+
+                        // Сохраняем индекс в паре
+                        setPairs(prev =>
+                            prev.map(p =>
+                                p.id === wordPair.id
+                                    ? {
+                                          ...p,
+                                          errorCount: currentErrorCount,
+                                          resultIndex: nextResultIndex,
+                                      }
+                                    : p,
+                            ),
+                        );
+                    }
+
+                    if (globalIndex !== -1) {
                         setExerciseResults(prev => {
                             const newResults = [...prev];
                             newResults[globalIndex] = false;
                             return newResults;
                         });
                     }
+                } else {
+                    // Просто увеличиваем счетчик ошибок
+                    setPairs(prev =>
+                        prev.map(p =>
+                            p.id === wordPair.id
+                                ? { ...p, errorCount: currentErrorCount }
+                                : p,
+                        ),
+                    );
                 }
 
                 await fetch('/api/training', {
@@ -349,7 +410,7 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
                     setHasCompletedFirstRound(false);
                 } else if (nextErrorBatch === currentBatch) {
                     // Это единственный батч с ошибками - перезагружаем его
-                    initializePairs();
+                    setRefreshKey(prev => prev + 1);
                 } else {
                     // Переходим к следующему батчу с ошибками
                     setCurrentBatch(nextErrorBatch);
@@ -367,7 +428,6 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
         isRetryMode,
         exerciseResults,
         findNextErrorBatch,
-        initializePairs,
     ]);
 
     return (
@@ -386,10 +446,7 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
                             completedExercises={
                                 pairs.filter(p => p.matched).length
                             }
-                            exerciseResults={exerciseResults.slice(
-                                currentBatch * wordsPerBatch,
-                                (currentBatch + 1) * wordsPerBatch,
-                            )}
+                            exerciseResults={currentBatchResults}
                             currentIndex={pairs.filter(p => p.matched).length}
                         />
                     </div>

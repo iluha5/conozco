@@ -13,5 +13,5 @@ if [ ! -f "$SCRIPT_NAME" ]; then
 fi
 
 # Run the daily code review script
-npx tsx "$SCRIPT_NAME" 5
+npx tsx "$SCRIPT_NAME"
 
