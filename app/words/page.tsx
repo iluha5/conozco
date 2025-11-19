@@ -15,8 +15,7 @@ import { Header } from '@/components/header';
 import { ArrowLeft } from 'lucide-react';
 import { AddWordDialog } from '@/components/add-word-dialog';
 import { WordsList } from '@/components/words-list';
-import { useToast } from '@/hooks/use-toast';
-import { useTrainingSelection } from '@/hooks/use-training-settings';
+import { useToast, useTrainingSelection } from '@/hooks/shared';
 
 type Language = {
     id: number;

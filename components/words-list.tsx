@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Trash2, CheckCircle, CheckCircle2, X } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/shared';
 import { TranslationSelectorDialog } from '@/components/translation-selector-dialog';
 
 type Language = {

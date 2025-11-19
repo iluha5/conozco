@@ -15,7 +15,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Header } from '@/components/header';
 import { ArrowLeft, ChevronDown, ChevronUp, Settings } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/shared';
 import {
     Stage1SettingsModal,
     Stage4SettingsModal,
@@ -27,7 +27,7 @@ import {
     useStage1Settings,
     useStage4Settings,
     useStage5Settings,
-} from '@/hooks/use-training-settings';
+} from '@/hooks/shared/use-training-settings';
 import { useTrainingWords } from '@/contexts/training-words-context';
 
 type Language = {

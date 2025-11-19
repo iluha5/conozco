@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Volume2, ChevronRight, Settings } from 'lucide-react';
 import { ProgressDots } from './progress-dots';
 import { Stage1SettingsModal } from './stage-settings';
-import { useStage1Settings } from '@/hooks/use-training-settings';
+import { useStage1Settings } from '@/hooks/shared/use-training-settings';
 
 type Language = {
     id: string;

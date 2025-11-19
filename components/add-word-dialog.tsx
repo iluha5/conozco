@@ -23,8 +23,7 @@ import {
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { PlusCircle, Loader2, Search, X } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { useTrainingSelection } from '@/hooks/use-training-settings';
+import { useToast, useTrainingSelection } from '@/hooks/shared';
 
 type PartOfSpeech = {
     id: string;

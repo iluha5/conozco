@@ -13,7 +13,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/shared';
 import { Loader2 } from 'lucide-react';
 
 export default function LoginPage() {

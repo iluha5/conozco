@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, XCircle, Settings, ChevronRight } from 'lucide-react';
 import { ProgressDots } from './progress-dots';
 import { Stage4SettingsModal } from './stage-settings';
-import { useStage4Settings } from '@/hooks/use-training-settings';
+import { useStage4Settings } from '@/hooks/shared/use-training-settings';
 
 type Language = {
     id: string;
