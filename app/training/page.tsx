@@ -85,6 +85,11 @@ export default function TrainingPage() {
     // Обработчики
     const handleExit = () => setIsExitDialogOpen(true);
 
+    const handlePause = () => {
+        // Прогресс уже сохранен в localStorage, просто переходим на главную
+        router.push('/');
+    };
+
     const handleConfirmExit = () => {
         // Очищаем сохраненное состояние при выходе
         storage.clearProgress();
@@ -230,7 +235,7 @@ export default function TrainingPage() {
         <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100">
             <Header />
             <div className="container mx-auto px-4 py-8">
-                <TrainingHeader onExit={handleExit} />
+                <TrainingHeader onExit={handleExit} onPause={handlePause} />
 
                 <ExitConfirmationDialog
                     open={isExitDialogOpen}

@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -28,14 +29,36 @@ import {
     PlusCircle,
 } from 'lucide-react';
 import { ContinueTrainingCard } from '@/components/training/continue-training-card';
+import { NewTrainingConfirmationDialog } from '@/components/training/new-training-confirmation-dialog';
 import { useTrainingStorage } from '@/hooks/training';
 
 export default function HomePage() {
     const router = useRouter();
-    const { savedState, hasUnfinishedTraining } = useTrainingStorage();
+    const { savedState, hasUnfinishedTraining, clearProgress } =
+        useTrainingStorage();
+    const [showNewTrainingDialog, setShowNewTrainingDialog] = useState(false);
 
     const handleContinueTraining = () => {
         router.push('/training');
+    };
+
+    const handleStartTraining = () => {
+        if (hasUnfinishedTraining) {
+            setShowNewTrainingDialog(true);
+        } else {
+            router.push('/training/setup');
+        }
+    };
+
+    const handleContinueExisting = () => {
+        setShowNewTrainingDialog(false);
+        router.push('/training');
+    };
+
+    const handleStartNew = () => {
+        clearProgress();
+        setShowNewTrainingDialog(false);
+        router.push('/training/setup');
     };
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -196,17 +219,23 @@ export default function HomePage() {
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <Link href="/training/setup">
-                                <Button
-                                    className="w-full"
-                                    size="lg"
-                                    variant="secondary"
-                                >
-                                    Начать тренировку
-                                </Button>
-                            </Link>
+                            <Button
+                                className="w-full"
+                                size="lg"
+                                variant="secondary"
+                                onClick={handleStartTraining}
+                            >
+                                Начать тренировку
+                            </Button>
                         </CardContent>
                     </Card>
+
+                    <NewTrainingConfirmationDialog
+                        open={showNewTrainingDialog}
+                        onOpenChange={setShowNewTrainingDialog}
+                        onContinue={handleContinueExisting}
+                        onStartNew={handleStartNew}
+                    />
 
                     <Card className="hover:shadow-lg transition-shadow flex flex-col justify-between">
                         <CardHeader>
