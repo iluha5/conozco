@@ -11,6 +11,7 @@ import {
     ChevronRight,
 } from 'lucide-react';
 import { ProgressDots } from './progress-dots';
+import { useTrainingStorage } from '@/hooks/training';
 
 type Language = {
     id: string;
@@ -69,6 +70,7 @@ type LetterState = {
 };
 
 export function Stage6Training({ words, onComplete }: Stage6Props) {
+    const storage = useTrainingStorage();
     const [currentIndex, setCurrentIndex] = useState(0);
     const [letters, setLetters] = useState<LetterState[]>([]);
     const [userWord, setUserWord] = useState<string[]>([]);
@@ -208,7 +210,10 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
             return newResults;
         });
 
-        // Записываем результат
+        // Записываем попытку в localStorage
+        storage.recordAttempt(6, currentWord.id, correct);
+
+        // Записываем результат в БД
         await fetch('/api/training', {
             method: 'POST',
             headers: {

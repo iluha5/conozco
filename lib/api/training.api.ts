@@ -1,4 +1,4 @@
-import { Word } from '@/types/training.types';
+import { Word, SavedTrainingState } from '@/types/training.types';
 
 export const trainingApi = {
     /**
@@ -45,5 +45,23 @@ export const trainingApi = {
             wordIds.map(id => trainingApi.markWordAsLearned(id)),
         );
         return results;
+    },
+
+    /**
+     * Сохранить лог завершенной тренировки в БД
+     * @param savedState - Сохраненное состояние тренировки
+     */
+    saveTrainingLog: async (savedState: SavedTrainingState): Promise<void> => {
+        const response = await fetch('/api/training-logs', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ savedState }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to save training log');
+        }
     },
 };

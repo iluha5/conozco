@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ProgressDots } from './progress-dots';
+import { useTrainingStorage } from '@/hooks/training';
 
 type Language = {
     id: string;
@@ -70,6 +71,7 @@ type MatchPair = {
 };
 
 export function Stage3Training({ words, onComplete }: Stage3Props) {
+    const storage = useTrainingStorage();
     const [currentBatch, setCurrentBatch] = useState(0);
     const [pairs, setPairs] = useState<MatchPair[]>([]);
     const [shuffledTranslations, setShuffledTranslations] = useState<string[]>(
@@ -215,6 +217,9 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
                 });
             }
 
+            // Записываем попытку в localStorage
+            storage.recordAttempt(3, pair.id, true);
+
             await fetch('/api/training', {
                 method: 'POST',
                 headers: {
@@ -303,6 +308,9 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
                         ),
                     );
                 }
+
+                // Записываем попытку в localStorage
+                storage.recordAttempt(3, wordPair.id, false);
 
                 await fetch('/api/training', {
                     method: 'POST',

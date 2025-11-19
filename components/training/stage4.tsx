@@ -7,6 +7,7 @@ import { CheckCircle, XCircle, Settings, ChevronRight } from 'lucide-react';
 import { ProgressDots } from './progress-dots';
 import { Stage4SettingsModal } from './stage-settings';
 import { useStage4Settings } from '@/hooks/shared/use-training-settings';
+import { useTrainingStorage } from '@/hooks/training';
 
 type Language = {
     id: string;
@@ -69,6 +70,7 @@ type LetterState = {
 };
 
 export function Stage4Training({ words, onComplete }: Stage4Props) {
+    const storage = useTrainingStorage();
     const { settings, updateSettings } = useStage4Settings();
     const [currentIndex, setCurrentIndex] = useState(0);
     const [letters, setLetters] = useState<LetterState[]>([]);
@@ -229,7 +231,10 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
             return newResults;
         });
 
-        // Записываем результат
+        // Записываем попытку в localStorage
+        storage.recordAttempt(4, currentWord.id, correct);
+
+        // Записываем результат в БД
         await fetch('/api/training', {
             method: 'POST',
             headers: {

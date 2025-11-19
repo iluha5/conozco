@@ -7,6 +7,7 @@ import { Volume2, ChevronRight, Settings } from 'lucide-react';
 import { ProgressDots } from './progress-dots';
 import { Stage1SettingsModal } from './stage-settings';
 import { useStage1Settings } from '@/hooks/shared/use-training-settings';
+import { useTrainingStorage } from '@/hooks/training';
 
 type Language = {
     id: string;
@@ -64,6 +65,7 @@ type Stage1Props = {
 };
 
 export function Stage1Training({ words, onComplete }: Stage1Props) {
+    const storage = useTrainingStorage();
     const { settings, updateSettings } = useStage1Settings();
     const [currentIndex, setCurrentIndex] = useState(0);
     const [showTranslation, setShowTranslation] = useState(false);
@@ -117,7 +119,10 @@ export function Stage1Training({ words, onComplete }: Stage1Props) {
     }, [currentIndex, currentWord, speakWord]);
 
     const handleNext = async () => {
-        // Записываем результат тренировки
+        // Записываем попытку в localStorage (всегда успешная на 1 этапе)
+        storage.recordAttempt(1, currentWord.id, true);
+
+        // Записываем результат тренировки в БД
         await fetch('/api/training', {
             method: 'POST',
             headers: {

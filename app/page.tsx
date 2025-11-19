@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import {
@@ -26,8 +27,16 @@ import {
     Languages,
     PlusCircle,
 } from 'lucide-react';
+import { ContinueTrainingCard } from '@/components/training/continue-training-card';
+import { useTrainingStorage } from '@/hooks/training';
 
 export default function HomePage() {
+    const router = useRouter();
+    const { savedState, hasUnfinishedTraining } = useTrainingStorage();
+
+    const handleContinueTraining = () => {
+        router.push('/training');
+    };
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
             <Header />
@@ -40,6 +49,15 @@ export default function HomePage() {
                         Изучайте иностранные слова эффективно и легко
                     </p>
                 </div>
+
+                {hasUnfinishedTraining && savedState && (
+                    <div className="max-w-4xl mx-auto mb-8">
+                        <ContinueTrainingCard
+                            savedState={savedState}
+                            onContinue={handleContinueTraining}
+                        />
+                    </div>
+                )}
 
                 <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto mb-12">
                     <Card className="hover:shadow-lg transition-shadow">

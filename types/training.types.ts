@@ -1,5 +1,7 @@
 export type TrainingStage = 1 | 2 | 3 | 4 | 5 | 6;
 
+export type StageStatus = 'pending' | 'in_progress' | 'completed';
+
 export interface Language {
     id: string;
     code: string;
@@ -91,3 +93,92 @@ export const STAGE_NAMES: Record<TrainingStage, string> = {
     5: 'Составление предложения',
     6: 'Составление по голосу',
 };
+
+// ===== Расширенные типы для сохранения прогресса =====
+
+/**
+ * Прогресс по одному слову в этапе
+ */
+export interface WordProgress {
+    wordId: string;
+    isCompleted: boolean;
+    attempts: number; // общее количество попыток
+    correctAttempts: number; // количество правильных попыток
+    lastAttemptAt?: string;
+}
+
+/**
+ * Прогресс по этапу тренировки
+ */
+export interface StageProgress {
+    stage: TrainingStage;
+    status: StageStatus;
+    wordsProgress: WordProgress[];
+    currentWordIndex: number;
+    completedAt?: string;
+}
+
+/**
+ * Настройки этапов (если они есть)
+ */
+export interface StageSettings {
+    stage1?: {
+        showTranslation: boolean;
+        autoPlayAudio: boolean;
+    };
+    stage4?: {
+        showHints: boolean;
+    };
+    stage5?: {
+        wordOrder: 'sequential' | 'random';
+    };
+}
+
+/**
+ * Сохраненное состояние тренировки в localStorage
+ */
+export interface SavedTrainingState {
+    sessionId: string; // Уникальный ID сессии тренировки
+    startedAt: string;
+    lastUpdatedAt: string;
+
+    // Настройки тренировки
+    enabledStages: TrainingStage[];
+    stageSettings: StageSettings;
+    selectedLanguage: string;
+    selectedWordIds: string[];
+
+    // Текущий прогресс
+    currentStage: TrainingStage;
+    stagesProgress: StageProgress[];
+
+    // Метаданные
+    totalWords: number;
+    completedWords: number;
+}
+
+/**
+ * Лог тренировки для сохранения в БД
+ */
+export interface TrainingLog {
+    id?: string;
+    userId: string;
+    sessionId: string;
+    startedAt: Date;
+    completedAt: Date;
+    duration: number; // в секундах
+
+    // Настройки
+    enabledStages: number[];
+    selectedLanguage: string;
+    totalWords: number;
+
+    // Результаты
+    completedWords: number;
+    stagesProgress: StageProgress[];
+
+    // Статистика
+    totalAttempts: number;
+    correctAttempts: number;
+    accuracy: number; // процент правильных ответов
+}

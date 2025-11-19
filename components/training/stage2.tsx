@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, XCircle } from 'lucide-react';
 import { ProgressDots } from './progress-dots';
+import { useTrainingStorage } from '@/hooks/training';
 
 type Language = {
     id: string;
@@ -73,6 +74,7 @@ const getTranslation = (word: Word): string => {
 };
 
 export function Stage2Training({ words, onComplete }: Stage2Props) {
+    const storage = useTrainingStorage();
     const [currentIndex, setCurrentIndex] = useState(0);
     const [options, setOptions] = useState<string[]>([]);
     const [selectedOption, setSelectedOption] = useState<string | null>(null);
@@ -269,7 +271,10 @@ export function Stage2Training({ words, onComplete }: Stage2Props) {
             return newResults;
         });
 
-        // Записываем результат
+        // Записываем попытку в localStorage для статистики
+        storage.recordAttempt(2, currentWord.id, correct);
+
+        // Записываем результат в БД
         await fetch('/api/training', {
             method: 'POST',
             headers: {

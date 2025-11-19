@@ -12,13 +12,13 @@ datasource db {
 
 // Тип предложения (отрицательное, вопросительное и т.д.)
 model SentenceType {
-  id                   Int                   @id @default(autoincrement())
-  code                 String                @unique
-  displayName          String
-  isNegative           Boolean               @default(false)
-  isQuestion           Boolean               @default(false)
-  wordExamples         WordExample[]
-  grammaticalExamples  GrammaticalExample[]
+  id                  Int                  @id @default(autoincrement())
+  code                String               @unique
+  displayName         String
+  isNegative          Boolean              @default(false)
+  isQuestion          Boolean              @default(false)
+  wordExamples        WordExample[]
+  grammaticalExamples GrammaticalExample[]
 
   @@unique([isNegative, isQuestion])
 }
@@ -43,13 +43,13 @@ model UserRole {
 
 // Часть речи
 model PartOfSpeech {
-  id         Int      @id @default(autoincrement())
-  name       String   // NOUN, VERB, etc.
-  displayName String  // существительное, глагол, etc.
-  languageId Int      // ID языка (для поддержки разных языков)
+  id          Int    @id @default(autoincrement())
+  name        String // NOUN, VERB, etc.
+  displayName String // существительное, глагол, etc.
+  languageId  Int // ID языка (для поддержки разных языков)
 
-  language     Language     @relation(fields: [languageId], references: [id])
-  baseWords    BaseWord[]
+  language           Language            @relation(fields: [languageId], references: [id])
+  baseWords          BaseWord[]
   customTranslations CustomTranslation[]
 
   @@unique([name, languageId])
@@ -58,21 +58,21 @@ model PartOfSpeech {
 
 // Справочник языков
 model Language {
-  id    Int    @id @default(autoincrement())
-  code  String @unique // например: 'en', 'es', 'ru'
-  name  String         // например: 'English', 'Spanish', 'Russian'
+  id   Int    @id @default(autoincrement())
+  code String @unique // например: 'en', 'es', 'ru'
+  name String // например: 'English', 'Spanish', 'Russian'
 
-  words                         Word[]
-  baseWords                     BaseWord[]
-  pronouns                      Pronoun[]
-  tenses                        Tense[]
-  wordTranslations              WordTranslation[]
-  partsOfSpeech                 PartOfSpeech[]
-  apiRequestLogsSourceLanguage  ApiRequestLog[] @relation("ApiRequestLogSourceLanguage")
-  apiRequestLogsTargetLanguage  ApiRequestLog[] @relation("ApiRequestLogTargetLanguage")
-  customTranslationsOriginal    CustomTranslation[] @relation("CustomTranslationOriginalLanguage")
-  customTranslationsTranslation CustomTranslation[] @relation("CustomTranslationTranslationLanguage")
-  wordExamplesTranslationLanguage WordExample[] @relation("WordExampleTranslationLanguage")
+  words                                  Word[]
+  baseWords                              BaseWord[]
+  pronouns                               Pronoun[]
+  tenses                                 Tense[]
+  wordTranslations                       WordTranslation[]
+  partsOfSpeech                          PartOfSpeech[]
+  apiRequestLogsSourceLanguage           ApiRequestLog[]      @relation("ApiRequestLogSourceLanguage")
+  apiRequestLogsTargetLanguage           ApiRequestLog[]      @relation("ApiRequestLogTargetLanguage")
+  customTranslationsOriginal             CustomTranslation[]  @relation("CustomTranslationOriginalLanguage")
+  customTranslationsTranslation          CustomTranslation[]  @relation("CustomTranslationTranslationLanguage")
+  wordExamplesTranslationLanguage        WordExample[]        @relation("WordExampleTranslationLanguage")
   grammaticalExamplesTranslationLanguage GrammaticalExample[] @relation("GrammaticalExampleTranslationLanguage")
 
   @@index([code])
@@ -80,19 +80,19 @@ model Language {
 
 // Пользователь
 model User {
-  id            Int       @id @default(autoincrement())
-  email         String    @unique
-  password      String    // hashed password
-  name          String?
-  roleId        Int       @default(1)
-  role          UserRole  @relation(fields: [roleId], references: [id])
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String // hashed password
+  name      String?
+  roleId    Int      @default(1)
+  role      UserRole @relation(fields: [roleId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  words         Word[]
-  accounts      Account[]
-  sessions      Session[]
-  apiRequestLogs ApiRequestLog[]
+  words              Word[]
+  accounts           Account[]
+  sessions           Session[]
+  apiRequestLogs     ApiRequestLog[]
   customTranslations CustomTranslation[]
 
   @@index([email])
@@ -133,31 +133,31 @@ model Session {
 
 // Источник слова (провайдер)
 model WordSource {
-  id          Int        @id @default(autoincrement())
-  code        String     @unique // 'native', 'DEEPL', 'MYMEMORY', 'TATOEBA'
-  displayName String     // 'Вручную', 'DeepL Translation API', 'MyMemory Translation API', 'Tatoeba'
-  
-  baseWords            BaseWord[]
-  wordExamples         WordExample[]
-  grammaticalExamples  GrammaticalExample[]
-  apiRequestLogs       ApiRequestLog[]
+  id          Int    @id @default(autoincrement())
+  code        String @unique // 'native', 'DEEPL', 'MYMEMORY', 'TATOEBA'
+  displayName String // 'Вручную', 'DeepL Translation API', 'MyMemory Translation API', 'Tatoeba'
+
+  baseWords           BaseWord[]
+  wordExamples        WordExample[]
+  grammaticalExamples GrammaticalExample[]
+  apiRequestLogs      ApiRequestLog[]
 }
 
 // База слов (словарь)
 model BaseWord {
-  id             Int      @id @default(autoincrement())
-  word           String   // Иностранное слово
-  partOfSpeechId Int?     // ID части речи (может быть null если неизвестна)
-  languageId     Int      // ID языка слова
-  sourceId       Int      // ID источника слова
+  id             Int    @id @default(autoincrement())
+  word           String // Иностранное слово
+  partOfSpeechId Int? // ID части речи (может быть null если неизвестна)
+  languageId     Int // ID языка слова
+  sourceId       Int // ID источника слова
 
-  language             Language            @relation(fields: [languageId], references: [id])
-  partOfSpeech         PartOfSpeech?       @relation(fields: [partOfSpeechId], references: [id])
-  source               WordSource          @relation(fields: [sourceId], references: [id])
-  translations         WordTranslation[]
-  examples             WordExample[]
-  grammaticalExamples  GrammaticalExample[]
-  userWords            Word[]
+  language            Language             @relation(fields: [languageId], references: [id])
+  partOfSpeech        PartOfSpeech?        @relation(fields: [partOfSpeechId], references: [id])
+  source              WordSource           @relation(fields: [sourceId], references: [id])
+  translations        WordTranslation[]
+  examples            WordExample[]
+  grammaticalExamples GrammaticalExample[]
+  userWords           Word[]
 
   @@unique([word, languageId])
   @@index([languageId, partOfSpeechId])
@@ -166,14 +166,14 @@ model BaseWord {
 
 // Переводы слов (до 3 самых популярных на каждый язык)
 model WordTranslation {
-  id          Int      @id @default(autoincrement())
-  baseWordId  Int      // ID базового слова
-  languageId  Int      // ID языка перевода
-  translation String   // Перевод
-  priority    Int      @default(1) // Приоритет перевода (1-3)
+  id          Int    @id @default(autoincrement())
+  baseWordId  Int // ID базового слова
+  languageId  Int // ID языка перевода
+  translation String // Перевод
+  priority    Int    @default(1) // Приоритет перевода (1-3)
 
-  baseWord    BaseWord @relation(fields: [baseWordId], references: [id], onDelete: Cascade)
-  language    Language @relation(fields: [languageId], references: [id])
+  baseWord BaseWord @relation(fields: [baseWordId], references: [id], onDelete: Cascade)
+  language Language @relation(fields: [languageId], references: [id])
 
   @@unique([baseWordId, languageId, priority])
   @@index([baseWordId])
@@ -182,13 +182,13 @@ model WordTranslation {
 
 // Местоимения
 model Pronoun {
-  id         Int      @id @default(autoincrement())
-  pronoun    String   // Местоимение (yo, tú, él/ella, etc.)
-  languageId Int      // ID языка
+  id         Int    @id @default(autoincrement())
+  pronoun    String // Местоимение (yo, tú, él/ella, etc.)
+  languageId Int // ID языка
 
-  language             Language             @relation(fields: [languageId], references: [id])
-  wordExamples         WordExample[]
-  grammaticalExamples  GrammaticalExample[]
+  language            Language             @relation(fields: [languageId], references: [id])
+  wordExamples        WordExample[]
+  grammaticalExamples GrammaticalExample[]
 
   @@unique([pronoun, languageId])
   @@index([languageId])
@@ -196,20 +196,20 @@ model Pronoun {
 
 // Простые примеры для слов
 model WordExample {
-  id            Int      @id @default(autoincrement())
-  baseWordId    Int      // ID базового слова
-  pronounId     Int      // ID местоимения
-  example       String   // Пример предложения
-  translation   String   // Перевод на русский
+  id                    Int          @id @default(autoincrement())
+  baseWordId            Int // ID базового слова
+  pronounId             Int // ID местоимения
+  example               String // Пример предложения
+  translation           String // Перевод на русский
   translationLanguageId Int // ID языка перевода
-  sentenceTypeId Int
-  sourceId      Int      // ID источника примера
-  sentenceType  SentenceType @relation(fields: [sentenceTypeId], references: [id])
+  sentenceTypeId        Int
+  sourceId              Int // ID источника примера
+  sentenceType          SentenceType @relation(fields: [sentenceTypeId], references: [id])
 
-  baseWord      BaseWord @relation(fields: [baseWordId], references: [id], onDelete: Cascade)
-  pronoun       Pronoun  @relation(fields: [pronounId], references: [id])
-  source        WordSource @relation(fields: [sourceId], references: [id])
-  translationLanguage Language @relation("WordExampleTranslationLanguage", fields: [translationLanguageId], references: [id])
+  baseWord            BaseWord   @relation(fields: [baseWordId], references: [id], onDelete: Cascade)
+  pronoun             Pronoun    @relation(fields: [pronounId], references: [id])
+  source              WordSource @relation(fields: [sourceId], references: [id])
+  translationLanguage Language   @relation("WordExampleTranslationLanguage", fields: [translationLanguageId], references: [id])
 
   @@index([baseWordId])
   @@index([sentenceTypeId])
@@ -219,12 +219,12 @@ model WordExample {
 
 // Грамматические времена
 model Tense {
-  id         Int      @id @default(autoincrement())
-  name       String   // Название времени (Presente de indicativo, etc.)
-  languageId Int      // ID языка
+  id         Int    @id @default(autoincrement())
+  name       String // Название времени (Presente de indicativo, etc.)
+  languageId Int // ID языка
 
-  language             Language             @relation(fields: [languageId], references: [id])
-  grammaticalExamples  GrammaticalExample[]
+  language            Language             @relation(fields: [languageId], references: [id])
+  grammaticalExamples GrammaticalExample[]
 
   @@unique([name, languageId])
   @@index([languageId])
@@ -232,22 +232,22 @@ model Tense {
 
 // Грамматические примеры (во всех временах)
 model GrammaticalExample {
-  id            Int      @id @default(autoincrement())
-  baseWordId    Int      // ID базового слова
-  tenseId       Int      // ID времени
-  pronounId     Int      // ID местоимения
-  example       String   // Пример в данном времени
-  translation   String   // Перевод на русский
+  id                    Int          @id @default(autoincrement())
+  baseWordId            Int // ID базового слова
+  tenseId               Int // ID времени
+  pronounId             Int // ID местоимения
+  example               String // Пример в данном времени
+  translation           String // Перевод на русский
   translationLanguageId Int // ID языка перевода
-  sentenceTypeId Int
-  sourceId      Int      // ID источника примера
-  sentenceType  SentenceType @relation(fields: [sentenceTypeId], references: [id])
+  sentenceTypeId        Int
+  sourceId              Int // ID источника примера
+  sentenceType          SentenceType @relation(fields: [sentenceTypeId], references: [id])
 
-  baseWord      BaseWord @relation(fields: [baseWordId], references: [id], onDelete: Cascade)
-  tense         Tense    @relation(fields: [tenseId], references: [id])
-  pronoun       Pronoun  @relation(fields: [pronounId], references: [id])
-  source        WordSource @relation(fields: [sourceId], references: [id])
-  translationLanguage Language @relation("GrammaticalExampleTranslationLanguage", fields: [translationLanguageId], references: [id])
+  baseWord            BaseWord   @relation(fields: [baseWordId], references: [id], onDelete: Cascade)
+  tense               Tense      @relation(fields: [tenseId], references: [id])
+  pronoun             Pronoun    @relation(fields: [pronounId], references: [id])
+  source              WordSource @relation(fields: [sourceId], references: [id])
+  translationLanguage Language   @relation("GrammaticalExampleTranslationLanguage", fields: [translationLanguageId], references: [id])
 
   @@index([baseWordId, tenseId])
   @@index([tenseId])
@@ -258,21 +258,21 @@ model GrammaticalExample {
 
 // Таблица слов для изучения (пользовательские слова)
 model Word {
-  id            Int         @id @default(autoincrement())
-  userId        Int         // Связь с пользователем
-  baseWordId    Int?        // Связь с базовым словом (если выбрано из словаря)
-  customWord    String?     // Кастомное слово (если добавлено вручную)
-  languageId    Int         // ID языка слова
-  statusId      Int         @default(1)
-  status        WordStatus  @relation(fields: [statusId], references: [id])
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  id         Int        @id @default(autoincrement())
+  userId     Int // Связь с пользователем
+  baseWordId Int? // Связь с базовым словом (если выбрано из словаря)
+  customWord String? // Кастомное слово (если добавлено вручную)
+  languageId Int // ID языка слова
+  statusId   Int        @default(1)
+  status     WordStatus @relation(fields: [statusId], references: [id])
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
 
   // Связи
-  user             User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  language         Language            @relation(fields: [languageId], references: [id], onDelete: Restrict)
-  baseWord         BaseWord?           @relation(fields: [baseWordId], references: [id])
-  trainingSessions TrainingSession[]
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  language           Language            @relation(fields: [languageId], references: [id], onDelete: Restrict)
+  baseWord           BaseWord?           @relation(fields: [baseWordId], references: [id])
+  trainingSessions   TrainingSession[]
   customTranslations CustomTranslation[]
 
   @@unique([userId, baseWordId]) // Пользователь может добавить базовое слово только один раз
@@ -283,22 +283,22 @@ model Word {
 
 // Кастомный перевод слова/фразы пользователем
 model CustomTranslation {
-  id                  Int      @id @default(autoincrement())
-  wordId              Int      // ID слова
-  userId              Int      // ID пользователя
-  partOfSpeechId      Int?     // ID части речи (может быть null)
-  originalLanguageId  Int      // ID языка оригинала
-  translationLanguageId Int    // ID языка перевода
-  translation         String   // Перевод
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  id                    Int      @id @default(autoincrement())
+  wordId                Int // ID слова
+  userId                Int // ID пользователя
+  partOfSpeechId        Int? // ID части речи (может быть null)
+  originalLanguageId    Int // ID языка оригинала
+  translationLanguageId Int // ID языка перевода
+  translation           String // Перевод
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 
   // Связи
-  word                Word         @relation(fields: [wordId], references: [id], onDelete: Cascade)
-  user                User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  word                Word          @relation(fields: [wordId], references: [id], onDelete: Cascade)
+  user                User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   partOfSpeech        PartOfSpeech? @relation(fields: [partOfSpeechId], references: [id], onDelete: SetNull)
-  originalLanguage    Language     @relation("CustomTranslationOriginalLanguage", fields: [originalLanguageId], references: [id], onDelete: Restrict)
-  translationLanguage Language     @relation("CustomTranslationTranslationLanguage", fields: [translationLanguageId], references: [id], onDelete: Restrict)
+  originalLanguage    Language      @relation("CustomTranslationOriginalLanguage", fields: [originalLanguageId], references: [id], onDelete: Restrict)
+  translationLanguage Language      @relation("CustomTranslationTranslationLanguage", fields: [translationLanguageId], references: [id], onDelete: Restrict)
 
   @@unique([wordId, userId]) // Только один кастомный перевод на слово для каждого пользователя
   @@index([wordId])
@@ -309,36 +309,59 @@ model CustomTranslation {
 
 // Сессии тренировок для отслеживания прогресса
 model TrainingSession {
-  id          Int      @id @default(autoincrement())
-  wordId      Int
-  stage       Int      // Этап тренировки (1-4)
-  isCorrect   Boolean  // Правильный ли был ответ
-  createdAt   DateTime @default(now())
+  id        Int      @id @default(autoincrement())
+  wordId    Int
+  stage     Int // Этап тренировки (1-4)
+  isCorrect Boolean // Правильный ли был ответ
+  createdAt DateTime @default(now())
 
-  word        Word     @relation(fields: [wordId], references: [id], onDelete: Cascade)
+  word Word @relation(fields: [wordId], references: [id], onDelete: Cascade)
 
   @@index([wordId, stage])
 }
 
+// Логи завершенных тренировок для аналитики
+model TrainingLog {
+  id               Int      @id @default(autoincrement())
+  userId           Int // ID пользователя
+  sessionId        String   @unique // Уникальный ID сессии тренировки
+  selectedLanguage String // Выбранный язык тренировки
+  totalWords       Int // Всего слов в тренировке
+  completedWords   Int // Завершено слов
+  totalAttempts    Int // Общее количество попыток
+  correctAttempts  Int // Количество правильных ответов
+  accuracy         Float // Точность (процент правильных ответов)
+  duration         Int // Длительность в секундах
+  enabledStages    String // JSON массив включенных этапов
+  stagesProgress   String   @db.Text // JSON прогресса по этапам
+  startedAt        DateTime // Время начала тренировки
+  completedAt      DateTime @default(now()) // Время завершения
+  createdAt        DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([sessionId])
+  @@index([createdAt])
+}
+
 // Логи запросов к внешним API (DeepL, MyMemory, Tatoeba)
 model ApiRequestLog {
-  id                Int         @id @default(autoincrement())
-  userId            Int?        // ID пользователя (может быть null для системных запросов)
-  sourceId          Int         // ID источника (WordSource: DEEPL, MYMEMORY, TATOEBA)
-  sourceLanguageId  Int?        // ID языка исходного слова (null для запросов без перевода)
-  targetLanguageId  Int?        // ID языка перевода (null для запросов без перевода)
-  requestType       String      // 'translate', 'search_examples', etc.
-  requestData       String      @db.Text // JSON с данными запроса
-  responseData      String?     @db.Text // JSON с ответом (null если ошибка)
-  statusCode        Int?        // HTTP статус код
-  errorMessage      String?     @db.Text // Сообщение об ошибке (если есть)
-  duration          Int?        // Длительность запроса в миллисекундах
-  createdAt         DateTime    @default(now())
+  id               Int      @id @default(autoincrement())
+  userId           Int? // ID пользователя (может быть null для системных запросов)
+  sourceId         Int // ID источника (WordSource: DEEPL, MYMEMORY, TATOEBA)
+  sourceLanguageId Int? // ID языка исходного слова (null для запросов без перевода)
+  targetLanguageId Int? // ID языка перевода (null для запросов без перевода)
+  requestType      String // 'translate', 'search_examples', etc.
+  requestData      String   @db.Text // JSON с данными запроса
+  responseData     String?  @db.Text // JSON с ответом (null если ошибка)
+  statusCode       Int? // HTTP статус код
+  errorMessage     String?  @db.Text // Сообщение об ошибке (если есть)
+  duration         Int? // Длительность запроса в миллисекундах
+  createdAt        DateTime @default(now())
 
-  user            User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
-  source          WordSource  @relation(fields: [sourceId], references: [id], onDelete: Restrict)
-  sourceLanguage  Language?   @relation("ApiRequestLogSourceLanguage", fields: [sourceLanguageId], references: [id], onDelete: SetNull)
-  targetLanguage  Language?   @relation("ApiRequestLogTargetLanguage", fields: [targetLanguageId], references: [id], onDelete: SetNull)
+  user           User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+  source         WordSource @relation(fields: [sourceId], references: [id], onDelete: Restrict)
+  sourceLanguage Language?  @relation("ApiRequestLogSourceLanguage", fields: [sourceLanguageId], references: [id], onDelete: SetNull)
+  targetLanguage Language?  @relation("ApiRequestLogTargetLanguage", fields: [targetLanguageId], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@index([sourceId, createdAt])
@@ -346,4 +369,3 @@ model ApiRequestLog {
   @@index([targetLanguageId])
   @@index([createdAt])
 }
-

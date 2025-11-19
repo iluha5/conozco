@@ -5,12 +5,16 @@ interface StageSelectorProps {
     stages: TrainingStage[];
     currentStage: TrainingStage;
     onStageSelect: (stage: TrainingStage) => void;
+    getStageStatus?: (
+        stage: TrainingStage,
+    ) => 'completed' | 'current' | 'pending';
 }
 
 export function StageSelector({
     stages,
     currentStage,
     onStageSelect,
+    getStageStatus,
 }: StageSelectorProps) {
     return (
         <div className="mb-6 overflow-x-auto py-2">
@@ -21,6 +25,13 @@ export function StageSelector({
                         stage={stage}
                         index={index}
                         isActive={currentStage === stage}
+                        status={
+                            getStageStatus
+                                ? getStageStatus(stage)
+                                : currentStage === stage
+                                  ? 'current'
+                                  : 'pending'
+                        }
                         onClick={() => onStageSelect(stage)}
                     />
                 ))}
