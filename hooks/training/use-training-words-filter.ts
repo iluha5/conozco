@@ -19,7 +19,9 @@ export function useTrainingWordsFilter(
         }
 
         if (selectedWords.size > 0) {
-            filtered = filtered.filter(word => selectedWords.has(word.id));
+            filtered = filtered.filter(word =>
+                selectedWords.has(String(word.id)),
+            );
         }
 
         return filtered;

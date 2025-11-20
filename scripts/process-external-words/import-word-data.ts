@@ -499,8 +499,8 @@ async function importWordData(wordData: WordData): Promise<boolean> {
     );
     const wordSource = await getWordSource('native'); // Используем native для импортированных данных
 
-    // Ищем существующее слово
-    const baseWord = await prisma.baseWord.findUnique({
+    // Создаем или находим существующее слово
+    let baseWord = await prisma.baseWord.findUnique({
         where: {
             word_languageId: {
                 word: wordData.word,
@@ -510,24 +510,29 @@ async function importWordData(wordData: WordData): Promise<boolean> {
     });
 
     if (!baseWord) {
-        await log(
-            `⚠️ Word not found in database: ${wordData.word} (language: ${wordData.languageCode})`,
-        );
-        await log(
-            `⏭️ Skipping word: ${wordData.word} - it must be created first`,
-        );
-        return false; // Пропускаем слово, которое не существует в БД
-    }
-
-    await log(`📝 Found existing word: ${wordData.word} (ID: ${baseWord.id})`);
-
-    // Обновляем часть речи, если она изменилась
-    if (baseWord.partOfSpeechId !== partOfSpeech.id) {
-        await prisma.baseWord.update({
-            where: { id: baseWord.id },
-            data: { partOfSpeechId: partOfSpeech.id },
+        // Создаем новое слово
+        baseWord = await prisma.baseWord.create({
+            data: {
+                word: wordData.word,
+                languageId: language.id,
+                partOfSpeechId: partOfSpeech.id,
+                sourceId: wordSource.id,
+            },
         });
-        await log(`📝 Updated part of speech for: ${wordData.word}`);
+        await log(`➕ Created new word: ${wordData.word} (ID: ${baseWord.id})`);
+    } else {
+        await log(
+            `📝 Found existing word: ${wordData.word} (ID: ${baseWord.id})`,
+        );
+
+        // Обновляем часть речи, если она изменилась
+        if (baseWord.partOfSpeechId !== partOfSpeech.id) {
+            await prisma.baseWord.update({
+                where: { id: baseWord.id },
+                data: { partOfSpeechId: partOfSpeech.id },
+            });
+            await log(`📝 Updated part of speech for: ${wordData.word}`);
+        }
     }
 
     // Удаляем все существующие переводы для этого слова

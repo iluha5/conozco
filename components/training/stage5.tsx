@@ -636,6 +636,40 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
     };
 
     const handleNext = () => {
+        // Если в режиме повторения ошибок - ищем следующую ошибку
+        if (isRetryMode) {
+            const currentExerciseIndex =
+                wordPhrases
+                    .slice(0, currentIndex)
+                    .reduce((total, phrases) => total + phrases.length, 0) +
+                currentPhraseIndex;
+            const nextErrorIndex = findNextError(currentExerciseIndex);
+
+            if (
+                nextErrorIndex === -1 ||
+                nextErrorIndex === currentExerciseIndex
+            ) {
+                // Это единственная ошибка или других нет - остаемся на ней, но перезагружаем карточку
+                setAnimationKey(prev => prev + 1);
+                setFadeIn(false);
+                initializePhrase();
+                setUserSentence([]);
+                setIsComplete(false);
+                setIsCorrect(null);
+                setBackgroundFlash(null);
+                setShowResultPopup(false);
+            } else {
+                // Переходим к следующей ошибке
+                const nextErrorPosition = getWordAndPhraseIndex(nextErrorIndex);
+                if (nextErrorPosition) {
+                    setCurrentIndex(nextErrorPosition.wordIndex);
+                    setCurrentPhraseIndex(nextErrorPosition.phraseIndex);
+                }
+            }
+            return;
+        }
+
+        // Обычный режим (не retry)
         const currentWordPhrases = wordPhrases[currentIndex] || [];
 
         // Если есть еще предложения для текущего слова

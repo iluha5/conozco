@@ -1,0 +1,5 @@
+hola
+casa
+comer
+hablar
+libro
