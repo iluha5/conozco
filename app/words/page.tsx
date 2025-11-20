@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,117 +15,36 @@ import { Header } from '@/components/header';
 import { ArrowLeft } from 'lucide-react';
 import { AddWordDialog } from '@/components/add-word-dialog';
 import { WordsList } from '@/components/words-list';
-import { useToast, useTrainingSelection } from '@/hooks/shared';
-
-type Language = {
-    id: number;
-    code: string;
-    name: string;
-};
-
-type Word = {
-    id: number;
-    userId: number;
-    baseWordId?: number;
-    customWord?: string;
-    languageId: number;
-    language: Language;
-    status: 'NOT_LEARNED' | 'LEARNED';
-    createdAt: string;
-    updatedAt: string;
-    baseWord?: {
-        id: number;
-        word: string;
-        partOfSpeech: {
-            id: number;
-            name: string;
-            displayName: string;
-        };
-        languageId: number;
-        translations: Array<{
-            translation: string;
-            priority: number;
-        }>;
-        examples: Array<{
-            example: string;
-            translation: string;
-            pronoun: {
-                pronoun: string;
-            };
-            sentenceType?: {
-                id: number;
-                code: string;
-                displayName: string;
-                isNegative: boolean;
-                isQuestion: boolean;
-            };
-        }>;
-    };
-};
+import { useTrainingSelection } from '@/hooks/shared';
+import { useWordsData, useWordsFilter, useWordsStats } from '@/hooks/words';
+import { WordsFilter } from '@/types/words.types';
 
 export default function WordsPage() {
-    const [words, setWords] = useState<Word[]>([]);
-    const [filteredWords, setFilteredWords] = useState<Word[]>([]);
     const { selectedLanguage, setSelectedLanguage } = useTrainingSelection();
     const [selectedStatus, setSelectedStatus] = useState<string>('NOT_LEARNED');
-    const [loading, setLoading] = useState(true);
     const [isClient, setIsClient] = useState(false);
-    const { toast } = useToast();
 
-    const fetchWords = useCallback(async () => {
-        try {
-            const response = await fetch('/api/words');
-            if (response.ok) {
-                const data = await response.json();
-                setWords(data);
-            }
-        } catch (error) {
-            console.error('Error fetching words:', error);
-            toast({
-                title: 'Ошибка',
-                description: 'Не удалось загрузить слова',
-                variant: 'destructive',
-            });
-        } finally {
-            setLoading(false);
-        }
-    }, [toast]);
+    // Загрузка данных
+    const { words, loading, refetch } = useWordsData();
 
-    const filterWords = useCallback(() => {
-        let filtered = words;
+    // Формирование фильтра
+    const filter: WordsFilter = {
+        language: selectedLanguage,
+        status: selectedStatus,
+    };
 
-        if (selectedLanguage !== 'ALL') {
-            filtered = filtered.filter(
-                word => word.language.code === selectedLanguage,
-            );
-        }
+    // Фильтрация слов
+    const filteredWords = useWordsFilter(words, filter);
 
-        if (selectedStatus !== 'ALL') {
-            filtered = filtered.filter(word => word.status === selectedStatus);
-        }
-
-        setFilteredWords(filtered);
-    }, [words, selectedLanguage, selectedStatus]);
+    // Статистика (по языку, без учета статуса)
+    const stats = useWordsStats(words, selectedLanguage);
 
     useEffect(() => {
         setIsClient(true);
-        fetchWords();
-    }, [fetchWords]);
-
-    useEffect(() => {
-        filterWords();
-    }, [words, selectedLanguage, selectedStatus, filterWords]);
-
-    // Функция для получения слов, отфильтрованных только по языку
-    const getWordsByLanguage = () => {
-        if (selectedLanguage === 'ALL') {
-            return words;
-        }
-        return words.filter(word => word.language.code === selectedLanguage);
-    };
+    }, []);
 
     const handleAddWord = async () => {
-        await fetchWords();
+        await refetch();
     };
 
     if (!isClient) {
@@ -177,7 +96,7 @@ export default function WordsPage() {
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">
-                                {getWordsByLanguage().length}
+                                {stats.total}
                             </div>
                         </CardContent>
                     </Card>
@@ -197,11 +116,7 @@ export default function WordsPage() {
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold text-orange-600">
-                                {
-                                    getWordsByLanguage().filter(
-                                        w => w.status === 'NOT_LEARNED',
-                                    ).length
-                                }
+                                {stats.notLearned}
                             </div>
                         </CardContent>
                     </Card>
@@ -221,11 +136,7 @@ export default function WordsPage() {
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold text-green-600">
-                                {
-                                    getWordsByLanguage().filter(
-                                        w => w.status === 'LEARNED',
-                                    ).length
-                                }
+                                {stats.learned}
                             </div>
                         </CardContent>
                     </Card>
@@ -260,7 +171,7 @@ export default function WordsPage() {
                 ) : (
                     <WordsList
                         words={filteredWords}
-                        onWordsChange={fetchWords}
+                        onWordsChange={refetch}
                         showBulkActions={true}
                         emptyMessage="Слова не найдены. Добавьте новое слово!"
                     />
