@@ -149,6 +149,7 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
         setSelectedTranslation(null);
         setErrorForeign(null);
         setErrorTranslation(null);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentBatch, words, isRetryMode, refreshKey]);
 
     const handleForeignClick = (foreign: string) => {
@@ -373,6 +374,7 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
     );
 
     // Автоматический переход к следующей группе или завершение этапа
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
         if (allMatched && pairs.length > 0) {
             const timer = setTimeout(() => {
