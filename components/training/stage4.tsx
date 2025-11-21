@@ -257,12 +257,13 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
             total: prev.total + 1,
         }));
 
-        // Если слово составлено правильно - автоматически переходим через 1 секунду
-        if (correct) {
-            setTimeout(() => {
-                if (isRetryMode) {
-                    // В режиме исправления ошибок - ищем следующую ошибку
-                    // Проверяем с учетом только что обновленного результата
+        // Автоматический переход
+        const delay = correct ? 1000 : 2000;
+        setTimeout(() => {
+            if (isRetryMode) {
+                // В режиме исправления ошибок
+                if (correct) {
+                    // Исправил ошибку - ищем следующую ошибку с учетом обновленных результатов
                     setExerciseResults(currentResults => {
                         const nextErrorIndex = findNextErrorWithResults(
                             currentIndex,
@@ -284,31 +285,32 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
                         return currentResults; // Возвращаем без изменений
                     });
                 } else {
-                    // Обычный режим
-                    handleNext();
+                    // Снова ошибся - переходим к следующей ошибке (или к этой же, если она одна)
+                    const nextErrorIndex = findNextError(currentIndex);
+                    if (
+                        nextErrorIndex === -1 ||
+                        nextErrorIndex === currentIndex
+                    ) {
+                        // Это единственная ошибка или других нет - остаемся на ней, но перезагружаем карточку
+                        setAnimationKey(prev => prev + 1);
+                        setFadeIn(false);
+                        initializeLetters();
+                        setUserWord([]);
+                        setIsComplete(false);
+                        setIsCorrect(null);
+                        setBackgroundFlash(null);
+                        setShowResultPopup(false);
+                        setTotalErrors(0);
+                        setFlashingLetter(null);
+                    } else {
+                        setCurrentIndex(nextErrorIndex);
+                    }
                 }
-            }, 1000);
-        } else if (isRetryMode && !correct) {
-            // В режиме повторения, если снова ошибка - переходим к следующей ошибке через 2 секунды
-            setTimeout(() => {
-                const nextErrorIndex = findNextError(currentIndex);
-                if (nextErrorIndex === -1 || nextErrorIndex === currentIndex) {
-                    // Это единственная ошибка или других нет - остаемся на ней, но перезагружаем карточку
-                    setAnimationKey(prev => prev + 1);
-                    setFadeIn(false);
-                    initializeLetters();
-                    setUserWord([]);
-                    setIsComplete(false);
-                    setIsCorrect(null);
-                    setBackgroundFlash(null);
-                    setShowResultPopup(false);
-                    setTotalErrors(0); // Сбрасываем счетчик ошибок
-                    setFlashingLetter(null);
-                } else {
-                    setCurrentIndex(nextErrorIndex);
-                }
-            }, 2000);
-        }
+            } else {
+                // Обычный режим - всегда переходим к следующему (или в retry mode)
+                handleNext();
+            }
+        }, delay);
     };
 
     const autoCompleteWord = async () => {

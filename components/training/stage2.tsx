@@ -5,112 +5,57 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, XCircle } from 'lucide-react';
 import { ProgressDots } from './progress-dots';
-import { useTrainingStorage } from '@/hooks/training';
-
-type Language = {
-    id: string;
-    code: string;
-    name: string;
-};
-
-type Word = {
-    id: string;
-    userId: string;
-    baseWordId?: string;
-    customWord?: string;
-    languageId: string;
-    language: Language;
-    status: 'NOT_LEARNED' | 'LEARNED';
-    createdAt: string;
-    updatedAt: string;
-    baseWord?: {
-        id: string;
-        word: string;
-        partOfSpeech: {
-            id: string;
-            name: string;
-            displayName: string;
-        };
-        languageId: string;
-        translations: Array<{
-            translation: string;
-            priority: number;
-        }>;
-        examples: Array<{
-            example: string;
-            translation: string;
-            pronoun: {
-                pronoun: string;
-            };
-            sentenceType?: {
-                id: number;
-                code: string;
-                displayName: string;
-                isNegative: boolean;
-                isQuestion: boolean;
-            };
-        }>;
-    };
-    customTranslations?: Array<{
-        id: number;
-        translation: string;
-    }>;
-};
+import {
+    useFadeAnimation,
+    useRecordResult,
+    useExerciseResults,
+    useRetryMode,
+} from '@/hooks/training';
+import { getWordText, getWordTranslation } from '@/lib/training-utils';
+import type { Word } from '@/types/training.types';
 
 type Stage2Props = {
     words: Word[];
     onComplete: () => void;
 };
 
-// Helper function to get translation
-const getTranslation = (word: Word): string => {
-    if (word.customTranslations && word.customTranslations.length > 0) {
-        return word.customTranslations[0].translation;
-    }
-    if (word.baseWord?.translations && word.baseWord.translations.length > 0) {
-        return word.baseWord.translations[0].translation;
-    }
-    return '';
-};
-
 export function Stage2Training({ words, onComplete }: Stage2Props) {
-    const storage = useTrainingStorage();
     const [currentIndex, setCurrentIndex] = useState(0);
     const [options, setOptions] = useState<string[]>([]);
     const [selectedOption, setSelectedOption] = useState<string | null>(null);
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
     const [stats, setStats] = useState({ correct: 0, total: 0 });
-    const [exerciseResults, setExerciseResults] = useState<boolean[]>([]);
-    const [fadeIn, setFadeIn] = useState(false);
-    const [animationKey, setAnimationKey] = useState(0);
-    const [isRetryMode, setIsRetryMode] = useState(false);
-    const [hasCompletedFirstRound, setHasCompletedFirstRound] = useState(false);
 
     const currentWord = words[currentIndex];
 
-    // Инициализируем массив результатов упражнений
-    useEffect(() => {
-        setExerciseResults(new Array(words.length).fill(null));
-    }, [words.length]);
-
-    // Запускаем анимацию при каждом монтировании компонента (при новом слове)
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setFadeIn(true);
-        }, 50);
-        return () => clearTimeout(timer);
-    }, [animationKey]);
+    // Используем новые хуки
+    const { fadeIn, animationKey, triggerAnimation } = useFadeAnimation();
+    const { exerciseResults, updateResult, setExerciseResults } =
+        useExerciseResults({
+            totalExercises: words.length,
+        });
+    const { recordResult } = useRecordResult();
+    const {
+        isRetryMode,
+        hasCompletedFirstRound,
+        findNextErrorWithResults,
+        getErrorIndices,
+        setIsRetryMode,
+        setHasCompletedFirstRound,
+    } = useRetryMode({
+        totalExercises: words.length,
+    });
 
     const generateOptions = useCallback(() => {
-        const correctTranslation = getTranslation(currentWord);
+        const correctTranslation = getWordTranslation(currentWord);
         const otherWords = words.filter((w, idx) => idx !== currentIndex);
 
         // Выбираем 3 случайных неправильных ответа
         const shuffledOthers = [...otherWords].sort(() => Math.random() - 0.5);
         const wrongOptions = shuffledOthers
             .slice(0, 3)
-            .map(w => getTranslation(w))
-            .filter(t => t !== correctTranslation && t !== '');
+            .map(w => getWordTranslation(w))
+            .filter(t => t !== correctTranslation && t !== 'Нет перевода');
 
         // Добавляем правильный ответ и перемешиваем
         const allOptions = [...wrongOptions, correctTranslation].sort(
@@ -128,9 +73,7 @@ export function Stage2Training({ words, onComplete }: Stage2Props) {
             setHasCompletedFirstRound(true);
 
             // Проверяем, есть ли ошибки
-            const errorIndices = exerciseResults
-                .map((result, idx) => (result === false ? idx : -1))
-                .filter(idx => idx !== -1);
+            const errorIndices = getErrorIndices(exerciseResults);
 
             if (errorIndices.length > 0) {
                 // Есть ошибки - переходим в режим исправления
@@ -145,50 +88,37 @@ export function Stage2Training({ words, onComplete }: Stage2Props) {
                 setHasCompletedFirstRound(false);
             }
         }
-    }, [currentIndex, words.length, exerciseResults, onComplete]);
-
-    // Функция для поиска следующей ошибки (с текущими результатами)
-    const findNextErrorWithResults = (
-        startIndex: number,
-        results: (boolean | null)[],
-    ) => {
-        // Ищем следующую ошибку после текущего индекса
-        for (let i = startIndex + 1; i < results.length; i++) {
-            if (results[i] === false) {
-                return i;
-            }
-        }
-        // Если не нашли, ищем с начала до текущего индекса
-        for (let i = 0; i <= startIndex; i++) {
-            if (results[i] === false) {
-                return i;
-            }
-        }
-        return -1; // Ошибок больше нет
-    };
+    }, [
+        currentIndex,
+        words.length,
+        exerciseResults,
+        getErrorIndices,
+        onComplete,
+        setIsRetryMode,
+        setHasCompletedFirstRound,
+    ]);
 
     // Функция для поиска следующей ошибки (использует текущее состояние)
     const findNextError = useCallback(
         (startIndex: number) => {
             return findNextErrorWithResults(startIndex, exerciseResults);
         },
-        [exerciseResults],
+        [findNextErrorWithResults, exerciseResults],
     );
 
     useEffect(() => {
         if (currentWord) {
-            // Генерируем новый ключ для принудительного перемонтирования компонента
-            setAnimationKey(prev => prev + 1);
-            setFadeIn(false);
+            // Триггерим новую анимацию
+            triggerAnimation();
 
-            // Сначала генерируем опции для нового слова
+            // Генерируем опции для нового слова
             generateOptions();
 
             // Сбрасываем состояние выбора
             setSelectedOption(null);
             setIsCorrect(null);
         }
-    }, [currentIndex, currentWord, generateOptions]);
+    }, [currentIndex, currentWord, generateOptions, triggerAnimation]);
 
     // Автоматический переход к следующему слову: 1сек при правильном ответе, 2сек при неправильном
     useEffect(() => {
@@ -227,8 +157,7 @@ export function Stage2Training({ words, onComplete }: Stage2Props) {
                             nextErrorIndex === currentIndex
                         ) {
                             // Это единственная ошибка или других нет - остаемся на ней, но перезагружаем карточку
-                            setAnimationKey(prev => prev + 1);
-                            setFadeIn(false);
+                            triggerAnimation();
                             generateOptions();
                             setSelectedOption(null);
                             setIsCorrect(null);
@@ -254,38 +183,26 @@ export function Stage2Training({ words, onComplete }: Stage2Props) {
         generateOptions,
         handleNext,
         onComplete,
+        setIsRetryMode,
+        setHasCompletedFirstRound,
+        findNextErrorWithResults,
+        setExerciseResults,
+        triggerAnimation,
     ]);
 
     const handleSelectOption = async (option: string) => {
         if (selectedOption !== null) return; // Уже выбрано
 
         setSelectedOption(option);
-        const correctTranslation = getTranslation(currentWord);
+        const correctTranslation = getWordTranslation(currentWord);
         const correct = option === correctTranslation;
         setIsCorrect(correct);
 
         // Обновляем результаты упражнения
-        setExerciseResults(prev => {
-            const newResults = [...prev];
-            newResults[currentIndex] = correct;
-            return newResults;
-        });
+        updateResult(currentIndex, correct);
 
-        // Записываем попытку в localStorage для статистики
-        storage.recordAttempt(2, currentWord.id, correct);
-
-        // Записываем результат в БД
-        await fetch('/api/training', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                wordId: currentWord.id,
-                stage: 2,
-                isCorrect: correct,
-            }),
-        });
+        // Записываем результат (API + localStorage)
+        await recordResult(2, currentWord.id, correct);
 
         setStats(prev => ({
             correct: prev.correct + (correct ? 1 : 0),
@@ -321,8 +238,7 @@ export function Stage2Training({ words, onComplete }: Stage2Props) {
                 <CardContent className="space-y-6">
                     <div className="text-center mb-8">
                         <h2 className="text-5xl font-bold text-gray-900 mb-2">
-                            {currentWord.baseWord?.word ||
-                                currentWord.customWord}
+                            {getWordText(currentWord)}
                         </h2>
                         <p className="text-gray-600">
                             Выберите правильный перевод
@@ -333,7 +249,7 @@ export function Stage2Training({ words, onComplete }: Stage2Props) {
                         {options.map((option, index) => {
                             const isSelected = selectedOption === option;
                             const correctTranslation =
-                                getTranslation(currentWord);
+                                getWordTranslation(currentWord);
                             const isCorrectOption =
                                 option === correctTranslation;
 

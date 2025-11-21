@@ -510,19 +510,19 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
             total: prev.total + 1,
         }));
 
-        // Если предложение составлено правильно - автоматически переходим через 1 секунду
-        if (correct) {
-            setTimeout(() => {
-                if (isRetryMode) {
-                    // В режиме исправления ошибок - ищем следующую ошибку с учетом обновленных результатов
-                    const currentExerciseIndex =
-                        wordPhrases
-                            .slice(0, currentIndex)
-                            .reduce(
-                                (total, phrases) => total + phrases.length,
-                                0,
-                            ) + currentPhraseIndex;
+        // Автоматический переход
+        const delay = correct ? 1000 : 2000;
+        setTimeout(() => {
+            const currentExerciseIndex =
+                wordPhrases
+                    .slice(0, currentIndex)
+                    .reduce((total, phrases) => total + phrases.length, 0) +
+                currentPhraseIndex;
 
+            if (isRetryMode) {
+                // В режиме исправления ошибок
+                if (correct) {
+                    // Исправил ошибку - ищем следующую ошибку с учетом обновленных результатов
                     setExerciseResults(currentResults => {
                         const nextErrorIndex = findNextErrorWithResults(
                             currentExerciseIndex,
@@ -553,43 +553,82 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
                         return currentResults; // Возвращаем без изменений
                     });
                 } else {
-                    // Обычный режим
-                    handleNext();
-                }
-            }, 1000);
-        } else if (isRetryMode && !correct) {
-            // В режиме повторения, если снова ошибка - переходим к следующей ошибке через 2 секунды
-            setTimeout(() => {
-                const currentExerciseIndex =
-                    wordPhrases
-                        .slice(0, currentIndex)
-                        .reduce((total, phrases) => total + phrases.length, 0) +
-                    currentPhraseIndex;
-                const nextErrorIndex = findNextError(currentExerciseIndex);
+                    // Снова ошибся - переходим к следующей ошибке (или к этой же, если она одна)
+                    const nextErrorIndex = findNextError(currentExerciseIndex);
 
-                if (
-                    nextErrorIndex === -1 ||
-                    nextErrorIndex === currentExerciseIndex
-                ) {
-                    // Это единственная ошибка или других нет - остаемся на ней, но перезагружаем карточку
-                    setAnimationKey(prev => prev + 1);
-                    setFadeIn(false);
-                    initializePhrase();
-                    setUserSentence([]);
-                    setIsComplete(false);
-                    setIsCorrect(null);
-                    setBackgroundFlash(null);
-                    setShowResultPopup(false);
-                } else {
-                    const nextErrorPosition =
-                        getWordAndPhraseIndex(nextErrorIndex);
-                    if (nextErrorPosition) {
-                        setCurrentIndex(nextErrorPosition.wordIndex);
-                        setCurrentPhraseIndex(nextErrorPosition.phraseIndex);
+                    if (
+                        nextErrorIndex === -1 ||
+                        nextErrorIndex === currentExerciseIndex
+                    ) {
+                        // Это единственная ошибка или других нет - остаемся на ней, но перезагружаем карточку
+                        setAnimationKey(prev => prev + 1);
+                        setFadeIn(false);
+                        initializePhrase();
+                        setUserSentence([]);
+                        setIsComplete(false);
+                        setIsCorrect(null);
+                        setBackgroundFlash(null);
+                        setShowResultPopup(false);
+                    } else {
+                        const nextErrorPosition =
+                            getWordAndPhraseIndex(nextErrorIndex);
+                        if (nextErrorPosition) {
+                            setCurrentIndex(nextErrorPosition.wordIndex);
+                            setCurrentPhraseIndex(
+                                nextErrorPosition.phraseIndex,
+                            );
+                        }
                     }
                 }
-            }, 2000);
-        }
+            } else {
+                // Обычный режим - проверяем актуальное состояние перед переходом
+                // Это критично для последнего слова/фразы
+                const currentWordPhrases = wordPhrases[currentIndex] || [];
+
+                // Если есть еще предложения для текущего слова
+                if (currentPhraseIndex < currentWordPhrases.length - 1) {
+                    setCurrentPhraseIndex(currentPhraseIndex + 1);
+                } else if (currentIndex < wordsWithPhrases.length - 1) {
+                    // Переходим к следующему слову
+                    setCurrentPhraseIndex(0);
+                    setCurrentIndex(currentIndex + 1);
+                } else {
+                    // Последнее слово/фраза - используем callback для актуального состояния
+                    setExerciseResults(currentResults => {
+                        setHasCompletedFirstRound(true);
+
+                        // Проверяем актуальное состояние на ошибки
+                        const errorIndices = currentResults
+                            .map((result, idx) => (result === false ? idx : -1))
+                            .filter(idx => idx !== -1);
+
+                        if (errorIndices.length > 0) {
+                            // Есть ошибки - переходим в режим исправления
+                            setIsRetryMode(true);
+                            const firstErrorPosition = getWordAndPhraseIndex(
+                                errorIndices[0],
+                            );
+                            if (firstErrorPosition) {
+                                setCurrentIndex(firstErrorPosition.wordIndex);
+                                setCurrentPhraseIndex(
+                                    firstErrorPosition.phraseIndex,
+                                );
+                            }
+                        } else {
+                            // Все правильно - завершаем этап
+                            onComplete();
+                            setCurrentIndex(0);
+                            setCurrentPhraseIndex(0);
+                            setStats({ correct: 0, total: 0 });
+                            setIsRetryMode(false);
+                            setHasCompletedFirstRound(false);
+                        }
+
+                        return currentResults; // Возвращаем без изменений
+                    });
+                }
+            }
+        }, delay);
     };
 
     // Функция для преобразования линейного индекса упражнения в (wordIndex, phraseIndex)

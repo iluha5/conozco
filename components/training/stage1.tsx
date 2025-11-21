@@ -1,63 +1,20 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Volume2, ChevronRight, Settings } from 'lucide-react';
 import { ProgressDots } from './progress-dots';
 import { Stage1SettingsModal } from './stage-settings';
 import { useStage1Settings } from '@/hooks/shared/use-training-settings';
-import { useTrainingStorage } from '@/hooks/training';
-
-type Language = {
-    id: string;
-    code: string;
-    name: string;
-};
-
-type Word = {
-    id: string;
-    userId: string;
-    baseWordId?: string;
-    customWord?: string;
-    languageId: string;
-    language: Language;
-    status: 'NOT_LEARNED' | 'LEARNED';
-    createdAt: string;
-    updatedAt: string;
-    baseWord?: {
-        id: string;
-        word: string;
-        partOfSpeech: {
-            id: string;
-            name: string;
-            displayName: string;
-        };
-        languageId: string;
-        translations: Array<{
-            translation: string;
-            priority: number;
-        }>;
-        examples: Array<{
-            example: string;
-            translation: string;
-            pronoun: {
-                pronoun: string;
-            };
-            sentenceType?: {
-                id: number;
-                code: string;
-                displayName: string;
-                isNegative: boolean;
-                isQuestion: boolean;
-            };
-        }>;
-    };
-    customTranslations?: Array<{
-        id: number;
-        translation: string;
-    }>;
-};
+import {
+    useFadeAnimation,
+    useRecordResult,
+    useExerciseResults,
+    useSpeech,
+} from '@/hooks/training';
+import { getWordText, getWordTranslation } from '@/lib/training-utils';
+import type { Word } from '@/types/training.types';
 
 type Stage1Props = {
     words: Word[];
@@ -65,16 +22,22 @@ type Stage1Props = {
 };
 
 export function Stage1Training({ words, onComplete }: Stage1Props) {
-    const storage = useTrainingStorage();
     const { settings, updateSettings } = useStage1Settings();
     const [currentIndex, setCurrentIndex] = useState(0);
     const [showTranslation, setShowTranslation] = useState(false);
-    const [exerciseResults, setExerciseResults] = useState<boolean[]>([]);
-    const [fadeIn, setFadeIn] = useState(false);
-    const [animationKey, setAnimationKey] = useState(0);
     const [showSettingsModal, setShowSettingsModal] = useState(false);
 
     const currentWord = words[currentIndex];
+
+    // Используем новые хуки
+    const { fadeIn, animationKey, triggerAnimation } = useFadeAnimation();
+    const { exerciseResults, updateResult } = useExerciseResults({
+        totalExercises: words.length,
+    });
+    const { recordResult } = useRecordResult();
+    const { speak, isSupported: speechSupported } = useSpeech({
+        languageCode: currentWord?.language.code || 'en',
+    });
 
     // Обработчик изменения настроек
     const handleSettingsChange = (newSettings: { showExamples: boolean }) => {
@@ -82,65 +45,26 @@ export function Stage1Training({ words, onComplete }: Stage1Props) {
         setShowSettingsModal(false);
     };
 
-    // Инициализируем массив результатов упражнений
+    // Автоматическая озвучка и анимация при появлении нового слова
     useEffect(() => {
-        setExerciseResults(new Array(words.length).fill(null));
-    }, [words.length]);
-
-    // Запускаем анимацию при каждом монтировании компонента (при новом слове)
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setFadeIn(true);
-        }, 50);
-        return () => clearTimeout(timer);
-    }, [animationKey]);
-
-    const speakWord = useCallback(() => {
-        if ('speechSynthesis' in window && currentWord) {
-            const word =
-                currentWord.baseWord?.word || currentWord.customWord || '';
-            const utterance = new SpeechSynthesisUtterance(word);
-            utterance.lang =
-                currentWord.language.code === 'en' ? 'en-US' : 'es-ES';
-            utterance.rate = 0.8;
-            window.speechSynthesis.speak(utterance);
-        }
-    }, [currentWord]);
-
-    useEffect(() => {
-        // Автоматическая озвучка при появлении нового слова
         if (currentWord) {
-            // Генерируем новый ключ для принудительного перемонтирования компонента
-            setAnimationKey(prev => prev + 1);
-            setFadeIn(false);
+            triggerAnimation();
             setShowTranslation(false);
-            speakWord();
+
+            // Озвучиваем слово
+            const wordText = getWordText(currentWord);
+            if (speechSupported && wordText) {
+                speak(wordText);
+            }
         }
-    }, [currentIndex, currentWord, speakWord]);
+    }, [currentIndex, currentWord, triggerAnimation, speak, speechSupported]);
 
     const handleNext = async () => {
-        // Записываем попытку в localStorage (всегда успешная на 1 этапе)
-        storage.recordAttempt(1, currentWord.id, true);
-
-        // Записываем результат тренировки в БД
-        await fetch('/api/training', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                wordId: currentWord.id,
-                stage: 1,
-                isCorrect: true, // На 1 этапе всегда true, так как это просто просмотр
-            }),
-        });
+        // Записываем результат (всегда успешный на 1 этапе - просто просмотр)
+        await recordResult(1, currentWord.id, true);
 
         // Обновляем результаты упражнения
-        setExerciseResults(prev => {
-            const newResults = [...prev];
-            newResults[currentIndex] = true;
-            return newResults;
-        });
+        updateResult(currentIndex, true);
 
         if (currentIndex < words.length - 1) {
             setCurrentIndex(currentIndex + 1);
@@ -188,14 +112,14 @@ export function Stage1Training({ words, onComplete }: Stage1Props) {
                     <div className="text-center">
                         <div className="flex items-center justify-center gap-4 mb-2">
                             <h2 className="text-5xl font-bold text-gray-900">
-                                {currentWord.baseWord?.word ||
-                                    currentWord.customWord}
+                                {getWordText(currentWord)}
                             </h2>
                             <Button
                                 size="icon"
                                 variant="outline"
-                                onClick={speakWord}
+                                onClick={() => speak(getWordText(currentWord))}
                                 className="rounded-full w-12 h-12"
+                                disabled={!speechSupported}
                             >
                                 <Volume2 className="w-6 h-6" />
                             </Button>
@@ -212,18 +136,7 @@ export function Stage1Training({ words, onComplete }: Stage1Props) {
                             >
                                 <div className="space-y-4 text-center">
                                     <p className="text-3xl text-purple-600 font-semibold">
-                                        {currentWord.customTranslations &&
-                                        currentWord.customTranslations.length >
-                                            0
-                                            ? currentWord.customTranslations[0]
-                                                  .translation
-                                            : currentWord.baseWord
-                                                    ?.translations &&
-                                                currentWord.baseWord
-                                                    .translations.length > 0
-                                              ? currentWord.baseWord
-                                                    .translations[0].translation
-                                              : 'Нет перевода'}
+                                        {getWordTranslation(currentWord)}
                                     </p>
                                     {settings.showExamples &&
                                         currentWord.baseWord?.examples &&

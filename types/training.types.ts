@@ -63,6 +63,18 @@ export interface Word {
             };
         }>;
     };
+    customTranslations?: Array<{
+        id: number;
+        translation: string;
+        partOfSpeech?: {
+            id: number;
+            name: string;
+            displayName: string;
+        };
+        partOfSpeechId?: number | null;
+        originalLanguage: Language;
+        translationLanguage: Language;
+    }>;
     trainingSessions: Array<{
         id: string;
         stage: number;
