@@ -56,3 +56,6 @@ scripts/cursor/temp/
 # temp
 temp
 backups
+
+# Data dumps
+dumps/
