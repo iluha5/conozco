@@ -172,8 +172,9 @@ model WordTranslation {
   translation String // Перевод
   priority    Int    @default(1) // Приоритет перевода (1-3)
 
-  baseWord BaseWord @relation(fields: [baseWordId], references: [id], onDelete: Cascade)
-  language Language @relation(fields: [languageId], references: [id])
+  baseWord       BaseWord @relation(fields: [baseWordId], references: [id], onDelete: Cascade)
+  language       Language @relation(fields: [languageId], references: [id])
+  selectedByWord Word[]   @relation("SelectedTranslation")
 
   @@unique([baseWordId, languageId, priority])
   @@index([baseWordId])
@@ -258,27 +259,30 @@ model GrammaticalExample {
 
 // Таблица слов для изучения (пользовательские слова)
 model Word {
-  id         Int        @id @default(autoincrement())
-  userId     Int // Связь с пользователем
-  baseWordId Int? // Связь с базовым словом (если выбрано из словаря)
-  customWord String? // Кастомное слово (если добавлено вручную)
-  languageId Int // ID языка слова
-  statusId   Int        @default(1)
-  status     WordStatus @relation(fields: [statusId], references: [id])
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
+  id                    Int         @id @default(autoincrement())
+  userId                Int // Связь с пользователем
+  baseWordId            Int? // Связь с базовым словом (если выбрано из словаря)
+  customWord            String? // Кастомное слово (если добавлено вручную)
+  languageId            Int // ID языка слова
+  statusId              Int         @default(1)
+  selectedTranslationId Int? // ID выбранного пользователем перевода
+  status                WordStatus  @relation(fields: [statusId], references: [id])
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
 
   // Связи
-  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  language           Language            @relation(fields: [languageId], references: [id], onDelete: Restrict)
-  baseWord           BaseWord?           @relation(fields: [baseWordId], references: [id])
-  trainingSessions   TrainingSession[]
-  customTranslations CustomTranslation[]
+  user                User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  language            Language            @relation(fields: [languageId], references: [id], onDelete: Restrict)
+  baseWord            BaseWord?           @relation(fields: [baseWordId], references: [id])
+  selectedTranslation WordTranslation?    @relation("SelectedTranslation", fields: [selectedTranslationId], references: [id], onDelete: SetNull)
+  trainingSessions    TrainingSession[]
+  customTranslations  CustomTranslation[]
 
   @@unique([userId, baseWordId]) // Пользователь может добавить базовое слово только один раз
   @@unique([userId, customWord, languageId]) // Кастомное слово уникально для пользователя и языка
   @@index([userId, languageId, statusId])
   @@index([languageId])
+  @@index([selectedTranslationId])
 }
 
 // Кастомный перевод слова/фразы пользователем

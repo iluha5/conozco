@@ -24,6 +24,7 @@ import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { PlusCircle, Loader2, Search, X } from 'lucide-react';
 import { useToast, useTrainingSelection } from '@/hooks/shared';
+import { TranslationSelectorDialog } from '@/components/translation-selector-dialog';
 
 type PartOfSpeech = {
     id: string;
@@ -62,6 +63,12 @@ type BaseWord = {
 
 type SelectedWord = string; // просто baseWordId
 
+type PartOfSpeechType = {
+    id: number;
+    name: string;
+    displayName: string;
+};
+
 type AddWordDialogProps = {
     onWordAdded: () => void;
 };
@@ -82,7 +89,6 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
     >([]);
     const [selectedWords, setSelectedWords] = useState<SelectedWord[]>([]);
     const [availableWords, setAvailableWords] = useState<BaseWord[]>([]);
-    const [loading, setLoading] = useState(false);
     const [searching, setSearching] = useState(false);
     const [offset, setOffset] = useState(0);
     const [hasMore, setHasMore] = useState(true);
@@ -91,6 +97,13 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
     const [hasExactMatch, setHasExactMatch] = useState(false);
     const [aiSearching, setAiSearching] = useState(false);
     const [skipAutoSearch, setSkipAutoSearch] = useState(false);
+    const [translationDialogOpen, setTranslationDialogOpen] = useState<{
+        [key: string]: boolean;
+    }>({});
+    const [selectedWordForTranslation, setSelectedWordForTranslation] =
+        useState<any | null>(null);
+    const [partsOfSpeech, setPartsOfSpeech] = useState<PartOfSpeechType[]>([]);
+    const [isClient, setIsClient] = useState(false);
     const { toast } = useToast();
     const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -102,6 +115,29 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
         400,
         [searchTerm],
     );
+
+    // Инициализация isClient
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
+
+    // Загружаем части речи для русского языка
+    useEffect(() => {
+        const fetchPartsOfSpeech = async () => {
+            try {
+                const response = await fetch(
+                    '/api/parts-of-speech?languageCode=ru',
+                );
+                if (response.ok) {
+                    const data = await response.json();
+                    setPartsOfSpeech(data);
+                }
+            } catch (error) {
+                console.error('Error fetching parts of speech:', error);
+            }
+        };
+        fetchPartsOfSpeech();
+    }, []);
 
     // Проверка, нужен ли скролл для попапа
     useEffect(() => {
@@ -193,25 +229,149 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
         );
     };
 
+    // Функция для добавления слова
+    const addWord = async (baseWordId: string) => {
+        try {
+            const response = await fetch('/api/words', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    baseWordId: baseWordId,
+                }),
+            });
+
+            if (response.ok) {
+                // Обновляем состояние слова в availableWords
+                setAvailableWords(prev =>
+                    prev.map(w =>
+                        w.id === baseWordId ? { ...w, isAddedByUser: true } : w,
+                    ),
+                );
+                setSelectedWords(prev => [...prev, baseWordId]);
+                onWordAdded();
+                return true;
+            } else {
+                toast({
+                    title: 'Ошибка',
+                    description: 'Не удалось добавить слово',
+                    variant: 'destructive',
+                });
+                return false;
+            }
+        } catch (error) {
+            console.error('Error adding word:', error);
+            toast({
+                title: 'Ошибка',
+                description: 'Не удалось добавить слово',
+                variant: 'destructive',
+            });
+            return false;
+        }
+    };
+
+    // Функция для удаления слова
+    const removeWord = async (baseWordId: string) => {
+        try {
+            // Получаем список пользовательских слов
+            const userWordsResponse = await fetch('/api/words');
+            if (userWordsResponse.ok) {
+                const userWords = await userWordsResponse.json();
+                const userWord = userWords.find(
+                    (w: any) => w.baseWordId === baseWordId,
+                );
+
+                if (userWord) {
+                    const response = await fetch(`/api/words/${userWord.id}`, {
+                        method: 'DELETE',
+                    });
+
+                    if (response.ok) {
+                        // Обновляем состояние слова в availableWords
+                        setAvailableWords(prev =>
+                            prev.map(w =>
+                                w.id === baseWordId
+                                    ? { ...w, isAddedByUser: false }
+                                    : w,
+                            ),
+                        );
+                        setSelectedWords(prev =>
+                            prev.filter(id => id !== baseWordId),
+                        );
+                        onWordAdded();
+                        return true;
+                    }
+                }
+            }
+
+            toast({
+                title: 'Ошибка',
+                description: 'Не удалось удалить слово',
+                variant: 'destructive',
+            });
+            return false;
+        } catch (error) {
+            console.error('Error removing word:', error);
+            toast({
+                title: 'Ошибка',
+                description: 'Не удалось удалить слово',
+                variant: 'destructive',
+            });
+            return false;
+        }
+    };
+
     // Функции для работы с выбранными словами
     // Теперь выбранные слова - это те, которые должны быть в списке пользователя
     // Слова с isAddedByUser=true по умолчанию считаются выбранными
-    const toggleWordSelection = (baseWordId: string) => {
-        setSelectedWords(prev =>
-            prev.includes(baseWordId)
-                ? prev.filter(id => id !== baseWordId)
-                : [...prev, baseWordId],
-        );
+    const toggleWordSelection = async (baseWordId: string) => {
+        const word = availableWords.find(w => w.id === baseWordId);
+        if (!word) return;
+
+        if (word.isAddedByUser) {
+            await removeWord(baseWordId);
+        } else {
+            await addWord(baseWordId);
+        }
     };
 
-    const selectAllWords = () => {
-        // Выбираем все слова
-        const newSelections = getFilteredWords().map(word => word.id);
-        setSelectedWords(newSelections);
+    const selectAllWords = async () => {
+        const filteredWords = getFilteredWords();
+        let addedCount = 0;
+
+        for (const word of filteredWords) {
+            if (!word.isAddedByUser) {
+                const success = await addWord(word.id);
+                if (success) addedCount++;
+            }
+        }
+
+        if (addedCount > 0) {
+            toast({
+                title: 'Успешно',
+                description: `Добавлено слов: ${addedCount}`,
+            });
+        }
     };
 
-    const deselectAllWords = () => {
-        setSelectedWords([]);
+    const deselectAllWords = async () => {
+        const filteredWords = getFilteredWords();
+        let removedCount = 0;
+
+        for (const word of filteredWords) {
+            if (word.isAddedByUser) {
+                const success = await removeWord(word.id);
+                if (success) removedCount++;
+            }
+        }
+
+        if (removedCount > 0) {
+            toast({
+                title: 'Успешно',
+                description: `Удалено слов: ${removedCount}`,
+            });
+        }
     };
 
     // Слово выбрано, если оно в selectedWords
@@ -370,6 +530,16 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                         setAvailableWords(words);
                         setHasMore(words.length === 30);
                         setOffset(words.length);
+
+                        // Сразу добавляем найденное слово в список пользователя
+                        const addedBaseWord = words.find(
+                            (w: BaseWord) =>
+                                w.word.toLowerCase() ===
+                                addedWord.toLowerCase(),
+                        );
+                        if (addedBaseWord && !addedBaseWord.isAddedByUser) {
+                            await addWord(addedBaseWord.id);
+                        }
                     }
                 }, 300);
             } else {
@@ -392,116 +562,89 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
         }
     };
 
-    const handleAddWords = async () => {
-        setLoading(true);
-        let addedCount = 0;
-        let removedCount = 0;
-        let errorCount = 0;
+    // Функции для работы с диалогом выбора перевода
+    const getCurrentTranslation = (word: BaseWord): string => {
+        if (word.translations && word.translations.length > 0) {
+            return word.translations[0].translation;
+        }
+        return 'Нет перевода';
+    };
 
+    // Преобразование BaseWord в формат Word для TranslationSelectorDialog
+    const convertBaseWordToWord = async (
+        baseWord: BaseWord,
+    ): Promise<any | null> => {
         try {
-            // Определяем, какие слова нужно добавить, а какие удалить
-            const wordsToAdd: string[] = [];
-            const wordsToRemove: string[] = [];
+            // Получаем список пользовательских слов
+            const userWordsResponse = await fetch('/api/words');
+            if (userWordsResponse.ok) {
+                const userWords = await userWordsResponse.json();
+                const userWord = userWords.find(
+                    (w: any) => w.baseWordId === baseWord.id,
+                );
 
-            for (const word of availableWords) {
-                const isSelected = selectedWords.includes(word.id);
-
-                if (word.isAddedByUser && !isSelected) {
-                    // Слово было добавлено, но теперь не выбрано - нужно удалить
-                    wordsToRemove.push(word.id);
-                } else if (!word.isAddedByUser && isSelected) {
-                    // Слово не было добавлено, но теперь выбрано - нужно добавить
-                    wordsToAdd.push(word.id);
+                if (userWord) {
+                    // Преобразуем BaseWord в формат Word
+                    return {
+                        id: userWord.id,
+                        userId: userWord.userId,
+                        baseWordId: baseWord.id,
+                        languageId: baseWord.language.code,
+                        language: baseWord.language,
+                        status: userWord.status,
+                        createdAt: userWord.createdAt,
+                        updatedAt: userWord.updatedAt,
+                        baseWord: {
+                            id: baseWord.id,
+                            word: baseWord.word,
+                            partOfSpeech: baseWord.partOfSpeech,
+                            languageId: baseWord.language.code,
+                            translations: baseWord.translations,
+                            examples: baseWord.examples,
+                        },
+                        customTranslations: userWord.customTranslations || [],
+                    };
                 }
             }
-
-            // Добавляем слова
-            for (const baseWordId of wordsToAdd) {
-                const wordData = availableWords.find(w => w.id === baseWordId);
-                if (!wordData) continue;
-
-                const response = await fetch('/api/words', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        baseWordId: baseWordId,
-                    }),
-                });
-
-                if (response.ok) {
-                    addedCount++;
-                } else {
-                    errorCount++;
-                    console.error('Error adding word:', baseWordId);
-                }
-            }
-
-            // Удаляем слова
-            for (const baseWordId of wordsToRemove) {
-                // Нужно найти userWordId, чтобы удалить
-                // Получаем список пользовательских слов
-                const userWordsResponse = await fetch('/api/words');
-                if (userWordsResponse.ok) {
-                    const userWords = await userWordsResponse.json();
-                    const userWord = userWords.find(
-                        (w: any) => w.baseWordId === baseWordId,
-                    );
-
-                    if (userWord) {
-                        const response = await fetch(
-                            `/api/words/${userWord.id}`,
-                            {
-                                method: 'DELETE',
-                            },
-                        );
-
-                        if (response.ok) {
-                            removedCount++;
-                        } else {
-                            errorCount++;
-                            console.error('Error removing word:', baseWordId);
-                        }
-                    }
-                }
-            }
-
-            if (addedCount > 0 || removedCount > 0) {
-                const messages = [];
-                if (addedCount > 0) messages.push(`Добавлено ${addedCount}`);
-                if (removedCount > 0) messages.push(`Удалено ${removedCount}`);
-
-                toast({
-                    title: 'Успешно',
-                    description: `${messages.join(', ')}${errorCount > 0 ? `, ${errorCount} ошибок` : ''}`,
-                });
-                setSelectedWords([]);
-                onWordAdded();
-                // Обновляем список слов, не закрывая попап
-                handleSearch(0, true);
-            } else if (errorCount === 0) {
-                toast({
-                    title: 'Информация',
-                    description: 'Нет изменений для сохранения',
-                });
-            } else {
-                toast({
-                    title: 'Ошибка',
-                    description: 'Не удалось выполнить операции',
-                    variant: 'destructive',
-                });
-            }
+            return null;
         } catch (error) {
-            console.error('Error managing words:', error);
+            console.error('Error converting BaseWord to Word:', error);
+            return null;
+        }
+    };
+
+    const openTranslationDialog = async (word: BaseWord) => {
+        if (!word.isAddedByUser) return;
+
+        const convertedWord = await convertBaseWordToWord(word);
+        if (convertedWord) {
+            setSelectedWordForTranslation(convertedWord as any);
+            setTranslationDialogOpen({
+                ...translationDialogOpen,
+                [word.id]: true,
+            });
+        } else {
             toast({
                 title: 'Ошибка',
-                description: 'Не удалось выполнить операции',
+                description: 'Не удалось загрузить данные слова',
                 variant: 'destructive',
             });
-        } finally {
-            setLoading(false);
         }
+    };
+
+    const handleDialogClose = (wordId: string, open: boolean) => {
+        setTranslationDialogOpen(prev => ({
+            ...prev,
+            [wordId]: open,
+        }));
+        if (!open) {
+            setSelectedWordForTranslation(null);
+        }
+    };
+
+    const handleTranslationSave = async () => {
+        // Обновляем список слов после сохранения перевода
+        await handleSearch(0, true);
     };
 
     const resetForm = () => {
@@ -707,7 +850,7 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                                     onClick={deselectAllWords}
                                     disabled={searching}
                                 >
-                                    Отменить выбор
+                                    Отменить все
                                 </Button>
                             </div>
                         </div>
@@ -779,30 +922,78 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                                                                 )}
                                                             </CardTitle>
                                                             <div className="flex items-center gap-1">
-                                                                <span className="truncate text-sm text-gray-500">
-                                                                    {word
-                                                                        .translations
-                                                                        .length >
-                                                                    0
-                                                                        ? word
-                                                                              .translations[0]
-                                                                              .translation
-                                                                        : 'Нет перевода'}
+                                                                <span
+                                                                    className={`truncate text-sm cursor-pointer hover:text-blue-600 transition-colors ${
+                                                                        word
+                                                                            .translations
+                                                                            .length >
+                                                                        0
+                                                                            ? 'text-blue-500'
+                                                                            : 'text-gray-500'
+                                                                    }`}
+                                                                    onClick={e => {
+                                                                        e.stopPropagation();
+                                                                        if (
+                                                                            word.isAddedByUser &&
+                                                                            word
+                                                                                .translations
+                                                                                .length >
+                                                                                0
+                                                                        ) {
+                                                                            openTranslationDialog(
+                                                                                word,
+                                                                            );
+                                                                        }
+                                                                    }}
+                                                                >
+                                                                    {getCurrentTranslation(
+                                                                        word,
+                                                                    )}
                                                                 </span>
                                                                 {word
                                                                     .translations
                                                                     .length >
-                                                                    1 && (
+                                                                    0 && (
                                                                     <span className="text-xs text-gray-400 shrink-0">
-                                                                        (+
-                                                                        {word
-                                                                            .translations
-                                                                            .length -
-                                                                            1}
+                                                                        (
+                                                                        {
+                                                                            word
+                                                                                .translations
+                                                                                .length
+                                                                        }
                                                                         )
                                                                     </span>
                                                                 )}
                                                             </div>
+                                                            {isClient &&
+                                                                selectedWordForTranslation &&
+                                                                selectedWordForTranslation.baseWordId ===
+                                                                    word.id && (
+                                                                    <TranslationSelectorDialog
+                                                                        word={
+                                                                            selectedWordForTranslation
+                                                                        }
+                                                                        open={
+                                                                            translationDialogOpen[
+                                                                                word
+                                                                                    .id
+                                                                            ] ||
+                                                                            false
+                                                                        }
+                                                                        onOpenChange={open =>
+                                                                            handleDialogClose(
+                                                                                word.id,
+                                                                                open,
+                                                                            )
+                                                                        }
+                                                                        onSave={
+                                                                            handleTranslationSave
+                                                                        }
+                                                                        partsOfSpeech={
+                                                                            partsOfSpeech
+                                                                        }
+                                                                    />
+                                                                )}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -842,17 +1033,7 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
 
                 <DialogFooter className="flex-row justify-end space-x-2">
                     <Button variant="outline" onClick={() => setOpen(false)}>
-                        Отмена
-                    </Button>
-                    <Button onClick={handleAddWords} disabled={loading}>
-                        {loading ? (
-                            <>
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                Сохранение...
-                            </>
-                        ) : (
-                            'Применить изменения'
-                        )}
+                        Закрыть
                     </Button>
                 </DialogFooter>
             </DialogContent>
