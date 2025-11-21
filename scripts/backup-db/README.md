@@ -7,7 +7,11 @@ This directory contains scripts for backing up the PostgreSQL database used by t
 ## Files
 
 - `backup-database.ts` - Main TypeScript script that creates database backups
+- `setup-schedule.sh` - Script to manage automated backup schedule
+- `com.flashcards.db-backup.plist` - launchd configuration for scheduled backups
 - `README.md` - This documentation file
+- `QUICK_START.md` - Quick reference guide
+- `MIGRATION_WORKFLOW.md` - Database migration workflow with backup procedure
 
 ## Usage
 
@@ -142,6 +146,105 @@ sudo yum install postgresql
 
 - Check database user permissions
 - Ensure the user can connect and dump the database
+
+## Automated Backups (macOS)
+
+You can set up automated database backups using launchd on macOS. A pre-configured schedule runs backups twice daily:
+
+- Morning: 9:00 AM
+- Evening: 9:00 PM (21:00)
+
+### Quick Setup
+
+Use the included management script:
+
+```bash
+# Install automated backup schedule
+./scripts/backup-db/setup-schedule.sh install
+
+# Check status
+./scripts/backup-db/setup-schedule.sh status
+
+# View logs
+./scripts/backup-db/setup-schedule.sh logs
+
+# Uninstall (stop automated backups)
+./scripts/backup-db/setup-schedule.sh uninstall
+
+# Show help
+./scripts/backup-db/setup-schedule.sh help
+```
+
+### Manual Setup (Alternative)
+
+If you prefer to manage launchd directly:
+
+```bash
+# Install
+cp scripts/backup-db/com.flashcards.db-backup.plist ~/Library/LaunchAgents/
+launchctl load ~/Library/LaunchAgents/com.flashcards.db-backup.plist
+
+# Check status
+launchctl list | grep flashcards
+
+# Uninstall
+launchctl unload ~/Library/LaunchAgents/com.flashcards.db-backup.plist
+rm ~/Library/LaunchAgents/com.flashcards.db-backup.plist
+```
+
+### Customizing Schedule
+
+To change backup times, edit `scripts/backup-db/com.flashcards.db-backup.plist`:
+
+```xml
+<key>StartCalendarInterval</key>
+<array>
+    <dict>
+        <key>Hour</key>
+        <integer>9</integer>   <!-- Morning time (9 AM) -->
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+    <dict>
+        <key>Hour</key>
+        <integer>21</integer>  <!-- Evening time (9 PM) -->
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+</array>
+```
+
+After editing, reload the schedule:
+
+```bash
+./scripts/backup-db/setup-schedule.sh install
+```
+
+## Database Migrations
+
+**⚠️ IMPORTANT: Always backup before migrations!**
+
+Before running any database migration, you MUST create a backup first. This is enforced in `.cursorrules` and AI assistants will automatically follow this procedure.
+
+### Quick Migration Workflow
+
+```bash
+# 1. Create backup
+./scripts/backup-db.sh
+
+# 2. Run migration
+npm run prisma:migrate
+```
+
+### Full Migration Documentation
+
+See [MIGRATION_WORKFLOW.md](./MIGRATION_WORKFLOW.md) for complete migration procedures including:
+
+- Step-by-step migration workflow
+- Rollback procedures
+- Commands that require backup
+- AI assistant behavior
+- Safety features
 
 ## Backup Restoration
 

@@ -9,6 +9,37 @@
 - Use English for all code comments and documentation unless specified otherwise.
 - ALWAYS ask for user permission before running database reset operations, even in unrestricted modes.
 
+## Database Operations Guidelines
+- **ALWAYS create a database backup BEFORE performing any dangerous database operations.**
+- Dangerous database operations include:
+  - Database resets or drops (DROP DATABASE, DROP TABLE, TRUNCATE)
+  - Mass deletions (DELETE without WHERE, or deleting large amounts of data)
+  - Schema changes that could cause data loss (ALTER TABLE DROP COLUMN, etc.)
+  - Migration operations that modify or delete existing data
+  - Any operation that could result in irreversible data loss
+- To create a backup, run: `./scripts/backup-db.sh`
+- Wait for backup confirmation before proceeding with the dangerous operation.
+- If the backup fails, DO NOT proceed with the dangerous operation.
+- For automated backups schedule, see: `scripts/backup-db/QUICK_START.md`
+
+### Database Migrations
+- **ALWAYS create a backup BEFORE running any database migrations.**
+- Before running migrations, execute: `./scripts/backup-db.sh` or `npm run db:backup`
+- Migration commands that REQUIRE backup:
+  - `npm run prisma:migrate` or `prisma migrate dev`
+  - `prisma migrate deploy`
+  - `prisma db push`
+  - `npm run prisma:seed` (when seeding production data)
+  - Any command that modifies database schema or data
+- Workflow:
+  1. Run backup: `./scripts/backup-db.sh`
+  2. Verify backup succeeded (check output for ✅)
+  3. Save backup file path for potential rollback
+  4. Proceed with migration command
+  5. Inform user of backup location
+- After successful backup, inform the user that backup is complete before proceeding.
+- Keep the backup file path visible in case rollback is needed.
+
 ---
 
 You are an AI coding assistant, powered by grok-code-fast-1. You operate in Cursor.
