@@ -7,14 +7,21 @@
     <key>ProgramArguments</key>
     <array>
         <string>/bin/bash</string>
-        <string>/Users/ilya_rovda/Documents/projects/flash-cards/scripts/backup-db.sh</string>
+        <string>/Users/ilya_rovda/.flashcards-backup/run-backup.sh</string>
     </array>
     <key>WorkingDirectory</key>
-    <string>/Users/ilya_rovda/Documents/projects/flash-cards</string>
+    <string>/Users/ilya_rovda</string>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin</string>
+        <key>HOME</key>
+        <string>/Users/ilya_rovda</string>
+    </dict>
     <key>StandardOutPath</key>
-    <string>/Users/ilya_rovda/Documents/projects/flash-cards/scripts/backup-db/logs/backup.out</string>
+    <string>/Users/ilya_rovda/.flashcards-backup/logs/backup.out</string>
     <key>StandardErrorPath</key>
-    <string>/Users/ilya_rovda/Documents/projects/flash-cards/scripts/backup-db/logs/backup.err</string>
+    <string>/Users/ilya_rovda/.flashcards-backup/logs/backup.err</string>
     <key>StartCalendarInterval</key>
     <array>
         <dict>
