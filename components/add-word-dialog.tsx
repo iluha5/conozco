@@ -29,7 +29,11 @@ import {
     usePartsOfSpeech,
 } from '@/hooks/shared';
 import { TranslationSelectorDialog } from '@/components/translation-selector-dialog';
-import { getLanguageFlag, getPartOfSpeechAbbrev } from '@/lib/word-utils';
+import {
+    getLanguageFlag,
+    getPartOfSpeechAbbrev,
+    getCurrentTranslation,
+} from '@/lib/word-utils';
 
 type PartOfSpeech = {
     id: string;
@@ -532,18 +536,6 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
         }
     };
 
-    // Функции для работы с диалогом выбора перевода
-    const getCurrentTranslation = (word: BaseWord): string => {
-        // Приоритет: кастомный перевод -> базовый перевод
-        if (word.customTranslations && word.customTranslations.length > 0) {
-            return word.customTranslations[0].translation;
-        }
-        if (word.translations && word.translations.length > 0) {
-            return word.translations[0].translation;
-        }
-        return 'Нет перевода';
-    };
-
     // Преобразование BaseWord в формат Word для TranslationSelectorDialog
     const convertBaseWordToWord = async (
         baseWord: BaseWord,
@@ -931,7 +923,8 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                                                                     }}
                                                                 >
                                                                     {getCurrentTranslation(
-                                                                        word,
+                                                                        word.customTranslations,
+                                                                        word.translations,
                                                                     )}
                                                                 </span>
                                                                 {(word
