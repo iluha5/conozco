@@ -25,6 +25,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { PlusCircle, Loader2, Search, X } from 'lucide-react';
 import { useToast, useTrainingSelection } from '@/hooks/shared';
 import { TranslationSelectorDialog } from '@/components/translation-selector-dialog';
+import { getLanguageFlag, getPartOfSpeechAbbrev } from '@/lib/word-utils';
 
 type PartOfSpeech = {
     id: string;
@@ -397,37 +398,6 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
     // Слово выбрано, если оно в selectedWords
     const isWordSelected = (baseWordId: string) => {
         return selectedWords.includes(baseWordId);
-    };
-
-    const getLanguageFlag = (languageCode: string) => {
-        return languageCode === 'en' ? '🇬🇧' : '🇪🇸';
-    };
-
-    const getPartOfSpeechAbbrev = (displayName: string) => {
-        const abbreviations: { [key: string]: string } = {
-            существительное: 'сущ',
-            глагол: 'гл',
-            прилагательное: 'пр',
-            наречие: 'нар',
-            местоимение: 'мест',
-            предлог: 'пред',
-            союз: 'союз',
-            частица: 'част',
-            междометие: 'межд',
-            noun: 'n',
-            verb: 'v',
-            adjective: 'adj',
-            adverb: 'adv',
-            pronoun: 'pron',
-            preposition: 'prep',
-            conjunction: 'conj',
-            particle: 'part',
-            interjection: 'int',
-        };
-        return (
-            abbreviations[displayName.toLowerCase()] ||
-            displayName.substring(0, 3)
-        );
     };
 
     const handleSearch = async (
