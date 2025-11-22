@@ -11,6 +11,8 @@ import {
     getLanguageFlag,
     getPartOfSpeechAbbrev,
     getCurrentTranslation,
+    getTranslationsCountText,
+    hasTranslations,
 } from '@/lib/word-utils';
 
 type Language = {
@@ -414,14 +416,11 @@ export function WordsList({
                                         <div className="flex items-center gap-1">
                                             <span
                                                 className={`truncate ${readOnly ? '' : 'cursor-pointer hover:text-blue-600'} transition-colors ${
-                                                    (word.baseWord
-                                                        ?.translations &&
+                                                    hasTranslations(
+                                                        word.customTranslations,
                                                         word.baseWord
-                                                            .translations
-                                                            .length > 0) ||
-                                                    (word.customTranslations &&
-                                                        word.customTranslations
-                                                            .length > 0)
+                                                            ?.translations,
+                                                    )
                                                         ? 'text-blue-500'
                                                         : 'text-gray-500'
                                                 }`}
@@ -442,24 +441,24 @@ export function WordsList({
                                                     word.baseWord?.translations,
                                                 )}
                                             </span>
-                                            {(word.baseWord?.translations &&
-                                                word.baseWord.translations
-                                                    .length > 0) ||
-                                            (word.customTranslations &&
-                                                word.customTranslations.length >
-                                                    0) ? (
+                                            {hasTranslations(
+                                                word.customTranslations,
+                                                word.baseWord?.translations,
+                                            ) && (
                                                 <span className="text-xs text-gray-400 shrink-0">
-                                                    (
-                                                    {word.baseWord?.translations
-                                                        ?.length || 0}
-                                                    {word.customTranslations &&
-                                                    word.customTranslations
-                                                        .length > 0
-                                                        ? '+1'
-                                                        : ''}
-                                                    )
+                                                    {getTranslationsCountText(
+                                                        word.baseWord
+                                                            ?.translations
+                                                            ?.length || 0,
+                                                        !!(
+                                                            word.customTranslations &&
+                                                            word
+                                                                .customTranslations
+                                                                .length > 0
+                                                        ),
+                                                    )}
                                                 </span>
-                                            ) : null}
+                                            )}
                                         </div>
                                         {isClient &&
                                             selectedWordForTranslation &&

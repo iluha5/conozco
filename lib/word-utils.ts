@@ -73,3 +73,32 @@ export function getPartOfSpeechAbbrev(displayName: string): string {
         abbreviations[displayName.toLowerCase()] || displayName.substring(0, 3)
     );
 }
+
+/**
+ * Получить текст с количеством переводов
+ * Формат: "(5)" или "(5+1)" если есть кастомный перевод
+ */
+export function getTranslationsCountText(
+    baseTranslationsCount: number,
+    hasCustomTranslation: boolean,
+): string {
+    if (baseTranslationsCount === 0 && !hasCustomTranslation) {
+        return '';
+    }
+
+    const customPart = hasCustomTranslation ? '+1' : '';
+    return `(${baseTranslationsCount}${customPart})`;
+}
+
+/**
+ * Проверить, есть ли у слова переводы
+ */
+export function hasTranslations(
+    customTranslations?: CustomTranslation[],
+    baseTranslations?: Translation[],
+): boolean {
+    return !!(
+        (customTranslations && customTranslations.length > 0) ||
+        (baseTranslations && baseTranslations.length > 0)
+    );
+}

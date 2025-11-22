@@ -33,6 +33,8 @@ import {
     getLanguageFlag,
     getPartOfSpeechAbbrev,
     getCurrentTranslation,
+    getTranslationsCountText,
+    hasTranslations,
 } from '@/lib/word-utils';
 
 type PartOfSpeech = {
@@ -890,15 +892,10 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                                                             <div className="flex items-center gap-1">
                                                                 <span
                                                                     className={`truncate text-sm cursor-pointer hover:text-blue-600 transition-colors ${
-                                                                        word
-                                                                            .translations
-                                                                            .length >
-                                                                            0 ||
-                                                                        (word.customTranslations &&
-                                                                            word
-                                                                                .customTranslations
-                                                                                .length >
-                                                                                0)
+                                                                        hasTranslations(
+                                                                            word.customTranslations,
+                                                                            word.translations,
+                                                                        )
                                                                             ? 'text-blue-500'
                                                                             : 'text-gray-500'
                                                                     }`}
@@ -906,15 +903,10 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                                                                         e.stopPropagation();
                                                                         if (
                                                                             word.isAddedByUser &&
-                                                                            (word
-                                                                                .translations
-                                                                                .length >
-                                                                                0 ||
-                                                                                (word.customTranslations &&
-                                                                                    word
-                                                                                        .customTranslations
-                                                                                        .length >
-                                                                                        0))
+                                                                            hasTranslations(
+                                                                                word.customTranslations,
+                                                                                word.translations,
+                                                                            )
                                                                         ) {
                                                                             openTranslationDialog(
                                                                                 word,
@@ -927,29 +919,24 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                                                                         word.translations,
                                                                     )}
                                                                 </span>
-                                                                {(word
-                                                                    .translations
-                                                                    .length >
-                                                                    0 ||
-                                                                    (word.customTranslations &&
-                                                                        word
-                                                                            .customTranslations
-                                                                            .length >
-                                                                            0)) && (
+                                                                {hasTranslations(
+                                                                    word.customTranslations,
+                                                                    word.translations,
+                                                                ) && (
                                                                     <span className="text-xs text-gray-400 shrink-0">
-                                                                        (
-                                                                        {word
-                                                                            .translations
-                                                                            .length ||
-                                                                            0}
-                                                                        {word.customTranslations &&
-                                                                        word
-                                                                            .customTranslations
-                                                                            .length >
-                                                                            0
-                                                                            ? '+1'
-                                                                            : ''}
-                                                                        )
+                                                                        {getTranslationsCountText(
+                                                                            word
+                                                                                .translations
+                                                                                .length ||
+                                                                                0,
+                                                                            !!(
+                                                                                word.customTranslations &&
+                                                                                word
+                                                                                    .customTranslations
+                                                                                    .length >
+                                                                                    0
+                                                                            ),
+                                                                        )}
                                                                     </span>
                                                                 )}
                                                             </div>
