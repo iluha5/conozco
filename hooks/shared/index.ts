@@ -8,3 +8,5 @@ export {
     useTrainingSettings,
     useTrainingSelection,
 } from './use-training-settings';
+export { usePartsOfSpeech } from './use-parts-of-speech';
+export type { PartOfSpeech } from './use-parts-of-speech';
