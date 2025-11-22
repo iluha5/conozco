@@ -7,7 +7,11 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Trash2, CheckCircle, CheckCircle2, X } from 'lucide-react';
 import { useToast, usePartsOfSpeech } from '@/hooks/shared';
 import { TranslationSelectorDialog } from '@/components/translation-selector-dialog';
-import { getLanguageFlag, getPartOfSpeechAbbrev } from '@/lib/word-utils';
+import {
+    getLanguageFlag,
+    getPartOfSpeechAbbrev,
+    getCurrentTranslation,
+} from '@/lib/word-utils';
 
 type Language = {
     id: string | number;
@@ -146,19 +150,6 @@ export function WordsList({
 
     const isWordSelected = (wordId: string | number) => {
         return selectedWords.includes(wordId);
-    };
-
-    const getCurrentTranslation = (word: Word): string => {
-        if (word.customTranslations && word.customTranslations.length > 0) {
-            return word.customTranslations[0].translation;
-        }
-        if (
-            word.baseWord?.translations &&
-            word.baseWord.translations.length > 0
-        ) {
-            return word.baseWord.translations[0].translation;
-        }
-        return 'Нет перевода';
     };
 
     const openTranslationDialog = (word: Word) => {
@@ -446,7 +437,10 @@ export function WordsList({
                                                     }
                                                 }}
                                             >
-                                                {getCurrentTranslation(word)}
+                                                {getCurrentTranslation(
+                                                    word.customTranslations,
+                                                    word.baseWord?.translations,
+                                                )}
                                             </span>
                                             {(word.baseWord?.translations &&
                                                 word.baseWord.translations
