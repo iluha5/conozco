@@ -59,6 +59,26 @@ type BaseWord = {
         };
     }>;
     isAddedByUser: boolean;
+    customTranslations?: Array<{
+        id: number;
+        translation: string;
+        partOfSpeech?: {
+            id: number;
+            name: string;
+            displayName: string;
+        };
+        partOfSpeechId?: number | null;
+        originalLanguage: {
+            id: number;
+            code: string;
+            name: string;
+        };
+        translationLanguage: {
+            id: number;
+            code: string;
+            name: string;
+        };
+    }>;
 };
 
 type SelectedWord = string; // просто baseWordId
@@ -564,6 +584,10 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
 
     // Функции для работы с диалогом выбора перевода
     const getCurrentTranslation = (word: BaseWord): string => {
+        // Приоритет: кастомный перевод -> базовый перевод
+        if (word.customTranslations && word.customTranslations.length > 0) {
+            return word.customTranslations[0].translation;
+        }
         if (word.translations && word.translations.length > 0) {
             return word.translations[0].translation;
         }
@@ -927,7 +951,12 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                                                                         word
                                                                             .translations
                                                                             .length >
-                                                                        0
+                                                                            0 ||
+                                                                        (word.customTranslations &&
+                                                                            word
+                                                                                .customTranslations
+                                                                                .length >
+                                                                                0)
                                                                             ? 'text-blue-500'
                                                                             : 'text-gray-500'
                                                                     }`}
@@ -935,10 +964,15 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                                                                         e.stopPropagation();
                                                                         if (
                                                                             word.isAddedByUser &&
-                                                                            word
+                                                                            (word
                                                                                 .translations
                                                                                 .length >
-                                                                                0
+                                                                                0 ||
+                                                                                (word.customTranslations &&
+                                                                                    word
+                                                                                        .customTranslations
+                                                                                        .length >
+                                                                                        0))
                                                                         ) {
                                                                             openTranslationDialog(
                                                                                 word,
@@ -950,17 +984,28 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                                                                         word,
                                                                     )}
                                                                 </span>
-                                                                {word
+                                                                {(word
                                                                     .translations
                                                                     .length >
-                                                                    0 && (
+                                                                    0 ||
+                                                                    (word.customTranslations &&
+                                                                        word
+                                                                            .customTranslations
+                                                                            .length >
+                                                                            0)) && (
                                                                     <span className="text-xs text-gray-400 shrink-0">
                                                                         (
-                                                                        {
-                                                                            word
-                                                                                .translations
-                                                                                .length
-                                                                        }
+                                                                        {word
+                                                                            .translations
+                                                                            .length ||
+                                                                            0}
+                                                                        {word.customTranslations &&
+                                                                        word
+                                                                            .customTranslations
+                                                                            .length >
+                                                                            0
+                                                                            ? '+1'
+                                                                            : ''}
                                                                         )
                                                                     </span>
                                                                 )}

@@ -98,7 +98,7 @@ export async function GET(request: NextRequest) {
         });
 
         // Проверить, какие слова уже добавлены пользователем
-        const userWordIds = await prisma.word.findMany({
+        const userWords = await prisma.word.findMany({
             where: {
                 userId: parseInt(session.user.id),
                 baseWordId: {
@@ -107,16 +107,31 @@ export async function GET(request: NextRequest) {
             },
             select: {
                 baseWordId: true,
+                customTranslations: {
+                    where: {
+                        userId: parseInt(session.user.id),
+                    },
+                    include: {
+                        partOfSpeech: true,
+                        originalLanguage: true,
+                        translationLanguage: true,
+                    },
+                    take: 1,
+                },
             },
         });
 
-        const userBaseWordIds = new Set(userWordIds.map(uw => uw.baseWordId));
+        const userWordMap = new Map(userWords.map(uw => [uw.baseWordId, uw]));
 
         // Добавить информацию о том, добавлено ли слово пользователем
-        const wordsWithStatus = baseWords.map(baseWord => ({
-            ...baseWord,
-            isAddedByUser: userBaseWordIds.has(baseWord.id),
-        }));
+        const wordsWithStatus = baseWords.map(baseWord => {
+            const userWord = userWordMap.get(baseWord.id);
+            return {
+                ...baseWord,
+                isAddedByUser: !!userWord,
+                customTranslations: userWord?.customTranslations || [],
+            };
+        });
 
         return NextResponse.json(wordsWithStatus);
     } catch (error) {
