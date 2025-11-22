@@ -23,7 +23,11 @@ import {
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { PlusCircle, Loader2, Search, X } from 'lucide-react';
-import { useToast, useTrainingSelection } from '@/hooks/shared';
+import {
+    useToast,
+    useTrainingSelection,
+    usePartsOfSpeech,
+} from '@/hooks/shared';
 import { TranslationSelectorDialog } from '@/components/translation-selector-dialog';
 import { getLanguageFlag, getPartOfSpeechAbbrev } from '@/lib/word-utils';
 
@@ -84,12 +88,6 @@ type BaseWord = {
 
 type SelectedWord = string; // просто baseWordId
 
-type PartOfSpeechType = {
-    id: number;
-    name: string;
-    displayName: string;
-};
-
 type AddWordDialogProps = {
     onWordAdded: () => void;
 };
@@ -123,12 +121,12 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
     }>({});
     const [selectedWordForTranslation, setSelectedWordForTranslation] =
         useState<any | null>(null);
-    const [partsOfSpeech, setPartsOfSpeech] = useState<PartOfSpeechType[]>([]);
     const [isClient, setIsClient] = useState(false);
     const { toast } = useToast();
     const searchInputRef = useRef<HTMLInputElement>(null);
+    const { partsOfSpeech } = usePartsOfSpeech('ru');
 
-    // Debounce поиска на 200мс для снижения количества запросов к серверу
+    // Debounce поиска на 400мс для снижения количества запросов к серверу
     useDebounce(
         () => {
             setDebouncedSearchTerm(searchTerm);
@@ -140,24 +138,6 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
     // Инициализация isClient
     useEffect(() => {
         setIsClient(true);
-    }, []);
-
-    // Загружаем части речи для русского языка
-    useEffect(() => {
-        const fetchPartsOfSpeech = async () => {
-            try {
-                const response = await fetch(
-                    '/api/parts-of-speech?languageCode=ru',
-                );
-                if (response.ok) {
-                    const data = await response.json();
-                    setPartsOfSpeech(data);
-                }
-            } catch (error) {
-                console.error('Error fetching parts of speech:', error);
-            }
-        };
-        fetchPartsOfSpeech();
     }, []);
 
     // Проверка, нужен ли скролл для попапа
