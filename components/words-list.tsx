@@ -7,6 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Trash2, CheckCircle, CheckCircle2, X } from 'lucide-react';
 import { useToast } from '@/hooks/shared';
 import { TranslationSelectorDialog } from '@/components/translation-selector-dialog';
+import { getLanguageFlag, getPartOfSpeechAbbrev } from '@/lib/word-utils';
 
 type Language = {
     id: string | number;
@@ -316,37 +317,6 @@ export function WordsList({
         }
     };
 
-    const getLanguageFlag = (language: Language) => {
-        return language.code === 'en' ? '🇬🇧' : '🇪🇸';
-    };
-
-    const getPartOfSpeechAbbrev = (displayName: string) => {
-        const abbreviations: { [key: string]: string } = {
-            существительное: 'сущ',
-            глагол: 'гл',
-            прилагательное: 'пр',
-            наречие: 'нар',
-            местоимение: 'мест',
-            предлог: 'пред',
-            союз: 'союз',
-            частица: 'част',
-            междометие: 'межд',
-            noun: 'n',
-            verb: 'v',
-            adjective: 'adj',
-            adverb: 'adv',
-            pronoun: 'pron',
-            preposition: 'prep',
-            conjunction: 'conj',
-            particle: 'part',
-            interjection: 'int',
-        };
-        return (
-            abbreviations[displayName.toLowerCase()] ||
-            displayName.substring(0, 3)
-        );
-    };
-
     if (words.length === 0) {
         return (
             <Card>
@@ -448,7 +418,9 @@ export function WordsList({
                                                     word.customWord}
                                             </span>
                                             <span className="text-sm shrink-0">
-                                                {getLanguageFlag(word.language)}
+                                                {getLanguageFlag(
+                                                    word.language.code,
+                                                )}
                                             </span>
                                             {(() => {
                                                 // Приоритет: часть речи из кастомного перевода, затем из baseWord
