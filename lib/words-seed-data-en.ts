@@ -1,4 +1,5 @@
 // Определяем PartOfSpeech локально, так как импорт из Prisma может не работать во время выполнения seed
+/* eslint-disable no-unused-vars */
 export enum PartOfSpeech {
     NOUN = 'NOUN',
     VERB = 'VERB',
@@ -16,6 +17,7 @@ export enum SentenceTypeCode {
     QUESTION = 'QUESTION',
     NEGATIVE_QUESTION = 'NEGATIVE_QUESTION',
 }
+/* eslint-enable no-unused-vars */
 
 export interface WordData {
     word: string;

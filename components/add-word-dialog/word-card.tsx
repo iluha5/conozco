@@ -23,7 +23,7 @@ type WordCardProps = {
     onToggle: () => void;
     onOpenTranslationDialog?: () => void;
     translationDialogOpen?: boolean;
-    onTranslationDialogClose?: (open: boolean) => void;
+    onTranslationDialogClose?: (_open: boolean) => void;
     selectedWordForTranslation?: any;
     partsOfSpeech?: PartOfSpeech[];
     onTranslationSave?: () => Promise<void>;

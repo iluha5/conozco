@@ -21,13 +21,7 @@ import {
     DialogTrigger,
 } from '@/components/ui/dialog';
 import { Header } from '@/components/header';
-import {
-    BookOpen,
-    Brain,
-    HelpCircle,
-    Languages,
-    PlusCircle,
-} from 'lucide-react';
+import { Brain, HelpCircle, Languages } from 'lucide-react';
 import { ContinueTrainingCard } from '@/components/training/continue-training-card';
 import { NewTrainingConfirmationDialog } from '@/components/training/new-training-confirmation-dialog';
 import { useTrainingStorage } from '@/hooks/training';

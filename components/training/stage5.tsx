@@ -100,7 +100,7 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
     const [userSentence, setUserSentence] = useState<string[]>([]);
     const [isComplete, setIsComplete] = useState(false);
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-    const [stats, setStats] = useState({ correct: 0, total: 0 });
+    const [_stats, setStats] = useState({ correct: 0, total: 0 });
     const [exerciseResults, setExerciseResults] = useState<boolean[]>([]);
     const [showSettingsModal, setShowSettingsModal] = useState(false);
     const [isFirstCard, setIsFirstCard] = useState(true);
@@ -113,7 +113,8 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
     const [showResultPopup, setShowResultPopup] = useState(false);
     const [totalErrors, setTotalErrors] = useState(0);
     const [isRetryMode, setIsRetryMode] = useState(false);
-    const [hasCompletedFirstRound, setHasCompletedFirstRound] = useState(false);
+    const [_hasCompletedFirstRound, setHasCompletedFirstRound] =
+        useState(false);
 
     // Фильтруем слова, у которых есть фразы
     const wordsWithPhrases = useMemo(
@@ -205,12 +206,6 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
         (total, phrases) => total + phrases.length,
         0,
     );
-    const currentPhraseNumber =
-        wordPhrases
-            .slice(0, currentIndex)
-            .reduce((total, phrases) => total + phrases.length, 0) +
-        currentPhraseIndex +
-        1;
 
     // Запускаем анимацию при каждом монтировании компонента (при новом предложении)
     useEffect(() => {
@@ -226,11 +221,8 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
             languageCode: string,
             currentPhraseWords: string[],
         ): string[] => {
-            const extraWords: string[] = [];
-
             // Собираем все слова из всех фраз всех слов
             const allWordsFromPhrases: string[] = [];
-            const allPronouns: string[] = [];
 
             words.forEach(word => {
                 if (!word.baseWord) return;

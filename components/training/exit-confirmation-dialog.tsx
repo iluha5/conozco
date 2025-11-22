@@ -10,7 +10,7 @@ import {
 
 interface ExitConfirmationDialogProps {
     open: boolean;
-    onOpenChange: (open: boolean) => void;
+    onOpenChange: (_open: boolean) => void;
     onConfirm: () => void;
 }
 

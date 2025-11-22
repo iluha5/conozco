@@ -16,11 +16,11 @@ interface WordsSelectorProps {
     selectedWords: Set<string>;
     selectedLanguage: string;
     isLoading: boolean;
-    onLanguageChange: (language: string) => void;
-    onToggleWord: (wordId: number) => void;
+    onLanguageChange: (_language: string) => void;
+    onToggleWord: (_wordId: number) => void;
     onSelectAll: () => void;
     onDeselectAll: () => void;
-    isWordSelected: (wordId: number) => boolean;
+    isWordSelected: (_wordId: number) => boolean;
 }
 
 export const WordsSelector = ({

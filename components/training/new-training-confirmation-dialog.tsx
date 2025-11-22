@@ -13,7 +13,7 @@ import { AlertTriangle } from 'lucide-react';
 
 interface NewTrainingConfirmationDialogProps {
     open: boolean;
-    onOpenChange: (open: boolean) => void;
+    onOpenChange: (_open: boolean) => void;
     onContinue: () => void;
     onStartNew: () => void;
 }

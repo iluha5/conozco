@@ -247,7 +247,6 @@ export async function PATCH(
         }
 
         // Обработка кастомного перевода
-        let customTranslationData = null;
         if (body.customTranslation !== undefined) {
             // Если customTranslation === null, удаляем кастомный перевод
             if (body.customTranslation === null) {
@@ -296,7 +295,7 @@ export async function PATCH(
                     }
                 }
 
-                customTranslationData = await prisma.customTranslation.upsert({
+                await prisma.customTranslation.upsert({
                     where: {
                         wordId_userId: {
                             wordId: wordId,

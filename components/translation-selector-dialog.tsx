@@ -8,7 +8,6 @@ import {
     DialogDescription,
     DialogFooter,
     DialogHeader,
-    DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import {
@@ -80,7 +79,7 @@ type PartOfSpeech = {
 type TranslationSelectorDialogProps = {
     word: Word;
     open: boolean;
-    onOpenChange: (open: boolean) => void;
+    onOpenChange: (_open: boolean) => void;
     onSave: () => Promise<void>;
     partsOfSpeech: PartOfSpeech[];
 };

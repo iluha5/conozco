@@ -1,4 +1,3 @@
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlayCircle, Clock, BookOpen } from 'lucide-react';
@@ -13,8 +12,6 @@ export function ContinueTrainingCard({
     savedState,
     onContinue,
 }: ContinueTrainingCardProps) {
-    const router = useRouter();
-
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
         const now = new Date();

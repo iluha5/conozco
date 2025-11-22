@@ -4,9 +4,9 @@ import { TrainingStage } from '@/types/training.types';
 interface StageSelectorProps {
     stages: TrainingStage[];
     currentStage: TrainingStage;
-    onStageSelect: (stage: TrainingStage) => void;
+    onStageSelect: (_stage: TrainingStage) => void;
     getStageStatus?: (
-        stage: TrainingStage,
+        _stage: TrainingStage,
     ) => 'completed' | 'current' | 'pending';
 }
 

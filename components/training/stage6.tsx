@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, XCircle, RotateCcw, Volume2 } from 'lucide-react';
+import { CheckCircle, XCircle, Volume2 } from 'lucide-react';
 import { ProgressDots } from './progress-dots';
 import {
     useFadeAnimation,
@@ -31,7 +31,7 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
     const [userWord, setUserWord] = useState<string[]>([]);
     const [isComplete, setIsComplete] = useState(false);
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-    const [stats, setStats] = useState({ correct: 0, total: 0 });
+    const [_stats, setStats] = useState({ correct: 0, total: 0 });
     const [flashingLetter, setFlashingLetter] = useState<number | null>(null);
     const [backgroundFlash, setBackgroundFlash] = useState<
         'green' | 'red' | null
@@ -52,7 +52,6 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
     const { recordResult } = useRecordResult();
     const {
         isRetryMode,
-        hasCompletedFirstRound,
         findNextErrorWithResults,
         getErrorIndices,
         setIsRetryMode,
@@ -63,7 +62,6 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
     const {
         speak,
         isPlaying,
-        hasPlayedOnce,
         isSupported: speechSupported,
     } = useSpeech({
         languageCode: currentWord?.language.code || 'en',

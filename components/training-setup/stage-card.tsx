@@ -6,7 +6,7 @@ import { TrainingStage } from '@/config/training-stages';
 interface StageCardProps {
     stage: TrainingStage;
     enabled: boolean;
-    onToggle: (stageId: number) => void;
+    onToggle: (_stageId: number) => void;
     onOpenSettings?: () => void;
 }
 

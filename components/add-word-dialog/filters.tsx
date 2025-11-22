@@ -19,11 +19,11 @@ import { Loader2, Search, X } from 'lucide-react';
 
 type AddWordDialogFiltersProps = {
     languageCode: 'en' | 'es';
-    onLanguageChange: (value: 'en' | 'es') => void;
+    onLanguageChange: (_value: 'en' | 'es') => void;
     selectedPartsOfSpeech: string[];
-    onTogglePartOfSpeech: (pos: string) => void;
+    onTogglePartOfSpeech: (_pos: string) => void;
     searchTerm: string;
-    onSearchChange: (value: string) => void;
+    onSearchChange: (_value: string) => void;
     hasExactMatch: boolean;
     aiSearching: boolean;
     onAiSearch: () => void;

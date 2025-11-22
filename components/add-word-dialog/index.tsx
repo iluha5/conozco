@@ -73,7 +73,6 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
     });
 
     const {
-        selectedWords,
         addWord,
         toggleWordSelection,
         selectAllWords,
@@ -90,10 +89,10 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
         searchTerm,
         languageCode,
         setAvailableWords,
-        setOffset: (value: React.SetStateAction<number>) => {
+        setOffset: (_value: React.SetStateAction<number>) => {
             // Этот setState будет использоваться внутри useAiSearch
         },
-        setHasMore: (value: React.SetStateAction<boolean>) => {
+        setHasMore: (_value: React.SetStateAction<boolean>) => {
             // Этот setState будет использоваться внутри useAiSearch
         },
         addWord,

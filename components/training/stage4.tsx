@@ -77,7 +77,7 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
     const [userWord, setUserWord] = useState<string[]>([]);
     const [isComplete, setIsComplete] = useState(false);
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-    const [stats, setStats] = useState({ correct: 0, total: 0 });
+    const [_, setStats] = useState({ correct: 0, total: 0 });
     const [showSettingsModal, setShowSettingsModal] = useState(false);
     const [isFirstCard, setIsFirstCard] = useState(true);
     const [exerciseResults, setExerciseResults] = useState<boolean[]>([]);
@@ -90,7 +90,8 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
     >(null);
     const [showResultPopup, setShowResultPopup] = useState(false);
     const [isRetryMode, setIsRetryMode] = useState(false);
-    const [hasCompletedFirstRound, setHasCompletedFirstRound] = useState(false);
+    const [_hasCompletedFirstRound, setHasCompletedFirstRound] =
+        useState(false);
 
     const currentWord = words[currentIndex];
 
@@ -326,22 +327,6 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
 
         // Завершаем слово как неправильное
         await completeWord(false);
-    };
-
-    const handleCheck = async () => {
-        const constructed = userWord.join('');
-        const correctWord =
-            currentWord.baseWord?.word || currentWord.customWord || '';
-        const correct = constructed.toLowerCase() === correctWord.toLowerCase();
-
-        await completeWord(correct);
-    };
-
-    const handleReset = () => {
-        initializeLetters();
-        setUserWord([]);
-        setIsComplete(false);
-        setIsCorrect(null);
     };
 
     // Функция для поиска следующей ошибки (с текущими результатами)

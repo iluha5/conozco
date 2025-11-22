@@ -81,7 +81,7 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
     const [selectedTranslation, setSelectedTranslation] = useState<
         string | null
     >(null);
-    const [stats, setStats] = useState({ correct: 0, total: 0 });
+    const [_stats, setStats] = useState({ correct: 0, total: 0 });
     const [errorForeign, setErrorForeign] = useState<string | null>(null);
     const [errorTranslation, setErrorTranslation] = useState<string | null>(
         null,
@@ -93,7 +93,8 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
         (boolean | null)[]
     >([]);
     const [isRetryMode, setIsRetryMode] = useState(false);
-    const [hasCompletedFirstRound, setHasCompletedFirstRound] = useState(false);
+    const [_hasCompletedFirstRound, setHasCompletedFirstRound] =
+        useState(false);
     const [refreshKey, setRefreshKey] = useState(0);
 
     const wordsPerBatch = 10;
@@ -522,7 +523,7 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
                                     if (!isMatchedA && isMatchedB) return 1;
                                     return 0;
                                 })
-                                .map((translation, index) => {
+                                .map(translation => {
                                     const pair = pairs.find(
                                         p => p.translation === translation,
                                     );

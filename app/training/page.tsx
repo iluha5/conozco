@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/header';
 import { TrainingHeader } from '@/components/training/training-header';
@@ -65,7 +65,7 @@ export default function TrainingPage() {
     );
 
     // Инициализация или восстановление тренировки
-    const { isInitialized } = useTrainingInitialization({
+    useTrainingInitialization({
         settingsLoaded,
         selectionLoaded,
         allWords: state.words,

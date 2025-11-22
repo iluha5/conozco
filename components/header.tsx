@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, Menu, X } from 'lucide-react';
+import { LogOut, User, Menu } from 'lucide-react';
 import { MobileSidebar } from './mobile-sidebar';
 
 function HeaderSkeleton() {

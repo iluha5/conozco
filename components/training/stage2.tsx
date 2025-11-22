@@ -24,7 +24,7 @@ export function Stage2Training({ words, onComplete }: Stage2Props) {
     const [options, setOptions] = useState<string[]>([]);
     const [selectedOption, setSelectedOption] = useState<string | null>(null);
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-    const [stats, setStats] = useState({ correct: 0, total: 0 });
+    const [_, setStats] = useState({ correct: 0, total: 0 });
 
     const currentWord = words[currentIndex];
 
@@ -37,7 +37,6 @@ export function Stage2Training({ words, onComplete }: Stage2Props) {
     const { recordResult } = useRecordResult();
     const {
         isRetryMode,
-        hasCompletedFirstRound,
         findNextErrorWithResults,
         getErrorIndices,
         setIsRetryMode,

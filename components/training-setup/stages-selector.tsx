@@ -6,8 +6,8 @@ interface StagesSelectorProps {
     enabledStages: Set<number>;
     showStagesSettings: boolean;
     onToggleVisibility: () => void;
-    onToggleStage: (stage: number) => void;
-    onOpenStageSettings: (stage: 1 | 4 | 5) => void;
+    onToggleStage: (_stage: number) => void;
+    onOpenStageSettings: (_stage: 1 | 4 | 5) => void;
 }
 
 export const StagesSelector = ({

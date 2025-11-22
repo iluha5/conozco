@@ -17,14 +17,14 @@ type WordsListProps = {
     searching: boolean;
     loadingMore: boolean;
     hasMore: boolean;
-    isWordSelected: (id: string) => boolean;
-    onToggleWord: (id: string) => void;
+    isWordSelected: (_id: string) => boolean;
+    onToggleWord: (_id: string) => void;
     onSelectAll: () => void;
     onDeselectAll: () => void;
     onLoadMore: () => void;
-    onOpenTranslationDialog: (word: BaseWord) => void;
+    onOpenTranslationDialog: (_word: BaseWord) => void;
     translationDialogOpen: { [key: string]: boolean };
-    onTranslationDialogClose: (wordId: string, open: boolean) => void;
+    onTranslationDialogClose: (_wordId: string, _open: boolean) => void;
     selectedWordForTranslation: any;
     partsOfSpeech: PartOfSpeech[];
     onTranslationSave: () => Promise<void>;

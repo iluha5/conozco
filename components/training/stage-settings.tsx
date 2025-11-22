@@ -14,7 +14,7 @@ type Stage1SettingsModalProps = {
     isOpen: boolean;
     onClose: () => void;
     settings: Stage1Settings;
-    onChange: (settings: Stage1Settings) => void;
+    onChange: (_settings: Stage1Settings) => void;
 };
 
 export function Stage1SettingsModal({
@@ -79,7 +79,7 @@ type Stage4SettingsModalProps = {
     isOpen: boolean;
     onClose: () => void;
     settings: Stage4Settings;
-    onChange: (settings: Stage4Settings) => void;
+    onChange: (_settings: Stage4Settings) => void;
 };
 
 export function Stage4SettingsModal({
@@ -170,7 +170,7 @@ type Stage5SettingsModalProps = {
     isOpen: boolean;
     onClose: () => void;
     settings: Stage5Settings;
-    onChange: (settings: Stage5Settings) => void;
+    onChange: (_settings: Stage5Settings) => void;
 };
 
 export function Stage5SettingsModal({
