@@ -1,9 +1,9 @@
-import { Stage1Training } from './stage1';
-import { Stage2Training } from './stage2';
-import { Stage3Training } from './stage3';
-import { Stage4Training } from './stage4';
-import { Stage5Training } from './stage5';
-import { Stage6Training } from './stage6';
+import { Stage1Training } from './Stage1Training';
+import { Stage2Training } from './Stage2Training';
+import { Stage3Training } from './Stage3Training';
+import { Stage4Training } from './Stage4Training';
+import { Stage5Training } from './Stage5Training';
+import { Stage6Training } from './Stage6Training';
 import { Word, TrainingStage } from '@/types/training.types';
 
 interface StageRendererProps {

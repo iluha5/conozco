@@ -20,10 +20,10 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
-import { Header } from '@/components/header';
+import { Header } from '@/components/Header';
 import { Brain, HelpCircle, Languages } from 'lucide-react';
-import { ContinueTrainingCard } from '@/components/training/continue-training-card';
-import { NewTrainingConfirmationDialog } from '@/components/training/new-training-confirmation-dialog';
+import { ContinueTrainingCard } from '@/components/training/ContinueTrainingCard';
+import { NewTrainingConfirmationDialog } from '@/components/training/NewTrainingConfirmationDialog';
 import { useTrainingStorage } from '@/hooks/training';
 
 export default function HomePage() {

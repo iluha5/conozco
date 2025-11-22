@@ -1,4 +1,4 @@
-import { StageCard } from './stage-card';
+import { StageCard } from './StageCard';
 import { TrainingStage } from '@/types/training.types';
 
 interface StageSelectorProps {

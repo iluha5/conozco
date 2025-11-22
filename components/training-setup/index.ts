@@ -1,3 +1,3 @@
-export { WordsSelector } from './words-selector';
-export { StagesSelector } from './stages-selector';
-export { StageCard } from './stage-card';
+export { WordsSelector } from './WordsSelector';
+export { StagesSelector } from './StagesSelector';
+export { StageCard } from './StageCard';

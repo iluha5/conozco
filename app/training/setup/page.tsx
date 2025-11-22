@@ -5,14 +5,12 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Header } from '@/components/header';
+import { Header } from '@/components/Header';
 import { ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/shared';
-import {
-    Stage1SettingsModal,
-    Stage4SettingsModal,
-    Stage5SettingsModal,
-} from '@/components/training/stage-settings';
+import { Stage1SettingsModal } from '@/components/training/Stage1SettingsModal';
+import { Stage4SettingsModal } from '@/components/training/Stage4SettingsModal';
+import { Stage5SettingsModal } from '@/components/training/Stage5SettingsModal';
 import {
     useTrainingSettings,
     useTrainingSelection,

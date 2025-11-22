@@ -21,8 +21,8 @@ import {
     useWordManagement,
     useAiSearch,
 } from '@/hooks/add-word-dialog';
-import { AddWordDialogFilters } from './filters';
-import { WordsList } from './words-list';
+import { AddWordDialogFilters } from './AddWordDialogFilters';
+import { WordsList } from './WordsList';
 import type { BaseWord } from '@/types/add-word-dialog.types';
 
 type AddWordDialogProps = {

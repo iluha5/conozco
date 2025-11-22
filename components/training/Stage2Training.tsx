@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, XCircle } from 'lucide-react';
-import { ProgressDots } from './progress-dots';
+import { ProgressDots } from './ProgressDots';
 import {
     useFadeAnimation,
     useRecordResult,

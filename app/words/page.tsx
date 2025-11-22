@@ -11,10 +11,10 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Header } from '@/components/header';
+import { Header } from '@/components/Header';
 import { ArrowLeft } from 'lucide-react';
-import { AddWordDialog } from '@/components/add-word-dialog';
-import { WordsList } from '@/components/words-list';
+import { AddWordDialog } from '@/components/AddWordDialog';
+import { WordsList } from '@/components/WordsList';
 import { useTrainingSelection } from '@/hooks/shared';
 import { useWordsData, useWordsFilter, useWordsStats } from '@/hooks/words';
 import { WordsFilter } from '@/types/words.types';

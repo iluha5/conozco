@@ -3,19 +3,63 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, XCircle, Volume2 } from 'lucide-react';
-import { ProgressDots } from './progress-dots';
-import {
-    useFadeAnimation,
-    useRecordResult,
-    useExerciseResults,
-    useRetryMode,
-    useSpeech,
-} from '@/hooks/training';
-import { getWordText } from '@/lib/training-utils';
-import type { Word } from '@/types/training.types';
+import { CheckCircle, XCircle, Settings, ChevronRight } from 'lucide-react';
+import { ProgressDots } from './ProgressDots';
+import { Stage4SettingsModal } from './Stage4SettingsModal';
+import { useStage4Settings } from '@/hooks/shared/use-training-settings';
+import { useTrainingStorage } from '@/hooks/training';
 
-type Stage6Props = {
+type Language = {
+    id: string;
+    code: string;
+    name: string;
+};
+
+type Word = {
+    id: string;
+    userId: string;
+    baseWordId?: string;
+    customWord?: string;
+    languageId: string;
+    language: Language;
+    status: 'NOT_LEARNED' | 'LEARNED';
+    createdAt: string;
+    updatedAt: string;
+    baseWord?: {
+        id: string;
+        word: string;
+        partOfSpeech: {
+            id: string;
+            name: string;
+            displayName: string;
+        };
+        languageId: string;
+        translations: Array<{
+            translation: string;
+            priority: number;
+        }>;
+        examples: Array<{
+            example: string;
+            translation: string;
+            pronoun: {
+                pronoun: string;
+            };
+            sentenceType?: {
+                id: number;
+                code: string;
+                displayName: string;
+                isNegative: boolean;
+                isQuestion: boolean;
+            };
+        }>;
+    };
+    customTranslations?: Array<{
+        id: number;
+        translation: string;
+    }>;
+};
+
+type Stage4Props = {
     words: Word[];
     onComplete: () => void;
 };
@@ -25,88 +69,109 @@ type LetterState = {
     selected: boolean;
 };
 
-export function Stage6Training({ words, onComplete }: Stage6Props) {
+export function Stage4Training({ words, onComplete }: Stage4Props) {
+    const storage = useTrainingStorage();
+    const { settings, updateSettings } = useStage4Settings();
     const [currentIndex, setCurrentIndex] = useState(0);
     const [letters, setLetters] = useState<LetterState[]>([]);
     const [userWord, setUserWord] = useState<string[]>([]);
     const [isComplete, setIsComplete] = useState(false);
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-    const [_stats, setStats] = useState({ correct: 0, total: 0 });
+    const [_, setStats] = useState({ correct: 0, total: 0 });
+    const [showSettingsModal, setShowSettingsModal] = useState(false);
+    const [isFirstCard, setIsFirstCard] = useState(true);
+    const [exerciseResults, setExerciseResults] = useState<boolean[]>([]);
+    const [totalErrors, setTotalErrors] = useState(0);
     const [flashingLetter, setFlashingLetter] = useState<number | null>(null);
+    const [fadeIn, setFadeIn] = useState(false);
+    const [animationKey, setAnimationKey] = useState(0);
     const [backgroundFlash, setBackgroundFlash] = useState<
         'green' | 'red' | null
     >(null);
     const [showResultPopup, setShowResultPopup] = useState(false);
-    const [totalErrors, setTotalErrors] = useState(0);
+    const [isRetryMode, setIsRetryMode] = useState(false);
+    const [_hasCompletedFirstRound, setHasCompletedFirstRound] =
+        useState(false);
 
-    // Filter only base words (exclude custom words)
-    const baseWords = words.filter(word => word.baseWordId && !word.customWord);
-    const currentWord = baseWords[currentIndex];
+    const currentWord = words[currentIndex];
 
-    // Используем новые хуки
-    const { fadeIn, animationKey, triggerAnimation } = useFadeAnimation();
-    const { exerciseResults, updateResult, setExerciseResults } =
-        useExerciseResults({
-            totalExercises: baseWords.length,
-        });
-    const { recordResult } = useRecordResult();
-    const {
-        isRetryMode,
-        findNextErrorWithResults,
-        getErrorIndices,
-        setIsRetryMode,
-        setHasCompletedFirstRound,
-    } = useRetryMode({
-        totalExercises: baseWords.length,
-    });
-    const {
-        speak,
-        isPlaying,
-        isSupported: speechSupported,
-    } = useSpeech({
-        languageCode: currentWord?.language.code || 'en',
-    });
+    // Обработчик изменения настроек
+    const handleSettingsChange = (newSettings: typeof settings) => {
+        updateSettings(newSettings);
+        setShowSettingsModal(false);
+        // Сбрасываем прогресс при изменении сложности
+        setCurrentIndex(0);
+        setStats({ correct: 0, total: 0 });
+        setIsFirstCard(true);
+    };
+
+    // Инициализируем массив результатов упражнений
+    useEffect(() => {
+        setExerciseResults(new Array(words.length).fill(null));
+    }, [words.length]);
+
+    // Запускаем анимацию при каждом монтировании компонента (при новом слове)
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setFadeIn(true);
+        }, 50);
+        return () => clearTimeout(timer);
+    }, [animationKey]);
 
     const initializeLetters = useCallback(() => {
-        const word = getWordText(currentWord);
+        const word = currentWord.baseWord?.word || currentWord.customWord || '';
         const wordLetters = word.split('');
-        const shuffled = [...wordLetters].sort(() => Math.random() - 0.5);
 
-        // Add 3 random letters
-        const alphabet = 'abcdefghijklmnopqrstuvwxyz';
-        const randomLetters = [];
-        for (let i = 0; i < 3; i++) {
-            const randomLetter =
-                alphabet[Math.floor(Math.random() * alphabet.length)];
-            randomLetters.push(randomLetter);
+        // Получаем дополнительные буквы в зависимости от сложности
+        let extraLetters: string[] = [];
+        if (settings.difficulty === 'medium') {
+            extraLetters = getRandomLetters(3, wordLetters);
+        } else if (settings.difficulty === 'hard') {
+            extraLetters = getRandomLetters(6, wordLetters);
         }
 
-        const allLetters = [...shuffled, ...randomLetters];
-        const finalShuffled = allLetters.sort(() => Math.random() - 0.5);
-
-        const letterStates: LetterState[] = finalShuffled.map(letter => ({
+        const allLetters = [...wordLetters, ...extraLetters];
+        const shuffled = allLetters.sort(() => Math.random() - 0.5);
+        const letterStates: LetterState[] = shuffled.map(letter => ({
             letter,
             selected: false,
         }));
         setLetters(letterStates);
-    }, [currentWord]);
+    }, [currentWord, settings.difficulty]);
 
-    // Инициализируем буквы при смене слова
     useEffect(() => {
-        triggerAnimation();
-        initializeLetters();
-        setUserWord([]);
-        setIsComplete(false);
-        setIsCorrect(null);
-        setBackgroundFlash(null);
-        setShowResultPopup(false);
-        setTotalErrors(0);
-        setFlashingLetter(null);
-    }, [currentIndex, initializeLetters, triggerAnimation]);
+        if (currentWord) {
+            // Генерируем новый ключ для принудительного перемонтирования компонента
+            setAnimationKey(prev => prev + 1);
+            setFadeIn(false);
+
+            initializeLetters();
+            setUserWord([]);
+            setIsComplete(false);
+            setIsCorrect(null);
+            setTotalErrors(0);
+            setFlashingLetter(null);
+            setBackgroundFlash(null);
+            setShowResultPopup(false);
+        }
+    }, [currentIndex, settings.difficulty, currentWord, initializeLetters]);
+
+    const getRandomLetters = (
+        count: number,
+        excludeLetters: string[],
+    ): string[] => {
+        const alphabet = 'abcdefghijklmnopqrstuvwxyz';
+        const availableLetters = alphabet
+            .split('')
+            .filter(letter => !excludeLetters.includes(letter));
+        const shuffled = [...availableLetters].sort(() => Math.random() - 0.5);
+        return shuffled.slice(0, count);
+    };
 
     const handleLetterClick = async (index: number) => {
         const letter = letters[index].letter;
-        const correctWord = getWordText(currentWord);
+        const correctWord =
+            currentWord.baseWord?.word || currentWord.customWord || '';
         const nextExpectedLetter = correctWord[userWord.length];
 
         // Если буква правильная
@@ -117,6 +182,7 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
                     i === index ? { ...item, selected: true } : item,
                 ),
             );
+            // Не сбрасываем счетчик ошибок - считаем общее количество ошибок за слово
 
             // Если слово завершено
             if (userWord.length + 1 === correctWord.length) {
@@ -160,10 +226,32 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
         setShowResultPopup(true);
 
         // Обновляем результаты упражнения
-        updateResult(currentIndex, correct);
+        setExerciseResults(prev => {
+            const newResults = [...prev];
+            newResults[currentIndex] = correct;
+            return newResults;
+        });
 
-        // Записываем результат (API + localStorage)
-        await recordResult(6, currentWord.id, correct);
+        // Записываем попытку в localStorage
+        storage.recordAttempt(4, currentWord.id, correct);
+
+        // Записываем результат в БД
+        await fetch('/api/training', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                wordId: currentWord.id,
+                stage: 4,
+                isCorrect: correct,
+            }),
+        });
+
+        // После первого ответа скрываем кнопку настроек
+        if (isFirstCard) {
+            setIsFirstCard(false);
+        }
 
         setStats(prev => ({
             correct: prev.correct + (correct ? 1 : 0),
@@ -205,7 +293,8 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
                         nextErrorIndex === currentIndex
                     ) {
                         // Это единственная ошибка или других нет - остаемся на ней, но перезагружаем карточку
-                        triggerAnimation();
+                        setAnimationKey(prev => prev + 1);
+                        setFadeIn(false);
                         initializeLetters();
                         setUserWord([]);
                         setIsComplete(false);
@@ -214,8 +303,6 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
                         setShowResultPopup(false);
                         setTotalErrors(0);
                         setFlashingLetter(null);
-                        // Автоматически проигрываем слово снова
-                        setTimeout(() => speak(getWordText(currentWord)), 500);
                     } else {
                         setCurrentIndex(nextErrorIndex);
                     }
@@ -228,7 +315,8 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
     };
 
     const autoCompleteWord = async () => {
-        const correctWord = getWordText(currentWord);
+        const correctWord =
+            currentWord.baseWord?.word || currentWord.customWord || '';
         const correctLetters = correctWord.split('');
 
         // Заполняем оставшиеся буквы
@@ -241,23 +329,42 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
         await completeWord(false);
     };
 
+    // Функция для поиска следующей ошибки (с текущими результатами)
+    const findNextErrorWithResults = (
+        startIndex: number,
+        results: (boolean | null)[],
+    ) => {
+        // Ищем следующую ошибку после текущего индекса
+        for (let i = startIndex + 1; i < results.length; i++) {
+            if (results[i] === false) {
+                return i;
+            }
+        }
+        // Если не нашли, ищем с начала до текущего индекса
+        for (let i = 0; i <= startIndex; i++) {
+            if (results[i] === false) {
+                return i;
+            }
+        }
+        return -1; // Ошибок больше нет
+    };
+
     // Функция для поиска следующей ошибки (использует текущее состояние)
-    const findNextError = useCallback(
-        (startIndex: number) => {
-            return findNextErrorWithResults(startIndex, exerciseResults);
-        },
-        [findNextErrorWithResults, exerciseResults],
-    );
+    const findNextError = (startIndex: number) => {
+        return findNextErrorWithResults(startIndex, exerciseResults);
+    };
 
     const handleNext = () => {
-        if (currentIndex < baseWords.length - 1) {
+        if (currentIndex < words.length - 1) {
             setCurrentIndex(currentIndex + 1);
         } else {
             // Завершили все слова первый раз
             setHasCompletedFirstRound(true);
 
             // Проверяем, есть ли ошибки
-            const errorIndices = getErrorIndices(exerciseResults);
+            const errorIndices = exerciseResults
+                .map((result, idx) => (result === false ? idx : -1))
+                .filter(idx => idx !== -1);
 
             if (errorIndices.length > 0) {
                 // Есть ошибки - переходим в режим исправления
@@ -275,16 +382,7 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
     };
 
     if (!currentWord) {
-        return (
-            <Card>
-                <CardContent className="pt-6">
-                    <p className="text-center text-gray-600">
-                        Нет основных слов для тренировки. Добавьте слова из
-                        словаря!
-                    </p>
-                </CardContent>
-            </Card>
-        );
+        return null;
     }
 
     return (
@@ -300,12 +398,25 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
                 }`}
             >
                 <CardHeader>
-                    <CardTitle className="text-center text-gray-600">
-                        Составление слова по голосу
-                    </CardTitle>
+                    <div className="flex items-center justify-between">
+                        <CardTitle className="text-gray-600">
+                            Составление слова по буквам
+                        </CardTitle>
+                        {isFirstCard && (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setShowSettingsModal(true)}
+                                className="p-2 h-auto"
+                                title="Настройки тренировки"
+                            >
+                                <Settings className="w-4 h-4" />
+                            </Button>
+                        )}
+                    </div>
                     <div className="!mt-3">
                         <ProgressDots
-                            totalExercises={baseWords.length}
+                            totalExercises={words.length}
                             completedExercises={
                                 exerciseResults.filter(r => r !== null).length
                             }
@@ -316,24 +427,16 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
                 </CardHeader>
                 <CardContent className="space-y-6">
                     <div className="text-center mb-6">
-                        <p className="text-gray-600 mb-4">
-                            Послушайте слово и составьте его из букв
+                        <p className="text-4xl font-bold text-purple-600 mb-2 font-ubuntu">
+                            {currentWord.customTranslations &&
+                            currentWord.customTranslations.length > 0
+                                ? currentWord.customTranslations[0].translation
+                                : currentWord.baseWord?.translations &&
+                                    currentWord.baseWord.translations.length > 0
+                                  ? currentWord.baseWord.translations[0]
+                                        .translation
+                                  : 'Нет перевода'}
                         </p>
-
-                        <Button
-                            onClick={() => speak(getWordText(currentWord))}
-                            disabled={isPlaying || !speechSupported}
-                            variant="outline"
-                            size="sm"
-                            className="gap-2 mt-2"
-                        >
-                            <Volume2
-                                className={`w-4 h-4 ${isPlaying ? 'animate-pulse' : ''}`}
-                            />
-                            {isPlaying
-                                ? 'Проигрывается...'
-                                : 'Прослушать слово'}
-                        </Button>
                     </div>
 
                     {/* Собранное слово */}
@@ -412,8 +515,29 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
                             </div>
                         ))}
                     </div>
+
+                    {/* Кнопка для перехода при неправильном ответе */}
+                    {isComplete && !isCorrect && (
+                        <div className="flex justify-center pt-4">
+                            <Button
+                                size="lg"
+                                onClick={handleNext}
+                                className="gap-2"
+                            >
+                                Следующее слово
+                                <ChevronRight className="w-5 h-5" />
+                            </Button>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
+
+            <Stage4SettingsModal
+                isOpen={showSettingsModal}
+                onClose={() => setShowSettingsModal(false)}
+                settings={settings}
+                onChange={handleSettingsChange}
+            />
         </div>
     );
 }

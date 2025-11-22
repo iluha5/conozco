@@ -2,14 +2,14 @@
 
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { Header } from '@/components/header';
-import { TrainingHeader } from '@/components/training/training-header';
-import { ExitConfirmationDialog } from '@/components/training/exit-confirmation-dialog';
-import { StageSelector } from '@/components/training/stage-selector';
-import { StageRenderer } from '@/components/training/stage-renderer';
-import { TrainingEmptyState } from '@/components/training/training-empty-state';
-import { TrainingResults } from '@/components/training/training-results';
-import { TrainingLoading } from '@/components/training/training-loading';
+import { Header } from '@/components/Header';
+import { TrainingHeader } from '@/components/training/TrainingHeader';
+import { ExitConfirmationDialog } from '@/components/training/ExitConfirmationDialog';
+import { StageSelector } from '@/components/training/StageSelector';
+import { StageRenderer } from '@/components/training/StageRenderer';
+import { TrainingEmptyState } from '@/components/training/TrainingEmptyState';
+import { TrainingResults } from '@/components/training/TrainingResults';
+import { TrainingLoading } from '@/components/training/TrainingLoading';
 import {
     useTrainingState,
     useTrainingLogic,

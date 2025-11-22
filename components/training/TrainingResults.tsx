@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { WordsList } from '@/components/words-list';
+import { WordsList } from '@/components/WordsList';
 import { ArrowLeft } from 'lucide-react';
 import { Word } from '@/types/training.types';
 

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Inter, Ubuntu } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
-import { AuthProvider } from '@/components/providers/session-provider';
+import { AuthProvider } from '@/components/providers/SessionProvider';
 import { TrainingWordsProvider } from '@/contexts/training-words-context';
 
 const inter = Inter({ subsets: ['latin', 'cyrillic'] });

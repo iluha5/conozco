@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Trash2, CheckCircle, CheckCircle2, X } from 'lucide-react';
 import { useToast, usePartsOfSpeech } from '@/hooks/shared';
-import { TranslationSelectorDialog } from '@/components/translation-selector-dialog';
+import { TranslationSelectorDialog } from '@/components/TranslationSelectorDialog';
 import {
     getLanguageFlag,
     getPartOfSpeechAbbrev,

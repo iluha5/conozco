@@ -6,7 +6,7 @@
 
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { TranslationSelectorDialog } from '@/components/translation-selector-dialog';
+import { TranslationSelectorDialog } from '@/components/TranslationSelectorDialog';
 import {
     getLanguageFlag,
     getPartOfSpeechAbbrev,

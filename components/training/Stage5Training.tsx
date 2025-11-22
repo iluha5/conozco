@@ -4,8 +4,8 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChevronRight, CheckCircle, XCircle, Settings } from 'lucide-react';
-import { ProgressDots } from './progress-dots';
-import { Stage5SettingsModal } from './stage-settings';
+import { ProgressDots } from './ProgressDots';
+import { Stage5SettingsModal } from './Stage5SettingsModal';
 import { useStage5Settings } from '@/hooks/shared/use-training-settings';
 import { useTrainingStorage } from '@/hooks/training';
 

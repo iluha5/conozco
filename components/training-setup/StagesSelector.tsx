@@ -1,6 +1,6 @@
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { TRAINING_STAGES } from '@/config/training-stages';
-import { StageCard } from './stage-card';
+import { StageCard } from './StageCard';
 
 interface StagesSelectorProps {
     enabledStages: Set<number>;

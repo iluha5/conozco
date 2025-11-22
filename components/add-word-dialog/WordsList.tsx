@@ -5,10 +5,10 @@
 'use client';
 
 import { Loader2 } from 'lucide-react';
-import { WordCard } from './word-card';
-import { WordsListSkeleton } from './words-list-skeleton';
-import { WordsListEmpty } from './words-list-empty';
-import { BulkActions } from './bulk-actions';
+import { WordCard } from './WordCard';
+import { WordsListSkeleton } from './WordsListSkeleton';
+import { WordsListEmpty } from './WordsListEmpty';
+import { BulkActions } from './BulkActions';
 import type { BaseWord } from '@/types/add-word-dialog.types';
 import type { PartOfSpeech } from '@/hooks/shared';
 

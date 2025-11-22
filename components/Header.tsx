@@ -5,7 +5,7 @@ import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { LogOut, User, Menu } from 'lucide-react';
-import { MobileSidebar } from './mobile-sidebar';
+import { MobileSidebar } from './MobileSidebar';
 
 function HeaderSkeleton() {
     return (
