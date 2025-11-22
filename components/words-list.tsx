@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Trash2, CheckCircle, CheckCircle2, X } from 'lucide-react';
-import { useToast } from '@/hooks/shared';
+import { useToast, usePartsOfSpeech } from '@/hooks/shared';
 import { TranslationSelectorDialog } from '@/components/translation-selector-dialog';
 import { getLanguageFlag, getPartOfSpeechAbbrev } from '@/lib/word-utils';
 
@@ -64,12 +64,6 @@ type WordsListProps = {
     emptyMessage?: string;
 };
 
-type PartOfSpeech = {
-    id: number;
-    name: string;
-    displayName: string;
-};
-
 export function WordsList({
     words,
     onWordsChange,
@@ -83,9 +77,9 @@ export function WordsList({
     }>({});
     const [selectedWordForTranslation, setSelectedWordForTranslation] =
         useState<Word | null>(null);
-    const [partsOfSpeech, setPartsOfSpeech] = useState<PartOfSpeech[]>([]);
     const [isClient, setIsClient] = useState(false);
     const { toast } = useToast();
+    const { partsOfSpeech } = usePartsOfSpeech('ru');
 
     useEffect(() => {
         setIsClient(true);
@@ -95,28 +89,6 @@ export function WordsList({
         // Сбрасываем выделение при изменении списка слов
         setSelectedWords([]);
     }, [words]);
-
-    // Загружаем части речи для русского языка
-    useEffect(() => {
-        const fetchPartsOfSpeech = async () => {
-            try {
-                const response = await fetch(
-                    '/api/parts-of-speech?languageCode=ru',
-                );
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log('Parts of speech loaded:', data);
-                    setPartsOfSpeech(data);
-                } else {
-                    const errorData = await response.json();
-                    console.error('Error fetching parts of speech:', errorData);
-                }
-            } catch (error) {
-                console.error('Error fetching parts of speech:', error);
-            }
-        };
-        fetchPartsOfSpeech();
-    }, []);
 
     const handleDeleteWord = async (id: string | number) => {
         if (readOnly) return;
