@@ -2,6 +2,34 @@
  * Утилиты для работы со словами
  */
 
+type Translation = {
+    translation: string;
+    priority?: number;
+};
+
+type CustomTranslation = {
+    id: number;
+    translation: string;
+    [key: string]: any; // Остальные поля не важны для этой функции
+};
+
+/**
+ * Получить текущий перевод слова
+ * Приоритет: кастомный перевод -> базовый перевод
+ */
+export function getCurrentTranslation(
+    customTranslations?: CustomTranslation[],
+    baseTranslations?: Translation[],
+): string {
+    if (customTranslations && customTranslations.length > 0) {
+        return customTranslations[0].translation;
+    }
+    if (baseTranslations && baseTranslations.length > 0) {
+        return baseTranslations[0].translation;
+    }
+    return 'Нет перевода';
+}
+
 /**
  * Получить флаг языка по коду
  */
