@@ -164,6 +164,20 @@ model BaseWord {
   @@index([sourceId])
 }
 
+// Изображения для переводов слов
+model WordImage {
+  id        Int      @id @default(autoincrement())
+  url       String // URL изображения
+  alt       String? // Альтернативный текст для изображения
+  source    String? // Источник изображения (например, 'unsplash', 'custom', etc.)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  wordTranslations WordTranslation[]
+
+  @@index([url])
+}
+
 // Переводы слов (до 3 самых популярных на каждый язык)
 model WordTranslation {
   id          Int    @id @default(autoincrement())
@@ -171,14 +185,17 @@ model WordTranslation {
   languageId  Int // ID языка перевода
   translation String // Перевод
   priority    Int    @default(1) // Приоритет перевода (1-3)
+  imageId     Int? // ID изображения для перевода (nullable)
 
-  baseWord       BaseWord @relation(fields: [baseWordId], references: [id], onDelete: Cascade)
-  language       Language @relation(fields: [languageId], references: [id])
-  selectedByWord Word[]   @relation("SelectedTranslation")
+  baseWord       BaseWord   @relation(fields: [baseWordId], references: [id], onDelete: Cascade)
+  language       Language   @relation(fields: [languageId], references: [id])
+  image          WordImage? @relation(fields: [imageId], references: [id], onDelete: SetNull)
+  selectedByWord Word[]     @relation("SelectedTranslation")
 
   @@unique([baseWordId, languageId, priority])
   @@index([baseWordId])
   @@index([languageId])
+  @@index([imageId])
 }
 
 // Местоимения
