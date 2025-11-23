@@ -102,7 +102,22 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
         setShowResultPopup(false);
         setTotalErrors(0);
         setFlashingLetter(null);
-    }, [currentIndex, initializeLetters, triggerAnimation]);
+
+        // Автоматически проговариваем слово при открытии карточки
+        if (currentWord && speechSupported) {
+            const timer = setTimeout(() => {
+                speak(getWordText(currentWord));
+            }, 500); // Небольшая задержка для плавности появления карточки
+            return () => clearTimeout(timer);
+        }
+    }, [
+        currentIndex,
+        initializeLetters,
+        triggerAnimation,
+        currentWord,
+        speak,
+        speechSupported,
+    ]);
 
     const handleLetterClick = async (index: number) => {
         const letter = letters[index].letter;
