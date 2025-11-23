@@ -331,16 +331,12 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
                 </CardHeader>
                 <CardContent className="space-y-6">
                     <div className="text-center mb-6">
-                        <p className="text-gray-600 mb-4">
-                            Послушайте слово и составьте его из букв
-                        </p>
-
                         <Button
                             onClick={() => speak(getWordText(currentWord))}
                             disabled={isPlaying || !speechSupported}
                             variant="outline"
                             size="sm"
-                            className="gap-2 mt-2"
+                            className="gap-2"
                         >
                             <Volume2
                                 className={`w-4 h-4 ${isPlaying ? 'animate-pulse' : ''}`}
