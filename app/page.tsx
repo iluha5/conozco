@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -31,8 +30,12 @@ export default function HomePage() {
     const { savedState, hasUnfinishedTraining, clearProgress } =
         useTrainingStorage();
     const [showNewTrainingDialog, setShowNewTrainingDialog] = useState(false);
+    const [isContinueLoading, setIsContinueLoading] = useState(false);
+    const [isStartLoading, setIsStartLoading] = useState(false);
+    const [isWordsLoading, setIsWordsLoading] = useState(false);
 
     const handleContinueTraining = () => {
+        setIsContinueLoading(true);
         router.push('/training');
     };
 
@@ -40,19 +43,27 @@ export default function HomePage() {
         if (hasUnfinishedTraining) {
             setShowNewTrainingDialog(true);
         } else {
+            setIsStartLoading(true);
             router.push('/training/setup');
         }
     };
 
     const handleContinueExisting = () => {
         setShowNewTrainingDialog(false);
+        setIsContinueLoading(true);
         router.push('/training');
     };
 
     const handleStartNew = () => {
         clearProgress();
         setShowNewTrainingDialog(false);
+        setIsStartLoading(true);
         router.push('/training/setup');
+    };
+
+    const handleGoToWords = () => {
+        setIsWordsLoading(true);
+        router.push('/words');
     };
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -72,6 +83,7 @@ export default function HomePage() {
                         <ContinueTrainingCard
                             savedState={savedState}
                             onContinue={handleContinueTraining}
+                            loading={isContinueLoading}
                         />
                     </div>
                 )}
@@ -218,6 +230,7 @@ export default function HomePage() {
                                 size="lg"
                                 variant="secondary"
                                 onClick={handleStartTraining}
+                                loading={isStartLoading}
                             >
                                 Начать тренировку
                             </Button>
@@ -229,6 +242,8 @@ export default function HomePage() {
                         onOpenChange={setShowNewTrainingDialog}
                         onContinue={handleContinueExisting}
                         onStartNew={handleStartNew}
+                        continueLoading={isContinueLoading}
+                        startNewLoading={isStartLoading}
                     />
 
                     <Card className="hover:shadow-lg transition-shadow flex flex-col justify-between">
@@ -243,11 +258,14 @@ export default function HomePage() {
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <Link href="/words">
-                                <Button className="w-full" size="lg">
-                                    Перейти к словам
-                                </Button>
-                            </Link>
+                            <Button
+                                className="w-full"
+                                size="lg"
+                                onClick={handleGoToWords}
+                                loading={isWordsLoading}
+                            >
+                                Перейти к словам
+                            </Button>
                         </CardContent>
                     </Card>
                 </div>

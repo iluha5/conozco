@@ -6,11 +6,13 @@ import { SavedTrainingState } from '@/types/training.types';
 interface ContinueTrainingCardProps {
     savedState: SavedTrainingState;
     onContinue: () => void;
+    loading?: boolean;
 }
 
 export function ContinueTrainingCard({
     savedState,
     onContinue,
+    loading = false,
 }: ContinueTrainingCardProps) {
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
@@ -76,8 +78,9 @@ export function ContinueTrainingCard({
                     <Button
                         onClick={onContinue}
                         className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                        loading={loading}
                     >
-                        <PlayCircle className="w-4 h-4 mr-2" />
+                        {!loading && <PlayCircle className="w-4 h-4 mr-2" />}
                         Продолжить тренировку
                     </Button>
                 </div>

@@ -16,6 +16,8 @@ interface NewTrainingConfirmationDialogProps {
     onOpenChange: (_open: boolean) => void;
     onContinue: () => void;
     onStartNew: () => void;
+    continueLoading?: boolean;
+    startNewLoading?: boolean;
 }
 
 export function NewTrainingConfirmationDialog({
@@ -23,6 +25,8 @@ export function NewTrainingConfirmationDialog({
     onOpenChange,
     onContinue,
     onStartNew,
+    continueLoading = false,
+    startNewLoading = false,
 }: NewTrainingConfirmationDialogProps) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -45,6 +49,7 @@ export function NewTrainingConfirmationDialog({
                         variant="outline"
                         onClick={onContinue}
                         className="flex-1"
+                        loading={continueLoading}
                     >
                         Продолжить существующую
                     </Button>
@@ -52,6 +57,7 @@ export function NewTrainingConfirmationDialog({
                         variant="default"
                         onClick={onStartNew}
                         className="flex-1"
+                        loading={startNewLoading}
                     >
                         Начать заново
                     </Button>

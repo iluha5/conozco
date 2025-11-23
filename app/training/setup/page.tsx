@@ -28,6 +28,7 @@ export default function TrainingSetupPage() {
     const router = useRouter();
     const { toast } = useToast();
     const [isInitialSelection, setIsInitialSelection] = useState(true);
+    const [isStarting, setIsStarting] = useState(false);
 
     // Настройки тренировки
     const {
@@ -128,6 +129,7 @@ export default function TrainingSetupPage() {
             });
             return;
         }
+        setIsStarting(true);
         router.push('/training');
     };
 
@@ -187,6 +189,7 @@ export default function TrainingSetupPage() {
                                         enabledStages.size === 0 ||
                                         selectedWords.size === 0
                                     }
+                                    loading={isStarting}
                                 >
                                     Начать тренировку
                                 </Button>
