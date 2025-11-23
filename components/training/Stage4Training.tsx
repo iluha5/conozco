@@ -258,12 +258,12 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
             total: prev.total + 1,
         }));
 
-        // Автоматический переход
-        const delay = correct ? 1000 : 2000;
-        setTimeout(() => {
-            if (isRetryMode) {
-                // В режиме исправления ошибок
-                if (correct) {
+        // Автоматический переход только при правильном ответе
+        if (correct) {
+            const delay = 1000;
+            setTimeout(() => {
+                if (isRetryMode) {
+                    // В режиме исправления ошибок
                     // Исправил ошибку - ищем следующую ошибку с учетом обновленных результатов
                     setExerciseResults(currentResults => {
                         const nextErrorIndex = findNextErrorWithResults(
@@ -286,32 +286,12 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
                         return currentResults; // Возвращаем без изменений
                     });
                 } else {
-                    // Снова ошибся - переходим к следующей ошибке (или к этой же, если она одна)
-                    const nextErrorIndex = findNextError(currentIndex);
-                    if (
-                        nextErrorIndex === -1 ||
-                        nextErrorIndex === currentIndex
-                    ) {
-                        // Это единственная ошибка или других нет - остаемся на ней, но перезагружаем карточку
-                        setAnimationKey(prev => prev + 1);
-                        setFadeIn(false);
-                        initializeLetters();
-                        setUserWord([]);
-                        setIsComplete(false);
-                        setIsCorrect(null);
-                        setBackgroundFlash(null);
-                        setShowResultPopup(false);
-                        setTotalErrors(0);
-                        setFlashingLetter(null);
-                    } else {
-                        setCurrentIndex(nextErrorIndex);
-                    }
+                    // Обычный режим - переходим к следующему
+                    handleNext();
                 }
-            } else {
-                // Обычный режим - всегда переходим к следующему (или в retry mode)
-                handleNext();
-            }
-        }, delay);
+            }, delay);
+        }
+        // При неправильном ответе автоматического перехода нет - ждем нажатия кнопки
     };
 
     const autoCompleteWord = async () => {
@@ -378,6 +358,31 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
                 setIsRetryMode(false);
                 setHasCompletedFirstRound(false);
             }
+        }
+    };
+
+    const handleManualNext = () => {
+        if (isRetryMode) {
+            // В режиме исправления ошибок при неправильном ответе
+            const nextErrorIndex = findNextError(currentIndex);
+            if (nextErrorIndex === -1 || nextErrorIndex === currentIndex) {
+                // Это единственная ошибка или других нет - остаемся на ней, но перезагружаем карточку
+                setAnimationKey(prev => prev + 1);
+                setFadeIn(false);
+                initializeLetters();
+                setUserWord([]);
+                setIsComplete(false);
+                setIsCorrect(null);
+                setBackgroundFlash(null);
+                setShowResultPopup(false);
+                setTotalErrors(0);
+                setFlashingLetter(null);
+            } else {
+                setCurrentIndex(nextErrorIndex);
+            }
+        } else {
+            // Обычный режим - переходим к следующему
+            handleNext();
         }
     };
 
@@ -521,7 +526,7 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
                         <div className="flex justify-center pt-4">
                             <Button
                                 size="lg"
-                                onClick={handleNext}
+                                onClick={handleManualNext}
                                 className="gap-2"
                             >
                                 Следующее слово
