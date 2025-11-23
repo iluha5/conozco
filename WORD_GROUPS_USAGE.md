@@ -43,28 +43,66 @@
 - `userId` - ID пользователя с доступом
 - `grantedAt` - дата предоставления доступа
 
+### Таблица `UserWordGroup` (активные группы пользователя)
+
+- `id` - уникальный идентификатор
+- `userId` - ID пользователя
+- `wordGroupId` - ID группы
+- `activatedAt` - дата добавления группы в активные
+
+**Важно:** Эта таблица отличается от `WordGroupAccess`:
+
+- `WordGroupAccess` = К каким группам пользователь имеет **доступ** (для SHARED)
+- `UserWordGroup` = Какие группы **активны** для пользователя (работа/фильтры)
+
+**Правила:**
+
+- Группы, созданные пользователем, автоматически активны (нельзя удалить)
+- Доступные группы (PUBLIC/SHARED) можно добавлять/удалять из активных
+- В фильтрах показываются только активные группы
+
 ## Примеры использования
 
-### 1. Создание новой группы слов
+### 1. Создание новой группы слов (автоматически активируется для создателя)
 
 ```typescript
 import { prisma } from '@/lib/prisma';
 
-// Создать приватную группу "Еда" (видна только создателю)
-const foodGroup = await prisma.wordGroup.create({
-    data: {
-        name: 'Еда',
-        createdByUserId: 1, // ID пользователя-создателя
-        visibility: 'PRIVATE', // По умолчанию
-    },
+// Создать приватную группу "Еда" и автоматически активировать для создателя
+const userId = 1;
+
+const foodGroup = await prisma.$transaction(async tx => {
+    // Создаем группу
+    const group = await tx.wordGroup.create({
+        data: {
+            name: 'Еда',
+            createdByUserId: userId,
+            visibility: 'PRIVATE',
+        },
+    });
+
+    // Автоматически добавляем в активные группы создателя
+    await tx.userWordGroup.create({
+        data: {
+            userId: userId,
+            wordGroupId: group.id,
+        },
+    });
+
+    return group;
 });
 
-// Создать публичную группу "Путешествия" (видна всем)
+// Или через вложенное создание
 const travelGroup = await prisma.wordGroup.create({
     data: {
         name: 'Путешествия',
-        createdByUserId: 1,
+        createdByUserId: userId,
         visibility: 'PUBLIC',
+        activeUsers: {
+            create: {
+                userId: userId, // Автоматически активна для создателя
+            },
+        },
     },
 });
 
@@ -72,13 +110,18 @@ const travelGroup = await prisma.wordGroup.create({
 const businessGroup = await prisma.wordGroup.create({
     data: {
         name: 'Бизнес',
-        createdByUserId: 1,
+        createdByUserId: userId,
         visibility: 'SHARED',
         sharedWith: {
             create: [
                 { userId: 2 }, // Предоставить доступ пользователю 2
                 { userId: 3 }, // Предоставить доступ пользователю 3
             ],
+        },
+        activeUsers: {
+            create: {
+                userId: userId, // Активна для создателя
+            },
         },
     },
 });
@@ -358,7 +401,212 @@ const myGroups = await prisma.wordGroup.findMany({
 });
 ```
 
-### 14. Одобрение/отклонение групп администратором
+### 14. Получение активных групп пользователя (для фильтрации)
+
+```typescript
+// Получить только активные группы пользователя
+const activeGroups = await prisma.userWordGroup.findMany({
+    where: { userId: 1 },
+    include: {
+        wordGroup: {
+            include: {
+                _count: {
+                    select: { baseWords: true },
+                },
+            },
+        },
+    },
+});
+
+console.log('Активные группы для фильтрации:');
+activeGroups.forEach(ag => {
+    console.log(
+        `- ${ag.wordGroup.name} (${ag.wordGroup._count.baseWords} слов)`,
+    );
+});
+```
+
+### 15. Получение доступных групп (не активированных)
+
+```typescript
+// Получить группы, к которым есть доступ, но еще не активированы
+const userId = 1;
+
+const availableGroups = await prisma.wordGroup.findMany({
+    where: {
+        OR: [
+            { visibility: 'PUBLIC', isApproved: true },
+            {
+                visibility: 'SHARED',
+                sharedWith: { some: { userId } },
+            },
+        ],
+        // Исключаем уже активированные группы
+        NOT: {
+            activeUsers: { some: { userId } },
+        },
+        // Исключаем свои группы (они всегда активны автоматически)
+        NOT: {
+            createdByUserId: userId,
+        },
+    },
+    include: {
+        createdBy: {
+            select: { name: true },
+        },
+        _count: {
+            select: { baseWords: true },
+        },
+    },
+});
+
+console.log('Доступные для добавления группы:');
+availableGroups.forEach(g => {
+    console.log(
+        `- ${g.name} (${g._count.baseWords} слов) by ${g.createdBy.name}`,
+    );
+});
+```
+
+### 16. Активация (добавление) группы к себе
+
+```typescript
+// Пользователь добавляет доступную группу к себе
+async function activateGroup(userId: number, groupId: number) {
+    // Проверить, что группа доступна пользователю
+    const group = await prisma.wordGroup.findFirst({
+        where: {
+            id: groupId,
+            OR: [
+                { visibility: 'PUBLIC', isApproved: true },
+                { visibility: 'SHARED', sharedWith: { some: { userId } } },
+            ],
+        },
+    });
+
+    if (!group) {
+        throw new Error('Group not available');
+    }
+
+    // Добавить в активные
+    return await prisma.userWordGroup.create({
+        data: {
+            userId,
+            wordGroupId: groupId,
+        },
+    });
+}
+
+// Использование
+await activateGroup(1, 5); // Активировать группу ID 5
+```
+
+### 17. Деактивация (удаление) группы из активных
+
+```typescript
+// Удалить группу из активных (только если не создатель)
+async function deactivateGroup(userId: number, groupId: number) {
+    // Проверить, что пользователь не создатель
+    const group = await prisma.wordGroup.findUnique({
+        where: { id: groupId },
+    });
+
+    if (!group) {
+        throw new Error('Group not found');
+    }
+
+    if (group.createdByUserId === userId) {
+        throw new Error('Cannot remove your own group from active groups');
+    }
+
+    // Удалить из активных
+    return await prisma.userWordGroup.delete({
+        where: {
+            userId_wordGroupId: {
+                userId,
+                wordGroupId: groupId,
+            },
+        },
+    });
+}
+
+// Использование
+await deactivateGroup(1, 5); // Деактивировать группу ID 5
+```
+
+### 18. Полная картина для пользователя
+
+```typescript
+// Получить полную информацию о группах для пользователя
+async function getUserGroupsOverview(userId: number) {
+    // 1. Активные группы (в работе)
+    const active = await prisma.userWordGroup.findMany({
+        where: { userId },
+        include: {
+            wordGroup: {
+                include: {
+                    _count: { select: { baseWords: true } },
+                },
+            },
+        },
+    });
+
+    // 2. Доступные для добавления
+    const available = await prisma.wordGroup.findMany({
+        where: {
+            OR: [
+                { visibility: 'PUBLIC', isApproved: true },
+                { visibility: 'SHARED', sharedWith: { some: { userId } } },
+            ],
+            NOT: {
+                OR: [
+                    { activeUsers: { some: { userId } } },
+                    { createdByUserId: userId },
+                ],
+            },
+        },
+        include: {
+            createdBy: { select: { name: true } },
+            _count: { select: { baseWords: true } },
+        },
+    });
+
+    // 3. Созданные пользователем
+    const created = await prisma.wordGroup.findMany({
+        where: { createdByUserId: userId },
+        include: {
+            _count: { select: { baseWords: true } },
+        },
+    });
+
+    return {
+        active: active.map(a => ({
+            id: a.wordGroup.id,
+            name: a.wordGroup.name,
+            wordsCount: a.wordGroup._count.baseWords,
+            activatedAt: a.activatedAt,
+            isOwner: a.wordGroup.createdByUserId === userId,
+            canRemove: a.wordGroup.createdByUserId !== userId,
+        })),
+        available: available.map(g => ({
+            id: g.id,
+            name: g.name,
+            wordsCount: g._count.baseWords,
+            createdBy: g.createdBy.name,
+            visibility: g.visibility,
+        })),
+        created: created.map(g => ({
+            id: g.id,
+            name: g.name,
+            wordsCount: g._count.baseWords,
+            visibility: g.visibility,
+            isApproved: g.isApproved,
+        })),
+    };
+}
+```
+
+### 19. Одобрение/отклонение групп администратором
 
 ```typescript
 // Получить все группы, ожидающие одобрения
@@ -480,6 +728,12 @@ export async function POST(request: Request) {
                         })),
                     },
                 }),
+            // Автоматически активировать для создателя
+            activeUsers: {
+                create: {
+                    userId: session.user.id,
+                },
+            },
         },
         include: {
             createdBy: {
@@ -841,6 +1095,201 @@ export async function POST(
         success: true,
         message: `Group "${updated.name}" has been rejected and set to private`,
         group: updated,
+    });
+}
+```
+
+### GET `/api/user/word-groups/active` - Получить активные группы пользователя
+
+```typescript
+// app/api/user/word-groups/active/route.ts
+export async function GET() {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const activeGroups = await prisma.userWordGroup.findMany({
+        where: { userId: session.user.id },
+        include: {
+            wordGroup: {
+                include: {
+                    _count: {
+                        select: { baseWords: true },
+                    },
+                },
+            },
+        },
+        orderBy: { activatedAt: 'desc' },
+    });
+
+    return NextResponse.json(
+        activeGroups.map(ag => ({
+            id: ag.wordGroup.id,
+            name: ag.wordGroup.name,
+            wordsCount: ag.wordGroup._count.baseWords,
+            visibility: ag.wordGroup.visibility,
+            isOwner: ag.wordGroup.createdByUserId === session.user.id,
+            canRemove: ag.wordGroup.createdByUserId !== session.user.id,
+            activatedAt: ag.activatedAt,
+        })),
+    );
+}
+```
+
+### GET `/api/user/word-groups/available` - Получить доступные для добавления группы
+
+```typescript
+// app/api/user/word-groups/available/route.ts
+export async function GET() {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const userId = session.user.id;
+
+    const availableGroups = await prisma.wordGroup.findMany({
+        where: {
+            OR: [
+                { visibility: 'PUBLIC', isApproved: true },
+                {
+                    visibility: 'SHARED',
+                    sharedWith: { some: { userId } },
+                },
+            ],
+            NOT: {
+                OR: [
+                    { activeUsers: { some: { userId } } },
+                    { createdByUserId: userId },
+                ],
+            },
+        },
+        include: {
+            createdBy: {
+                select: { name: true },
+            },
+            _count: {
+                select: { baseWords: true },
+            },
+        },
+        orderBy: { createdAt: 'desc' },
+    });
+
+    return NextResponse.json(
+        availableGroups.map(g => ({
+            id: g.id,
+            name: g.name,
+            wordsCount: g._count.baseWords,
+            visibility: g.visibility,
+            createdBy: g.createdBy.name,
+        })),
+    );
+}
+```
+
+### POST `/api/user/word-groups/[id]/activate` - Активировать группу
+
+```typescript
+// app/api/user/word-groups/[id]/activate/route.ts
+export async function POST(
+    request: Request,
+    { params }: { params: { id: string } },
+) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const groupId = parseInt(params.id);
+    const userId = session.user.id;
+
+    // Проверить, что группа доступна пользователю
+    const group = await prisma.wordGroup.findFirst({
+        where: {
+            id: groupId,
+            OR: [
+                { visibility: 'PUBLIC', isApproved: true },
+                { visibility: 'SHARED', sharedWith: { some: { userId } } },
+            ],
+        },
+    });
+
+    if (!group) {
+        return NextResponse.json(
+            { error: 'Group not available' },
+            { status: 404 },
+        );
+    }
+
+    // Проверить, что еще не активирована
+    const existing = await prisma.userWordGroup.findUnique({
+        where: {
+            userId_wordGroupId: { userId, wordGroupId: groupId },
+        },
+    });
+
+    if (existing) {
+        return NextResponse.json(
+            { error: 'Group already activated' },
+            { status: 400 },
+        );
+    }
+
+    // Активировать
+    await prisma.userWordGroup.create({
+        data: { userId, wordGroupId: groupId },
+    });
+
+    return NextResponse.json({
+        success: true,
+        message: `Group "${group.name}" activated`,
+    });
+}
+```
+
+### DELETE `/api/user/word-groups/[id]/deactivate` - Деактивировать группу
+
+```typescript
+// app/api/user/word-groups/[id]/deactivate/route.ts
+export async function DELETE(
+    request: Request,
+    { params }: { params: { id: string } },
+) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const groupId = parseInt(params.id);
+    const userId = session.user.id;
+
+    // Проверить, что пользователь не создатель
+    const group = await prisma.wordGroup.findUnique({
+        where: { id: groupId },
+    });
+
+    if (!group) {
+        return NextResponse.json({ error: 'Group not found' }, { status: 404 });
+    }
+
+    if (group.createdByUserId === userId) {
+        return NextResponse.json(
+            { error: 'Cannot remove your own group from active groups' },
+            { status: 403 },
+        );
+    }
+
+    // Удалить из активных
+    await prisma.userWordGroup.delete({
+        where: {
+            userId_wordGroupId: { userId, wordGroupId: groupId },
+        },
+    });
+
+    return NextResponse.json({
+        success: true,
+        message: `Group "${group.name}" deactivated`,
     });
 }
 ```

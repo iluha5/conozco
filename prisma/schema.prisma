@@ -94,8 +94,9 @@ model User {
   sessions           Session[]
   apiRequestLogs     ApiRequestLog[]
   customTranslations CustomTranslation[]
-  createdWordGroups  WordGroup[] // Группы, созданные пользователем
-  sharedWordGroups   WordGroupAccess[] // Группы, к которым пользователь имеет доступ
+  createdWordGroups  WordGroup[]         @relation("CreatedWordGroups") // Группы, созданные пользователем
+  sharedWordGroups   WordGroupAccess[]   @relation("SharedWordGroups") // Группы, к которым пользователь имеет доступ
+  activeWordGroups   UserWordGroup[] // Активные группы пользователя (подключенные для работы)
 
   @@index([email])
 }
@@ -182,9 +183,10 @@ model WordGroup {
   createdAt       DateTime             @default(now())
   updatedAt       DateTime             @updatedAt
 
-  createdBy  User                   @relation(fields: [createdByUserId], references: [id], onDelete: Cascade)
-  baseWords  BaseWordOnWordGroup[]
-  sharedWith WordGroupAccess[] // Список пользователей с доступом (для SHARED)
+  createdBy   User                   @relation("CreatedWordGroups", fields: [createdByUserId], references: [id], onDelete: Cascade)
+  baseWords   BaseWordOnWordGroup[]
+  sharedWith  WordGroupAccess[] // Список пользователей с доступом (для SHARED)
+  activeUsers UserWordGroup[] // Пользователи, у которых группа активна
 
   @@index([name])
   @@index([createdByUserId])
@@ -201,11 +203,26 @@ model WordGroupAccess {
   grantedAt   DateTime @default(now())
 
   wordGroup WordGroup @relation(fields: [wordGroupId], references: [id], onDelete: Cascade)
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User      @relation("SharedWordGroups", fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([wordGroupId, userId]) // Пользователь может иметь доступ к группе только один раз
   @@index([wordGroupId])
   @@index([userId])
+}
+
+// Активные группы пользователя (подключенные для работы/фильтрации)
+model UserWordGroup {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  wordGroupId Int
+  activatedAt DateTime @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wordGroup WordGroup @relation(fields: [wordGroupId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, wordGroupId]) // Пользователь не может подключить группу дважды
+  @@index([userId])
+  @@index([wordGroupId])
 }
 
 // Промежуточная таблица для связи many-to-many между BaseWord и WordGroup
