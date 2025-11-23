@@ -94,6 +94,8 @@ model User {
   sessions           Session[]
   apiRequestLogs     ApiRequestLog[]
   customTranslations CustomTranslation[]
+  createdWordGroups  WordGroup[] // Группы, созданные пользователем
+  sharedWordGroups   WordGroupAccess[] // Группы, к которым пользователь имеет доступ
 
   @@index([email])
 }
@@ -150,16 +152,74 @@ model BaseWord {
   languageId Int // ID языка слова
   sourceId   Int // ID источника слова
 
-  language            Language             @relation(fields: [languageId], references: [id])
-  source              WordSource           @relation(fields: [sourceId], references: [id])
+  language            Language               @relation(fields: [languageId], references: [id])
+  source              WordSource             @relation(fields: [sourceId], references: [id])
   translations        WordTranslation[]
   examples            WordExample[]
   grammaticalExamples GrammaticalExample[]
   userWords           Word[]
+  wordGroups          BaseWordOnWordGroup[]
 
   @@unique([word, languageId])
   @@index([languageId])
   @@index([sourceId])
+}
+
+// Типы видимости группы слов
+enum WordGroupVisibility {
+  PUBLIC  // Видна всем пользователям
+  PRIVATE // Видна только создателю
+  SHARED  // Видна определенным пользователям
+}
+
+// Группы слов (категории, пресеты)
+model WordGroup {
+  id              Int                  @id @default(autoincrement())
+  name            String               @unique // Название группы
+  createdByUserId Int // ID пользователя, создавшего группу
+  visibility      WordGroupVisibility  @default(PRIVATE) // Тип видимости
+  isApproved      Boolean              @default(false) // Одобрена ли группа администратором (для PUBLIC)
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  createdBy  User                   @relation(fields: [createdByUserId], references: [id], onDelete: Cascade)
+  baseWords  BaseWordOnWordGroup[]
+  sharedWith WordGroupAccess[] // Список пользователей с доступом (для SHARED)
+
+  @@index([name])
+  @@index([createdByUserId])
+  @@index([visibility])
+  @@index([isApproved])
+  @@index([visibility, isApproved]) // Комбинированный индекс для фильтрации одобренных публичных групп
+}
+
+// Таблица доступа к группам слов (для SHARED видимости)
+model WordGroupAccess {
+  id          Int      @id @default(autoincrement())
+  wordGroupId Int
+  userId      Int
+  grantedAt   DateTime @default(now())
+
+  wordGroup WordGroup @relation(fields: [wordGroupId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([wordGroupId, userId]) // Пользователь может иметь доступ к группе только один раз
+  @@index([wordGroupId])
+  @@index([userId])
+}
+
+// Промежуточная таблица для связи many-to-many между BaseWord и WordGroup
+model BaseWordOnWordGroup {
+  baseWordId  Int
+  wordGroupId Int
+  assignedAt  DateTime @default(now())
+
+  baseWord  BaseWord  @relation(fields: [baseWordId], references: [id], onDelete: Cascade)
+  wordGroup WordGroup @relation(fields: [wordGroupId], references: [id], onDelete: Cascade)
+
+  @@id([baseWordId, wordGroupId])
+  @@index([baseWordId])
+  @@index([wordGroupId])
 }
 
 // Изображения для переводов слов
