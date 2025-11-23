@@ -3,6 +3,7 @@ import { Inter, Ubuntu } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/components/providers/SessionProvider';
+import { QueryProvider } from '@/components/providers/QueryProvider';
 import { TrainingWordsProvider } from '@/contexts/training-words-context';
 
 const inter = Inter({ subsets: ['latin', 'cyrillic'] });
@@ -29,10 +30,12 @@ export default function RootLayout({
                 suppressHydrationWarning
             >
                 <AuthProvider>
-                    <TrainingWordsProvider>
-                        {children}
-                        <Toaster />
-                    </TrainingWordsProvider>
+                    <QueryProvider>
+                        <TrainingWordsProvider>
+                            {children}
+                            <Toaster />
+                        </TrainingWordsProvider>
+                    </QueryProvider>
                 </AuthProvider>
             </body>
         </html>

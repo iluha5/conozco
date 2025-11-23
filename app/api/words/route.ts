@@ -80,6 +80,11 @@ export async function GET(request: NextRequest) {
                                 sentenceType: true,
                             },
                         },
+                        wordGroups: {
+                            select: {
+                                wordGroupId: true,
+                            },
+                        },
                     },
                 },
                 customTranslations: {

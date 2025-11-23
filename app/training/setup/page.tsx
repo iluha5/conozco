@@ -21,6 +21,7 @@ import {
     useWordsSelection,
     useStageModals,
 } from '@/hooks/training-setup';
+import { useWordGroupsFilter } from '@/hooks/word-groups/use-word-groups-filter';
 import { WordsSelector, StagesSelector } from '@/components/training-setup';
 
 export default function TrainingSetupPage() {
@@ -39,8 +40,15 @@ export default function TrainingSetupPage() {
     const { selectedLanguage, setSelectedLanguage } = useTrainingSelection();
     const { selectedWords, setSelectedWords } = useTrainingWords();
 
+    // Фильтр по группам
+    const { selectedGroupIds, toggleGroup, toggleAll } =
+        useWordGroupsFilter('trainingSetup');
+
     // Данные слов и фильтрация
-    const { filteredWords, isLoading } = useSetupWords(selectedLanguage);
+    const { filteredWords, isLoading } = useSetupWords(
+        selectedLanguage,
+        selectedGroupIds,
+    );
 
     // Выбор слов
     const { toggleWord, selectAllVisible, deselectAll, isWordSelected } =
@@ -155,6 +163,9 @@ export default function TrainingSetupPage() {
                                 onSelectAll={selectAllVisible}
                                 onDeselectAll={deselectAll}
                                 isWordSelected={isWordSelected}
+                                selectedGroupIds={selectedGroupIds}
+                                onToggleGroup={toggleGroup}
+                                onToggleAllGroups={toggleAll}
                             />
 
                             {/* Настройки этапов тренировки */}

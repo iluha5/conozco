@@ -33,6 +33,7 @@ export async function GET(request: NextRequest) {
         const search = searchParams.get('search');
         const limit = parseInt(searchParams.get('limit') || '50');
         const offset = parseInt(searchParams.get('offset') || '0');
+        const wordGroupIdsParam = searchParams.get('wordGroupIds');
 
         const where: any = {};
 
@@ -55,6 +56,20 @@ export async function GET(request: NextRequest) {
                 contains: search,
                 mode: 'insensitive',
             };
+        }
+
+        // Фильтр по группам слов
+        if (wordGroupIdsParam) {
+            const wordGroupIds = wordGroupIdsParam.split(',').map(Number);
+            if (wordGroupIds.length > 0) {
+                where.wordGroups = {
+                    some: {
+                        wordGroupId: {
+                            in: wordGroupIds,
+                        },
+                    },
+                };
+            }
         }
 
         // Получить базовые слова
@@ -95,6 +110,11 @@ export async function GET(request: NextRequest) {
                         sentenceType: true,
                     },
                     take: 5, // Ограничим количество грамматических примеров
+                },
+                wordGroups: {
+                    select: {
+                        wordGroupId: true,
+                    },
                 },
             },
         });

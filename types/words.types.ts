@@ -45,12 +45,17 @@ export type Word = {
     status: WordStatus;
     createdAt: string;
     updatedAt: string;
-    baseWord?: BaseWord;
+    baseWord?: BaseWord & {
+        wordGroups?: Array<{
+            wordGroupId: number;
+        }>;
+    };
 };
 
 export type WordsFilter = {
     language: string;
     status: string;
+    groupIds?: number[];
 };
 
 export type WordsStats = {

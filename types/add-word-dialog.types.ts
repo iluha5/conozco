@@ -34,6 +34,9 @@ export type BaseWord = {
             isQuestion: boolean;
         };
     }>;
+    wordGroups?: Array<{
+        wordGroupId: number;
+    }>;
     isAddedByUser: boolean;
     customTranslations?: Array<{
         id: number;

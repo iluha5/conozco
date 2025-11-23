@@ -17,8 +17,21 @@ export const useWordsFilter = (words: Word[], filter: WordsFilter) => {
             result = result.filter(word => word.status === filter.status);
         }
 
+        // Фильтр по группам
+        if (filter.groupIds && filter.groupIds.length > 0) {
+            result = result.filter(word => {
+                // Проверяем, что у слова есть baseWord с группами
+                if (!word.baseWord?.wordGroups) return false;
+
+                // Проверяем, что слово принадлежит хотя бы одной из выбранных групп
+                return word.baseWord.wordGroups.some(wg =>
+                    filter.groupIds!.includes(wg.wordGroupId),
+                );
+            });
+        }
+
         return result;
-    }, [words, filter.language, filter.status]);
+    }, [words, filter.language, filter.status, filter.groupIds]);
 
     return filteredWords;
 };

@@ -12,25 +12,34 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Header } from '@/components/Header';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Settings } from 'lucide-react';
 import { AddWordDialog } from '@/components/AddWordDialog';
 import { WordsList } from '@/components/WordsList';
+import { WordGroupsManagementDialog } from '@/components/word-groups/WordGroupsManagementDialog';
+import { WordGroupsFilter } from '@/components/word-groups/WordGroupsFilter';
 import { useTrainingSelection } from '@/hooks/shared';
 import { useWordsData, useWordsFilter, useWordsStats } from '@/hooks/words';
+import { useWordGroupsFilter } from '@/hooks/word-groups/use-word-groups-filter';
 import { WordsFilter } from '@/types/words.types';
 
 export default function WordsPage() {
     const { selectedLanguage, setSelectedLanguage } = useTrainingSelection();
     const [selectedStatus, setSelectedStatus] = useState<string>('NOT_LEARNED');
     const [isClient, setIsClient] = useState(false);
+    const [isManagementOpen, setIsManagementOpen] = useState(false);
 
     // Загрузка данных
     const { words, loading, refetch } = useWordsData();
+
+    // Фильтр по группам
+    const { selectedGroupIds, toggleGroup, toggleAll } =
+        useWordGroupsFilter('myWords');
 
     // Формирование фильтра
     const filter: WordsFilter = {
         language: selectedLanguage,
         status: selectedStatus,
+        groupIds: selectedGroupIds.length > 0 ? selectedGroupIds : undefined,
     };
 
     // Фильтрация слов
@@ -73,11 +82,26 @@ export default function WordsPage() {
                     </Link>
                 </div>
 
-                <div className="flex justify-between items-center mb-6">
+                <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-6">
                     <h1 className="text-4xl font-bold text-gray-900">
                         Мои слова
                     </h1>
-                    <AddWordDialog onWordAdded={handleAddWord} />
+                    <div className="flex flex-row gap-2 w-full md:w-auto">
+                        <Button
+                            variant="outline"
+                            size="lg"
+                            onClick={() => setIsManagementOpen(true)}
+                            className="flex-1 md:flex-none min-w-0"
+                        >
+                            <Settings className="w-4 h-4 mr-2 flex-shrink-0" />
+                            <span className="truncate">
+                                Управление группами
+                            </span>
+                        </Button>
+                        <div className="flex-1 md:flex-none min-w-0">
+                            <AddWordDialog onWordAdded={handleAddWord} />
+                        </div>
+                    </div>
                 </div>
 
                 <div className="flex gap-4 mb-6">
@@ -156,6 +180,11 @@ export default function WordsPage() {
                             <SelectItem value="es">🇪🇸 Испанский</SelectItem>
                         </SelectContent>
                     </Select>
+                    <WordGroupsFilter
+                        selectedGroupIds={selectedGroupIds}
+                        onToggleGroup={toggleGroup}
+                        onToggleAll={toggleAll}
+                    />
                     <div className="text-sm text-gray-600">
                         Показано:{' '}
                         <span className="font-semibold text-gray-900">
@@ -176,6 +205,11 @@ export default function WordsPage() {
                         emptyMessage="Слова не найдены. Добавьте новое слово!"
                     />
                 )}
+
+                <WordGroupsManagementDialog
+                    open={isManagementOpen}
+                    onOpenChange={setIsManagementOpen}
+                />
             </div>
         </div>
     );

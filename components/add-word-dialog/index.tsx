@@ -21,6 +21,7 @@ import {
     useWordManagement,
     useAiSearch,
 } from '@/hooks/add-word-dialog';
+import { useWordGroupsFilter } from '@/hooks/word-groups/use-word-groups-filter';
 import { AddWordDialogFilters } from './AddWordDialogFilters';
 import { WordsList } from './WordsList';
 import type { BaseWord } from '@/types/add-word-dialog.types';
@@ -52,6 +53,10 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
             ? selectedLanguage
             : 'es';
 
+    // Фильтр по группам
+    const { selectedGroupIds, toggleGroup, toggleAll } =
+        useWordGroupsFilter('addWordDialog');
+
     // Хуки для бизнес-логики
     const {
         searchTerm,
@@ -70,6 +75,7 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
         open,
         skipAutoSearch,
         setSkipAutoSearch,
+        selectedGroupIds,
     });
 
     const {
@@ -118,19 +124,23 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
 
     // Функция для фильтрации слов по частям речи
     const getFilteredWords = () => {
-        if (selectedPartsOfSpeech.length === 0) {
-            return availableWords;
-        }
-        return availableWords.filter(word => {
-            // Проверяем partOfSpeech в переводах
-            const hasMatchingTranslation = word.translations?.some(
-                t =>
-                    t.partOfSpeech &&
-                    selectedPartsOfSpeech.includes(t.partOfSpeech.name),
-            );
+        let filtered = availableWords;
 
-            return hasMatchingTranslation;
-        });
+        // Фильтр по частям речи (клиентская фильтрация)
+        if (selectedPartsOfSpeech.length > 0) {
+            filtered = filtered.filter(word => {
+                // Проверяем partOfSpeech в переводах
+                const hasMatchingTranslation = word.translations?.some(
+                    t =>
+                        t.partOfSpeech &&
+                        selectedPartsOfSpeech.includes(t.partOfSpeech.name),
+                );
+
+                return hasMatchingTranslation;
+            });
+        }
+
+        return filtered;
     };
 
     const togglePartOfSpeech = (pos: string) => {
@@ -225,9 +235,9 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogTrigger asChild>
-                <Button size="lg">
-                    <PlusCircle className="w-4 h-4 mr-2" />
-                    Добавить слово
+                <Button size="lg" className="w-full min-w-0">
+                    <PlusCircle className="w-4 h-4 mr-2 flex-shrink-0" />
+                    <span className="truncate">Добавить слово</span>
                 </Button>
             </DialogTrigger>
             <DialogContent
@@ -252,6 +262,9 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                         aiSearching={aiSearching}
                         onAiSearch={handleAiSearch}
                         autoFocus={open}
+                        selectedGroupIds={selectedGroupIds}
+                        onToggleGroup={toggleGroup}
+                        onToggleAllGroups={toggleAll}
                     />
 
                     {/* Список слов */}

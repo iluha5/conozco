@@ -1,0 +1,50 @@
+import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+
+export async function GET() {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const userId = parseInt(session.user.id);
+
+    const availableGroups = await prisma.wordGroup.findMany({
+        where: {
+            OR: [
+                { visibility: 'PUBLIC', isApproved: true },
+                {
+                    visibility: 'SHARED',
+                    sharedWith: { some: { userId } },
+                },
+            ],
+            NOT: {
+                OR: [
+                    { activeUsers: { some: { userId } } },
+                    { createdByUserId: userId },
+                ],
+            },
+        },
+        include: {
+            createdBy: {
+                select: { name: true },
+            },
+            _count: {
+                select: { baseWords: true },
+            },
+        },
+        orderBy: { createdAt: 'desc' },
+    });
+
+    return NextResponse.json(
+        availableGroups.map(g => ({
+            id: g.id,
+            name: g.name,
+            wordsCount: g._count.baseWords,
+            visibility: g.visibility,
+            createdBy: g.createdBy.name,
+        })),
+    );
+}

@@ -11,7 +11,8 @@ type UseWordSearchProps = {
     languageCode: 'en' | 'es';
     open: boolean;
     skipAutoSearch: boolean;
-    setSkipAutoSearch: (value: boolean) => void;
+    setSkipAutoSearch: (_value: boolean) => void;
+    selectedGroupIds?: number[];
 };
 
 export function useWordSearch({
@@ -19,6 +20,7 @@ export function useWordSearch({
     open,
     skipAutoSearch,
     setSkipAutoSearch,
+    selectedGroupIds = [],
 }: UseWordSearchProps) {
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
@@ -66,7 +68,13 @@ export function useWordSearch({
             setSkipAutoSearch(false);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [languageCode, debouncedSearchTerm, open, skipAutoSearch]);
+    }, [
+        languageCode,
+        debouncedSearchTerm,
+        open,
+        skipAutoSearch,
+        selectedGroupIds,
+    ]);
 
     const handleSearch = async (
         currentOffset: number = offset,
@@ -87,6 +95,10 @@ export function useWordSearch({
 
             if (debouncedSearchTerm.trim()) {
                 params.set('search', debouncedSearchTerm.trim());
+            }
+
+            if (selectedGroupIds.length > 0) {
+                params.set('wordGroupIds', selectedGroupIds.join(','));
             }
 
             const response = await fetch(`/api/base-words?${params}`);

@@ -2,7 +2,10 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Word } from '@/types/words.types';
 import { useToast } from '@/hooks/shared';
 
-export const useSetupWords = (selectedLanguage: string) => {
+export const useSetupWords = (
+    selectedLanguage: string,
+    selectedGroupIds: number[] = [],
+) => {
     const [words, setWords] = useState<Word[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const { toast } = useToast();
@@ -36,11 +39,27 @@ export const useSetupWords = (selectedLanguage: string) => {
 
     // Мемоизация фильтрованных слов
     const filteredWords = useMemo(() => {
-        if (selectedLanguage === 'ALL') {
-            return words;
+        let filtered = words;
+
+        // Фильтр по языку
+        if (selectedLanguage !== 'ALL') {
+            filtered = filtered.filter(
+                word => word.language.code === selectedLanguage,
+            );
         }
-        return words.filter(word => word.language.code === selectedLanguage);
-    }, [words, selectedLanguage]);
+
+        // Фильтр по группам
+        if (selectedGroupIds.length > 0) {
+            filtered = filtered.filter(word => {
+                if (!word.baseWord?.wordGroups) return false;
+                return word.baseWord.wordGroups.some(wg =>
+                    selectedGroupIds.includes(wg.wordGroupId),
+                );
+            });
+        }
+
+        return filtered;
+    }, [words, selectedLanguage, selectedGroupIds]);
 
     return {
         words,

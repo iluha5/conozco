@@ -9,6 +9,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { WordGroupsFilter } from '@/components/word-groups/WordGroupsFilter';
 import { Word } from '@/types/words.types';
 
 interface WordsSelectorProps {
@@ -21,6 +22,9 @@ interface WordsSelectorProps {
     onSelectAll: () => void;
     onDeselectAll: () => void;
     isWordSelected: (_wordId: number) => boolean;
+    selectedGroupIds: number[];
+    onToggleGroup: (_groupId: number) => void;
+    onToggleAllGroups: (_groupIds: number[]) => void;
 }
 
 export const WordsSelector = ({
@@ -33,6 +37,9 @@ export const WordsSelector = ({
     onSelectAll,
     onDeselectAll,
     isWordSelected,
+    selectedGroupIds,
+    onToggleGroup,
+    onToggleAllGroups,
 }: WordsSelectorProps) => {
     const [visibleWordsCount, setVisibleWordsCount] = useState(12);
 
@@ -66,6 +73,11 @@ export const WordsSelector = ({
                         <SelectItem value="es">🇪🇸 Исп</SelectItem>
                     </SelectContent>
                 </Select>
+                <WordGroupsFilter
+                    selectedGroupIds={selectedGroupIds}
+                    onToggleGroup={onToggleGroup}
+                    onToggleAll={onToggleAllGroups}
+                />
                 <Button
                     variant="outline"
                     onClick={onSelectAll}
