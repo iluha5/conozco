@@ -11,7 +11,6 @@ export type PartOfSpeech = {
 export type BaseWord = {
     id: string;
     word: string;
-    partOfSpeech: PartOfSpeech;
     language: {
         code: string;
         name: string;
@@ -19,6 +18,7 @@ export type BaseWord = {
     translations: Array<{
         translation: string;
         priority: number;
+        partOfSpeech?: PartOfSpeech;
     }>;
     examples: Array<{
         example: string;

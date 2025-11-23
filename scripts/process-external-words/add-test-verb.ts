@@ -63,7 +63,6 @@ async function addTestVerb() {
                 where: { id: existingWord.id },
                 data: {
                     sourceId: wordSource.id,
-                    partOfSpeechId: partOfSpeech.id,
                 },
             });
             console.log(
@@ -75,7 +74,6 @@ async function addTestVerb() {
                 data: {
                     word: 'cantar',
                     languageId: language.id,
-                    partOfSpeechId: partOfSpeech.id,
                     sourceId: wordSource.id,
                 },
             });

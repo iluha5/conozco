@@ -121,11 +121,16 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
         if (selectedPartsOfSpeech.length === 0) {
             return availableWords;
         }
-        return availableWords.filter(
-            word =>
-                word.partOfSpeech &&
-                selectedPartsOfSpeech.includes(word.partOfSpeech.name),
-        );
+        return availableWords.filter(word => {
+            // Проверяем partOfSpeech в переводах
+            const hasMatchingTranslation = word.translations?.some(
+                t =>
+                    t.partOfSpeech &&
+                    selectedPartsOfSpeech.includes(t.partOfSpeech.name),
+            );
+
+            return hasMatchingTranslation;
+        });
     };
 
     const togglePartOfSpeech = (pos: string) => {
@@ -159,7 +164,6 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                         baseWord: {
                             id: baseWord.id,
                             word: baseWord.word,
-                            partOfSpeech: baseWord.partOfSpeech,
                             languageId: baseWord.language.code,
                             translations: baseWord.translations,
                             examples: baseWord.examples,

@@ -103,6 +103,9 @@ export async function GET(
                         translations: {
                             where: { language: { code: 'ru' } },
                             orderBy: { priority: 'asc' },
+                            include: {
+                                partOfSpeech: true,
+                            },
                         },
                         examples: {
                             include: {

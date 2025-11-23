@@ -60,10 +60,12 @@ export async function GET(request: NextRequest) {
                 language: true,
                 baseWord: {
                     include: {
-                        partOfSpeech: true,
                         translations: {
                             where: { language: { code: 'ru' } },
                             orderBy: { priority: 'asc' },
+                            include: {
+                                partOfSpeech: true,
+                            },
                         },
                         examples: {
                             include: {
@@ -211,7 +213,6 @@ export async function POST(request: NextRequest) {
             where: { id: parseInt(baseWordId) },
             include: {
                 language: true,
-                partOfSpeech: true,
                 translations: {
                     where: { language: { code: 'ru' } },
                     orderBy: { priority: 'asc' },
@@ -256,10 +257,12 @@ export async function POST(request: NextRequest) {
                 language: true,
                 baseWord: {
                     include: {
-                        partOfSpeech: true,
                         translations: {
                             where: { language: { code: 'ru' } },
                             orderBy: { priority: 'asc' },
+                            include: {
+                                partOfSpeech: true,
+                            },
                         },
                         examples: {
                             include: {

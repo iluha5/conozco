@@ -49,8 +49,8 @@ model PartOfSpeech {
   languageId  Int // ID языка (для поддержки разных языков)
 
   language           Language            @relation(fields: [languageId], references: [id])
-  baseWords          BaseWord[]
   customTranslations CustomTranslation[]
+  wordTranslations   WordTranslation[]
 
   @@unique([name, languageId])
   @@index([languageId])
@@ -145,14 +145,12 @@ model WordSource {
 
 // База слов (словарь)
 model BaseWord {
-  id             Int    @id @default(autoincrement())
-  word           String // Иностранное слово
-  partOfSpeechId Int? // ID части речи (может быть null если неизвестна)
-  languageId     Int // ID языка слова
-  sourceId       Int // ID источника слова
+  id         Int    @id @default(autoincrement())
+  word       String // Иностранное слово
+  languageId Int // ID языка слова
+  sourceId   Int // ID источника слова
 
   language            Language             @relation(fields: [languageId], references: [id])
-  partOfSpeech        PartOfSpeech?        @relation(fields: [partOfSpeechId], references: [id])
   source              WordSource           @relation(fields: [sourceId], references: [id])
   translations        WordTranslation[]
   examples            WordExample[]
@@ -160,7 +158,7 @@ model BaseWord {
   userWords           Word[]
 
   @@unique([word, languageId])
-  @@index([languageId, partOfSpeechId])
+  @@index([languageId])
   @@index([sourceId])
 }
 
@@ -180,22 +178,25 @@ model WordImage {
 
 // Переводы слов (до 3 самых популярных на каждый язык)
 model WordTranslation {
-  id          Int    @id @default(autoincrement())
-  baseWordId  Int // ID базового слова
-  languageId  Int // ID языка перевода
-  translation String // Перевод
-  priority    Int    @default(1) // Приоритет перевода (1-3)
-  imageId     Int? // ID изображения для перевода (nullable)
+  id             Int    @id @default(autoincrement())
+  baseWordId     Int // ID базового слова
+  languageId     Int // ID языка перевода
+  translation    String // Перевод
+  priority       Int    @default(1) // Приоритет перевода (1-3)
+  imageId        Int? // ID изображения для перевода (nullable)
+  partOfSpeechId Int? // ID части речи для перевода (nullable)
 
-  baseWord       BaseWord   @relation(fields: [baseWordId], references: [id], onDelete: Cascade)
-  language       Language   @relation(fields: [languageId], references: [id])
-  image          WordImage? @relation(fields: [imageId], references: [id], onDelete: SetNull)
-  selectedByWord Word[]     @relation("SelectedTranslation")
+  baseWord       BaseWord      @relation(fields: [baseWordId], references: [id], onDelete: Cascade)
+  language       Language      @relation(fields: [languageId], references: [id])
+  image          WordImage?    @relation(fields: [imageId], references: [id], onDelete: SetNull)
+  partOfSpeech   PartOfSpeech? @relation(fields: [partOfSpeechId], references: [id], onDelete: SetNull)
+  selectedByWord Word[]        @relation("SelectedTranslation")
 
   @@unique([baseWordId, languageId, priority])
   @@index([baseWordId])
   @@index([languageId])
   @@index([imageId])
+  @@index([partOfSpeechId])
 }
 
 // Местоимения

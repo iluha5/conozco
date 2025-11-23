@@ -114,10 +114,10 @@ async function main(): Promise<void> {
             take: 10,
             include: {
                 language: true,
-                partOfSpeech: true,
                 translations: {
                     include: {
                         language: true,
+                        partOfSpeech: true,
                     },
                 },
             },
@@ -159,9 +159,9 @@ async function main(): Promise<void> {
                             code: russianLanguage.code,
                             name: russianLanguage.name,
                         },
-                        partOfSpeech: word.partOfSpeech
+                        partOfSpeech: word.translations?.[0]?.partOfSpeech
                             ? {
-                                  name: word.partOfSpeech.name,
+                                  name: word.translations[0].partOfSpeech.name,
                               }
                             : undefined,
                     });
@@ -191,9 +191,10 @@ async function main(): Promise<void> {
                                 code: translationLang.code,
                                 name: translationLang.name,
                             },
-                            partOfSpeech: word.partOfSpeech
+                            partOfSpeech: word.translations?.[0]?.partOfSpeech
                                 ? {
-                                      name: word.partOfSpeech.name,
+                                      name: word.translations[0].partOfSpeech
+                                          .name,
                                   }
                                 : undefined,
                         });

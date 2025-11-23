@@ -42,15 +42,15 @@ type Word = {
     baseWord?: {
         id: string | number;
         word: string;
-        partOfSpeech: {
-            id: string | number;
-            name: string;
-            displayName: string;
-        };
         languageId: string | number;
         translations: Array<{
             translation: string;
             priority: number;
+            partOfSpeech?: {
+                id: string | number;
+                name: string;
+                displayName: string;
+            };
         }>;
         examples?: Array<any>;
         grammaticalExamples?: Array<any>;

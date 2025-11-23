@@ -9,15 +9,15 @@ export type Language = {
 export type BaseWord = {
     id: number;
     word: string;
-    partOfSpeech: {
-        id: number;
-        name: string;
-        displayName: string;
-    };
     languageId: number;
     translations: Array<{
         translation: string;
         priority: number;
+        partOfSpeech?: {
+            id: number;
+            name: string;
+            displayName: string;
+        };
     }>;
     examples: Array<{
         example: string;

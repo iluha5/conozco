@@ -76,10 +76,11 @@ export function WordCard({
                                 <span className="text-sm shrink-0">
                                     {getLanguageFlag(word.language.code)}
                                 </span>
-                                {word.partOfSpeech && (
+                                {word.translations?.[0]?.partOfSpeech && (
                                     <span className="text-xs bg-gray-100 px-2 py-1 rounded shrink-0">
                                         {getPartOfSpeechAbbrev(
-                                            word.partOfSpeech.displayName,
+                                            word.translations[0].partOfSpeech
+                                                .displayName,
                                         )}
                                     </span>
                                 )}

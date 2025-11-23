@@ -72,11 +72,13 @@ export async function POST(request: NextRequest) {
                 },
             },
             include: {
-                partOfSpeech: true,
                 language: true,
                 translations: {
                     where: { language: { code: 'ru' } },
                     orderBy: { priority: 'asc' },
+                    include: {
+                        partOfSpeech: true,
+                    },
                 },
                 examples: {
                     include: {
@@ -123,10 +125,6 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Часть речи по умолчанию - null (неизвестна)
-        // В будущем можно добавить определение части речи через AI
-        const partOfSpeechId = null;
-
         // Получаем источники для AI-поиска
         const deeplSource = await prisma.wordSource.findUnique({
             where: { code: 'DEEPL' },
@@ -160,9 +158,6 @@ export async function POST(request: NextRequest) {
                     language: {
                         connect: { id: language.id },
                     },
-                    partOfSpeech: partOfSpeechId
-                        ? { connect: { id: partOfSpeechId } }
-                        : undefined,
                     source: {
                         connect: { id: wordSourceId },
                     },
@@ -188,12 +183,15 @@ export async function POST(request: NextRequest) {
 
             if (existingTranslations.length === 0) {
                 // Добавляем главный перевод
+                // Примечание: partOfSpeechId не добавляется, т.к. AI search API не возвращает эту информацию
+                // Часть речи может быть добавлена вручную пользователем или через другие источники
                 await tx.wordTranslation.create({
                     data: {
                         baseWordId: baseWord.id,
                         languageId: targetLanguage.id,
                         translation: wordData.mainTranslation,
                         priority: 1,
+                        // partOfSpeechId: null - по умолчанию
                     },
                 });
 
@@ -211,6 +209,7 @@ export async function POST(request: NextRequest) {
                                 languageId: targetLanguage.id,
                                 translation: alt,
                                 priority: i + 2,
+                                // partOfSpeechId: null - по умолчанию
                             },
                         });
                     }
@@ -266,11 +265,13 @@ export async function POST(request: NextRequest) {
             const completeBaseWord = await tx.baseWord.findUnique({
                 where: { id: baseWord.id },
                 include: {
-                    partOfSpeech: true,
                     language: true,
                     translations: {
                         where: { language: { code: 'ru' } },
                         orderBy: { priority: 'asc' },
+                        include: {
+                            partOfSpeech: true,
+                        },
                     },
                     examples: {
                         include: {

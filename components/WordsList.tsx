@@ -34,15 +34,15 @@ type Word = {
     baseWord?: {
         id: string | number;
         word: string;
-        partOfSpeech: {
-            id: string | number;
-            name: string;
-            displayName: string;
-        };
         languageId: string | number;
         translations: Array<{
             translation: string;
             priority: number;
+            partOfSpeech?: {
+                id: string | number;
+                name: string;
+                displayName: string;
+            };
         }>;
         examples?: Array<any>;
         grammaticalExamples?: Array<any>;
@@ -388,16 +388,18 @@ export function WordsList({
                                                 )}
                                             </span>
                                             {(() => {
-                                                // Приоритет: часть речи из кастомного перевода, затем из baseWord
+                                                // Приоритет: часть речи из кастомного перевода, затем из перевода
                                                 const customPartOfSpeech =
                                                     word.customTranslations?.[0]
                                                         ?.partOfSpeech;
-                                                const basePartOfSpeech =
-                                                    word.baseWord?.partOfSpeech;
+                                                const translationPartOfSpeech =
+                                                    word.baseWord
+                                                        ?.translations?.[0]
+                                                        ?.partOfSpeech;
 
                                                 const partOfSpeech =
                                                     customPartOfSpeech ||
-                                                    basePartOfSpeech;
+                                                    translationPartOfSpeech;
 
                                                 // Не показываем плашку, если часть речи неизвестна
                                                 if (!partOfSpeech) {

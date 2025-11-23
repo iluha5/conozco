@@ -9,6 +9,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Enums matching the seed data structure
+/* eslint-disable no-unused-vars */
 enum PartOfSpeech {
     NOUN = 'NOUN',
     VERB = 'VERB',
@@ -26,6 +27,7 @@ enum SentenceTypeCode {
     QUESTION = 'QUESTION',
     NEGATIVE_QUESTION = 'NEGATIVE_QUESTION',
 }
+/* eslint-enable no-unused-vars */
 
 interface WordData {
     word: string;
@@ -233,7 +235,6 @@ function getTranslations(
     const result: { languageCode: string; translations: string[] }[] = [];
 
     for (const targetLang of targetLangs) {
-        const key = `${sourceLang}-${targetLang}`;
         const translations =
             translationDictionary[word.toLowerCase()]?.[targetLang] || [];
 
@@ -1148,7 +1149,7 @@ function getRussianVerb(verb: string, tense: string): string {
     return translations[verb.toLowerCase()]?.[tense] || '[глагол]';
 }
 
-function getSpanishVerb(verb: string, tense: string): string {
+function getSpanishVerb(verb: string, _tense: string): string {
     // Simplified - would need proper Spanish conjugation
     return verb; // Placeholder
 }
@@ -1490,7 +1491,12 @@ async function main() {
             take: 10,
             include: {
                 language: true,
-                partOfSpeech: true,
+                translations: {
+                    include: {
+                        partOfSpeech: true,
+                    },
+                    take: 1,
+                },
             },
         });
 
@@ -1507,8 +1513,8 @@ async function main() {
         for (const wordRecord of externalWords) {
             const word = wordRecord.word;
             const languageCode = wordRecord.language.code;
-            const partOfSpeech = wordRecord.partOfSpeech
-                ? mapPartOfSpeech(wordRecord.partOfSpeech.name)
+            const partOfSpeech = wordRecord.translations?.[0]?.partOfSpeech
+                ? mapPartOfSpeech(wordRecord.translations[0].partOfSpeech.name)
                 : PartOfSpeech.NOUN; // Default to NOUN if part of speech is unknown
             const targetLangs = getTargetLanguages(languageCode);
 

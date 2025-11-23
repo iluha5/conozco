@@ -11,7 +11,6 @@ const __dirname = path.dirname(__filename);
 
 // Счетчик пайплайна
 const counterFile = path.join(__dirname, 'temp', 'pipeline-counter.txt');
-let counter = 1;
 
 // Type definitions
 interface CursorResult {
@@ -67,21 +66,6 @@ interface WordData {
             isNegative: boolean;
             isQuestion: boolean;
         }[];
-    }[];
-}
-
-interface GrammaticalExample {
-    tenseName: string;
-    examples: {
-        pronoun: string;
-        example: string;
-        translations: {
-            languageCode: string;
-            translation: string;
-        }[];
-        sentenceTypeCode: string;
-        isNegative: boolean;
-        isQuestion: boolean;
     }[];
 }
 
@@ -515,7 +499,6 @@ async function importWordData(wordData: WordData): Promise<boolean> {
             data: {
                 word: wordData.word,
                 languageId: language.id,
-                partOfSpeechId: partOfSpeech.id,
                 sourceId: wordSource.id,
             },
         });
@@ -524,15 +507,6 @@ async function importWordData(wordData: WordData): Promise<boolean> {
         await log(
             `📝 Found existing word: ${wordData.word} (ID: ${baseWord.id})`,
         );
-
-        // Обновляем часть речи, если она изменилась
-        if (baseWord.partOfSpeechId !== partOfSpeech.id) {
-            await prisma.baseWord.update({
-                where: { id: baseWord.id },
-                data: { partOfSpeechId: partOfSpeech.id },
-            });
-            await log(`📝 Updated part of speech for: ${wordData.word}`);
-        }
     }
 
     // Удаляем все существующие переводы для этого слова
@@ -557,10 +531,11 @@ async function importWordData(wordData: WordData): Promise<boolean> {
                     languageId: translationLanguage.id,
                     translation: translation,
                     priority: priority++,
+                    partOfSpeechId: partOfSpeech.id,
                 },
             });
             await log(
-                `➕ Added translation: "${translation}" for ${wordData.word}`,
+                `➕ Added translation: "${translation}" for ${wordData.word} (${partOfSpeech.name})`,
             );
         }
     }

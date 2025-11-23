@@ -122,12 +122,16 @@ export async function importWordsData(
                         },
                         update: {
                             translation: translationGroup.translations[i],
+                            partOfSpeechId:
+                                partsOfSpeechRecords[wordData.partOfSpeech].id,
                         },
                         create: {
                             baseWordId: baseWord.id,
                             languageId: translationLanguage.id,
                             translation: translationGroup.translations[i],
                             priority: i + 1,
+                            partOfSpeechId:
+                                partsOfSpeechRecords[wordData.partOfSpeech].id,
                         },
                     });
                 }
