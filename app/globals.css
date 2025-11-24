@@ -74,3 +74,26 @@
         @apply bg-background text-foreground;
     }
 }
+
+@layer utilities {
+    @keyframes pulse-red-border {
+        0%,
+        100% {
+            border-color: transparent;
+            box-shadow: 0 0 0 0 transparent;
+        }
+        25%,
+        75% {
+            border-color: rgb(239 68 68);
+            box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.3);
+        }
+        50% {
+            border-color: transparent;
+            box-shadow: 0 0 0 0 transparent;
+        }
+    }
+
+    .animate-pulse-red-border {
+        animation: pulse-red-border 2s ease-in-out;
+    }
+}

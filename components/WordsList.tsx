@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Trash2, CheckCircle, CheckCircle2, X } from 'lucide-react';
+import { Trash2, CheckCircle, CheckCircle2, X, Loader2 } from 'lucide-react';
 import { useToast, usePartsOfSpeech } from '@/hooks/shared';
 import { TranslationSelectorDialog } from '@/components/TranslationSelectorDialog';
 import {
@@ -95,6 +95,18 @@ export function WordsList({
     const [selectedWordForTranslation, setSelectedWordForTranslation] =
         useState<Word | null>(null);
     const [isClient, setIsClient] = useState(false);
+    const [loadingWords, setLoadingWords] = useState<Set<string | number>>(
+        new Set(),
+    );
+    const [errorWords, setErrorWords] = useState<Set<string | number>>(
+        new Set(),
+    );
+    const [optimisticWords, setOptimisticWords] = useState<
+        Map<string | number, Word>
+    >(new Map());
+    const [deletedWords, setDeletedWords] = useState<
+        Map<string | number, Word>
+    >(new Map());
     const { toast } = useToast();
     const { partsOfSpeech } = usePartsOfSpeech('ru');
 
@@ -110,30 +122,128 @@ export function WordsList({
     const handleDeleteWord = async (id: string | number) => {
         if (readOnly) return;
 
+        // Находим слово для отката при ошибке
+        const wordToDelete = words.find(w => w.id === id);
+        if (!wordToDelete) return;
+
+        // Сохраняем слово для возможного отката
+        setDeletedWords(prev => {
+            const newMap = new Map(prev);
+            newMap.set(id, wordToDelete);
+            return newMap;
+        });
+
+        // Оптимистичное обновление - сразу удаляем из списка
+        if (onWordRemove) {
+            onWordRemove(id);
+        }
+
+        // Устанавливаем состояние загрузки
+        setLoadingWords(prev => new Set(prev).add(id));
+        setErrorWords(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(id);
+            return newSet;
+        });
+
         try {
             const response = await fetch(`/api/words/${id}`, {
                 method: 'DELETE',
             });
 
             if (response.ok) {
-                // Если есть callback для удаления, используем его, иначе перезагружаем весь список
-                if (onWordRemove) {
-                    onWordRemove(id);
+                // Успешно удалено - удаляем из сохраненных для отката
+                setDeletedWords(prev => {
+                    const newMap = new Map(prev);
+                    newMap.delete(id);
+                    return newMap;
+                });
+            } else {
+                // Ошибка - откатываем состояние
+                const deletedWord = deletedWords.get(id) || wordToDelete;
+                if (onWordUpdate && deletedWord) {
+                    // Восстанавливаем слово через onWordUpdate
+                    // Но так как нет функции добавления, используем refetch
+                    await onWordsChange?.();
                 } else {
                     await onWordsChange?.();
                 }
+                setDeletedWords(prev => {
+                    const newMap = new Map(prev);
+                    newMap.delete(id);
+                    return newMap;
+                });
+                // Показываем анимацию ошибки
+                setErrorWords(prev => new Set(prev).add(id));
+                setTimeout(() => {
+                    setErrorWords(prev => {
+                        const newSet = new Set(prev);
+                        newSet.delete(id);
+                        return newSet;
+                    });
+                }, 2000);
             }
         } catch (error) {
             console.error('Error deleting word:', error);
+            // Ошибка - откатываем состояние
+            const deletedWord = deletedWords.get(id) || wordToDelete;
+            if (onWordUpdate && deletedWord) {
+                await onWordsChange?.();
+            } else {
+                await onWordsChange?.();
+            }
+            setDeletedWords(prev => {
+                const newMap = new Map(prev);
+                newMap.delete(id);
+                return newMap;
+            });
+            // Показываем анимацию ошибки
+            setErrorWords(prev => new Set(prev).add(id));
+            setTimeout(() => {
+                setErrorWords(prev => {
+                    const newSet = new Set(prev);
+                    newSet.delete(id);
+                    return newSet;
+                });
+            }, 2000);
+        } finally {
+            setLoadingWords(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(id);
+                return newSet;
+            });
         }
     };
 
     const handleToggleStatus = async (word: Word) => {
         if (readOnly) return;
 
+        const newStatus = word.status === 'LEARNED' ? 'NOT_LEARNED' : 'LEARNED';
+
+        // Сохраняем старое состояние для отката
+        const oldWord = { ...word };
+
+        // Оптимистичное обновление - сразу меняем статус
+        if (onWordUpdate) {
+            onWordUpdate(word.id, { status: newStatus });
+        }
+
+        // Сохраняем оптимистичное состояние
+        setOptimisticWords(prev => {
+            const newMap = new Map(prev);
+            newMap.set(word.id, { ...word, status: newStatus });
+            return newMap;
+        });
+
+        // Устанавливаем состояние загрузки
+        setLoadingWords(prev => new Set(prev).add(word.id));
+        setErrorWords(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(word.id);
+            return newSet;
+        });
+
         try {
-            const newStatus =
-                word.status === 'LEARNED' ? 'NOT_LEARNED' : 'LEARNED';
             const response = await fetch(`/api/words/${word.id}`, {
                 method: 'PATCH',
                 headers: {
@@ -143,15 +253,59 @@ export function WordsList({
             });
 
             if (response.ok) {
-                // Если есть callback для обновления, используем его, иначе перезагружаем весь список
+                // Успешно обновлено, ничего не делаем (уже обновлено оптимистично)
+            } else {
+                // Ошибка - откатываем состояние
                 if (onWordUpdate) {
-                    onWordUpdate(word.id, { status: newStatus });
+                    onWordUpdate(word.id, { status: oldWord.status });
                 } else {
                     await onWordsChange?.();
                 }
+                // Удаляем из оптимистичных
+                setOptimisticWords(prev => {
+                    const newMap = new Map(prev);
+                    newMap.delete(word.id);
+                    return newMap;
+                });
+                // Показываем анимацию ошибки
+                setErrorWords(prev => new Set(prev).add(word.id));
+                setTimeout(() => {
+                    setErrorWords(prev => {
+                        const newSet = new Set(prev);
+                        newSet.delete(word.id);
+                        return newSet;
+                    });
+                }, 2000);
             }
         } catch (error) {
             console.error('Error updating word:', error);
+            // Ошибка - откатываем состояние
+            if (onWordUpdate) {
+                onWordUpdate(word.id, { status: oldWord.status });
+            } else {
+                await onWordsChange?.();
+            }
+            // Удаляем из оптимистичных
+            setOptimisticWords(prev => {
+                const newMap = new Map(prev);
+                newMap.delete(word.id);
+                return newMap;
+            });
+            // Показываем анимацию ошибки
+            setErrorWords(prev => new Set(prev).add(word.id));
+            setTimeout(() => {
+                setErrorWords(prev => {
+                    const newSet = new Set(prev);
+                    newSet.delete(word.id);
+                    return newSet;
+                });
+            }, 2000);
+        } finally {
+            setLoadingWords(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(word.id);
+                return newSet;
+            });
         }
     };
 
@@ -389,175 +543,199 @@ export function WordsList({
 
             {/* Список слов */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-1 max-h-[600px] overflow-y-auto p-2">
-                {words.map(word => (
-                    <Card
-                        key={word.id}
-                        className={`transition-all ${readOnly ? '' : 'cursor-pointer'} m-1 ${
-                            isWordSelected(word.id)
-                                ? 'ring-2 ring-primary bg-blue-50'
-                                : 'hover:bg-gray-50'
-                        }`}
-                        onClick={() =>
-                            !readOnly && toggleWordSelection(word.id)
-                        }
-                    >
-                        <CardHeader className="pb-2">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3 flex-1 min-w-0">
-                                    {!readOnly && (
-                                        <Checkbox
-                                            checked={isWordSelected(word.id)}
-                                            onChange={() => {}}
-                                            className="shrink-0"
-                                        />
-                                    )}
-                                    <div className="flex-1 min-w-0">
-                                        <CardTitle className="text-base flex items-center gap-2 flex-wrap">
-                                            <span className="truncate">
-                                                {word.baseWord?.word ||
-                                                    word.customWord}
-                                            </span>
-                                            <span className="text-sm shrink-0">
-                                                {getLanguageFlag(
-                                                    word.language.code,
+                {words.map(word => {
+                    const isLoading = loadingWords.has(word.id);
+                    const hasError = errorWords.has(word.id);
+                    const optimisticWord = optimisticWords.get(word.id);
+                    const displayWord = optimisticWord || word;
+
+                    return (
+                        <Card
+                            key={word.id}
+                            className={`transition-all relative ${
+                                readOnly ? '' : 'cursor-pointer'
+                            } m-1 ${
+                                isWordSelected(word.id)
+                                    ? 'ring-2 ring-primary bg-blue-50'
+                                    : 'hover:bg-gray-50'
+                            } ${hasError ? 'animate-pulse-red-border' : ''}`}
+                            onClick={() =>
+                                !readOnly && toggleWordSelection(word.id)
+                            }
+                        >
+                            <CardHeader className="pb-2">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                                        {!readOnly && (
+                                            <Checkbox
+                                                checked={isWordSelected(
+                                                    word.id,
                                                 )}
-                                            </span>
-                                            {(() => {
-                                                // Приоритет: часть речи из кастомного перевода, затем из перевода
-                                                const customPartOfSpeech =
-                                                    word.customTranslations?.[0]
-                                                        ?.partOfSpeech;
-                                                const translationPartOfSpeech =
-                                                    word.baseWord
-                                                        ?.translations?.[0]
-                                                        ?.partOfSpeech;
-
-                                                const partOfSpeech =
-                                                    customPartOfSpeech ||
-                                                    translationPartOfSpeech;
-
-                                                // Не показываем плашку, если часть речи неизвестна
-                                                if (!partOfSpeech) {
-                                                    return null;
-                                                }
-
-                                                return (
-                                                    <span className="text-xs bg-gray-100 px-2 py-1 rounded shrink-0">
-                                                        {getPartOfSpeechAbbrev(
-                                                            partOfSpeech.displayName,
-                                                        )}
-                                                    </span>
-                                                );
-                                            })()}
-                                        </CardTitle>
-                                        <div className="flex items-center gap-1">
-                                            <span
-                                                className={`truncate ${readOnly ? '' : 'cursor-pointer hover:text-blue-600'} transition-colors ${
-                                                    hasTranslations(
-                                                        word.customTranslations,
-                                                        word.baseWord
-                                                            ?.translations,
-                                                    )
-                                                        ? 'text-blue-500'
-                                                        : 'text-gray-500'
-                                                }`}
-                                                onClick={e => {
-                                                    e.stopPropagation();
-                                                    if (
-                                                        !readOnly &&
-                                                        word.baseWord
-                                                    ) {
-                                                        openTranslationDialog(
-                                                            word,
-                                                        );
-                                                    }
-                                                }}
-                                            >
-                                                {getCurrentTranslation(
-                                                    word.customTranslations,
-                                                    word.baseWord?.translations,
-                                                )}
-                                            </span>
-                                            {hasTranslations(
-                                                word.customTranslations,
-                                                word.baseWord?.translations,
-                                            ) && (
-                                                <span className="text-xs text-gray-400 shrink-0">
-                                                    {getTranslationsCountText(
-                                                        word.baseWord
-                                                            ?.translations
-                                                            ?.length || 0,
-                                                        !!(
-                                                            word.customTranslations &&
-                                                            word
-                                                                .customTranslations
-                                                                .length > 0
-                                                        ),
+                                                onChange={() => {}}
+                                                className="shrink-0"
+                                            />
+                                        )}
+                                        <div className="flex-1 min-w-0">
+                                            <CardTitle className="text-base flex items-center gap-2 flex-wrap">
+                                                <span className="truncate">
+                                                    {displayWord.baseWord
+                                                        ?.word ||
+                                                        displayWord.customWord}
+                                                </span>
+                                                <span className="text-sm shrink-0">
+                                                    {getLanguageFlag(
+                                                        displayWord.language
+                                                            .code,
                                                     )}
                                                 </span>
-                                            )}
-                                        </div>
-                                        {isClient &&
-                                            selectedWordForTranslation &&
-                                            selectedWordForTranslation.id ===
-                                                word.id && (
-                                                <TranslationSelectorDialog
-                                                    word={word}
-                                                    open={
-                                                        translationDialogOpen[
-                                                            word.id
-                                                        ] || false
+                                                {(() => {
+                                                    // Приоритет: часть речи из кастомного перевода, затем из перевода
+                                                    const customPartOfSpeech =
+                                                        displayWord
+                                                            .customTranslations?.[0]
+                                                            ?.partOfSpeech;
+                                                    const translationPartOfSpeech =
+                                                        displayWord.baseWord
+                                                            ?.translations?.[0]
+                                                            ?.partOfSpeech;
+
+                                                    const partOfSpeech =
+                                                        customPartOfSpeech ||
+                                                        translationPartOfSpeech;
+
+                                                    // Не показываем плашку, если часть речи неизвестна
+                                                    if (!partOfSpeech) {
+                                                        return null;
                                                     }
-                                                    onOpenChange={open =>
-                                                        handleDialogClose(
-                                                            word.id,
-                                                            open,
+
+                                                    return (
+                                                        <span className="text-xs bg-gray-100 px-2 py-1 rounded shrink-0">
+                                                            {getPartOfSpeechAbbrev(
+                                                                partOfSpeech.displayName,
+                                                            )}
+                                                        </span>
+                                                    );
+                                                })()}
+                                            </CardTitle>
+                                            <div className="flex items-center gap-1">
+                                                <span
+                                                    className={`truncate ${readOnly ? '' : 'cursor-pointer hover:text-blue-600'} transition-colors ${
+                                                        hasTranslations(
+                                                            displayWord.customTranslations,
+                                                            displayWord.baseWord
+                                                                ?.translations,
                                                         )
-                                                    }
-                                                    onSave={async () => {
-                                                        await onWordsChange?.();
+                                                            ? 'text-blue-500'
+                                                            : 'text-gray-500'
+                                                    }`}
+                                                    onClick={e => {
+                                                        e.stopPropagation();
+                                                        if (
+                                                            !readOnly &&
+                                                            displayWord.baseWord
+                                                        ) {
+                                                            openTranslationDialog(
+                                                                displayWord,
+                                                            );
+                                                        }
                                                     }}
-                                                    partsOfSpeech={
-                                                        partsOfSpeech
-                                                    }
-                                                />
-                                            )}
+                                                >
+                                                    {getCurrentTranslation(
+                                                        displayWord.customTranslations,
+                                                        displayWord.baseWord
+                                                            ?.translations,
+                                                    )}
+                                                </span>
+                                                {hasTranslations(
+                                                    displayWord.customTranslations,
+                                                    displayWord.baseWord
+                                                        ?.translations,
+                                                ) && (
+                                                    <span className="text-xs text-gray-400 shrink-0">
+                                                        {getTranslationsCountText(
+                                                            displayWord.baseWord
+                                                                ?.translations
+                                                                ?.length || 0,
+                                                            !!(
+                                                                displayWord.customTranslations &&
+                                                                displayWord
+                                                                    .customTranslations
+                                                                    .length > 0
+                                                            ),
+                                                        )}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            {isClient &&
+                                                selectedWordForTranslation &&
+                                                selectedWordForTranslation.id ===
+                                                    displayWord.id && (
+                                                    <TranslationSelectorDialog
+                                                        word={displayWord}
+                                                        open={
+                                                            translationDialogOpen[
+                                                                displayWord.id
+                                                            ] || false
+                                                        }
+                                                        onOpenChange={open =>
+                                                            handleDialogClose(
+                                                                displayWord.id,
+                                                                open,
+                                                            )
+                                                        }
+                                                        onSave={async () => {
+                                                            await onWordsChange?.();
+                                                        }}
+                                                        partsOfSpeech={
+                                                            partsOfSpeech
+                                                        }
+                                                    />
+                                                )}
+                                        </div>
                                     </div>
+                                    {!readOnly && (
+                                        <div className="flex gap-1 shrink-0">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8"
+                                                onClick={e => {
+                                                    e.stopPropagation();
+                                                    handleToggleStatus(word);
+                                                }}
+                                            >
+                                                {isLoading ? (
+                                                    <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                                                ) : displayWord.status ===
+                                                  'LEARNED' ? (
+                                                    <CheckCircle className="w-4 h-4 text-green-500" />
+                                                ) : (
+                                                    <CheckCircle2 className="w-4 h-4 text-gray-400" />
+                                                )}
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8"
+                                                onClick={e => {
+                                                    e.stopPropagation();
+                                                    handleDeleteWord(word.id);
+                                                }}
+                                                disabled={isLoading}
+                                            >
+                                                {isLoading ? (
+                                                    <Loader2 className="w-4 h-4 animate-spin text-red-500" />
+                                                ) : (
+                                                    <Trash2 className="w-4 h-4 text-red-500" />
+                                                )}
+                                            </Button>
+                                        </div>
+                                    )}
                                 </div>
-                                {!readOnly && (
-                                    <div className="flex gap-1 shrink-0">
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="h-8 w-8"
-                                            onClick={e => {
-                                                e.stopPropagation();
-                                                handleToggleStatus(word);
-                                            }}
-                                        >
-                                            {word.status === 'LEARNED' ? (
-                                                <CheckCircle className="w-4 h-4 text-green-500" />
-                                            ) : (
-                                                <CheckCircle2 className="w-4 h-4 text-gray-400" />
-                                            )}
-                                        </Button>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="h-8 w-8"
-                                            onClick={e => {
-                                                e.stopPropagation();
-                                                handleDeleteWord(word.id);
-                                            }}
-                                        >
-                                            <Trash2 className="w-4 h-4 text-red-500" />
-                                        </Button>
-                                    </div>
-                                )}
-                            </div>
-                        </CardHeader>
-                    </Card>
-                ))}
+                            </CardHeader>
+                        </Card>
+                    );
+                })}
             </div>
         </div>
     );
