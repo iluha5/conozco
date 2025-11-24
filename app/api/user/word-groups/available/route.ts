@@ -21,10 +21,7 @@ export async function GET() {
                 },
             ],
             NOT: {
-                OR: [
-                    { activeUsers: { some: { userId } } },
-                    { createdByUserId: userId },
-                ],
+                activeUsers: { some: { userId } },
             },
         },
         include: {

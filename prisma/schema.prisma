@@ -68,6 +68,7 @@ model Language {
   tenses                                 Tense[]
   wordTranslations                       WordTranslation[]
   partsOfSpeech                          PartOfSpeech[]
+  wordGroups                             WordGroup[]
   apiRequestLogsSourceLanguage           ApiRequestLog[]      @relation("ApiRequestLogSourceLanguage")
   apiRequestLogsTargetLanguage           ApiRequestLog[]      @relation("ApiRequestLogTargetLanguage")
   customTranslationsOriginal             CustomTranslation[]  @relation("CustomTranslationOriginalLanguage")
@@ -178,18 +179,22 @@ model WordGroup {
   id              Int                  @id @default(autoincrement())
   name            String               @unique // Название группы
   createdByUserId Int // ID пользователя, создавшего группу
+  languageId      Int // ID языка группы
+  description     String? // Дополнительное описание группы
   visibility      WordGroupVisibility  @default(PRIVATE) // Тип видимости
   isApproved      Boolean              @default(false) // Одобрена ли группа администратором (для PUBLIC)
   createdAt       DateTime             @default(now())
   updatedAt       DateTime             @updatedAt
 
   createdBy   User                   @relation("CreatedWordGroups", fields: [createdByUserId], references: [id], onDelete: Cascade)
+  language    Language               @relation(fields: [languageId], references: [id])
   baseWords   BaseWordOnWordGroup[]
   sharedWith  WordGroupAccess[] // Список пользователей с доступом (для SHARED)
   activeUsers UserWordGroup[] // Пользователи, у которых группа активна
 
   @@index([name])
   @@index([createdByUserId])
+  @@index([languageId])
   @@index([visibility])
   @@index([isApproved])
   @@index([visibility, isApproved]) // Комбинированный индекс для фильтрации одобренных публичных групп
