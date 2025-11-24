@@ -62,9 +62,18 @@ type Word = {
     trainingSessions?: Array<any>;
 };
 
+type WordUpdateCallback = (
+    _wordId: string | number,
+    _updates: Partial<Word>,
+) => void;
+
+type WordRemoveCallback = (_wordId: string | number) => void;
+
 type WordsListProps = {
     words: Word[];
     onWordsChange?: () => Promise<void>;
+    onWordUpdate?: WordUpdateCallback;
+    onWordRemove?: WordRemoveCallback;
     showBulkActions?: boolean;
     readOnly?: boolean;
     emptyMessage?: string;
@@ -73,6 +82,8 @@ type WordsListProps = {
 export function WordsList({
     words,
     onWordsChange,
+    onWordUpdate,
+    onWordRemove,
     showBulkActions = true,
     readOnly = false,
     emptyMessage = 'Слова не найдены',
@@ -105,7 +116,12 @@ export function WordsList({
             });
 
             if (response.ok) {
-                await onWordsChange?.();
+                // Если есть callback для удаления, используем его, иначе перезагружаем весь список
+                if (onWordRemove) {
+                    onWordRemove(id);
+                } else {
+                    await onWordsChange?.();
+                }
             }
         } catch (error) {
             console.error('Error deleting word:', error);
@@ -127,7 +143,12 @@ export function WordsList({
             });
 
             if (response.ok) {
-                await onWordsChange?.();
+                // Если есть callback для обновления, используем его, иначе перезагружаем весь список
+                if (onWordUpdate) {
+                    onWordUpdate(word.id, { status: newStatus });
+                } else {
+                    await onWordsChange?.();
+                }
             }
         } catch (error) {
             console.error('Error updating word:', error);
@@ -199,6 +220,10 @@ export function WordsList({
 
                 if (response.ok) {
                     successCount++;
+                    // Обновляем состояние отдельного слова, если есть callback
+                    if (onWordUpdate) {
+                        onWordUpdate(wordId, { status: newStatus });
+                    }
                 } else {
                     errorCount++;
                 }
@@ -211,7 +236,10 @@ export function WordsList({
                     variant: 'success',
                 });
                 setSelectedWords([]);
-                await onWordsChange?.();
+                // Перезагружаем только если нет callback для обновления
+                if (!onWordUpdate) {
+                    await onWordsChange?.();
+                }
             } else {
                 toast({
                     title: 'Ошибка',
@@ -252,6 +280,10 @@ export function WordsList({
 
                 if (response.ok) {
                     successCount++;
+                    // Удаляем слово из состояния, если есть callback
+                    if (onWordRemove) {
+                        onWordRemove(wordId);
+                    }
                 } else {
                     errorCount++;
                 }
@@ -264,7 +296,10 @@ export function WordsList({
                     variant: 'success',
                 });
                 setSelectedWords([]);
-                await onWordsChange?.();
+                // Перезагружаем только если нет callback для удаления
+                if (!onWordRemove) {
+                    await onWordsChange?.();
+                }
             } else {
                 toast({
                     title: 'Ошибка',

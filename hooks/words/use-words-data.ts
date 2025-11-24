@@ -29,6 +29,18 @@ export const useWordsData = () => {
         }
     }, [toast]);
 
+    const updateWord = useCallback((wordId: number, updates: Partial<Word>) => {
+        setWords(prevWords =>
+            prevWords.map(word =>
+                word.id === wordId ? { ...word, ...updates } : word,
+            ),
+        );
+    }, []);
+
+    const removeWord = useCallback((wordId: number) => {
+        setWords(prevWords => prevWords.filter(word => word.id !== wordId));
+    }, []);
+
     useEffect(() => {
         fetchWords();
     }, [fetchWords]);
@@ -37,5 +49,7 @@ export const useWordsData = () => {
         words,
         loading,
         refetch: fetchWords,
+        updateWord,
+        removeWord,
     };
 };

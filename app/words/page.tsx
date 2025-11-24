@@ -20,7 +20,7 @@ import { WordGroupsFilter } from '@/components/word-groups/WordGroupsFilter';
 import { useTrainingSelection } from '@/hooks/shared';
 import { useWordsData, useWordsFilter, useWordsStats } from '@/hooks/words';
 import { useWordGroupsFilter } from '@/hooks/word-groups/use-word-groups-filter';
-import { WordsFilter } from '@/types/words.types';
+import { WordsFilter, Word } from '@/types/words.types';
 
 export default function WordsPage() {
     const { selectedLanguage, setSelectedLanguage } = useTrainingSelection();
@@ -29,7 +29,7 @@ export default function WordsPage() {
     const [isManagementOpen, setIsManagementOpen] = useState(false);
 
     // Загрузка данных
-    const { words, loading, refetch } = useWordsData();
+    const { words, loading, refetch, updateWord, removeWord } = useWordsData();
 
     // Фильтр по группам
     const { selectedGroupIds, toggleGroup, toggleAll } =
@@ -201,6 +201,15 @@ export default function WordsPage() {
                     <WordsList
                         words={filteredWords}
                         onWordsChange={refetch}
+                        onWordUpdate={(wordId, updates) => {
+                            updateWord(
+                                Number(wordId),
+                                updates as Partial<Word>,
+                            );
+                        }}
+                        onWordRemove={wordId => {
+                            removeWord(Number(wordId));
+                        }}
                         showBulkActions={true}
                         emptyMessage="Слова не найдены. Добавьте новое слово!"
                     />
