@@ -5,6 +5,7 @@ import { signOut } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { LogOut, User, X } from 'lucide-react';
 import { Session } from 'next-auth';
+import Link from 'next/link';
 
 interface MobileSidebarProps {
     isOpen: boolean;
@@ -95,8 +96,20 @@ export function MobileSidebar({
                                 )}
                             </div>
 
-                            {/* Actions */}
+                            {/* Navigation Links */}
                             <div className="space-y-2">
+                                <Link
+                                    href="/word-groups"
+                                    onClick={onClose}
+                                    className="block px-4 py-3 text-sm font-medium text-gray-700 hover:text-gray-900 relative pb-1.5 group"
+                                >
+                                    Группы слов
+                                    <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-gray-900 transition-all duration-200 group-hover:w-full" />
+                                </Link>
+                            </div>
+
+                            {/* Actions */}
+                            <div className="space-y-2 mt-4">
                                 <Button
                                     variant="outline"
                                     className="w-full justify-start"
