@@ -15,7 +15,6 @@ import { Header } from '@/components/Header';
 import { ArrowLeft, Settings } from 'lucide-react';
 import { AddWordDialog } from '@/components/AddWordDialog';
 import { WordsList } from '@/components/WordsList';
-import { WordGroupsManagementDialog } from '@/components/word-groups/WordGroupsManagementDialog';
 import { WordGroupsFilter } from '@/components/word-groups/WordGroupsFilter';
 import { useTrainingSelection } from '@/hooks/shared';
 import { useWordsData, useWordsFilter, useWordsStats } from '@/hooks/words';
@@ -26,7 +25,6 @@ export default function WordsPage() {
     const { selectedLanguage, setSelectedLanguage } = useTrainingSelection();
     const [selectedStatus, setSelectedStatus] = useState<string>('NOT_LEARNED');
     const [isClient, setIsClient] = useState(false);
-    const [isManagementOpen, setIsManagementOpen] = useState(false);
 
     // Загрузка данных
     const { words, loading, refetch, updateWord, removeWord } = useWordsData();
@@ -87,17 +85,21 @@ export default function WordsPage() {
                         Мои слова
                     </h1>
                     <div className="flex flex-row gap-2 w-full md:w-auto">
-                        <Button
-                            variant="outline"
-                            size="lg"
-                            onClick={() => setIsManagementOpen(true)}
+                        <Link
+                            href="/word-groups"
                             className="flex-1 md:flex-none min-w-0"
                         >
-                            <Settings className="w-4 h-4 mr-2 flex-shrink-0" />
-                            <span className="truncate">
-                                Управление группами
-                            </span>
-                        </Button>
+                            <Button
+                                variant="outline"
+                                size="lg"
+                                className="w-full min-w-0"
+                            >
+                                <Settings className="w-4 h-4 mr-2 flex-shrink-0" />
+                                <span className="truncate">
+                                    Управление группами
+                                </span>
+                            </Button>
+                        </Link>
                         <div className="flex-1 md:flex-none min-w-0">
                             <AddWordDialog onWordAdded={handleAddWord} />
                         </div>
@@ -214,11 +216,6 @@ export default function WordsPage() {
                         emptyMessage="Слова не найдены. Добавьте новое слово!"
                     />
                 )}
-
-                <WordGroupsManagementDialog
-                    open={isManagementOpen}
-                    onOpenChange={setIsManagementOpen}
-                />
             </div>
         </div>
     );
