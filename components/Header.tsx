@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, Menu } from 'lucide-react';
+import { LogOut, User, Menu, Layers } from 'lucide-react';
 import { MobileSidebar } from './MobileSidebar';
 
 function HeaderSkeleton() {
@@ -63,8 +63,9 @@ export function Header() {
                         <div>
                             <Link
                                 href="/word-groups"
-                                className="text-sm font-medium text-gray-700 hover:text-gray-900 relative group"
+                                className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900 relative group"
                             >
+                                <Layers className="w-4 h-4" />
                                 Группы слов
                                 <span className="absolute -bottom-1 left-0 w-0 h-px bg-gray-900 transition-all duration-200 group-hover:w-full" />
                             </Link>
