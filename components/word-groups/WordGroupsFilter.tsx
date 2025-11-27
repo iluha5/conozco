@@ -1,6 +1,6 @@
 'use client';
 
-import { Check, Filter } from 'lucide-react';
+import { Check, Filter, MinusSquare, Square, CheckSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -91,10 +91,27 @@ export function WordGroupsFilter({
                             variant="ghost"
                             size="sm"
                             className="w-full justify-start font-normal flex-shrink-0"
-                            onClick={() =>
-                                onToggleAll(activeGroups.map(g => g.id))
-                            }
+                            onClick={() => {
+                                if (allSelected) {
+                                    onToggleAll([]);
+                                } else {
+                                    onToggleAll(activeGroups.map(g => g.id));
+                                }
+                            }}
                         >
+                            {(() => {
+                                if (selectedGroupIds.length === 0) {
+                                    return <Square className="mr-2 h-4 w-4" />;
+                                } else if (allSelected) {
+                                    return (
+                                        <CheckSquare className="mr-2 h-4 w-4" />
+                                    );
+                                } else {
+                                    return (
+                                        <MinusSquare className="mr-2 h-4 w-4" />
+                                    );
+                                }
+                            })()}
                             {allSelected ? 'Снять все' : 'Выбрать все'}
                         </Button>
                         <Separator className="my-2 flex-shrink-0" />
