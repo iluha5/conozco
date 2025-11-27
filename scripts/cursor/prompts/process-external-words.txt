@@ -124,17 +124,17 @@ GOOD EXAMPLES:
 
 GRAMMATICAL EXAMPLES (only for verbs):
 - Check if word is a verb (partOfSpeech = VERB)
-- For Present Simple (Presente de indicativo for Spanish, Present Simple for English):
-  - Generate examples for ALL pronouns appropriate for the language:
-    * Spanish: yo, tú, él/ella, nosotros, vosotros, ellos/ellas
-    * English: I, you, we, they, he/she/it
-  - Randomly select one pronoun to be negative
-  - Randomly select one pronoun to be interrogative
-  - Rest should be affirmative
-- For other tenses:
-  - Past Simple (Pretérito indefinido for Spanish, Past Simple for English)
-  - Future Simple (Futuro próximo "ir a + infinitive" for Spanish, Future Simple for English)
-  - Generate examples for only ONE pronoun (yo/tú/él for Spanish, I/you/he for English) in affirmative form
+- For ALL tenses, generate examples for ALL pronouns appropriate for the language:
+  * Spanish: yo, tú, él/ella, nosotros, vosotros, ellos/ellas
+  * English: I, you, we, they, he/she/it
+- For each tense, randomly select pronouns for variation:
+  * ONE pronoun must be negative (isNegative: true)
+  * ONE different pronoun must be interrogative (isQuestion: true)
+  * All other pronouns should be affirmative
+- Required tenses:
+  * Present Simple (Presente de indicativo for Spanish, Present Simple for English)
+  * Past Simple (Pretérito indefinido for Spanish, Past Simple for English)
+  * Future Simple (Futuro próximo "ir a + infinitive" for Spanish, Future Simple for English)
 - Sentence structure: pronoun + word in correct form + necessary connectors/articles only
 - Keep sentences simple and grammatically correct
 - Ensure all examples make logical sense and are natural
@@ -148,6 +148,7 @@ IMPORTANT:
 - Do not include any explanations, comments, or additional text
 - Use only your linguistic knowledge (no external APIs)
 - Ensure all content is natural and grammatically correct
+- For grammatical examples: Randomly select different pronouns for negative and question forms in each tense
 
 EXAMPLE OUTPUT:
 ```typescript
@@ -187,13 +188,23 @@ export const GENERATED_WORD_DATA: Map<string, WordData> = new Map([
       {
         tenseName: 'Pretérito indefinido',
         examples: [
-          { pronoun: 'yo', example: 'Yo escribí', translations: [{ languageCode: 'ru', translation: 'Я написал' }, { languageCode: 'en', translation: 'I wrote' }], isNegative: false, isQuestion: false }
+          { pronoun: 'yo', example: 'Yo escribí', translations: [{ languageCode: 'ru', translation: 'Я написал' }, { languageCode: 'en', translation: 'I wrote' }], isNegative: false, isQuestion: false },
+          { pronoun: 'tú', example: '¿Tú escribiste?', translations: [{ languageCode: 'ru', translation: 'Ты написал?' }, { languageCode: 'en', translation: 'Did you write?' }], isNegative: false, isQuestion: true },
+          { pronoun: 'él', example: 'Él escribió', translations: [{ languageCode: 'ru', translation: 'Он написал' }, { languageCode: 'en', translation: 'He wrote' }], isNegative: false, isQuestion: false },
+          { pronoun: 'nosotros', example: 'Nosotros no escribimos', translations: [{ languageCode: 'ru', translation: 'Мы не написали' }, { languageCode: 'en', translation: 'We didn't write' }], isNegative: true, isQuestion: false },
+          { pronoun: 'vosotros', example: 'Vosotros escribisteis', translations: [{ languageCode: 'ru', translation: 'Вы написали' }, { languageCode: 'en', translation: 'You wrote' }], isNegative: false, isQuestion: false },
+          { pronoun: 'ellos', example: 'Ellos escribieron', translations: [{ languageCode: 'ru', translation: 'Они написали' }, { languageCode: 'en', translation: 'They wrote' }], isNegative: false, isQuestion: false }
         ]
       },
       {
         tenseName: 'Futuro próximo',
         examples: [
-          { pronoun: 'tú', example: 'Tú vas a escribir', translations: [{ languageCode: 'ru', translation: 'Ты будешь писать' }, { languageCode: 'en', translation: 'You will write' }], isNegative: false, isQuestion: false }
+          { pronoun: 'yo', example: 'Yo voy a escribir', translations: [{ languageCode: 'ru', translation: 'Я буду писать' }, { languageCode: 'en', translation: 'I will write' }], isNegative: false, isQuestion: false },
+          { pronoun: 'tú', example: 'Tú vas a escribir', translations: [{ languageCode: 'ru', translation: 'Ты будешь писать' }, { languageCode: 'en', translation: 'You will write' }], isNegative: false, isQuestion: false },
+          { pronoun: 'él', example: 'Él va a escribir', translations: [{ languageCode: 'ru', translation: 'Он будет писать' }, { languageCode: 'en', translation: 'He will write' }], isNegative: false, isQuestion: false },
+          { pronoun: 'nosotros', example: '¿Nosotros vamos a escribir?', translations: [{ languageCode: 'ru', translation: 'Мы будем писать?' }, { languageCode: 'en', translation: 'Will we write?' }], isNegative: false, isQuestion: true },
+          { pronoun: 'vosotros', example: 'Vosotros vais a escribir', translations: [{ languageCode: 'ru', translation: 'Вы будете писать' }, { languageCode: 'en', translation: 'You will write' }], isNegative: false, isQuestion: false },
+          { pronoun: 'ellos', example: 'Ellos no van a escribir', translations: [{ languageCode: 'ru', translation: 'Они не будут писать' }, { languageCode: 'en', translation: 'They won't write' }], isNegative: true, isQuestion: false }
         ]
       }
     ]

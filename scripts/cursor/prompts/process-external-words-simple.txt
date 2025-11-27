@@ -156,24 +156,24 @@ STRUCTURE FOR VERBS:
         },
         {
           "pronoun": "tú",
-          "example": "¿Tú hablas?",
+          "example": "Tú hablas",
           "translations": [
-            {"languageCode": "ru", "translation": "Ты говоришь?"},
-            {"languageCode": "en", "translation": "Do you speak?"}
+            {"languageCode": "ru", "translation": "Ты говоришь"},
+            {"languageCode": "en", "translation": "You speak"}
           ],
-          "sentenceTypeCode": "QUESTION",
+          "sentenceTypeCode": "AFFIRMATIVE",
           "isNegative": false,
-          "isQuestion": true
+          "isQuestion": false
         },
         {
           "pronoun": "él",
-          "example": "Él no habla",
+          "example": "Él habla",
           "translations": [
-            {"languageCode": "ru", "translation": "Он не говорит"},
-            {"languageCode": "en", "translation": "He doesn't speak"}
+            {"languageCode": "ru", "translation": "Он говорит"},
+            {"languageCode": "en", "translation": "He speaks"}
           ],
-          "sentenceTypeCode": "NEGATIVE",
-          "isNegative": true,
+          "sentenceTypeCode": "AFFIRMATIVE",
+          "isNegative": false,
           "isQuestion": false
         },
         {
@@ -224,6 +224,61 @@ STRUCTURE FOR VERBS:
           "sentenceTypeCode": "AFFIRMATIVE",
           "isNegative": false,
           "isQuestion": false
+        },
+        {
+          "pronoun": "tú",
+          "example": "¿Tú hablaste?",
+          "translations": [
+            {"languageCode": "ru", "translation": "Ты говорил?"},
+            {"languageCode": "en", "translation": "Did you speak?"}
+          ],
+          "sentenceTypeCode": "QUESTION",
+          "isNegative": false,
+          "isQuestion": true
+        },
+        {
+          "pronoun": "él",
+          "example": "Él no habló",
+          "translations": [
+            {"languageCode": "ru", "translation": "Он не говорил"},
+            {"languageCode": "en", "translation": "He didn't speak"}
+          ],
+          "sentenceTypeCode": "NEGATIVE",
+          "isNegative": true,
+          "isQuestion": false
+        },
+        {
+          "pronoun": "nosotros",
+          "example": "Nosotros hablamos",
+          "translations": [
+            {"languageCode": "ru", "translation": "Мы говорили"},
+            {"languageCode": "en", "translation": "We spoke"}
+          ],
+          "sentenceTypeCode": "AFFIRMATIVE",
+          "isNegative": false,
+          "isQuestion": false
+        },
+        {
+          "pronoun": "vosotros",
+          "example": "Vosotros hablasteis",
+          "translations": [
+            {"languageCode": "ru", "translation": "Вы говорили"},
+            {"languageCode": "en", "translation": "You spoke"}
+          ],
+          "sentenceTypeCode": "AFFIRMATIVE",
+          "isNegative": false,
+          "isQuestion": false
+        },
+        {
+          "pronoun": "ellos",
+          "example": "Ellos hablaron",
+          "translations": [
+            {"languageCode": "ru", "translation": "Они говорили"},
+            {"languageCode": "en", "translation": "They spoke"}
+          ],
+          "sentenceTypeCode": "AFFIRMATIVE",
+          "isNegative": false,
+          "isQuestion": false
         }
       ]
     },
@@ -231,11 +286,66 @@ STRUCTURE FOR VERBS:
       "tenseName": "Futuro próximo",
       "examples": [
         {
+          "pronoun": "yo",
+          "example": "Yo voy a hablar",
+          "translations": [
+            {"languageCode": "ru", "translation": "Я буду говорить"},
+            {"languageCode": "en", "translation": "I will speak"}
+          ],
+          "sentenceTypeCode": "AFFIRMATIVE",
+          "isNegative": false,
+          "isQuestion": false
+        },
+        {
           "pronoun": "tú",
           "example": "Tú vas a hablar",
           "translations": [
             {"languageCode": "ru", "translation": "Ты будешь говорить"},
             {"languageCode": "en", "translation": "You will speak"}
+          ],
+          "sentenceTypeCode": "AFFIRMATIVE",
+          "isNegative": false,
+          "isQuestion": false
+        },
+        {
+          "pronoun": "él",
+          "example": "Él va a hablar",
+          "translations": [
+            {"languageCode": "ru", "translation": "Он будет говорить"},
+            {"languageCode": "en", "translation": "He will speak"}
+          ],
+          "sentenceTypeCode": "AFFIRMATIVE",
+          "isNegative": false,
+          "isQuestion": false
+        },
+        {
+          "pronoun": "nosotros",
+          "example": "Nosotros no vamos a hablar",
+          "translations": [
+            {"languageCode": "ru", "translation": "Мы не будем говорить"},
+            {"languageCode": "en", "translation": "We won't speak"}
+          ],
+          "sentenceTypeCode": "NEGATIVE",
+          "isNegative": true,
+          "isQuestion": false
+        },
+        {
+          "pronoun": "vosotros",
+          "example": "¿Vosotros vais a hablar?",
+          "translations": [
+            {"languageCode": "ru", "translation": "Вы будете говорить?"},
+            {"languageCode": "en", "translation": "Will you speak?"}
+          ],
+          "sentenceTypeCode": "QUESTION",
+          "isNegative": false,
+          "isQuestion": true
+        },
+        {
+          "pronoun": "ellos",
+          "example": "Ellos van a hablar",
+          "translations": [
+            {"languageCode": "ru", "translation": "Они будут говорить"},
+            {"languageCode": "en", "translation": "They will speak"}
           ],
           "sentenceTypeCode": "AFFIRMATIVE",
           "isNegative": false,
@@ -248,27 +358,27 @@ STRUCTURE FOR VERBS:
 
 RULES FOR GRAMMATICAL EXAMPLES (ONLY FOR VERBS):
 
-1. PRESENT TENSE (Presente de indicativo for Spanish, Present Simple for English):
-   - Generate examples for ALL pronouns:
-     * Spanish: yo, tú, él, nosotros, vosotros, ellos
-     * English: I, you, he, we, you, they
+1. FOR ALL TENSES, generate examples for ALL pronouns:
+   - Spanish: yo, tú, él, nosotros, vosotros, ellos
+   - English: I, you, he, we, you, they
    - Randomly select ONE pronoun for NEGATIVE form (isNegative: true, sentenceTypeCode: "NEGATIVE")
    - Randomly select ONE different pronoun for QUESTION form (isQuestion: true, sentenceTypeCode: "QUESTION")
    - All other pronouns should be AFFIRMATIVE (isNegative: false, isQuestion: false, sentenceTypeCode: "AFFIRMATIVE")
    - Use correct verb conjugation for each pronoun
 
-2. PAST TENSE (Pretérito indefinido for Spanish, Past Simple for English):
-   - Generate example for only ONE pronoun (choose: yo/tú/él for Spanish, I/you/he for English)
-   - Must be AFFIRMATIVE form only
+2. PRESENT TENSE (Presente de indicativo for Spanish, Present Simple for English):
+   - Follow the general rules above for all pronouns
+
+3. PAST TENSE (Pretérito indefinido for Spanish, Past Simple for English):
+   - Follow the general rules above for all pronouns
    - Use correct past tense conjugation
 
-3. FUTURE TENSE (Futuro próximo "ir a + infinitive" for Spanish, Future Simple "will + verb" for English):
-   - Generate example for only ONE pronoun (choose: yo/tú/él for Spanish, I/you/he for English)
-   - Must be AFFIRMATIVE form only
+4. FUTURE TENSE (Futuro próximo "ir a + infinitive" for Spanish, Future Simple "will + verb" for English):
+   - Follow the general rules above for all pronouns
    - Spanish: use "ir a + infinitive" construction (e.g., "Yo voy a hablar")
    - English: use "will + verb" construction (e.g., "I will speak")
 
-4. SENTENCE STRUCTURE:
+5. SENTENCE STRUCTURE:
    - Keep sentences simple: pronoun + verb form (+ minimal context if needed)
    - Ensure grammatically correct conjugations
    - Generate accurate translations for Russian AND English (or Russian and Spanish for English words)
@@ -296,3 +406,4 @@ IMPORTANT NOTES:
 - Provide natural, commonly used translations
 - Keep sentence structures simple and clear
 - ALWAYS generate at least 5 examples for any word
+- For grammatical examples: Randomly select different pronouns for negative and question forms in each tense
