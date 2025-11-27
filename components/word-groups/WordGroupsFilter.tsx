@@ -22,7 +22,12 @@ export function WordGroupsFilter({
     className,
 }: WordGroupsFilterProps) {
     const [isOpen, setIsOpen] = useState(false);
+    const [popupPosition, setPopupPosition] = useState({
+        left: true,
+        top: true,
+    });
     const containerRef = useRef<HTMLDivElement>(null);
+    const popupRef = useRef<HTMLDivElement>(null);
     const { data: activeGroups, isLoading } = useActiveWordGroups();
 
     useEffect(() => {
@@ -42,6 +47,30 @@ export function WordGroupsFilter({
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
+    }, [isOpen]);
+
+    useEffect(() => {
+        if (isOpen && containerRef.current && popupRef.current) {
+            const containerRect = containerRef.current.getBoundingClientRect();
+            const popupRect = popupRef.current.getBoundingClientRect();
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+
+            // Проверяем горизонтальное позиционирование
+            const fitsLeft =
+                containerRect.left + popupRect.width <= viewportWidth;
+            const fitsRight = containerRect.right - popupRect.width >= 0;
+
+            // Проверяем вертикальное позиционирование
+            const fitsDown =
+                containerRect.bottom + popupRect.height <= viewportHeight;
+            const fitsUp = containerRect.top - popupRect.height >= 0;
+
+            setPopupPosition({
+                left: fitsLeft || !fitsRight, // Используем left если помещается слева или не помещается справа
+                top: fitsDown || !fitsUp, // Используем top если помещается снизу или не помещается сверху
+            });
+        }
     }, [isOpen]);
 
     if (isLoading || !activeGroups || activeGroups.length === 0) {
@@ -80,7 +109,14 @@ export function WordGroupsFilter({
 
             {isOpen && (
                 <div
-                    className="absolute top-full left-0 z-50 mt-1 w-[280px] rounded-md border bg-popover p-0 shadow-md"
+                    ref={popupRef}
+                    className={cn(
+                        'absolute z-50 w-[280px] rounded-md border bg-popover p-0 shadow-md',
+                        popupPosition.top
+                            ? 'top-full mt-1'
+                            : 'bottom-full mb-1',
+                        popupPosition.left ? 'left-0' : 'right-0',
+                    )}
                     style={{
                         boxShadow:
                             '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
