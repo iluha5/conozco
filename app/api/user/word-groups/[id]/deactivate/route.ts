@@ -24,13 +24,6 @@ export async function DELETE(
         return NextResponse.json({ error: 'Group not found' }, { status: 404 });
     }
 
-    if (group.createdByUserId === userId) {
-        return NextResponse.json(
-            { error: 'Cannot remove your own group from active groups' },
-            { status: 403 },
-        );
-    }
-
     // Удалить из активных
     await prisma.userWordGroup.delete({
         where: {

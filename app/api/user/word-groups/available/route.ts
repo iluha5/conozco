@@ -26,7 +26,7 @@ export async function GET() {
         },
         include: {
             createdBy: {
-                select: { name: true },
+                select: { name: true, id: true },
             },
             _count: {
                 select: { baseWords: true },
@@ -42,6 +42,7 @@ export async function GET() {
             wordsCount: g._count.baseWords,
             visibility: g.visibility,
             createdBy: g.createdBy.name,
+            isOwner: g.createdByUserId === userId,
         })),
     );
 }

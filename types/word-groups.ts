@@ -14,6 +14,7 @@ export interface AvailableWordGroup {
     wordsCount: number;
     visibility: 'PUBLIC' | 'PRIVATE' | 'SHARED';
     createdBy: string;
+    isOwner: boolean;
 }
 
 export type WordGroupsFilterContext =

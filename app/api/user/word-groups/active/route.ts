@@ -32,7 +32,7 @@ export async function GET() {
             wordsCount: ag.wordGroup._count.baseWords,
             visibility: ag.wordGroup.visibility,
             isOwner: ag.wordGroup.createdByUserId === userId,
-            canRemove: ag.wordGroup.createdByUserId !== userId,
+            canRemove: true,
             activatedAt: ag.activatedAt,
         })),
     );
