@@ -5,7 +5,6 @@
 export type PartOfSpeech = {
     id: string;
     name: string;
-    displayName: string;
 };
 
 export type BaseWord = {

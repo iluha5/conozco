@@ -611,7 +611,7 @@ export function WordsList({
                                                     return (
                                                         <span className="text-xs bg-gray-100 px-2 py-1 rounded shrink-0">
                                                             {getPartOfSpeechAbbrev(
-                                                                partOfSpeech.displayName,
+                                                                partOfSpeech.name,
                                                             )}
                                                         </span>
                                                     );

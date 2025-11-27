@@ -22,16 +22,11 @@ async function addTestVerb() {
         // 2. Получаем или создаем часть речи (глагол)
         const partOfSpeech = await prisma.partOfSpeech.upsert({
             where: {
-                name_languageId: {
-                    name: 'verb',
-                    languageId: language.id,
-                },
+                name: 'VERB',
             },
             update: {},
             create: {
-                name: 'verb',
-                displayName: 'Verb',
-                languageId: language.id,
+                name: 'VERB',
             },
         });
         console.log(`✅ Part of Speech: verb (ID: ${partOfSpeech.id})`);

@@ -44,16 +44,10 @@ model UserRole {
 // Часть речи
 model PartOfSpeech {
   id          Int    @id @default(autoincrement())
-  name        String // NOUN, VERB, etc.
-  displayName String // существительное, глагол, etc.
-  languageId  Int // ID языка (для поддержки разных языков)
+  name        String @unique // NOUN, VERB, etc.
 
-  language           Language            @relation(fields: [languageId], references: [id])
   customTranslations CustomTranslation[]
   wordTranslations   WordTranslation[]
-
-  @@unique([name, languageId])
-  @@index([languageId])
 }
 
 // Справочник языков
@@ -67,7 +61,6 @@ model Language {
   pronouns                               Pronoun[]
   tenses                                 Tense[]
   wordTranslations                       WordTranslation[]
-  partsOfSpeech                          PartOfSpeech[]
   wordGroups                             WordGroup[]
   apiRequestLogsSourceLanguage           ApiRequestLog[]      @relation("ApiRequestLogSourceLanguage")
   apiRequestLogsTargetLanguage           ApiRequestLog[]      @relation("ApiRequestLogTargetLanguage")

@@ -80,7 +80,7 @@ export function WordCard({
                                     <span className="text-xs bg-gray-100 px-2 py-1 rounded shrink-0">
                                         {getPartOfSpeechAbbrev(
                                             word.translations[0].partOfSpeech
-                                                .displayName,
+                                                .name,
                                         )}
                                     </span>
                                 )}

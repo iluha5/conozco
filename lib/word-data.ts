@@ -93,12 +93,10 @@ export async function importWordsData(
                 },
             },
             update: {
-                partOfSpeechId: partsOfSpeechRecords[wordData.partOfSpeech].id,
                 sourceId: wordSources['native'].id,
             },
             create: {
                 word: wordData.word,
-                partOfSpeechId: partsOfSpeechRecords[wordData.partOfSpeech].id,
                 languageId: language.id,
                 sourceId: wordSources['native'].id,
             },
@@ -242,6 +240,7 @@ export async function importWordsData(
                                 pronounId: pronounRecords[example.pronoun].id,
                                 example: example.example,
                                 translation: example.translation,
+                                translationLanguageId: language.id, // Язык перевода - русский
                                 sentenceTypeId: getSentenceTypeId(example),
                                 sourceId: wordSources['native'].id,
                             },

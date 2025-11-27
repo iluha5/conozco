@@ -2,6 +2,38 @@
  * Утилиты для работы со словами
  */
 
+// Мапа частей речи: name -> человеко-читаемое название
+export const PART_OF_SPEECH_DISPLAY_NAMES: Record<string, string> = {
+    NOUN: 'Noun',
+    VERB: 'Verb',
+    ADJECTIVE: 'Adjective',
+    ADVERB: 'Adverb',
+    PRONOUN: 'Pronoun',
+    PREPOSITION: 'Preposition',
+    CONJUNCTION: 'Conjunction',
+    INTERJECTION: 'Interjection',
+    ARTICLE: 'Article',
+    DETERMINER: 'Determiner',
+    NUMERAL: 'Numeral',
+    PHRASE: 'Phrase',
+};
+
+// Мапа частей речи: name -> аббревиатура
+export const PART_OF_SPEECH_ABBREVIATIONS: Record<string, string> = {
+    NOUN: 'n',
+    VERB: 'v',
+    ADJECTIVE: 'adj',
+    ADVERB: 'adv',
+    PRONOUN: 'pron',
+    PREPOSITION: 'prep',
+    CONJUNCTION: 'conj',
+    INTERJECTION: 'int',
+    ARTICLE: 'art',
+    DETERMINER: 'det',
+    NUMERAL: 'num',
+    PHRASE: 'phr',
+};
+
 type Translation = {
     translation: string;
     priority?: number;
@@ -46,32 +78,20 @@ export function getLanguageFlag(languageCode: string): string {
 }
 
 /**
- * Получить аббревиатуру части речи
+ * Получить аббревиатуру части речи по имени
  */
-export function getPartOfSpeechAbbrev(displayName: string): string {
-    const abbreviations: Record<string, string> = {
-        существительное: 'сущ',
-        глагол: 'гл',
-        прилагательное: 'пр',
-        наречие: 'нар',
-        местоимение: 'мест',
-        предлог: 'пред',
-        союз: 'союз',
-        частица: 'част',
-        междометие: 'межд',
-        noun: 'n',
-        verb: 'v',
-        adjective: 'adj',
-        adverb: 'adv',
-        pronoun: 'pron',
-        preposition: 'prep',
-        conjunction: 'conj',
-        particle: 'part',
-        interjection: 'int',
-    };
+export function getPartOfSpeechAbbrev(partOfSpeechName: string): string {
     return (
-        abbreviations[displayName.toLowerCase()] || displayName.substring(0, 3)
+        PART_OF_SPEECH_ABBREVIATIONS[partOfSpeechName] ||
+        partOfSpeechName.substring(0, 3)
     );
+}
+
+/**
+ * Получить человеко-читаемое название части речи
+ */
+export function getPartOfSpeechDisplayName(partOfSpeechName: string): string {
+    return PART_OF_SPEECH_DISPLAY_NAMES[partOfSpeechName] || partOfSpeechName;
 }
 
 /**

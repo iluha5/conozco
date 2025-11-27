@@ -35,11 +35,18 @@ type AddWordDialogFiltersProps = {
 };
 
 const PARTS_OF_SPEECH = [
-    { value: 'VERB', label: 'Глагол' },
-    { value: 'NOUN', label: 'Существительное' },
-    { value: 'ADJECTIVE', label: 'Прилагательное' },
-    { value: 'ADVERB', label: 'Наречие' },
-    { value: 'PRONOUN', label: 'Местоимение' },
+    { value: 'VERB', label: 'Verb' },
+    { value: 'NOUN', label: 'Noun' },
+    { value: 'ADJECTIVE', label: 'Adjective' },
+    { value: 'ADVERB', label: 'Adverb' },
+    { value: 'PRONOUN', label: 'Pronoun' },
+    { value: 'PREPOSITION', label: 'Preposition' },
+    { value: 'CONJUNCTION', label: 'Conjunction' },
+    { value: 'INTERJECTION', label: 'Interjection' },
+    { value: 'ARTICLE', label: 'Article' },
+    { value: 'DETERMINER', label: 'Determiner' },
+    { value: 'NUMERAL', label: 'Numeral' },
+    { value: 'PHRASE', label: 'Phrase' },
 ];
 
 export function AddWordDialogFilters({

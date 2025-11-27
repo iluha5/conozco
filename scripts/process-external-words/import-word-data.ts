@@ -345,28 +345,44 @@ async function getOrCreateLanguage(languageCode: string) {
 
 async function getOrCreatePartOfSpeech(
     partOfSpeechName: string,
-    languageId: number,
+    _languageId: number,
 ) {
+    // Маппинг из нижнего регистра в верхний для совместимости с внешними источниками
+    const posMapping: Record<string, string> = {
+        noun: 'NOUN',
+        verb: 'VERB',
+        adjective: 'ADJECTIVE',
+        adverb: 'ADVERB',
+        pronoun: 'PRONOUN',
+        preposition: 'PREPOSITION',
+        conjunction: 'CONJUNCTION',
+        interjection: 'INTERJECTION',
+        // Отдельные части речи
+        article: 'ARTICLE',
+        determiner: 'DETERMINER',
+        numeral: 'NUMERAL',
+        phrase: 'PHRASE',
+    };
+
+    const normalizedName =
+        posMapping[partOfSpeechName.toLowerCase()] ||
+        partOfSpeechName.toUpperCase();
+
     let partOfSpeech = await prisma.partOfSpeech.findUnique({
         where: {
-            name_languageId: {
-                name: partOfSpeechName,
-                languageId: languageId,
-            },
+            name: normalizedName,
         },
     });
 
     if (!partOfSpeech) {
-        // Создаем часть речи, если не существует
+        // Создаем часть речи, если не существует (теперь глобально)
         partOfSpeech = await prisma.partOfSpeech.create({
             data: {
-                name: partOfSpeechName,
-                displayName: partOfSpeechName.toLowerCase(),
-                languageId: languageId,
+                name: normalizedName,
             },
         });
         await log(
-            `📝 Created new part of speech: ${partOfSpeechName} for language ${languageId}`,
+            `📝 Created new part of speech: ${normalizedName} (from ${partOfSpeechName})`,
         );
     }
 
@@ -479,7 +495,7 @@ async function importWordData(wordData: WordData): Promise<boolean> {
     const language = await getOrCreateLanguage(wordData.languageCode);
     const partOfSpeech = await getOrCreatePartOfSpeech(
         wordData.partOfSpeech,
-        language.id,
+        language.id, // Пока оставляем для совместимости, но не используем
     );
     const wordSource = await getWordSource('native'); // Используем native для импортированных данных
 

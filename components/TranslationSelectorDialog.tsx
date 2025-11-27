@@ -21,6 +21,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/shared';
+import { getPartOfSpeechDisplayName } from '@/lib/word-utils';
 
 type Language = {
     id: string | number;
@@ -427,7 +428,9 @@ export function TranslationSelectorDialog({
                                                         key={pos.id}
                                                         value={pos.id.toString()}
                                                     >
-                                                        {pos.displayName}
+                                                        {getPartOfSpeechDisplayName(
+                                                            pos.name,
+                                                        )}
                                                     </SelectItem>
                                                 ))
                                             ) : (

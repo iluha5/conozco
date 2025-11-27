@@ -37,21 +37,8 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        // Найти язык
-        const language = await prisma.language.findUnique({
-            where: { code: languageCode },
-        });
-
-        if (!language) {
-            return NextResponse.json(
-                { error: 'Language not found' },
-                { status: 404 },
-            );
-        }
-
-        // Получить части речи для языка
+        // Части речи теперь глобальные, не зависят от языка
         const partsOfSpeech = await prisma.partOfSpeech.findMany({
-            where: { languageId: language.id },
             orderBy: { name: 'asc' },
         });
 

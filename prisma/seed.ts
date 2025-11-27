@@ -159,79 +159,38 @@ async function main() {
     }
     console.log('✅ Created tenses for English');
 
-    // Create parts of speech for both Spanish and English
+    // Create universal parts of speech (not language-specific)
     const partsOfSpeechData = [
-        { name: 'NOUN', displayName: 'существительное' },
-        { name: 'VERB', displayName: 'глагол' },
-        { name: 'ADJECTIVE', displayName: 'прилагательное' },
-        { name: 'ADVERB', displayName: 'наречие' },
-        { name: 'PRONOUN', displayName: 'местоимение' },
-        { name: 'PREPOSITION', displayName: 'предлог' },
-        { name: 'CONJUNCTION', displayName: 'союз' },
-        { name: 'INTERJECTION', displayName: 'междометие' },
+        'NOUN',
+        'VERB',
+        'ADJECTIVE',
+        'ADVERB',
+        'PRONOUN',
+        'PREPOSITION',
+        'CONJUNCTION',
+        'INTERJECTION',
+        'ARTICLE',
+        'DETERMINER',
+        'NUMERAL',
+        'PHRASE',
     ];
 
     const partsOfSpeechRecords: Record<string, any> = {};
 
-    // Create parts of speech for Spanish
-    for (const pos of partsOfSpeechData) {
+    // Create parts of speech
+    for (const posName of partsOfSpeechData) {
         const partOfSpeech = await prisma.partOfSpeech.upsert({
             where: {
-                name_languageId: {
-                    name: pos.name,
-                    languageId: spanish.id,
-                },
+                name: posName,
             },
             update: {},
             create: {
-                name: pos.name,
-                displayName: pos.displayName,
-                languageId: spanish.id,
+                name: posName,
             },
         });
-        partsOfSpeechRecords[pos.name] = partOfSpeech;
+        partsOfSpeechRecords[posName] = partOfSpeech;
     }
-    console.log('✅ Created parts of speech for Spanish');
-
-    // Create parts of speech for English
-    for (const pos of partsOfSpeechData) {
-        const partOfSpeech = await prisma.partOfSpeech.upsert({
-            where: {
-                name_languageId: {
-                    name: pos.name,
-                    languageId: english.id,
-                },
-            },
-            update: {},
-            create: {
-                name: pos.name,
-                displayName: pos.displayName,
-                languageId: english.id,
-            },
-        });
-        // Store English parts of speech with the same keys
-        partsOfSpeechRecords[pos.name] = partOfSpeech;
-    }
-    console.log('✅ Created parts of speech for English');
-
-    // Create parts of speech for Russian
-    for (const pos of partsOfSpeechData) {
-        await prisma.partOfSpeech.upsert({
-            where: {
-                name_languageId: {
-                    name: pos.name,
-                    languageId: russian.id,
-                },
-            },
-            update: {},
-            create: {
-                name: pos.name,
-                displayName: pos.displayName,
-                languageId: russian.id,
-            },
-        });
-    }
-    console.log('✅ Created parts of speech for Russian');
+    console.log('✅ Created universal parts of speech');
 
     // Hash passwords
     const adminPasswordHash = await bcrypt.hash('12345678', 10);

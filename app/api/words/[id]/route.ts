@@ -33,7 +33,6 @@ const serializeWord = (word: any) => {
                       ? {
                             id: ct.partOfSpeech.id,
                             name: ct.partOfSpeech.name,
-                            displayName: ct.partOfSpeech.displayName,
                         }
                       : null,
                   originalLanguage: ct.originalLanguage
