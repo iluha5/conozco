@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -32,13 +31,28 @@ import {
     hasTranslations,
 } from '@/lib/word-utils';
 
+// Кастомные хуки
+import { useClientCheck } from './hooks/useClientCheck';
+import { useWordSelection } from './hooks/useWordSelection';
+import { useConfirmationDialogs } from './hooks/useConfirmationDialogs';
+import { useWordTranslation } from './hooks/useWordTranslation';
+import { useWordLoading } from './hooks/useWordLoading';
+import { useWordStatus } from './hooks/useWordStatus';
+import { useWordDeletion } from './hooks/useWordDeletion';
+
+// Вспомогательные функции
+import {
+    getSelectionState,
+    getBulkSelectText,
+} from './helpers/selectionHelpers';
+
 type Language = {
     id: string | number;
     code: string;
     name: string;
 };
 
-type Word = {
+export type Word = {
     id: string | number;
     userId: string | number;
     baseWordId?: string | number;
@@ -79,12 +93,12 @@ type Word = {
     trainingSessions?: Array<any>;
 };
 
-type WordUpdateCallback = (
+export type WordUpdateCallback = (
     _wordId: string | number,
     _updates: Partial<Word>,
 ) => void;
 
-type WordRemoveCallback = (_wordId: string | number) => void;
+export type WordRemoveCallback = (_wordId: string | number) => void;
 
 type WordsListProps = {
     words: Word[];
@@ -105,313 +119,33 @@ export function WordsList({
     readOnly = false,
     emptyMessage = 'Слова не найдены',
 }: WordsListProps) {
-    const [selectedWords, setSelectedWords] = useState<(string | number)[]>([]);
-    const [translationDialogOpen, setTranslationDialogOpen] = useState<{
-        [key: string | number]: boolean;
-    }>({});
-    const [selectedWordForTranslation, setSelectedWordForTranslation] =
-        useState<Word | null>(null);
-    const [isClient, setIsClient] = useState(false);
-    const [loadingWords, setLoadingWords] = useState<Set<string | number>>(
-        new Set(),
-    );
-    const [errorWords, setErrorWords] = useState<Set<string | number>>(
-        new Set(),
-    );
-    const [optimisticWords, setOptimisticWords] = useState<
-        Map<string | number, Word>
-    >(new Map());
-    const [deletedWords, setDeletedWords] = useState<
-        Map<string | number, Word>
-    >(new Map());
-    const [confirmDeleteDialogOpen, setConfirmDeleteDialogOpen] =
-        useState(false);
-    const [confirmStatusDialogOpen, setConfirmStatusDialogOpen] =
-        useState(false);
-    const [pendingStatusAction, setPendingStatusAction] = useState<
-        'LEARNED' | 'NOT_LEARNED' | null
-    >(null);
+    // Кастомные хуки
+    const { isClient } = useClientCheck();
+    const selection = useWordSelection(words);
+    const confirmations = useConfirmationDialogs();
+    const translation = useWordTranslation();
+    const loading = useWordLoading();
+    const status = useWordStatus({ onWordUpdate, onWordsChange, readOnly });
+    const deletion = useWordDeletion({ onWordRemove, onWordsChange, readOnly });
+
     const { toast } = useToast();
     const { partsOfSpeech } = usePartsOfSpeech('ru');
 
-    useEffect(() => {
-        setIsClient(true);
-    }, []);
-
-    useEffect(() => {
-        // Сбрасываем выделение при изменении списка слов
-        setSelectedWords([]);
-    }, [words]);
-
+    // Обработчики событий с использованием хуков
     const handleDeleteWord = async (id: string | number) => {
-        if (readOnly) return;
-
-        // Находим слово для отката при ошибке
-        const wordToDelete = words.find(w => w.id === id);
-        if (!wordToDelete) return;
-
-        // Сохраняем слово для возможного отката
-        setDeletedWords(prev => {
-            const newMap = new Map(prev);
-            newMap.set(id, wordToDelete);
-            return newMap;
-        });
-
-        // Оптимистичное обновление - сразу удаляем из списка
-        if (onWordRemove) {
-            onWordRemove(id);
-        }
-
-        // Устанавливаем состояние загрузки
-        setLoadingWords(prev => new Set(prev).add(id));
-        setErrorWords(prev => {
-            const newSet = new Set(prev);
-            newSet.delete(id);
-            return newSet;
-        });
-
-        try {
-            const response = await fetch(`/api/words/${id}`, {
-                method: 'DELETE',
-            });
-
-            if (response.ok) {
-                // Успешно удалено - удаляем из сохраненных для отката
-                setDeletedWords(prev => {
-                    const newMap = new Map(prev);
-                    newMap.delete(id);
-                    return newMap;
-                });
-            } else {
-                // Ошибка - откатываем состояние
-                const deletedWord = deletedWords.get(id) || wordToDelete;
-                if (onWordUpdate && deletedWord) {
-                    // Восстанавливаем слово через onWordUpdate
-                    // Но так как нет функции добавления, используем refetch
-                    await onWordsChange?.();
-                } else {
-                    await onWordsChange?.();
-                }
-                setDeletedWords(prev => {
-                    const newMap = new Map(prev);
-                    newMap.delete(id);
-                    return newMap;
-                });
-                // Показываем анимацию ошибки
-                setErrorWords(prev => new Set(prev).add(id));
-                setTimeout(() => {
-                    setErrorWords(prev => {
-                        const newSet = new Set(prev);
-                        newSet.delete(id);
-                        return newSet;
-                    });
-                }, 2000);
-            }
-        } catch (error) {
-            console.error('Error deleting word:', error);
-            // Ошибка - откатываем состояние
-            const deletedWord = deletedWords.get(id) || wordToDelete;
-            if (onWordUpdate && deletedWord) {
-                await onWordsChange?.();
-            } else {
-                await onWordsChange?.();
-            }
-            setDeletedWords(prev => {
-                const newMap = new Map(prev);
-                newMap.delete(id);
-                return newMap;
-            });
-            // Показываем анимацию ошибки
-            setErrorWords(prev => new Set(prev).add(id));
-            setTimeout(() => {
-                setErrorWords(prev => {
-                    const newSet = new Set(prev);
-                    newSet.delete(id);
-                    return newSet;
-                });
-            }, 2000);
-        } finally {
-            setLoadingWords(prev => {
-                const newSet = new Set(prev);
-                newSet.delete(id);
-                return newSet;
-            });
-        }
+        await deletion.handleDeleteWord(id, words);
     };
 
     const handleToggleStatus = async (word: Word) => {
-        if (readOnly) return;
-
-        const newStatus = word.status === 'LEARNED' ? 'NOT_LEARNED' : 'LEARNED';
-
-        // Сохраняем старое состояние для отката
-        const oldWord = { ...word };
-
-        // Оптимистичное обновление - сразу меняем статус
-        if (onWordUpdate) {
-            onWordUpdate(word.id, { status: newStatus });
-        }
-
-        // Сохраняем оптимистичное состояние
-        setOptimisticWords(prev => {
-            const newMap = new Map(prev);
-            newMap.set(word.id, { ...word, status: newStatus });
-            return newMap;
-        });
-
-        // Устанавливаем состояние загрузки
-        setLoadingWords(prev => new Set(prev).add(word.id));
-        setErrorWords(prev => {
-            const newSet = new Set(prev);
-            newSet.delete(word.id);
-            return newSet;
-        });
-
-        try {
-            const response = await fetch(`/api/words/${word.id}`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ status: newStatus }),
-            });
-
-            if (response.ok) {
-                // Успешно обновлено, ничего не делаем (уже обновлено оптимистично)
-            } else {
-                // Ошибка - откатываем состояние
-                if (onWordUpdate) {
-                    onWordUpdate(word.id, { status: oldWord.status });
-                } else {
-                    await onWordsChange?.();
-                }
-                // Удаляем из оптимистичных
-                setOptimisticWords(prev => {
-                    const newMap = new Map(prev);
-                    newMap.delete(word.id);
-                    return newMap;
-                });
-                // Показываем анимацию ошибки
-                setErrorWords(prev => new Set(prev).add(word.id));
-                setTimeout(() => {
-                    setErrorWords(prev => {
-                        const newSet = new Set(prev);
-                        newSet.delete(word.id);
-                        return newSet;
-                    });
-                }, 2000);
-            }
-        } catch (error) {
-            console.error('Error updating word:', error);
-            // Ошибка - откатываем состояние
-            if (onWordUpdate) {
-                onWordUpdate(word.id, { status: oldWord.status });
-            } else {
-                await onWordsChange?.();
-            }
-            // Удаляем из оптимистичных
-            setOptimisticWords(prev => {
-                const newMap = new Map(prev);
-                newMap.delete(word.id);
-                return newMap;
-            });
-            // Показываем анимацию ошибки
-            setErrorWords(prev => new Set(prev).add(word.id));
-            setTimeout(() => {
-                setErrorWords(prev => {
-                    const newSet = new Set(prev);
-                    newSet.delete(word.id);
-                    return newSet;
-                });
-            }, 2000);
-        } finally {
-            setLoadingWords(prev => {
-                const newSet = new Set(prev);
-                newSet.delete(word.id);
-                return newSet;
-            });
-        }
-    };
-
-    const toggleWordSelection = (wordId: string | number) => {
-        setSelectedWords(prev =>
-            prev.includes(wordId)
-                ? prev.filter(id => id !== wordId)
-                : [...prev, wordId],
-        );
-    };
-
-    const _selectAllWords = () => {
-        setSelectedWords(words.map(word => word.id));
-    };
-
-    const _deselectAllWords = () => {
-        setSelectedWords([]);
-    };
-
-    const toggleAllWordsSelection = () => {
-        const allSelected = selectedWords.length === words.length;
-        if (allSelected) {
-            setSelectedWords([]);
-        } else {
-            setSelectedWords(words.map(word => word.id));
-        }
-    };
-
-    const getBulkSelectIcon = () => {
-        const allSelected = selectedWords.length === words.length;
-        const hasSelection = selectedWords.length > 0;
-        if (!hasSelection) {
-            return <Square className="mr-2 h-4 w-4" />;
-        } else if (allSelected) {
-            return <CheckSquare className="mr-2 h-4 w-4" />;
-        } else {
-            return <MinusSquare className="mr-2 h-4 w-4" />;
-        }
-    };
-
-    const getBulkSelectText = () => {
-        return selectedWords.length === words.length
-            ? 'Снять все'
-            : 'Выбрать все';
+        await status.handleToggleStatus(word);
     };
 
     const handleMarkAsLearned = () => {
-        handleBulkStatusChange('LEARNED');
-    };
-
-    const handleCloseDeleteDialog = () => {
-        setConfirmDeleteDialogOpen(false);
-    };
-
-    const handleCloseStatusDialog = () => {
-        setConfirmStatusDialogOpen(false);
-    };
-
-    const isWordSelected = (wordId: string | number) => {
-        return selectedWords.includes(wordId);
-    };
-
-    const openTranslationDialog = (word: Word) => {
-        if (readOnly) return;
-        setSelectedWordForTranslation(word);
-        setTranslationDialogOpen({ ...translationDialogOpen, [word.id]: true });
-    };
-
-    const handleDialogClose = (wordId: string | number, open: boolean) => {
-        setTranslationDialogOpen(prev => ({
-            ...prev,
-            [wordId]: open,
-        }));
-        if (!open) {
-            setSelectedWordForTranslation(null);
-        }
+        confirmations.openStatusConfirmation('LEARNED');
     };
 
     const handleBulkStatusChange = (newStatus: 'LEARNED' | 'NOT_LEARNED') => {
-        if (readOnly) return;
-
-        if (selectedWords.length === 0) {
+        if (selection.selectedWords.length === 0) {
             toast({
                 title: 'Ошибка',
                 description: 'Выберите слова для изменения статуса',
@@ -419,74 +153,32 @@ export function WordsList({
             });
             return;
         }
-
-        setPendingStatusAction(newStatus);
-        setConfirmStatusDialogOpen(true);
+        confirmations.openStatusConfirmation(newStatus);
     };
 
     const executeBulkStatusChange = async () => {
-        if (!pendingStatusAction) return;
+        if (!confirmations.pendingStatusAction) return;
 
-        const newStatus = pendingStatusAction;
-        let successCount = 0;
-        let errorCount = 0;
+        const newStatus = confirmations.pendingStatusAction;
+        await status.executeBulkStatusChange(
+            selection.selectedWords,
+            newStatus,
+            onWordUpdate,
+            onWordsChange,
+        );
 
-        try {
-            for (const wordId of selectedWords) {
-                const response = await fetch(`/api/words/${wordId}`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ status: newStatus }),
-                });
-
-                if (response.ok) {
-                    successCount++;
-                    // Обновляем состояние отдельного слова, если есть callback
-                    if (onWordUpdate) {
-                        onWordUpdate(wordId, { status: newStatus });
-                    }
-                } else {
-                    errorCount++;
-                }
-            }
-
-            if (successCount > 0) {
-                toast({
-                    title: 'Успешно',
-                    description: `${successCount} слов ${newStatus === 'LEARNED' ? 'отмечено как выученные' : 'отмечено как невыученные'}${errorCount > 0 ? `, ${errorCount} ошибок` : ''}`,
-                    variant: 'success',
-                });
-                setSelectedWords([]);
-                // Перезагружаем только если нет callback для обновления
-                if (!onWordUpdate) {
-                    await onWordsChange?.();
-                }
-            } else {
-                toast({
-                    title: 'Ошибка',
-                    description: 'Не удалось изменить статус ни одного слова',
-                    variant: 'destructive',
-                });
-            }
-        } catch (error) {
-            console.error('Error updating words status:', error);
-            toast({
-                title: 'Ошибка',
-                description: 'Не удалось изменить статус слов',
-                variant: 'destructive',
-            });
-        } finally {
-            setConfirmStatusDialogOpen(false);
-            setPendingStatusAction(null);
-        }
+        const successCount = selection.selectedWords.length;
+        toast({
+            title: 'Успешно',
+            description: `${successCount} слов ${newStatus === 'LEARNED' ? 'отмечено как выученные' : 'отмечено как невыученные'}`,
+            variant: 'success',
+        });
+        selection.toggleAllWordsSelection(); // Сбросить выделение
+        confirmations.closeStatusConfirmation();
     };
 
     const handleBulkDelete = () => {
-        if (readOnly) return;
-
-        if (selectedWords.length === 0) {
+        if (selection.selectedWords.length === 0) {
             toast({
                 title: 'Ошибка',
                 description: 'Выберите слова для удаления',
@@ -494,59 +186,24 @@ export function WordsList({
             });
             return;
         }
-
-        setConfirmDeleteDialogOpen(true);
+        confirmations.openDeleteConfirmation();
     };
 
     const executeBulkDelete = async () => {
-        let successCount = 0;
-        let errorCount = 0;
+        await deletion.executeBulkDelete(
+            selection.selectedWords,
+            onWordRemove,
+            onWordsChange,
+        );
 
-        try {
-            for (const wordId of selectedWords) {
-                const response = await fetch(`/api/words/${wordId}`, {
-                    method: 'DELETE',
-                });
-
-                if (response.ok) {
-                    successCount++;
-                    // Удаляем слово из состояния, если есть callback
-                    if (onWordRemove) {
-                        onWordRemove(wordId);
-                    }
-                } else {
-                    errorCount++;
-                }
-            }
-
-            if (successCount > 0) {
-                toast({
-                    title: 'Успешно',
-                    description: `${successCount} слов удалено${errorCount > 0 ? `, ${errorCount} ошибок` : ''}`,
-                    variant: 'success',
-                });
-                setSelectedWords([]);
-                // Перезагружаем только если нет callback для удаления
-                if (!onWordRemove) {
-                    await onWordsChange?.();
-                }
-            } else {
-                toast({
-                    title: 'Ошибка',
-                    description: 'Не удалось удалить ни одно слово',
-                    variant: 'destructive',
-                });
-            }
-        } catch (error) {
-            console.error('Error deleting words:', error);
-            toast({
-                title: 'Ошибка',
-                description: 'Не удалось удалить слова',
-                variant: 'destructive',
-            });
-        } finally {
-            setConfirmDeleteDialogOpen(false);
-        }
+        const successCount = selection.selectedWords.length;
+        toast({
+            title: 'Успешно',
+            description: `${successCount} слов удалено`,
+            variant: 'success',
+        });
+        selection.toggleAllWordsSelection(); // Сбросить выделение
+        confirmations.handleCloseDeleteDialog();
     };
 
     if (words.length === 0) {
@@ -568,20 +225,43 @@ export function WordsList({
                         <Button
                             variant="outline"
                             size="sm"
-                            onClick={toggleAllWordsSelection}
+                            onClick={selection.toggleAllWordsSelection}
                             disabled={readOnly}
                         >
-                            {getBulkSelectIcon()}
-                            {getBulkSelectText()}
+                            {(() => {
+                                const state = getSelectionState(
+                                    selection.selectedWords,
+                                    words,
+                                );
+                                if (state === 'none') {
+                                    return <Square className="mr-2 h-4 w-4" />;
+                                } else if (state === 'all') {
+                                    return (
+                                        <CheckSquare className="mr-2 h-4 w-4" />
+                                    );
+                                } else {
+                                    return (
+                                        <MinusSquare className="mr-2 h-4 w-4" />
+                                    );
+                                }
+                            })()}
+                            {getBulkSelectText(
+                                getSelectionState(
+                                    selection.selectedWords,
+                                    words,
+                                ),
+                            )}
                         </Button>
                         <Button
                             variant="destructive"
                             size="sm"
                             onClick={handleBulkDelete}
-                            disabled={selectedWords.length === 0 || readOnly}
+                            disabled={
+                                selection.selectedWords.length === 0 || readOnly
+                            }
                         >
                             <Trash2 className="w-4 h-4 mr-2" />
-                            Удалить ({selectedWords.length})
+                            Удалить ({selection.selectedWords.length})
                         </Button>
                     </div>
                     <div className="flex gap-2">
@@ -589,10 +269,12 @@ export function WordsList({
                             variant="default"
                             size="sm"
                             onClick={handleMarkAsLearned}
-                            disabled={selectedWords.length === 0 || readOnly}
+                            disabled={
+                                selection.selectedWords.length === 0 || readOnly
+                            }
                         >
                             <CheckCircle2 className="w-4 h-4 mr-2" />
-                            Выучено ({selectedWords.length})
+                            Выучено ({selection.selectedWords.length})
                         </Button>
                         <Button
                             variant="secondary"
@@ -600,10 +282,12 @@ export function WordsList({
                             onClick={() =>
                                 handleBulkStatusChange('NOT_LEARNED')
                             }
-                            disabled={selectedWords.length === 0 || readOnly}
+                            disabled={
+                                selection.selectedWords.length === 0 || readOnly
+                            }
                         >
                             <X className="w-4 h-4 mr-2" />
-                            Не выучено ({selectedWords.length})
+                            Не выучено ({selection.selectedWords.length})
                         </Button>
                     </div>
                 </div>
@@ -612,9 +296,9 @@ export function WordsList({
             {/* Список слов */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-1 max-h-[600px] overflow-y-auto p-2">
                 {words.map(word => {
-                    const isLoading = loadingWords.has(word.id);
-                    const hasError = errorWords.has(word.id);
-                    const optimisticWord = optimisticWords.get(word.id);
+                    const isLoading = loading.isWordLoading(word.id);
+                    const hasError = loading.hasWordError(word.id);
+                    const optimisticWord = status.optimisticWords.get(word.id);
                     const displayWord = optimisticWord || word;
 
                     return (
@@ -623,12 +307,13 @@ export function WordsList({
                             className={`transition-all relative ${
                                 readOnly ? '' : 'cursor-pointer'
                             } m-1 ${
-                                isWordSelected(word.id)
+                                selection.isWordSelected(word.id)
                                     ? 'ring-2 ring-primary bg-blue-50'
                                     : 'hover:bg-gray-50'
                             } ${hasError ? 'animate-pulse-red-border' : ''}`}
                             onClick={() =>
-                                !readOnly && toggleWordSelection(word.id)
+                                !readOnly &&
+                                selection.toggleWordSelection(word.id)
                             }
                         >
                             <CardHeader className="pb-2">
@@ -636,7 +321,7 @@ export function WordsList({
                                     <div className="flex items-center gap-3 flex-1 min-w-0">
                                         {!readOnly && (
                                             <Checkbox
-                                                checked={isWordSelected(
+                                                checked={selection.isWordSelected(
                                                     word.id,
                                                 )}
                                                 onChange={() => {}}
@@ -702,7 +387,7 @@ export function WordsList({
                                                             !readOnly &&
                                                             displayWord.baseWord
                                                         ) {
-                                                            openTranslationDialog(
+                                                            translation.openTranslationDialog(
                                                                 displayWord,
                                                             );
                                                         }
@@ -735,18 +420,20 @@ export function WordsList({
                                                 )}
                                             </div>
                                             {isClient &&
-                                                selectedWordForTranslation &&
-                                                selectedWordForTranslation.id ===
-                                                    displayWord.id && (
+                                                translation.selectedWordForTranslation &&
+                                                translation
+                                                    .selectedWordForTranslation
+                                                    .id === displayWord.id && (
                                                     <TranslationSelectorDialog
                                                         word={displayWord}
                                                         open={
-                                                            translationDialogOpen[
+                                                            translation
+                                                                .translationDialogOpen[
                                                                 displayWord.id
                                                             ] || false
                                                         }
                                                         onOpenChange={open =>
-                                                            handleDialogClose(
+                                                            translation.handleDialogClose(
                                                                 displayWord.id,
                                                                 open,
                                                             )
@@ -808,22 +495,22 @@ export function WordsList({
 
             {/* Диалог подтверждения удаления */}
             <Dialog
-                open={confirmDeleteDialogOpen}
-                onOpenChange={setConfirmDeleteDialogOpen}
+                open={confirmations.confirmDeleteDialogOpen}
+                onOpenChange={confirmations.setDeleteDialogOpen}
             >
                 <DialogContent className="mx-4 sm:mx-6">
                     <DialogHeader>
                         <DialogTitle>Подтверждение удаления</DialogTitle>
                         <DialogDescription>
                             Вы уверены, что хотите удалить{' '}
-                            {selectedWords.length} слов(а)? Это действие нельзя
-                            отменить.
+                            {selection.selectedWords.length} слов(а)? Это
+                            действие нельзя отменить.
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter className="flex-row gap-2 justify-end">
                         <Button
                             variant="outline"
-                            onClick={handleCloseDeleteDialog}
+                            onClick={confirmations.handleCloseDeleteDialog}
                         >
                             Отмена
                         </Button>
@@ -839,8 +526,8 @@ export function WordsList({
 
             {/* Диалог подтверждения изменения статуса */}
             <Dialog
-                open={confirmStatusDialogOpen}
-                onOpenChange={setConfirmStatusDialogOpen}
+                open={confirmations.confirmStatusDialogOpen}
+                onOpenChange={confirmations.setStatusDialogOpen}
             >
                 <DialogContent>
                     {/*<DialogContent className="mx-4 sm:mx-6">*/}
@@ -850,8 +537,8 @@ export function WordsList({
                         </DialogTitle>
                         <DialogDescription>
                             Вы уверены, что хотите отметить{' '}
-                            {selectedWords.length} слов(а) как{' '}
-                            {pendingStatusAction === 'LEARNED'
+                            {selection.selectedWords.length} слов(а) как{' '}
+                            {confirmations.pendingStatusAction === 'LEARNED'
                                 ? 'выученные'
                                 : 'невыученные'}
                             ?
@@ -860,7 +547,7 @@ export function WordsList({
                     <DialogFooter className="flex-row gap-2 justify-end">
                         <Button
                             variant="outline"
-                            onClick={handleCloseStatusDialog}
+                            onClick={confirmations.handleCloseStatusDialog}
                         >
                             Отмена
                         </Button>
