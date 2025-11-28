@@ -257,7 +257,7 @@ export default function WordsPage() {
                 </div>
 
                 {/* Команды (Удалить, Выучено и т.д.) */}
-                {!loading && filteredWords.length > 0 && (
+                {!loading && (
                     <div className="mb-6">
                         <BulkActions
                             words={filteredWords}
