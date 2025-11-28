@@ -38,13 +38,14 @@ export default function SettingsPage() {
     });
 
     const [isClient, setIsClient] = useState(false);
+    const [isInitialized, setIsInitialized] = useState(false);
 
     useEffect(() => {
         setIsClient(true);
     }, []);
 
     useEffect(() => {
-        if (settings) {
+        if (settings && !isInitialized) {
             setFormData({
                 name: settings.name || '',
                 ownLanguageId: settings.ownLanguageId?.toString() || '',
@@ -52,8 +53,9 @@ export default function SettingsPage() {
                 interfaceLanguageId:
                     settings.interfaceLanguageId?.toString() || '',
             });
+            setIsInitialized(true);
         }
-    }, [settings]);
+    }, [settings, isInitialized]);
 
     const handleSave = async () => {
         try {
@@ -161,12 +163,13 @@ export default function SettingsPage() {
                                         id="name"
                                         type="text"
                                         value={formData.name}
-                                        onChange={e =>
+                                        onChange={e => {
+                                            setIsInitialized(true);
                                             setFormData(prev => ({
                                                 ...prev,
                                                 name: e.target.value,
-                                            }))
-                                        }
+                                            }));
+                                        }}
                                         placeholder="Введите ваше имя"
                                     />
                                 </div>
@@ -186,12 +189,13 @@ export default function SettingsPage() {
                                 </Label>
                                 <Select
                                     value={formData.ownLanguageId}
-                                    onValueChange={value =>
+                                    onValueChange={value => {
+                                        setIsInitialized(true);
                                         setFormData(prev => ({
                                             ...prev,
                                             ownLanguageId: value,
-                                        }))
-                                    }
+                                        }));
+                                    }}
                                 >
                                     <SelectTrigger>
                                         <SelectValue placeholder="Выберите ваш родной язык" />
@@ -222,12 +226,13 @@ export default function SettingsPage() {
                                 </Label>
                                 <Select
                                     value={formData.learnLanguageId}
-                                    onValueChange={value =>
+                                    onValueChange={value => {
+                                        setIsInitialized(true);
                                         setFormData(prev => ({
                                             ...prev,
                                             learnLanguageId: value,
-                                        }))
-                                    }
+                                        }));
+                                    }}
                                 >
                                     <SelectTrigger>
                                         <SelectValue placeholder="Выберите язык для изучения" />
@@ -258,12 +263,13 @@ export default function SettingsPage() {
                                 </Label>
                                 <Select
                                     value={formData.interfaceLanguageId}
-                                    onValueChange={value =>
+                                    onValueChange={value => {
+                                        setIsInitialized(true);
                                         setFormData(prev => ({
                                             ...prev,
                                             interfaceLanguageId: value,
-                                        }))
-                                    }
+                                        }));
+                                    }}
                                 >
                                     <SelectTrigger>
                                         <SelectValue placeholder="Выберите язык интерфейса" />
