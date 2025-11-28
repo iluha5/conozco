@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { signOut } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, X, Layers, BookOpen } from 'lucide-react';
+import { LogOut, User, X, Layers, BookOpen, Settings } from 'lucide-react';
 import { Session } from 'next-auth';
 import Link from 'next/link';
 
@@ -115,6 +115,16 @@ export function MobileSidebar({
                                 >
                                     <Layers className="w-4 h-4" />
                                     Группы слов
+                                    <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-gray-900 transition-all duration-200 group-hover:w-full" />
+                                </Link>
+
+                                <Link
+                                    href="/settings"
+                                    onClick={onClose}
+                                    className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 hover:text-gray-900 relative pb-1.5 group"
+                                >
+                                    <Settings className="w-4 h-4" />
+                                    Настройки
                                     <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-gray-900 transition-all duration-200 group-hover:w-full" />
                                 </Link>
                             </div>
