@@ -23,7 +23,7 @@ import {
 } from '@/hooks/add-word-dialog';
 import { useWordGroupsFilter } from '@/hooks/word-groups/use-word-groups-filter';
 import { AddWordDialogFilters } from './AddWordDialogFilters';
-import { WordsList } from './WordsList';
+import { WordsList as AddWordDialogWordsList } from './WordsList';
 import type { BaseWord } from '@/types/add-word-dialog.types';
 
 type AddWordDialogProps = {
@@ -271,7 +271,7 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                     />
 
                     {/* Список слов */}
-                    <WordsList
+                    <AddWordDialogWordsList
                         words={filteredWords}
                         searching={searching}
                         loadingMore={loadingMore}

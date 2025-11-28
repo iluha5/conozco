@@ -10,6 +10,7 @@
 - ALWAYS ask for user permission before running database reset operations, even in unrestricted modes.
 - ALWAYS use named callbacks for actions instead of anonymous arrow functions in JSX onClick handlers and similar event handlers. Create descriptive function names that clearly indicate their purpose.
 - ALWAYS add empty lines before and after conditional statements (if) and all loop statements (for, while, do-while).
+- For React components, create a dedicated folder with the component name (PascalCase) and export the component directly from a file with the same name, without using index.ts files or re-exports.
 
 ## Database Operations Guidelines
 - **ALWAYS create a database backup BEFORE performing any dangerous database operations.**

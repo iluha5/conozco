@@ -14,7 +14,7 @@ import {
 import { Header } from '@/components/Header';
 import { ArrowLeft } from 'lucide-react';
 import { AddWordDialog } from '@/components/AddWordDialog';
-import { WordsList } from '@/components/WordsList';
+import { WordsList } from '@/components/WordList/WordList';
 import { WordGroupsFilter } from '@/components/word-groups/WordGroupsFilter';
 import { useTrainingSelection } from '@/hooks/shared';
 import { useWordsData, useWordsFilter, useWordsStats } from '@/hooks/words';
