@@ -1,5 +1,12 @@
 import { Button } from '@/components/ui/button';
-import { Trash2, CheckCircle2, X } from 'lucide-react';
+import {
+    Trash2,
+    CheckCircle2,
+    X,
+    Square,
+    CheckSquare,
+    MinusSquare,
+} from 'lucide-react';
 import {
     getSelectionState,
     getBulkSelectText,
@@ -38,53 +45,11 @@ export function BulkActions({
                 >
                     {(() => {
                         if (selectionState === 'none') {
-                            return (
-                                <svg
-                                    className="mr-2 h-4 w-4"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M4 4v16l16-8L4 4z"
-                                    />
-                                </svg>
-                            );
+                            return <Square className="mr-2 h-4 w-4" />;
                         } else if (selectionState === 'all') {
-                            return (
-                                <svg
-                                    className="mr-2 h-4 w-4"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M5 13l4 4L19 7"
-                                    />
-                                </svg>
-                            );
+                            return <CheckSquare className="mr-2 h-4 w-4" />;
                         } else {
-                            return (
-                                <svg
-                                    className="mr-2 h-4 w-4"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M20 6L9 17l-5-5"
-                                    />
-                                </svg>
-                            );
+                            return <MinusSquare className="mr-2 h-4 w-4" />;
                         }
                     })()}
                     {getBulkSelectText(selectionState)}
