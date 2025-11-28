@@ -3,9 +3,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
     Select,
     SelectContent,
@@ -14,7 +13,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Header } from '@/components/Header';
-import { ArrowLeft, Settings, Save, Loader2 } from 'lucide-react';
+import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import { useUserSettings, useLanguages } from '@/hooks/settings';
 import { useToast } from '@/hooks/shared';
 
@@ -122,29 +121,16 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="flex flex-row justify-between items-center gap-4 mb-8">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-blue-100 rounded-lg">
-                            <Settings className="w-6 h-6 text-blue-600" />
-                        </div>
-                        <h1 className="text-4xl font-bold text-gray-900">
-                            Настройки
-                        </h1>
-                    </div>
+                    <h1 className="text-4xl font-bold text-gray-900">
+                        Настройки
+                    </h1>
                 </div>
 
                 <div className="max-w-2xl mx-auto space-y-6">
-                    {/* Личная информация */}
                     <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <span>👤</span>
-                                Личная информация
-                            </CardTitle>
-                        </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="email">Email</Label>
                                     <Input
                                         id="email"
                                         type="email"
@@ -152,13 +138,9 @@ export default function SettingsPage() {
                                         disabled
                                         className="bg-gray-50"
                                     />
-                                    <p className="text-xs text-gray-500">
-                                        Email изменить нельзя
-                                    </p>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="name">Имя</Label>
                                     <Input
                                         id="name"
                                         type="text"
@@ -176,19 +158,9 @@ export default function SettingsPage() {
                         </CardContent>
                     </Card>
 
-                    {/* Настройки языков */}
                     <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <span>🌍</span>
-                                Настройки языков
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                            <div className="space-y-2">
-                                <Label htmlFor="own-language">
-                                    Родной язык
-                                </Label>
+                        <CardContent className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <Select
                                     value={formData.ownLanguageId}
                                     onValueChange={value =>
@@ -199,7 +171,7 @@ export default function SettingsPage() {
                                     }
                                 >
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Выберите ваш родной язык" />
+                                        <SelectValue placeholder="Родной язык" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {languages.map(language => (
@@ -219,15 +191,7 @@ export default function SettingsPage() {
                                         ))}
                                     </SelectContent>
                                 </Select>
-                                <p className="text-xs text-gray-500">
-                                    Язык, которым вы владеете в совершенстве
-                                </p>
-                            </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="learn-language">
-                                    Изучаемый язык
-                                </Label>
                                 <Select
                                     value={formData.learnLanguageId}
                                     onValueChange={value =>
@@ -238,7 +202,7 @@ export default function SettingsPage() {
                                     }
                                 >
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Выберите язык для изучения" />
+                                        <SelectValue placeholder="Изучаемый язык" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {languages.map(language => (
@@ -258,15 +222,7 @@ export default function SettingsPage() {
                                         ))}
                                     </SelectContent>
                                 </Select>
-                                <p className="text-xs text-gray-500">
-                                    Язык, который вы хотите изучать
-                                </p>
-                            </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="interface-language">
-                                    Язык интерфейса
-                                </Label>
                                 <Select
                                     value={formData.interfaceLanguageId}
                                     onValueChange={value =>
@@ -277,7 +233,7 @@ export default function SettingsPage() {
                                     }
                                 >
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Выберите язык интерфейса" />
+                                        <SelectValue placeholder="Язык интерфейса" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {languages.map(language => (
@@ -297,28 +253,7 @@ export default function SettingsPage() {
                                         ))}
                                     </SelectContent>
                                 </Select>
-                                <p className="text-xs text-gray-500">
-                                    Язык, на котором отображается интерфейс
-                                    приложения
-                                </p>
                             </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Будущие настройки */}
-                    <Card className="border-dashed border-gray-300">
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2 text-gray-500">
-                                <span>🚀</span>
-                                Будущие настройки
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-sm text-gray-500">
-                                Здесь в будущем появятся дополнительные
-                                настройки: уведомления, тема оформления,
-                                настройки обучения и многое другое.
-                            </p>
                         </CardContent>
                     </Card>
 
