@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
     Select,
     SelectContent,
@@ -127,10 +128,15 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="max-w-2xl mx-auto space-y-6">
+                    {/* Личная информация */}
                     <Card>
+                        <CardHeader>
+                            <CardTitle>Личная информация</CardTitle>
+                        </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
+                                    <Label htmlFor="email">Email</Label>
                                     <Input
                                         id="email"
                                         type="email"
@@ -138,9 +144,13 @@ export default function SettingsPage() {
                                         disabled
                                         className="bg-gray-50"
                                     />
+                                    <p className="text-xs text-gray-500">
+                                        Email изменить нельзя
+                                    </p>
                                 </div>
 
                                 <div className="space-y-2">
+                                    <Label htmlFor="name">Имя</Label>
                                     <Input
                                         id="name"
                                         type="text"
@@ -158,9 +168,16 @@ export default function SettingsPage() {
                         </CardContent>
                     </Card>
 
+                    {/* Настройки языков */}
                     <Card>
-                        <CardContent className="space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <CardHeader>
+                            <CardTitle>Настройки языков</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            <div className="space-y-2">
+                                <Label htmlFor="own-language">
+                                    Родной язык
+                                </Label>
                                 <Select
                                     value={formData.ownLanguageId}
                                     onValueChange={value =>
@@ -171,69 +188,7 @@ export default function SettingsPage() {
                                     }
                                 >
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Родной язык" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {languages.map(language => (
-                                            <SelectItem
-                                                key={language.id}
-                                                value={language.id.toString()}
-                                            >
-                                                <span className="flex items-center gap-2">
-                                                    <span>
-                                                        {getLanguageFlag(
-                                                            language.code,
-                                                        )}
-                                                    </span>
-                                                    {language.name}
-                                                </span>
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-
-                                <Select
-                                    value={formData.learnLanguageId}
-                                    onValueChange={value =>
-                                        setFormData(prev => ({
-                                            ...prev,
-                                            learnLanguageId: value,
-                                        }))
-                                    }
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Изучаемый язык" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {languages.map(language => (
-                                            <SelectItem
-                                                key={language.id}
-                                                value={language.id.toString()}
-                                            >
-                                                <span className="flex items-center gap-2">
-                                                    <span>
-                                                        {getLanguageFlag(
-                                                            language.code,
-                                                        )}
-                                                    </span>
-                                                    {language.name}
-                                                </span>
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-
-                                <Select
-                                    value={formData.interfaceLanguageId}
-                                    onValueChange={value =>
-                                        setFormData(prev => ({
-                                            ...prev,
-                                            interfaceLanguageId: value,
-                                        }))
-                                    }
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Язык интерфейса" />
+                                        <SelectValue placeholder="Выберите ваш родной язык" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {languages.map(language => (
@@ -254,6 +209,94 @@ export default function SettingsPage() {
                                     </SelectContent>
                                 </Select>
                             </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="learn-language">
+                                    Изучаемый язык
+                                </Label>
+                                <Select
+                                    value={formData.learnLanguageId}
+                                    onValueChange={value =>
+                                        setFormData(prev => ({
+                                            ...prev,
+                                            learnLanguageId: value,
+                                        }))
+                                    }
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Выберите язык для изучения" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {languages.map(language => (
+                                            <SelectItem
+                                                key={language.id}
+                                                value={language.id.toString()}
+                                            >
+                                                <span className="flex items-center gap-2">
+                                                    <span>
+                                                        {getLanguageFlag(
+                                                            language.code,
+                                                        )}
+                                                    </span>
+                                                    {language.name}
+                                                </span>
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="interface-language">
+                                    Язык интерфейса
+                                </Label>
+                                <Select
+                                    value={formData.interfaceLanguageId}
+                                    onValueChange={value =>
+                                        setFormData(prev => ({
+                                            ...prev,
+                                            interfaceLanguageId: value,
+                                        }))
+                                    }
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Выберите язык интерфейса" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {languages.map(language => (
+                                            <SelectItem
+                                                key={language.id}
+                                                value={language.id.toString()}
+                                            >
+                                                <span className="flex items-center gap-2">
+                                                    <span>
+                                                        {getLanguageFlag(
+                                                            language.code,
+                                                        )}
+                                                    </span>
+                                                    {language.name}
+                                                </span>
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Будущие настройки */}
+                    <Card className="border-dashed border-gray-300">
+                        <CardHeader>
+                            <CardTitle className="text-gray-500">
+                                Будущие настройки
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-sm text-gray-500">
+                                Здесь в будущем появятся дополнительные
+                                настройки: уведомления, тема оформления,
+                                настройки обучения и многое другое.
+                            </p>
                         </CardContent>
                     </Card>
 
