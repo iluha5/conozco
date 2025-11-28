@@ -358,6 +358,36 @@ export function WordsList({
         }
     };
 
+    const getBulkSelectIcon = () => {
+        const allSelected = selectedWords.length === words.length;
+        const hasSelection = selectedWords.length > 0;
+        if (!hasSelection) {
+            return <Square className="mr-2 h-4 w-4" />;
+        } else if (allSelected) {
+            return <CheckSquare className="mr-2 h-4 w-4" />;
+        } else {
+            return <MinusSquare className="mr-2 h-4 w-4" />;
+        }
+    };
+
+    const getBulkSelectText = () => {
+        return selectedWords.length === words.length
+            ? 'Снять все'
+            : 'Выбрать все';
+    };
+
+    const handleMarkAsLearned = () => {
+        handleBulkStatusChange('LEARNED');
+    };
+
+    const handleCloseDeleteDialog = () => {
+        setConfirmDeleteDialogOpen(false);
+    };
+
+    const handleCloseStatusDialog = () => {
+        setConfirmStatusDialogOpen(false);
+    };
+
     const isWordSelected = (wordId: string | number) => {
         return selectedWords.includes(wordId);
     };
@@ -541,25 +571,8 @@ export function WordsList({
                             onClick={toggleAllWordsSelection}
                             disabled={readOnly}
                         >
-                            {(() => {
-                                const allSelected =
-                                    selectedWords.length === words.length;
-                                const hasSelection = selectedWords.length > 0;
-                                if (!hasSelection) {
-                                    return <Square className="mr-2 h-4 w-4" />;
-                                } else if (allSelected) {
-                                    return (
-                                        <CheckSquare className="mr-2 h-4 w-4" />
-                                    );
-                                } else {
-                                    return (
-                                        <MinusSquare className="mr-2 h-4 w-4" />
-                                    );
-                                }
-                            })()}
-                            {selectedWords.length === words.length
-                                ? 'Снять все'
-                                : 'Выбрать все'}
+                            {getBulkSelectIcon()}
+                            {getBulkSelectText()}
                         </Button>
                         <Button
                             variant="destructive"
@@ -575,7 +588,7 @@ export function WordsList({
                         <Button
                             variant="default"
                             size="sm"
-                            onClick={() => handleBulkStatusChange('LEARNED')}
+                            onClick={handleMarkAsLearned}
                             disabled={selectedWords.length === 0 || readOnly}
                         >
                             <CheckCircle2 className="w-4 h-4 mr-2" />
@@ -810,7 +823,7 @@ export function WordsList({
                     <DialogFooter className="flex-row gap-2 justify-end">
                         <Button
                             variant="outline"
-                            onClick={() => setConfirmDeleteDialogOpen(false)}
+                            onClick={handleCloseDeleteDialog}
                         >
                             Отмена
                         </Button>
@@ -847,7 +860,7 @@ export function WordsList({
                     <DialogFooter className="flex-row gap-2 justify-end">
                         <Button
                             variant="outline"
-                            onClick={() => setConfirmStatusDialogOpen(false)}
+                            onClick={handleCloseStatusDialog}
                         >
                             Отмена
                         </Button>
