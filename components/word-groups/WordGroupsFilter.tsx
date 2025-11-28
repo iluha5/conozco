@@ -25,6 +25,7 @@ export function WordGroupsFilter({
     const [popupPosition, setPopupPosition] = useState({
         left: true,
         top: true,
+        translateX: 0,
     });
     const containerRef = useRef<HTMLDivElement>(null);
     const popupRef = useRef<HTMLDivElement>(null);
@@ -51,24 +52,33 @@ export function WordGroupsFilter({
 
     useEffect(() => {
         if (isOpen && containerRef.current && popupRef.current) {
-            const containerRect = containerRef.current.getBoundingClientRect();
-            const popupRect = popupRef.current.getBoundingClientRect();
-            const viewportWidth = window.innerWidth;
-            const viewportHeight = window.innerHeight;
+            // Используем двойной requestAnimationFrame для получения актуальных размеров после полного рендеринга
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    if (!containerRef.current || !popupRef.current) return;
 
-            // Проверяем горизонтальное позиционирование
-            const fitsLeft =
-                containerRect.left + popupRect.width <= viewportWidth;
-            const fitsRight = containerRect.right - popupRect.width >= 0;
+                    const containerRect =
+                        containerRef.current.getBoundingClientRect();
+                    const popupRect = popupRef.current.getBoundingClientRect();
+                    const viewportWidth = window.innerWidth;
+                    const viewportHeight = window.innerHeight;
+                    const isMobile = viewportWidth < 640; // Мобильный размер (sm breakpoint)
 
-            // Проверяем вертикальное позиционирование
-            const fitsDown =
-                containerRect.bottom + popupRect.height <= viewportHeight;
-            const fitsUp = containerRect.top - popupRect.height >= 0;
+                    // Проверяем вертикальное позиционирование
+                    const fitsDown =
+                        containerRect.bottom + popupRect.height <=
+                        viewportHeight;
+                    const fitsUp = containerRect.top - popupRect.height >= 0;
 
-            setPopupPosition({
-                left: fitsLeft || !fitsRight, // Используем left если помещается слева или не помещается справа
-                top: fitsDown || !fitsUp, // Используем top если помещается снизу или не помещается сверху
+                    // На мобильных устройствах всегда сдвигаем влево на 80px
+                    const translateX = isMobile ? -80 : 0;
+
+                    setPopupPosition({
+                        left: true,
+                        top: fitsDown || !fitsUp,
+                        translateX,
+                    });
+                });
             });
         }
     }, [isOpen]);
@@ -120,9 +130,15 @@ export function WordGroupsFilter({
                     style={{
                         boxShadow:
                             '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
+                        transform:
+                            popupPosition.translateX !== 0
+                                ? `translateX(${popupPosition.translateX}px)`
+                                : undefined,
+                        maxWidth: 'min(280px, calc(100vw - 16px))',
+                        width: 'min(280px, calc(100vw - 16px))',
                     }}
                 >
-                    <div className="p-2 flex flex-col max-h-[400px]">
+                    <div className="p-2 flex flex-col max-h-[400px] overflow-x-hidden">
                         <Button
                             variant="ghost"
                             size="sm"
