@@ -68,20 +68,30 @@ model Language {
   customTranslationsTranslation          CustomTranslation[]  @relation("CustomTranslationTranslationLanguage")
   wordExamplesTranslationLanguage        WordExample[]        @relation("WordExampleTranslationLanguage")
   grammaticalExamplesTranslationLanguage GrammaticalExample[] @relation("GrammaticalExampleTranslationLanguage")
+  userOwnLanguages                       User[]               @relation("UserOwnLanguage") // Пользователи, владеющие этим языком
+  userLearnLanguages                     User[]               @relation("UserLearnLanguage") // Пользователи, изучающие этот язык
+  userInterfaceLanguages                 User[]               @relation("UserInterfaceLanguage") // Пользователи, использующие этот язык для интерфейса
 
   @@index([code])
 }
 
 // Пользователь
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  password  String // hashed password
-  name      String?
-  roleId    Int      @default(1)
-  role      UserRole @relation(fields: [roleId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                  Int      @id @default(autoincrement())
+  email               String   @unique
+  password            String // hashed password
+  name                String?
+  roleId              Int      @default(1)
+  ownLanguageId       Int? // ID языка, которым владеет пользователь
+  learnLanguageId     Int? // ID языка, который пользователь хочет изучать
+  interfaceLanguageId Int? // ID языка интерфейса
+  hasConfigured       Boolean  @default(false) // Флаг того, прошел ли юзер настройку языков
+  role                UserRole @relation(fields: [roleId], references: [id])
+  ownLanguage         Language? @relation("UserOwnLanguage", fields: [ownLanguageId], references: [id])
+  learnLanguage       Language? @relation("UserLearnLanguage", fields: [learnLanguageId], references: [id])
+  interfaceLanguage   Language? @relation("UserInterfaceLanguage", fields: [interfaceLanguageId], references: [id])
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 
   words              Word[]
   accounts           Account[]
