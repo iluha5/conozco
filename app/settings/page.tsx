@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,6 +20,7 @@ import { useUserSettings, useLanguages } from '@/hooks/settings';
 import { useToast } from '@/hooks/shared';
 
 export default function SettingsPage() {
+    const { data: session } = useSession();
     const {
         settings,
         loading: settingsLoading,
@@ -140,7 +142,11 @@ export default function SettingsPage() {
                                     <Input
                                         id="email"
                                         type="email"
-                                        value={settings?.email || ''}
+                                        value={
+                                            session?.user?.email ||
+                                            settings?.email ||
+                                            ''
+                                        }
                                         disabled
                                         className="bg-gray-50"
                                     />
@@ -281,22 +287,6 @@ export default function SettingsPage() {
                                     </SelectContent>
                                 </Select>
                             </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Будущие настройки */}
-                    <Card className="border-dashed border-gray-300">
-                        <CardHeader>
-                            <CardTitle className="text-gray-500">
-                                Будущие настройки
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-sm text-gray-500">
-                                Здесь в будущем появятся дополнительные
-                                настройки: уведомления, тема оформления,
-                                настройки обучения и многое другое.
-                            </p>
                         </CardContent>
                     </Card>
 
