@@ -21,6 +21,7 @@ interface BulkActionsProps {
     onChangeStatus: (_status: 'LEARNED' | 'NOT_LEARNED') => void;
     onDelete: () => void;
     readOnly?: boolean;
+    hideSelectAllButton?: boolean;
 }
 
 export function BulkActions({
@@ -31,40 +32,32 @@ export function BulkActions({
     onChangeStatus,
     onDelete,
     readOnly = false,
+    hideSelectAllButton = false,
 }: BulkActionsProps) {
     const selectionState = getSelectionState(selectedWords, words);
 
     return (
-        <div className="flex flex-wrap gap-2 p-4 bg-white rounded-lg border">
+        <div className="flex flex-wrap items-center justify-between gap-2 p-4 bg-white rounded-lg border">
             <div className="flex gap-2">
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={onToggleAllSelection}
-                    disabled={readOnly}
-                >
-                    {(() => {
-                        if (selectionState === 'none') {
-                            return <Square className="mr-2 h-4 w-4" />;
-                        } else if (selectionState === 'all') {
-                            return <CheckSquare className="mr-2 h-4 w-4" />;
-                        } else {
-                            return <MinusSquare className="mr-2 h-4 w-4" />;
-                        }
-                    })()}
-                    {getBulkSelectText(selectionState)}
-                </Button>
-                <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={onDelete}
-                    disabled={selectedWords.length === 0 || readOnly}
-                >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Удалить ({selectedWords.length})
-                </Button>
-            </div>
-            <div className="flex gap-2">
+                {!hideSelectAllButton && (
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={onToggleAllSelection}
+                        disabled={readOnly}
+                    >
+                        {(() => {
+                            if (selectionState === 'none') {
+                                return <Square className="mr-2 h-4 w-4" />;
+                            } else if (selectionState === 'all') {
+                                return <CheckSquare className="mr-2 h-4 w-4" />;
+                            } else {
+                                return <MinusSquare className="mr-2 h-4 w-4" />;
+                            }
+                        })()}
+                        {getBulkSelectText(selectionState)}
+                    </Button>
+                )}
                 <Button
                     variant="default"
                     size="sm"
@@ -84,6 +77,16 @@ export function BulkActions({
                     Не выучено ({selectedWords.length})
                 </Button>
             </div>
+            <Button
+                variant="destructive"
+                size="sm"
+                onClick={onDelete}
+                disabled={selectedWords.length === 0 || readOnly}
+            >
+                <Trash2 className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Удалить </span>
+                <span>({selectedWords.length})</span>
+            </Button>
         </div>
     );
 }

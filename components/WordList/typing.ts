@@ -52,6 +52,13 @@ export type WordUpdateCallback = (
 
 export type WordRemoveCallback = (_wordId: string | number) => void;
 
+export type WordSelection = {
+    selectedWords: (string | number)[];
+    toggleWordSelection: (_wordId: string | number) => void;
+    toggleAllWordsSelection: () => void;
+    isWordSelected: (_wordId: string | number) => boolean;
+};
+
 export type WordsListProps = {
     words: Word[];
     onWordsChange?: () => Promise<void>;
@@ -60,4 +67,6 @@ export type WordsListProps = {
     showBulkActions?: boolean;
     readOnly?: boolean;
     emptyMessage?: string;
+    externalSelection?: WordSelection;
+    hideSelectAllButton?: boolean;
 };

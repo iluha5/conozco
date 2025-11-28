@@ -4,14 +4,27 @@ import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Square, CheckSquare, MinusSquare } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { ArrowLeft } from 'lucide-react';
 import { AddWordDialog } from '@/components/AddWordDialog';
 import { WordsList } from '@/components/WordList/WordList';
 import { WordGroupsFilter } from '@/components/word-groups/WordGroupsFilter';
+import { BulkActions } from '@/components/WordList/components/BulkActions';
+import { ConfirmationDialogs } from '@/components/WordList/components/ConfirmationDialogs';
 import { useUserSettings } from '@/hooks/settings';
 import { useWordsData, useWordsFilter, useWordsStats } from '@/hooks/words';
 import { useWordGroupsFilter } from '@/hooks/word-groups/use-word-groups-filter';
+import { useWordSelection } from '@/components/WordList/hooks/useWordSelection';
+import { useConfirmationDialogs } from '@/components/WordList/hooks/useConfirmationDialogs';
+import { useWordStatus } from '@/components/WordList/hooks/useWordStatus';
+import { useWordDeletion } from '@/components/WordList/hooks/useWordDeletion';
+import { useToast } from '@/hooks/shared';
+import {
+    getSelectionState,
+    getBulkSelectText,
+} from '@/components/WordList/helpers/selectionHelpers';
 import { WordsFilter, Word } from '@/types/words.types';
 
 export default function WordsPage() {
@@ -44,9 +57,101 @@ export default function WordsPage() {
     // Статистика (по языку, без учета статуса)
     const stats = useWordsStats(words, learnLanguageCode);
 
+    // Логика выбора слов
+    const wordSelection = useWordSelection(filteredWords);
+    const selectionState = getSelectionState(
+        wordSelection.selectedWords,
+        filteredWords,
+    );
+
+    // Логика подтверждений и команд
+    const confirmations = useConfirmationDialogs();
+    const status = useWordStatus({
+        onWordUpdate: (wordId, updates) => {
+            const typedUpdates = updates as Partial<Word>;
+            updateWord(Number(wordId), typedUpdates);
+        },
+        onWordsChange: refetch,
+    });
+    const deletion = useWordDeletion({
+        onWordRemove: wordId => removeWord(Number(wordId)),
+        onWordsChange: refetch,
+    });
+    const { toast } = useToast();
+
     useEffect(() => {
         setIsClient(true);
     }, []);
+
+    // Обработчики команд
+    const handleMarkAsLearned = () => {
+        confirmations.openStatusConfirmation('LEARNED');
+    };
+
+    const handleBulkStatusChange = (newStatus: 'LEARNED' | 'NOT_LEARNED') => {
+        if (wordSelection.selectedWords.length === 0) {
+            toast({
+                title: 'Ошибка',
+                description: 'Выберите слова для изменения статуса',
+                variant: 'destructive',
+            });
+            return;
+        }
+        confirmations.openStatusConfirmation(newStatus);
+    };
+
+    const executeBulkStatusChange = async () => {
+        if (!confirmations.pendingStatusAction) return;
+
+        const newStatus = confirmations.pendingStatusAction;
+        await status.executeBulkStatusChange(
+            wordSelection.selectedWords,
+            newStatus,
+            (wordId, updates) => {
+                const typedUpdates = updates as Partial<Word>;
+                updateWord(Number(wordId), typedUpdates);
+            },
+            refetch,
+        );
+
+        const successCount = wordSelection.selectedWords.length;
+        toast({
+            title: 'Успешно',
+            description: `${successCount} слов ${newStatus === 'LEARNED' ? 'отмечено как выученные' : 'отмечено как невыученные'}`,
+            variant: 'success',
+        });
+        wordSelection.toggleAllWordsSelection(); // Сбросить выделение
+        confirmations.closeStatusConfirmation();
+    };
+
+    const handleBulkDelete = () => {
+        if (wordSelection.selectedWords.length === 0) {
+            toast({
+                title: 'Ошибка',
+                description: 'Выберите слова для удаления',
+                variant: 'destructive',
+            });
+            return;
+        }
+        confirmations.openDeleteConfirmation();
+    };
+
+    const executeBulkDelete = async () => {
+        await deletion.executeBulkDelete(
+            wordSelection.selectedWords,
+            wordId => removeWord(Number(wordId)),
+            refetch,
+        );
+
+        const successCount = wordSelection.selectedWords.length;
+        toast({
+            title: 'Успешно',
+            description: `${successCount} слов удалено`,
+            variant: 'success',
+        });
+        wordSelection.toggleAllWordsSelection(); // Сбросить выделение
+        confirmations.handleCloseDeleteDialog();
+    };
 
     const handleAddWord = async () => {
         await refetch();
@@ -151,19 +256,76 @@ export default function WordsPage() {
                     </Card>
                 </div>
 
-                <div className="flex items-center gap-4 mb-6">
-                    <WordGroupsFilter
-                        selectedGroupIds={selectedGroupIds}
-                        onToggleGroup={toggleGroup}
-                        onToggleAll={toggleAll}
-                    />
-                    <div className="text-sm text-gray-600">
-                        Показано:{' '}
-                        <span className="font-semibold text-gray-900">
-                            {filteredWords.length}
-                        </span>
+                {/* Команды (Удалить, Выучено и т.д.) */}
+                {!loading && filteredWords.length > 0 && (
+                    <div className="mb-6">
+                        <BulkActions
+                            words={filteredWords}
+                            selectedWords={wordSelection.selectedWords}
+                            onToggleAllSelection={
+                                wordSelection.toggleAllWordsSelection
+                            }
+                            onMarkAsLearned={handleMarkAsLearned}
+                            onChangeStatus={handleBulkStatusChange}
+                            onDelete={handleBulkDelete}
+                            hideSelectAllButton={true}
+                        />
                     </div>
-                </div>
+                )}
+
+                {/* Фильтры (Выбрать все, Группы и т.д.) */}
+                {!loading && (
+                    <div className="flex items-center gap-4 mb-4">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={wordSelection.toggleAllWordsSelection}
+                        >
+                            {(() => {
+                                if (selectionState === 'none') {
+                                    return <Square className="mr-2 h-4 w-4" />;
+                                } else if (selectionState === 'all') {
+                                    return (
+                                        <CheckSquare className="mr-2 h-4 w-4" />
+                                    );
+                                } else {
+                                    return (
+                                        <MinusSquare className="mr-2 h-4 w-4" />
+                                    );
+                                }
+                            })()}
+                            {getBulkSelectText(selectionState)}
+                        </Button>
+                        <WordGroupsFilter
+                            selectedGroupIds={selectedGroupIds}
+                            onToggleGroup={toggleGroup}
+                            onToggleAll={toggleAll}
+                        />
+                        <div className="flex items-center gap-2">
+                            <span className="hidden sm:inline text-sm text-gray-600">
+                                Показано:{' '}
+                            </span>
+                            <Badge
+                                variant="outline"
+                                className="gap-1.5 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 shadow-sm text-sm"
+                            >
+                                <span className="text-gray-900 dark:text-gray-100">
+                                    {filteredWords.length}
+                                </span>
+                                {wordSelection.selectedWords.length > 0 && (
+                                    <>
+                                        <span className="text-gray-300 dark:text-gray-600">
+                                            |
+                                        </span>
+                                        <span className="text-orange-600 dark:text-orange-500">
+                                            {wordSelection.selectedWords.length}
+                                        </span>
+                                    </>
+                                )}
+                            </Badge>
+                        </div>
+                    </div>
+                )}
 
                 {loading ? (
                     <div className="text-center py-12">
@@ -182,10 +344,23 @@ export default function WordsPage() {
                         onWordRemove={wordId => {
                             removeWord(Number(wordId));
                         }}
-                        showBulkActions={true}
+                        showBulkActions={false}
                         emptyMessage="Слова не найдены. Добавьте новое слово!"
+                        externalSelection={wordSelection}
                     />
                 )}
+
+                {/* Диалоги подтверждения */}
+                <ConfirmationDialogs
+                    deleteDialogOpen={confirmations.confirmDeleteDialogOpen}
+                    statusDialogOpen={confirmations.confirmStatusDialogOpen}
+                    pendingStatusAction={confirmations.pendingStatusAction}
+                    selectedWordsCount={wordSelection.selectedWords.length}
+                    onCloseDeleteDialog={confirmations.handleCloseDeleteDialog}
+                    onCloseStatusDialog={confirmations.handleCloseStatusDialog}
+                    onConfirmDelete={executeBulkDelete}
+                    onConfirmStatus={executeBulkStatusChange}
+                />
             </div>
         </div>
     );

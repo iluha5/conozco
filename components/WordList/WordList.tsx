@@ -27,10 +27,13 @@ export function WordsList({
     showBulkActions = true,
     readOnly = false,
     emptyMessage = 'Слова не найдены',
+    externalSelection,
+    hideSelectAllButton = false,
 }: WordsListProps) {
     // Кастомные хуки
     const { isClient } = useClientCheck();
-    const selection = useWordSelection(words);
+    const internalSelection = useWordSelection(words);
+    const selection = externalSelection || internalSelection;
     const confirmations = useConfirmationDialogs();
     const translation = useWordTranslation();
     const loading = useWordLoading();
@@ -130,6 +133,7 @@ export function WordsList({
                     onChangeStatus={handleBulkStatusChange}
                     onDelete={handleBulkDelete}
                     readOnly={readOnly}
+                    hideSelectAllButton={hideSelectAllButton}
                 />
             )}
 
