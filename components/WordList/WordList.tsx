@@ -134,7 +134,7 @@ export function WordsList({
             )}
 
             {/* Список слов */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-1 max-h-[600px] overflow-y-auto p-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-1 max-h-[400px] overflow-y-auto p-2">
                 {words.map(word => {
                     const isLoading = loading.isWordLoading(word.id);
                     const hasError = loading.hasWordError(word.id);
