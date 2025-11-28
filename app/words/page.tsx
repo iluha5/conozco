@@ -12,7 +12,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Header } from '@/components/Header';
-import { ArrowLeft, Settings } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { AddWordDialog } from '@/components/AddWordDialog';
 import { WordsList } from '@/components/WordsList';
 import { WordGroupsFilter } from '@/components/word-groups/WordGroupsFilter';
@@ -80,27 +80,12 @@ export default function WordsPage() {
                     </Link>
                 </div>
 
-                <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-6">
+                <div className="flex flex-row justify-between items-center gap-4 mb-6">
                     <h1 className="text-4xl font-bold text-gray-900">
                         Мои слова
                     </h1>
-                    <div className="flex flex-row gap-2 w-full md:w-auto">
-                        <Link
-                            href="/word-groups"
-                            className="flex-1 md:flex-none min-w-0"
-                        >
-                            <Button
-                                variant="outline"
-                                size="lg"
-                                className="w-full min-w-0"
-                            >
-                                <Settings className="w-4 h-4 mr-2 flex-shrink-0" />
-                                <span className="truncate">
-                                    Управление группами
-                                </span>
-                            </Button>
-                        </Link>
-                        <div className="flex-1 md:flex-none min-w-0">
+                    <div className="flex flex-row gap-2 w-auto">
+                        <div className="flex-none min-w-0">
                             <AddWordDialog onWordAdded={handleAddWord} />
                         </div>
                     </div>

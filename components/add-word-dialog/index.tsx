@@ -237,7 +237,10 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
             <DialogTrigger asChild>
                 <Button size="lg" className="w-full min-w-0">
                     <PlusCircle className="w-4 h-4 mr-2 flex-shrink-0" />
-                    <span className="truncate">Добавить слово</span>
+                    <span className="md:hidden truncate">Добавить</span>
+                    <span className="hidden md:inline truncate">
+                        Добавить слово
+                    </span>
                 </Button>
             </DialogTrigger>
             <DialogContent
