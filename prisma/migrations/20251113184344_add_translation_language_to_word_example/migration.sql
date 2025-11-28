@@ -5,7 +5,7 @@ ALTER TABLE "WordExample" ADD COLUMN "translationLanguageId" INTEGER;
 
 -- Шаг 2: Заполнить существующие записи значением ID русского языка
 -- Предполагаем, что все текущие переводы на русский язык
-UPDATE "WordExample" 
+UPDATE "WordExample"
 SET "translationLanguageId" = (SELECT "id" FROM "Language" WHERE "code" = 'ru')
 WHERE "translationLanguageId" IS NULL;
 

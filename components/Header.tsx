@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, Menu, Layers } from 'lucide-react';
+import { LogOut, User, Menu, Layers, BookOpen } from 'lucide-react';
 import { MobileSidebar } from './MobileSidebar';
 
 function HeaderSkeleton() {
@@ -60,7 +60,15 @@ export function Header() {
 
                     {/* Desktop version */}
                     <nav className="hidden md:flex items-center justify-between gap-4 w-full">
-                        <div>
+                        <div className="flex items-center gap-4">
+                            <Link
+                                href="/words"
+                                className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900 relative group mr-6"
+                            >
+                                <BookOpen className="w-4 h-4" />
+                                Слова
+                                <span className="absolute -bottom-1 left-0 w-0 h-px bg-gray-900 transition-all duration-200 group-hover:w-full" />
+                            </Link>
                             <Link
                                 href="/word-groups"
                                 className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900 relative group"
