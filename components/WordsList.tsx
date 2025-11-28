@@ -4,7 +4,24 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Trash2, CheckCircle, CheckCircle2, X, Loader2 } from 'lucide-react';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import {
+    Trash2,
+    CheckCircle,
+    CheckCircle2,
+    X,
+    Loader2,
+    Square,
+    CheckSquare,
+    MinusSquare,
+} from 'lucide-react';
 import { useToast, usePartsOfSpeech } from '@/hooks/shared';
 import { TranslationSelectorDialog } from '@/components/TranslationSelectorDialog';
 import {
@@ -107,6 +124,13 @@ export function WordsList({
     const [deletedWords, setDeletedWords] = useState<
         Map<string | number, Word>
     >(new Map());
+    const [confirmDeleteDialogOpen, setConfirmDeleteDialogOpen] =
+        useState(false);
+    const [confirmStatusDialogOpen, setConfirmStatusDialogOpen] =
+        useState(false);
+    const [pendingStatusAction, setPendingStatusAction] = useState<
+        'LEARNED' | 'NOT_LEARNED' | null
+    >(null);
     const { toast } = useToast();
     const { partsOfSpeech } = usePartsOfSpeech('ru');
 
@@ -317,12 +341,21 @@ export function WordsList({
         );
     };
 
-    const selectAllWords = () => {
+    const _selectAllWords = () => {
         setSelectedWords(words.map(word => word.id));
     };
 
-    const deselectAllWords = () => {
+    const _deselectAllWords = () => {
         setSelectedWords([]);
+    };
+
+    const toggleAllWordsSelection = () => {
+        const allSelected = selectedWords.length === words.length;
+        if (allSelected) {
+            setSelectedWords([]);
+        } else {
+            setSelectedWords(words.map(word => word.id));
+        }
     };
 
     const isWordSelected = (wordId: string | number) => {
@@ -345,9 +378,7 @@ export function WordsList({
         }
     };
 
-    const handleBulkStatusChange = async (
-        newStatus: 'LEARNED' | 'NOT_LEARNED',
-    ) => {
+    const handleBulkStatusChange = (newStatus: 'LEARNED' | 'NOT_LEARNED') => {
         if (readOnly) return;
 
         if (selectedWords.length === 0) {
@@ -359,6 +390,14 @@ export function WordsList({
             return;
         }
 
+        setPendingStatusAction(newStatus);
+        setConfirmStatusDialogOpen(true);
+    };
+
+    const executeBulkStatusChange = async () => {
+        if (!pendingStatusAction) return;
+
+        const newStatus = pendingStatusAction;
         let successCount = 0;
         let errorCount = 0;
 
@@ -408,10 +447,13 @@ export function WordsList({
                 description: 'Не удалось изменить статус слов',
                 variant: 'destructive',
             });
+        } finally {
+            setConfirmStatusDialogOpen(false);
+            setPendingStatusAction(null);
         }
     };
 
-    const handleBulkDelete = async () => {
+    const handleBulkDelete = () => {
         if (readOnly) return;
 
         if (selectedWords.length === 0) {
@@ -423,6 +465,10 @@ export function WordsList({
             return;
         }
 
+        setConfirmDeleteDialogOpen(true);
+    };
+
+    const executeBulkDelete = async () => {
         let successCount = 0;
         let errorCount = 0;
 
@@ -468,6 +514,8 @@ export function WordsList({
                 description: 'Не удалось удалить слова',
                 variant: 'destructive',
             });
+        } finally {
+            setConfirmDeleteDialogOpen(false);
         }
     };
 
@@ -490,21 +538,28 @@ export function WordsList({
                         <Button
                             variant="outline"
                             size="sm"
-                            onClick={selectAllWords}
-                            disabled={
-                                selectedWords.length === words.length ||
-                                readOnly
-                            }
+                            onClick={toggleAllWordsSelection}
+                            disabled={readOnly}
                         >
-                            Выбрать все
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={deselectAllWords}
-                            disabled={selectedWords.length === 0 || readOnly}
-                        >
-                            Снять
+                            {(() => {
+                                const allSelected =
+                                    selectedWords.length === words.length;
+                                const hasSelection = selectedWords.length > 0;
+                                if (!hasSelection) {
+                                    return <Square className="mr-2 h-4 w-4" />;
+                                } else if (allSelected) {
+                                    return (
+                                        <CheckSquare className="mr-2 h-4 w-4" />
+                                    );
+                                } else {
+                                    return (
+                                        <MinusSquare className="mr-2 h-4 w-4" />
+                                    );
+                                }
+                            })()}
+                            {selectedWords.length === words.length
+                                ? 'Снять все'
+                                : 'Выбрать все'}
                         </Button>
                         <Button
                             variant="destructive"
@@ -737,6 +792,71 @@ export function WordsList({
                     );
                 })}
             </div>
+
+            {/* Диалог подтверждения удаления */}
+            <Dialog
+                open={confirmDeleteDialogOpen}
+                onOpenChange={setConfirmDeleteDialogOpen}
+            >
+                <DialogContent className="mx-4 sm:mx-6">
+                    <DialogHeader>
+                        <DialogTitle>Подтверждение удаления</DialogTitle>
+                        <DialogDescription>
+                            Вы уверены, что хотите удалить{' '}
+                            {selectedWords.length} слов(а)? Это действие нельзя
+                            отменить.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="flex-row gap-2 justify-end">
+                        <Button
+                            variant="outline"
+                            onClick={() => setConfirmDeleteDialogOpen(false)}
+                        >
+                            Отмена
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={executeBulkDelete}
+                        >
+                            Удалить
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Диалог подтверждения изменения статуса */}
+            <Dialog
+                open={confirmStatusDialogOpen}
+                onOpenChange={setConfirmStatusDialogOpen}
+            >
+                <DialogContent>
+                    {/*<DialogContent className="mx-4 sm:mx-6">*/}
+                    <DialogHeader>
+                        <DialogTitle>
+                            Подтверждение изменения статуса
+                        </DialogTitle>
+                        <DialogDescription>
+                            Вы уверены, что хотите отметить{' '}
+                            {selectedWords.length} слов(а) как{' '}
+                            {pendingStatusAction === 'LEARNED'
+                                ? 'выученные'
+                                : 'невыученные'}
+                            ?
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="flex-row gap-2 justify-end">
+                        <Button
+                            variant="outline"
+                            onClick={() => setConfirmStatusDialogOpen(false)}
+                        >
+                            Отмена
+                        </Button>
+                        <Button onClick={executeBulkStatusChange}>
+                            Подтвердить
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
