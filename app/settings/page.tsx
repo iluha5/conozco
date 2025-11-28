@@ -99,7 +99,7 @@ export default function SettingsPage() {
         return flags[code] || '🌍';
     };
 
-    if (!isClient || settingsLoading || languagesLoading) {
+    if (!isClient) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
                 <Header />
@@ -170,7 +170,12 @@ export default function SettingsPage() {
                                                 name: e.target.value,
                                             }));
                                         }}
-                                        placeholder="Введите ваше имя"
+                                        placeholder={
+                                            settingsLoading
+                                                ? 'Загрузка...'
+                                                : 'Введите ваше имя'
+                                        }
+                                        disabled={settingsLoading}
                                     />
                                 </div>
                             </div>
@@ -196,9 +201,19 @@ export default function SettingsPage() {
                                             ownLanguageId: value,
                                         }));
                                     }}
+                                    disabled={
+                                        settingsLoading || languagesLoading
+                                    }
                                 >
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Выберите ваш родной язык" />
+                                        <SelectValue
+                                            placeholder={
+                                                settingsLoading ||
+                                                languagesLoading
+                                                    ? 'Загрузка...'
+                                                    : 'Выберите ваш родной язык'
+                                            }
+                                        />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {languages.map(language => (
@@ -233,9 +248,19 @@ export default function SettingsPage() {
                                             learnLanguageId: value,
                                         }));
                                     }}
+                                    disabled={
+                                        settingsLoading || languagesLoading
+                                    }
                                 >
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Выберите язык для изучения" />
+                                        <SelectValue
+                                            placeholder={
+                                                settingsLoading ||
+                                                languagesLoading
+                                                    ? 'Загрузка...'
+                                                    : 'Выберите язык для изучения'
+                                            }
+                                        />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {languages.map(language => (
@@ -270,9 +295,19 @@ export default function SettingsPage() {
                                             interfaceLanguageId: value,
                                         }));
                                     }}
+                                    disabled={
+                                        settingsLoading || languagesLoading
+                                    }
                                 >
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Выберите язык интерфейса" />
+                                        <SelectValue
+                                            placeholder={
+                                                settingsLoading ||
+                                                languagesLoading
+                                                    ? 'Загрузка...'
+                                                    : 'Выберите язык интерфейса'
+                                            }
+                                        />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {languages.map(language => (
