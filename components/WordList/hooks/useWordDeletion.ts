@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import type { Word } from '../WordList';
-import type { WordRemoveCallback } from '../WordList';
+import type { Word, WordRemoveCallback } from '../typing';
 
 interface UseWordDeletionProps {
     onWordRemove?: WordRemoveCallback;

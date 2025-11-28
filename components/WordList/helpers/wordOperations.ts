@@ -1,4 +1,4 @@
-import type { Word } from '../WordList';
+import type { Word } from '../typing';
 
 export const createOptimisticWordUpdate = (
     word: Word,

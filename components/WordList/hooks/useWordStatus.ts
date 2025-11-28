@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import type { Word } from '../WordList';
-import type { WordUpdateCallback } from '../WordList';
+import type { Word, WordUpdateCallback } from '../typing';
 
 interface UseWordStatusProps {
     onWordUpdate?: WordUpdateCallback;

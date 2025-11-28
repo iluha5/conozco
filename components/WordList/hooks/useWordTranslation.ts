@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Word } from '../WordList';
+import type { Word } from '../typing';
 
 export function useWordTranslation() {
     const [translationDialogOpen, setTranslationDialogOpen] = useState<{

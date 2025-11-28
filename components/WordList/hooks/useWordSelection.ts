@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { Word } from '../WordList';
+import type { Word } from '../typing';
 
 export function useWordSelection(words: Word[]) {
     const [selectedWords, setSelectedWords] = useState<(string | number)[]>([]);
