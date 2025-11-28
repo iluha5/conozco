@@ -1,28 +1,21 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
 import { Header } from '@/components/Header';
 import { ArrowLeft } from 'lucide-react';
 import { AddWordDialog } from '@/components/AddWordDialog';
 import { WordsList } from '@/components/WordList/WordList';
 import { WordGroupsFilter } from '@/components/word-groups/WordGroupsFilter';
-import { useTrainingSelection } from '@/hooks/shared';
+import { useUserSettings } from '@/hooks/settings';
 import { useWordsData, useWordsFilter, useWordsStats } from '@/hooks/words';
 import { useWordGroupsFilter } from '@/hooks/word-groups/use-word-groups-filter';
 import { WordsFilter, Word } from '@/types/words.types';
 
 export default function WordsPage() {
-    const { selectedLanguage, setSelectedLanguage } = useTrainingSelection();
+    const { settings: userSettings } = useUserSettings();
     const [selectedStatus, setSelectedStatus] = useState<string>('NOT_LEARNED');
     const [isClient, setIsClient] = useState(false);
 
@@ -33,9 +26,14 @@ export default function WordsPage() {
     const { selectedGroupIds, toggleGroup, toggleAll } =
         useWordGroupsFilter('myWords');
 
+    // Получаем язык для фильтрации из настроек пользователя
+    const learnLanguageCode = useMemo(() => {
+        return userSettings?.learnLanguage?.code || 'ALL';
+    }, [userSettings?.learnLanguage?.code]);
+
     // Формирование фильтра
     const filter: WordsFilter = {
-        language: selectedLanguage,
+        language: learnLanguageCode,
         status: selectedStatus,
         groupIds: selectedGroupIds.length > 0 ? selectedGroupIds : undefined,
     };
@@ -44,7 +42,7 @@ export default function WordsPage() {
     const filteredWords = useWordsFilter(words, filter);
 
     // Статистика (по языку, без учета статуса)
-    const stats = useWordsStats(words, selectedLanguage);
+    const stats = useWordsStats(words, learnLanguageCode);
 
     useEffect(() => {
         setIsClient(true);
@@ -154,19 +152,6 @@ export default function WordsPage() {
                 </div>
 
                 <div className="flex items-center gap-4 mb-6">
-                    <Select
-                        value={selectedLanguage}
-                        onValueChange={setSelectedLanguage}
-                    >
-                        <SelectTrigger className="w-[200px] bg-white">
-                            <SelectValue placeholder="Выберите язык" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="ALL">Все языки</SelectItem>
-                            <SelectItem value="en">🇬🇧 Английский</SelectItem>
-                            <SelectItem value="es">🇪🇸 Испанский</SelectItem>
-                        </SelectContent>
-                    </Select>
                     <WordGroupsFilter
                         selectedGroupIds={selectedGroupIds}
                         onToggleGroup={toggleGroup}
