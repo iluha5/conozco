@@ -65,7 +65,7 @@ export function BulkActions({
                     disabled={selectedWords.length === 0 || readOnly}
                 >
                     <CheckCircle2 className="w-4 h-4 mr-2" />
-                    Выучено ({selectedWords.length})
+                    Выучено
                 </Button>
                 <Button
                     variant="secondary"
@@ -74,7 +74,7 @@ export function BulkActions({
                     disabled={selectedWords.length === 0 || readOnly}
                 >
                     <X className="w-4 h-4 mr-2" />
-                    Не выучено ({selectedWords.length})
+                    Не выучено
                 </Button>
             </div>
             <Button
@@ -84,8 +84,7 @@ export function BulkActions({
                 disabled={selectedWords.length === 0 || readOnly}
             >
                 <Trash2 className="w-4 h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Удалить </span>
-                <span>({selectedWords.length})</span>
+                <span className="hidden sm:inline">Удалить</span>
             </Button>
         </div>
     );
