@@ -5,36 +5,49 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { Square, CheckSquare, MinusSquare } from 'lucide-react';
+import { getAddWordDialogBulkSelectText } from './helpers/selectionHelpers';
 
 type BulkActionsProps = {
-    onSelectAll: () => void;
-    onDeselectAll: () => void;
+    words: Array<{ id: string }>;
+    selectedWords: string[];
+    onToggleAllSelection: () => void;
     disabled: boolean;
 };
 
 export function BulkActions({
-    onSelectAll,
-    onDeselectAll,
+    words,
+    selectedWords,
+    onToggleAllSelection,
     disabled,
 }: BulkActionsProps) {
+    // Определяем состояние выбора на основе количества выбранных слов
+    const allSelected =
+        words.length > 0 && selectedWords.length === words.length;
+    const hasSelection = selectedWords.length > 0;
+    const selectionState: 'none' | 'partial' | 'all' = !hasSelection
+        ? 'none'
+        : allSelected
+          ? 'all'
+          : 'partial';
+
     return (
-        <div className="flex gap-2">
-            <Button
-                variant="outline"
-                size="sm"
-                onClick={onSelectAll}
-                disabled={disabled}
-            >
-                Выбрать все
-            </Button>
-            <Button
-                variant="outline"
-                size="sm"
-                onClick={onDeselectAll}
-                disabled={disabled}
-            >
-                Отменить все
-            </Button>
-        </div>
+        <Button
+            variant="outline"
+            size="sm"
+            onClick={onToggleAllSelection}
+            disabled={disabled}
+        >
+            {(() => {
+                if (selectionState === 'none') {
+                    return <Square className="mr-2 h-4 w-4" />;
+                } else if (selectionState === 'all') {
+                    return <CheckSquare className="mr-2 h-4 w-4" />;
+                } else {
+                    return <MinusSquare className="mr-2 h-4 w-4" />;
+                }
+            })()}
+            {getAddWordDialogBulkSelectText(selectionState)}
+        </Button>
     );
 }

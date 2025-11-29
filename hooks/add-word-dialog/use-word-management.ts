@@ -166,6 +166,18 @@ export function useWordManagement({
         }
     };
 
+    const toggleAllWordsSelection = async (filteredWords: BaseWord[]) => {
+        const allSelected = filteredWords.every(word =>
+            selectedWords.includes(word.id),
+        );
+
+        if (allSelected) {
+            await deselectAllWords(filteredWords);
+        } else {
+            await selectAllWords(filteredWords);
+        }
+    };
+
     const isWordSelected = (baseWordId: string) => {
         return selectedWords.includes(baseWordId);
     };
@@ -181,6 +193,7 @@ export function useWordManagement({
         toggleWordSelection,
         selectAllWords,
         deselectAllWords,
+        toggleAllWordsSelection,
         isWordSelected,
         resetSelection,
     };

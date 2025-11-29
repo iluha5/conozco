@@ -14,6 +14,7 @@
 - Break down complex JSX into logical atomic components within the main component's folder under a `components/` subdirectory.
 - Extract custom hooks and helper functions into respective `hooks/` and `helpers/` subdirectories within the component folder.
 - Extract shared types into a centralized `typing.ts` file within the component folder.
+- When creating dialog/popup components with action buttons (DialogFooter), ALWAYS place buttons in a row (flex-row) for mobile view when possible, instead of stacking them in a column. Use `flex-row justify-end gap-2` or similar classes to ensure buttons are displayed horizontally on mobile devices.
 
 ## Database Operations Guidelines
 - **ALWAYS create a database backup BEFORE performing any dangerous database operations.**

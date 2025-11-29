@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogFooter,
     DialogHeader,
     DialogTitle,
@@ -44,6 +45,11 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
     const [selectedWordForTranslation, setSelectedWordForTranslation] =
         useState<any | null>(null);
     const [isClient, setIsClient] = useState(false);
+    const [confirmToggleAllDialogOpen, setConfirmToggleAllDialogOpen] =
+        useState(false);
+    const [pendingToggleAllWords, setPendingToggleAllWords] = useState<
+        BaseWord[] | null
+    >(null);
 
     const { settings: userSettings } = useUserSettings();
     const { partsOfSpeech } = usePartsOfSpeech('ru');
@@ -82,8 +88,8 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
     const {
         addWord,
         toggleWordSelection,
-        selectAllWords,
-        deselectAllWords,
+        selectedWords,
+        toggleAllWordsSelection,
         isWordSelected,
         resetSelection,
     } = useWordManagement({
@@ -233,67 +239,139 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
 
     const filteredWords = getFilteredWords();
 
+    const handleToggleAllSelectionClick = () => {
+        setPendingToggleAllWords(filteredWords);
+        setConfirmToggleAllDialogOpen(true);
+    };
+
+    const handleConfirmToggleAll = async () => {
+        if (pendingToggleAllWords) {
+            await toggleAllWordsSelection(pendingToggleAllWords);
+            setPendingToggleAllWords(null);
+        }
+        setConfirmToggleAllDialogOpen(false);
+    };
+
+    const handleCloseToggleAllDialog = () => {
+        setConfirmToggleAllDialogOpen(false);
+        setPendingToggleAllWords(null);
+    };
+
+    const selectionState = useMemo(() => {
+        const allSelected = filteredWords.every(word =>
+            selectedWords.includes(word.id),
+        );
+        const hasSelection = filteredWords.some(word =>
+            selectedWords.includes(word.id),
+        );
+
+        if (!hasSelection) return 'none';
+        if (allSelected) return 'all';
+        return 'partial';
+    }, [filteredWords, selectedWords]);
+
+    const actionText =
+        selectionState === 'all'
+            ? 'удалены из списка ваших слов'
+            : 'добавлены в список ваших слов';
+    const actionTitle =
+        selectionState === 'all' ? 'Убрать слова?' : 'Добавить слова?';
+
     return (
-        <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogTrigger asChild>
-                <Button size="lg" className="w-full min-w-0">
-                    <PlusCircle className="w-4 h-4 mr-2 flex-shrink-0" />
-                    <span className="md:hidden truncate">Добавить</span>
-                    <span className="hidden md:inline truncate">
-                        Добавить слово
-                    </span>
-                </Button>
-            </DialogTrigger>
-            <DialogContent
-                className={`${needsScroll ? 'max-h-[90vh] overflow-y-auto' : ''}`}
-            >
-                <DialogHeader>
-                    <DialogTitle>Добавить слово из словаря</DialogTitle>
-                </DialogHeader>
-
-                <div className="space-y-4 py-4">
-                    {/* Фильтры */}
-                    <AddWordDialogFilters
-                        selectedPartsOfSpeech={selectedPartsOfSpeech}
-                        onTogglePartOfSpeech={togglePartOfSpeech}
-                        searchTerm={searchTerm}
-                        onSearchChange={setSearchTerm}
-                        hasExactMatch={hasExactMatch}
-                        aiSearching={aiSearching}
-                        onAiSearch={handleAiSearch}
-                        autoFocus={open}
-                        selectedGroupIds={selectedGroupIds}
-                        onToggleGroup={toggleGroup}
-                        onToggleAllGroups={toggleAll}
-                    />
-
-                    {/* Список слов */}
-                    <AddWordDialogWordsList
-                        words={filteredWords}
-                        searching={searching}
-                        loadingMore={loadingMore}
-                        hasMore={hasMore}
-                        isWordSelected={isWordSelected}
-                        onToggleWord={toggleWordSelection}
-                        onSelectAll={() => selectAllWords(filteredWords)}
-                        onDeselectAll={() => deselectAllWords(filteredWords)}
-                        onLoadMore={handleLoadMore}
-                        onOpenTranslationDialog={openTranslationDialog}
-                        translationDialogOpen={translationDialogOpen}
-                        onTranslationDialogClose={handleDialogClose}
-                        selectedWordForTranslation={selectedWordForTranslation}
-                        partsOfSpeech={partsOfSpeech}
-                        onTranslationSave={handleTranslationSave}
-                        isClient={isClient}
-                    />
-                </div>
-
-                <DialogFooter className="flex-row justify-end space-x-2">
-                    <Button variant="outline" onClick={() => setOpen(false)}>
-                        Закрыть
+        <>
+            <Dialog open={open} onOpenChange={handleOpenChange}>
+                <DialogTrigger asChild>
+                    <Button size="lg" className="w-full min-w-0">
+                        <PlusCircle className="w-4 h-4 mr-2 flex-shrink-0" />
+                        <span className="md:hidden truncate">Добавить</span>
+                        <span className="hidden md:inline truncate">
+                            Добавить слово
+                        </span>
                     </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+                </DialogTrigger>
+                <DialogContent
+                    className={`${needsScroll ? 'max-h-[90vh] overflow-y-auto' : ''}`}
+                >
+                    <DialogHeader>
+                        <DialogTitle>Добавить слово из словаря</DialogTitle>
+                    </DialogHeader>
+
+                    <div className="space-y-4 py-4">
+                        {/* Фильтры */}
+                        <AddWordDialogFilters
+                            selectedPartsOfSpeech={selectedPartsOfSpeech}
+                            onTogglePartOfSpeech={togglePartOfSpeech}
+                            searchTerm={searchTerm}
+                            onSearchChange={setSearchTerm}
+                            hasExactMatch={hasExactMatch}
+                            aiSearching={aiSearching}
+                            onAiSearch={handleAiSearch}
+                            autoFocus={open}
+                            selectedGroupIds={selectedGroupIds}
+                            onToggleGroup={toggleGroup}
+                            onToggleAllGroups={toggleAll}
+                        />
+
+                        {/* Список слов */}
+                        <AddWordDialogWordsList
+                            words={filteredWords}
+                            searching={searching}
+                            loadingMore={loadingMore}
+                            hasMore={hasMore}
+                            isWordSelected={isWordSelected}
+                            onToggleWord={toggleWordSelection}
+                            selectedWords={selectedWords}
+                            onToggleAllSelection={handleToggleAllSelectionClick}
+                            onLoadMore={handleLoadMore}
+                            onOpenTranslationDialog={openTranslationDialog}
+                            translationDialogOpen={translationDialogOpen}
+                            onTranslationDialogClose={handleDialogClose}
+                            selectedWordForTranslation={
+                                selectedWordForTranslation
+                            }
+                            partsOfSpeech={partsOfSpeech}
+                            onTranslationSave={handleTranslationSave}
+                            isClient={isClient}
+                        />
+                    </div>
+
+                    <DialogFooter className="flex-row justify-end space-x-2">
+                        <Button
+                            variant="outline"
+                            onClick={() => setOpen(false)}
+                        >
+                            Закрыть
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Диалог подтверждения выбора всех слов */}
+            <Dialog
+                open={confirmToggleAllDialogOpen}
+                onOpenChange={handleCloseToggleAllDialog}
+            >
+                <DialogContent className={`sm:max-w-xl`}>
+                    <DialogHeader>
+                        <DialogTitle>{actionTitle}</DialogTitle>
+                        <DialogDescription className="!mt-3">
+                            Все видимые слова ({filteredWords.length} шт.) будут{' '}
+                            {actionText}.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={handleCloseToggleAllDialog}
+                        >
+                            Отмена
+                        </Button>
+                        <Button onClick={handleConfirmToggleAll}>
+                            Подтвердить
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </>
     );
 }

@@ -19,8 +19,8 @@ type WordsListProps = {
     hasMore: boolean;
     isWordSelected: (_id: string) => boolean;
     onToggleWord: (_id: string) => void;
-    onSelectAll: () => void;
-    onDeselectAll: () => void;
+    selectedWords: string[];
+    onToggleAllSelection: () => void;
     onLoadMore: () => void;
     onOpenTranslationDialog: (_word: BaseWord) => void;
     translationDialogOpen: { [key: string]: boolean };
@@ -38,8 +38,8 @@ export function WordsList({
     hasMore,
     isWordSelected,
     onToggleWord,
-    onSelectAll,
-    onDeselectAll,
+    selectedWords,
+    onToggleAllSelection,
     onLoadMore,
     onOpenTranslationDialog,
     translationDialogOpen,
@@ -60,8 +60,9 @@ export function WordsList({
                     )}
                 </label>
                 <BulkActions
-                    onSelectAll={onSelectAll}
-                    onDeselectAll={onDeselectAll}
+                    words={words}
+                    selectedWords={selectedWords}
+                    onToggleAllSelection={onToggleAllSelection}
                     disabled={searching || words.length === 0}
                 />
             </div>
