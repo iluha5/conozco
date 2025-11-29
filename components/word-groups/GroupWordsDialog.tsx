@@ -155,17 +155,37 @@ export function GroupWordsDialog({
                 </div>
 
                 {/* Список слов */}
-                <div className="flex-1 overflow-y-auto min-h-0">
+                <div
+                    className="flex-1 overflow-y-auto"
+                    style={{
+                        minHeight: 'min(30vh, 400px)',
+                    }}
+                >
                     {isLoading ? (
-                        <div className="flex items-center justify-center py-12">
+                        <div
+                            className="flex items-center justify-center py-12 h-full"
+                            style={{
+                                minHeight: 'min(66vh, 400px)',
+                            }}
+                        >
                             <Loader2 className="h-6 w-6 animate-spin" />
                         </div>
                     ) : isError ? (
-                        <div className="text-center py-12 text-red-600">
+                        <div
+                            className="text-center py-12 text-red-600 h-full flex items-center justify-center"
+                            style={{
+                                minHeight: 'min(66vh, 400px)',
+                            }}
+                        >
                             Ошибка при загрузке слов
                         </div>
                     ) : visibleWords.length === 0 ? (
-                        <div className="text-center py-12 text-gray-600">
+                        <div
+                            className="text-center py-12 text-gray-600 h-full flex items-center justify-center"
+                            style={{
+                                minHeight: 'min(66vh, 400px)',
+                            }}
+                        >
                             {searchQuery
                                 ? 'Слова не найдены'
                                 : 'В группе пока нет слов'}
