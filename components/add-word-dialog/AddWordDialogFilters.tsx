@@ -7,20 +7,12 @@
 import { useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectTrigger } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2, Search, X } from 'lucide-react';
 import { WordGroupsFilter } from '@/components/word-groups/WordGroupsFilter';
 
 type AddWordDialogFiltersProps = {
-    languageCode: 'en' | 'es';
-    onLanguageChange: (_value: 'en' | 'es') => void;
     selectedPartsOfSpeech: string[];
     onTogglePartOfSpeech: (_pos: string) => void;
     searchTerm: string;
@@ -50,8 +42,6 @@ const PARTS_OF_SPEECH = [
 ];
 
 export function AddWordDialogFilters({
-    languageCode,
-    onLanguageChange,
     selectedPartsOfSpeech,
     onTogglePartOfSpeech,
     searchTerm,
@@ -69,17 +59,6 @@ export function AddWordDialogFilters({
     return (
         <div className="space-y-2">
             <div className="flex flex-wrap gap-2">
-                {/* Селектор языка */}
-                <Select value={languageCode} onValueChange={onLanguageChange}>
-                    <SelectTrigger className="w-[100px]">
-                        <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="es">🇪🇸 Исп</SelectItem>
-                        <SelectItem value="en">🇬🇧 Англ</SelectItem>
-                    </SelectContent>
-                </Select>
-
                 {/* Селектор частей речи */}
                 <div className="relative w-[140px]">
                     <Select value="parts-of-speech">

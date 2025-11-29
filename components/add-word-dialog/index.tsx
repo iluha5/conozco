@@ -4,7 +4,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -15,7 +15,8 @@ import {
     DialogTrigger,
 } from '@/components/ui/dialog';
 import { PlusCircle } from 'lucide-react';
-import { useTrainingSelection, usePartsOfSpeech } from '@/hooks/shared';
+import { usePartsOfSpeech } from '@/hooks/shared';
+import { useUserSettings } from '@/hooks/settings';
 import {
     useWordSearch,
     useWordManagement,
@@ -44,14 +45,14 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
         useState<any | null>(null);
     const [isClient, setIsClient] = useState(false);
 
-    const { selectedLanguage, setSelectedLanguage } = useTrainingSelection();
+    const { settings: userSettings } = useUserSettings();
     const { partsOfSpeech } = usePartsOfSpeech('ru');
 
-    // Преобразуем selectedLanguage для использования в диалоге
-    const languageCode: 'en' | 'es' =
-        selectedLanguage === 'en' || selectedLanguage === 'es'
-            ? selectedLanguage
-            : 'es';
+    // Используем learnLanguage из настроек пользователя
+    const languageCode: 'en' | 'es' = useMemo(() => {
+        const code = userSettings?.learnLanguage?.code;
+        return code === 'en' || code === 'es' ? code : 'es';
+    }, [userSettings?.learnLanguage?.code]);
 
     // Фильтр по группам
     const { selectedGroupIds, toggleGroup, toggleAll } =
@@ -253,10 +254,6 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                 <div className="space-y-4 py-4">
                     {/* Фильтры */}
                     <AddWordDialogFilters
-                        languageCode={languageCode}
-                        onLanguageChange={(value: 'en' | 'es') =>
-                            setSelectedLanguage(value)
-                        }
                         selectedPartsOfSpeech={selectedPartsOfSpeech}
                         onTogglePartOfSpeech={togglePartOfSpeech}
                         searchTerm={searchTerm}
