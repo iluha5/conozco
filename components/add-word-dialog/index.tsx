@@ -245,7 +245,7 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                 </Button>
             </DialogTrigger>
             <DialogContent
-                className={`max-w-4xl ${needsScroll ? 'max-h-[90vh] overflow-y-auto' : ''}`}
+                className={`${needsScroll ? 'max-h-[90vh] overflow-y-auto' : ''}`}
             >
                 <DialogHeader>
                     <DialogTitle>Добавить слово из словаря</DialogTitle>
