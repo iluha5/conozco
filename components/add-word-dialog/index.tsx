@@ -271,10 +271,25 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
         return 'partial';
     }, [filteredWords, selectedWords]);
 
+    // Подсчитываем количество слов, которые реально будут добавлены или удалены
+    const wordsToProcessCount = useMemo(() => {
+        if (!pendingToggleAllWords) return 0;
+
+        if (selectionState === 'all') {
+            // Будем удалять - считаем только те, что уже добавлены пользователем
+            return pendingToggleAllWords.filter(word => word.isAddedByUser)
+                .length;
+        } else {
+            // Будем добавлять - считаем только те, что еще не добавлены пользователем
+            return pendingToggleAllWords.filter(word => !word.isAddedByUser)
+                .length;
+        }
+    }, [pendingToggleAllWords, selectionState]);
+
     const actionText =
         selectionState === 'all'
             ? 'удалены из списка ваших слов'
-            : 'добавлены в список ваших слов';
+            : 'добавлено в список ваших слов';
     const actionTitle =
         selectionState === 'all' ? 'Убрать слова?' : 'Добавить слова?';
 
@@ -394,8 +409,20 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                     <DialogHeader>
                         <DialogTitle>{actionTitle}</DialogTitle>
                         <DialogDescription className="!mt-3">
-                            Все видимые слова ({filteredWords.length} шт.) будут{' '}
-                            {actionText}.
+                            {wordsToProcessCount > 0 ? (
+                                <>
+                                    {wordsToProcessCount} слов(а) будет{' '}
+                                    {actionText}.
+                                </>
+                            ) : (
+                                <>
+                                    Все видимые слова уже{' '}
+                                    {selectionState === 'all'
+                                        ? 'удалены'
+                                        : 'добавлены'}
+                                    .
+                                </>
+                            )}
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
