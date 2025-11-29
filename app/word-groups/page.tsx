@@ -13,7 +13,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Loader2, Search, X, Crown } from 'lucide-react';
+import { Loader2, Search, X, Crown, Eye } from 'lucide-react';
 import { Header } from '@/components/Header';
 import {
     useActiveWordGroups,
@@ -22,6 +22,7 @@ import {
     useDeactivateWordGroup,
 } from '@/hooks/word-groups/use-active-word-groups';
 import { toast } from 'sonner';
+import { GroupWordsDialog } from '@/components/word-groups/GroupWordsDialog';
 
 // Объединенный тип группы для отображения
 type CombinedWordGroup = {
@@ -41,6 +42,11 @@ export default function WordGroupsManagementPage() {
     const [optimisticActiveGroups, setOptimisticActiveGroups] = useState<
         Set<number>
     >(new Set());
+    const [selectedGroupForView, setSelectedGroupForView] = useState<{
+        id: number;
+        name: string;
+        wordsCount: number;
+    } | null>(null);
 
     // Фильтры
     const [visibilityFilter, setVisibilityFilter] = useState<string>('ALL');
@@ -314,23 +320,25 @@ export default function WordGroupsManagementPage() {
                                         return (
                                             <Card
                                                 key={group.id}
-                                                className={`transition-all cursor-pointer hover:bg-gray-50 m-1 ${
+                                                className={`transition-all hover:bg-gray-50 m-1 ${
                                                     isCurrentlyActive
                                                         ? 'ring-2 ring-black'
                                                         : ''
                                                 }`}
-                                                onClick={() =>
-                                                    !isLoading &&
-                                                    handleToggleGroup(
-                                                        group.id,
-                                                        group.name,
-                                                        isCurrentlyActive,
-                                                    )
-                                                }
                                             >
                                                 <CardContent className="p-4">
-                                                    <div className="flex items-center justify-between">
-                                                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                                                    <div className="flex items-center justify-between gap-2">
+                                                        <div
+                                                            className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer"
+                                                            onClick={() =>
+                                                                !isLoading &&
+                                                                handleToggleGroup(
+                                                                    group.id,
+                                                                    group.name,
+                                                                    isCurrentlyActive,
+                                                                )
+                                                            }
+                                                        >
                                                             <div className="flex items-center gap-2">
                                                                 {isLoading ? (
                                                                     <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
@@ -369,6 +377,25 @@ export default function WordGroupsManagementPage() {
                                                                 </div>
                                                             </div>
                                                         </div>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            className="shrink-0"
+                                                            onClick={e => {
+                                                                e.stopPropagation();
+                                                                setSelectedGroupForView(
+                                                                    {
+                                                                        id: group.id,
+                                                                        name: group.name,
+                                                                        wordsCount:
+                                                                            group.wordsCount,
+                                                                    },
+                                                                );
+                                                            }}
+                                                            title="Просмотреть слова"
+                                                        >
+                                                            <Eye className="h-4 w-4" />
+                                                        </Button>
                                                     </div>
                                                 </CardContent>
                                             </Card>
@@ -388,6 +415,21 @@ export default function WordGroupsManagementPage() {
                     </Card>
                 </div>
             </div>
+
+            {/* Диалог просмотра слов группы */}
+            {selectedGroupForView && (
+                <GroupWordsDialog
+                    open={!!selectedGroupForView}
+                    onOpenChange={open => {
+                        if (!open) {
+                            setSelectedGroupForView(null);
+                        }
+                    }}
+                    groupId={selectedGroupForView.id}
+                    groupName={selectedGroupForView.name}
+                    wordsCount={selectedGroupForView.wordsCount}
+                />
+            )}
         </div>
     );
 }
