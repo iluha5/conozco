@@ -4,11 +4,9 @@
 
 'use client';
 
-import { Loader2 } from 'lucide-react';
 import { WordCard } from './WordCard';
 import { WordsListSkeleton } from './WordsListSkeleton';
 import { WordsListEmpty } from './WordsListEmpty';
-import { BulkActions } from './BulkActions';
 import type { BaseWord } from '@/types/add-word-dialog.types';
 import type { PartOfSpeech } from '@/hooks/shared';
 
@@ -38,8 +36,8 @@ export function WordsList({
     hasMore,
     isWordSelected,
     onToggleWord,
-    selectedWords,
-    onToggleAllSelection,
+    selectedWords: _selectedWords,
+    onToggleAllSelection: _onToggleAllSelection,
     onLoadMore,
     onOpenTranslationDialog,
     translationDialogOpen,
@@ -51,22 +49,6 @@ export function WordsList({
 }: WordsListProps) {
     return (
         <div className="space-y-2">
-            {/* Заголовок и массовые действия */}
-            <div className="flex items-center justify-between">
-                <label className="text-sm font-medium">
-                    Доступные слова{' '}
-                    {searching && (
-                        <Loader2 className="w-4 h-4 animate-spin inline ml-2" />
-                    )}
-                </label>
-                <BulkActions
-                    words={words}
-                    selectedWords={selectedWords}
-                    onToggleAllSelection={onToggleAllSelection}
-                    disabled={searching || words.length === 0}
-                />
-            </div>
-
             <div className="space-y-3">
                 {/* Список слов */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 h-[300px] overflow-y-auto border rounded-md p-3 bg-gray-50">
