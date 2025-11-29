@@ -15,8 +15,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
-import { PlusCircle, Loader2 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { PlusCircle } from 'lucide-react';
 import { usePartsOfSpeech } from '@/hooks/shared';
 import { useUserSettings } from '@/hooks/settings';
 import {
@@ -330,41 +329,8 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                             selectedWords={selectedWords}
                             onToggleAllSelection={handleToggleAllSelectionClick}
                             searching={searching}
+                            filteredWordsCount={filteredWords.length}
                         />
-
-                        {/* Подпись "Доступные слова" */}
-                        <div className="flex items-center gap-2">
-                            <label className="text-sm font-medium">
-                                Доступные слова
-                                {searching && (
-                                    <Loader2 className="w-4 h-4 animate-spin inline ml-2" />
-                                )}
-                            </label>
-                            <Badge
-                                variant="outline"
-                                className="gap-1.5 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 shadow-sm text-sm"
-                            >
-                                <span className="text-gray-900 dark:text-gray-100">
-                                    {filteredWords.length}
-                                </span>
-                                {(() => {
-                                    const selectedInFiltered =
-                                        filteredWords.filter(word =>
-                                            selectedWords.includes(word.id),
-                                        ).length;
-                                    return selectedInFiltered > 0 ? (
-                                        <>
-                                            <span className="text-gray-300 dark:text-gray-600">
-                                                |
-                                            </span>
-                                            <span className="text-orange-600 dark:text-orange-500">
-                                                {selectedInFiltered}
-                                            </span>
-                                        </>
-                                    ) : null;
-                                })()}
-                            </Badge>
-                        </div>
 
                         {/* Список слов */}
                         <AddWordDialogWordsList
