@@ -106,8 +106,9 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
 
             setExerciseResults(prevResults => {
                 const newResults = [...prevResults];
-                // Устанавливаем результат только если для этого индекса еще нет результата
-                if (newResults[currentIndex] === null) {
+                // В режиме retry всегда обновляем результат, даже если он уже был установлен
+                // В обычном режиме устанавливаем результат только если для этого индекса еще нет результата
+                if (isRetryMode || newResults[currentIndex] === null) {
                     newResults[currentIndex] = isCorrect;
                 }
                 return newResults;
@@ -138,6 +139,7 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
         completedWordId,
         lastCompletedIndex,
         isFirstCard,
+        isRetryMode,
     ]);
 
     useStage4AutoAdvance({
