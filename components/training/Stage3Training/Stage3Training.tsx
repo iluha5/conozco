@@ -113,23 +113,19 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
                     currentIndex={pairs.filter(pair => pair.matched).length}
                 />
                 <CardContent className="space-y-6">
-                    <p className="text-center text-gray-600">
-                        Соедините иностранные слова с их переводами
-                    </p>
-
                     <div className="grid grid-cols-2 gap-8">
-                        <ForeignWordsColumn
-                            pairs={pairs}
-                            selectedForeign={selectedForeign}
-                            errorForeign={errorForeign}
-                            onForeignClick={handleForeignClick}
-                        />
                         <TranslationsColumn
                             shuffledTranslations={shuffledTranslations}
                             pairs={pairs}
                             selectedTranslation={selectedTranslation}
                             errorTranslation={errorTranslation}
                             onTranslationClick={handleTranslationClick}
+                        />
+                        <ForeignWordsColumn
+                            pairs={pairs}
+                            selectedForeign={selectedForeign}
+                            errorForeign={errorForeign}
+                            onForeignClick={handleForeignClick}
                         />
                     </div>
                 </CardContent>
