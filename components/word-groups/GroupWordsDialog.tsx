@@ -9,10 +9,12 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Loader2, Search } from 'lucide-react';
+import { Loader2, Search, Volume2 } from 'lucide-react';
 import { getLanguageFlag, getPartOfSpeechAbbrev } from '@/lib/word-utils';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { useSpeech } from '@/hooks/training';
 
 interface BaseWord {
     id: number;
@@ -45,6 +47,78 @@ interface GroupWordsDialogProps {
 }
 
 const WORDS_PER_PAGE = 50;
+
+interface WordCardProps {
+    word: BaseWord;
+}
+
+function WordCard({ word }: WordCardProps) {
+    const {
+        speak,
+        isPlaying,
+        isSupported: speechSupported,
+    } = useSpeech({
+        languageCode: word.language.code,
+    });
+
+    const translation =
+        word.customTranslations && word.customTranslations.length > 0
+            ? word.customTranslations[0].translation
+            : word.translations && word.translations.length > 0
+              ? word.translations[0].translation
+              : 'Нет перевода';
+    const partOfSpeech =
+        word.customTranslations?.[0]?.partOfSpeech?.name ||
+        word.translations[0]?.partOfSpeech?.name;
+
+    const handlePlayWord = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        speak(word.word);
+    };
+
+    return (
+        <Card className="transition-all hover:bg-gray-50 m-1">
+            <CardHeader className="pb-2">
+                <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                        <CardTitle className="text-base flex items-center gap-2 flex-wrap">
+                            <span className="break-words">{word.word}</span>
+                            <span className="text-sm shrink-0">
+                                {getLanguageFlag(word.language.code)}
+                            </span>
+                            {partOfSpeech && (
+                                <span className="text-xs bg-gray-100 px-2 py-1 rounded shrink-0">
+                                    {getPartOfSpeechAbbrev(partOfSpeech)}
+                                </span>
+                            )}
+                        </CardTitle>
+                        <div className="flex items-center gap-1 mt-1">
+                            <span className="text-blue-500 break-words">
+                                {translation}
+                            </span>
+                        </div>
+                    </div>
+                    {speechSupported && (
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 shrink-0"
+                            onClick={handlePlayWord}
+                            disabled={isPlaying}
+                            title="Прослушать слово"
+                        >
+                            <Volume2
+                                className={`h-4 w-4 ${
+                                    isPlaying ? 'animate-pulse' : ''
+                                }`}
+                            />
+                        </Button>
+                    )}
+                </div>
+            </CardHeader>
+        </Card>
+    );
+}
 
 export function GroupWordsDialog({
     open,
@@ -204,54 +278,9 @@ export function GroupWordsDialog({
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-1 p-2">
-                            {visibleWords.map(word => {
-                                const translation =
-                                    word.customTranslations &&
-                                    word.customTranslations.length > 0
-                                        ? word.customTranslations[0].translation
-                                        : word.translations &&
-                                            word.translations.length > 0
-                                          ? word.translations[0].translation
-                                          : 'Нет перевода';
-                                const partOfSpeech =
-                                    word.customTranslations?.[0]?.partOfSpeech
-                                        ?.name ||
-                                    word.translations[0]?.partOfSpeech?.name;
-
-                                return (
-                                    <Card
-                                        key={word.id}
-                                        className="transition-all hover:bg-gray-50 m-1"
-                                    >
-                                        <CardHeader className="pb-2">
-                                            <div className="flex-1 min-w-0">
-                                                <CardTitle className="text-base flex items-center gap-2 flex-wrap">
-                                                    <span className="break-words">
-                                                        {word.word}
-                                                    </span>
-                                                    <span className="text-sm shrink-0">
-                                                        {getLanguageFlag(
-                                                            word.language.code,
-                                                        )}
-                                                    </span>
-                                                    {partOfSpeech && (
-                                                        <span className="text-xs bg-gray-100 px-2 py-1 rounded shrink-0">
-                                                            {getPartOfSpeechAbbrev(
-                                                                partOfSpeech,
-                                                            )}
-                                                        </span>
-                                                    )}
-                                                </CardTitle>
-                                                <div className="flex items-center gap-1 mt-1">
-                                                    <span className="text-blue-500 break-words">
-                                                        {translation}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </CardHeader>
-                                    </Card>
-                                );
-                            })}
+                            {visibleWords.map(word => (
+                                <WordCard key={word.id} word={word} />
+                            ))}
                         </div>
                     )}
                 </div>
