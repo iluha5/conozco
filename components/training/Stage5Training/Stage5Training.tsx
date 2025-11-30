@@ -10,6 +10,7 @@ import { TranslationDisplay } from './components/TranslationDisplay';
 import { SentenceBuilder } from './components/SentenceBuilder';
 import { WordsGrid } from './components/WordsGrid';
 import { NextButton } from './components/NextButton';
+import { LoadingOverlay } from '../common/LoadingOverlay';
 import { useStage5Phrases } from './hooks/useStage5Phrases';
 import { useStage5SentenceBuilding } from './hooks/useStage5SentenceBuilding';
 import { useStage5Navigation } from './hooks/useStage5Navigation';
@@ -18,7 +19,11 @@ import { useStage5Settings } from './hooks/useStage5Settings';
 import { getExtraWords } from './helpers/getExtraWords';
 import type { Stage5Props, WordState, Phrase } from './typing';
 
-export function Stage5Training({ words, onComplete }: Stage5Props) {
+export function Stage5Training({
+    words,
+    onComplete,
+    isLastStage = false,
+}: Stage5Props) {
     const storage = useTrainingStorage();
     const { settings, updateSettings } = useStage5SettingsHook();
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -44,6 +49,7 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
     );
     const [lastCompletedExerciseIndex, setLastCompletedExerciseIndex] =
         useState<number | null>(null);
+    const [isCompleting, setIsCompleting] = useState(false);
 
     const { wordsWithPhrases, wordPhrases, totalPhrases } = useStage5Phrases({
         words,
@@ -245,12 +251,14 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
         exerciseResults,
         wordPhrases,
         wordsWithPhrasesLength: wordsWithPhrases.length,
+        isLastStage,
         onComplete,
         setCurrentIndex,
         setCurrentPhraseIndex,
         setExerciseResults,
         setHasCompletedFirstRound,
         setIsRetryMode,
+        setIsCompleting,
     });
 
     // Сброс состояния при изменении фразы
@@ -352,7 +360,8 @@ export function Stage5Training({ words, onComplete }: Stage5Props) {
     }
 
     return (
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto relative">
+            {isCompleting && <LoadingOverlay />}
             <Card
                 key={animationKey}
                 className={`shadow-xl transition-all duration-300 ease-in-out ${fadeIn ? 'opacity-100' : 'opacity-0'} ${

@@ -64,6 +64,7 @@ export type Word = {
 export type Stage5Props = {
     words: Word[];
     onComplete: () => void;
+    isLastStage?: boolean;
 };
 
 export type Phrase = {

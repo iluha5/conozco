@@ -3,6 +3,7 @@ import type { Word } from '@/types/training.types';
 export type Stage3Props = {
     words: Word[];
     onComplete: () => void;
+    isLastStage?: boolean;
 };
 
 export type MatchPair = {

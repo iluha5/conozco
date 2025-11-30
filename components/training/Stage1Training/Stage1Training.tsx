@@ -15,16 +15,22 @@ import { WordDisplayWithSound } from './components/WordDisplayWithSound';
 import { TranslationDisplay } from './components/TranslationDisplay';
 import { ShowTranslationButton } from './components/ShowTranslationButton';
 import { NextButton } from './components/NextButton';
+import { LoadingOverlay } from '../common/LoadingOverlay';
 import { useStage1Navigation } from './hooks/useStage1Navigation';
 import { useWordInitialization } from './hooks/useWordInitialization';
 import { useSettingsManagement } from './hooks/useSettingsManagement';
 import type { Stage1Props } from './typing';
 
-export function Stage1Training({ words, onComplete }: Stage1Props) {
+export function Stage1Training({
+    words,
+    onComplete,
+    isLastStage = false,
+}: Stage1Props) {
     const { settings, updateSettings } = useStage1Settings();
     const [currentIndex, setCurrentIndex] = useState(0);
     const [showTranslation, setShowTranslation] = useState(false);
     const [showSettingsModal, setShowSettingsModal] = useState(false);
+    const [isCompleting, setIsCompleting] = useState(false);
 
     const currentWord = words[currentIndex];
 
@@ -43,9 +49,12 @@ export function Stage1Training({ words, onComplete }: Stage1Props) {
         currentIndex,
         wordsLength: words.length,
         currentWordId: currentWord?.id || '',
+        exerciseResults,
+        isLastStage,
         updateResult,
         recordResult,
         onComplete,
+        setIsCompleting,
     });
 
     useWordInitialization({
@@ -82,7 +91,8 @@ export function Stage1Training({ words, onComplete }: Stage1Props) {
     }
 
     return (
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-2xl mx-auto relative">
+            {isCompleting && <LoadingOverlay />}
             <Card
                 key={animationKey}
                 className={`shadow-xl transition-all duration-300 ease-in-out ${

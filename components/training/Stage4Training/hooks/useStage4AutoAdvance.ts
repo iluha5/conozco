@@ -6,6 +6,8 @@ type UseStage4AutoAdvanceParams = {
     currentIndex: number;
     isRetryMode: boolean;
     exerciseResults: (boolean | null)[];
+    baseWordsLength: number;
+    isLastStage?: boolean;
     onComplete: () => void;
     setCurrentIndex: (_index: number) => void;
     setExerciseResults: React.Dispatch<
@@ -13,6 +15,7 @@ type UseStage4AutoAdvanceParams = {
     >;
     setHasCompletedFirstRound: (_value: boolean) => void;
     setIsRetryMode: (_value: boolean) => void;
+    setIsCompleting: (_value: boolean) => void;
     findNextErrorWithResults: (
         _startIndex: number,
         _results: (boolean | null)[],
@@ -29,11 +32,14 @@ export function useStage4AutoAdvance({
     currentIndex,
     isRetryMode,
     exerciseResults,
+    baseWordsLength,
+    isLastStage = false,
     onComplete,
     setCurrentIndex,
     setExerciseResults,
     setHasCompletedFirstRound,
     setIsRetryMode,
+    setIsCompleting,
     findNextErrorWithResults,
     handleNext,
 }: UseStage4AutoAdvanceParams) {
@@ -52,12 +58,20 @@ export function useStage4AutoAdvance({
                         );
                         if (nextErrorIndex === -1) {
                             // Все ошибки исправлены - даем время увидеть все зеленые точки, затем завершаем этап
-                            setTimeout(() => {
-                                onComplete();
-                                setCurrentIndex(0);
-                                setIsRetryMode(false);
-                                setHasCompletedFirstRound(false);
-                            }, 1500); // Дополнительная задержка для визуального подтверждения
+                            // Если это последний этап, показываем лоадер
+                            if (isLastStage) {
+                                setIsCompleting(true);
+                                setTimeout(() => {
+                                    onComplete();
+                                }, 500);
+                            } else {
+                                setTimeout(() => {
+                                    onComplete();
+                                    setCurrentIndex(0);
+                                    setIsRetryMode(false);
+                                    setHasCompletedFirstRound(false);
+                                }, 1500); // Дополнительная задержка для визуального подтверждения
+                            }
                         } else {
                             // Переходим к следующей ошибке
                             setCurrentIndex(nextErrorIndex);
@@ -74,6 +88,26 @@ export function useStage4AutoAdvance({
                         setHasCompletedFirstRound(true);
                         setCurrentIndex(result.nextIndex);
                     } else if (result.type === 'complete') {
+                        // Если это последний этап и последнее упражнение выполнено правильно
+                        if (
+                            isLastStage &&
+                            currentIndex === baseWordsLength - 1 &&
+                            isCorrect
+                        ) {
+                            // Проверяем, что все упражнения выполнены правильно
+                            const allCorrect = exerciseResults.every(
+                                result => result === true,
+                            );
+                            if (allCorrect) {
+                                // Показываем лоадер и завершаем тренировку
+                                setIsCompleting(true);
+                                setTimeout(() => {
+                                    onComplete();
+                                }, 500);
+                                return;
+                            }
+                        }
+                        // Обычное завершение этапа
                         onComplete();
                         setCurrentIndex(0);
                         setIsRetryMode(false);
@@ -90,11 +124,14 @@ export function useStage4AutoAdvance({
         currentIndex,
         isRetryMode,
         exerciseResults,
+        baseWordsLength,
+        isLastStage,
         onComplete,
         setCurrentIndex,
         setExerciseResults,
         setHasCompletedFirstRound,
         setIsRetryMode,
+        setIsCompleting,
         findNextErrorWithResults,
         handleNext,
     ]);

@@ -54,7 +54,7 @@ export function ConfirmationDialogs({
 
             {/* Диалог подтверждения изменения статуса */}
             <Dialog open={statusDialogOpen} onOpenChange={onCloseStatusDialog}>
-                <DialogContent>
+                <DialogContent className="sm:max-w-xl">
                     <DialogHeader>
                         <DialogTitle>
                             Подтверждение изменения статуса
@@ -68,7 +68,7 @@ export function ConfirmationDialogs({
                             ?
                         </DialogDescription>
                     </DialogHeader>
-                    <DialogFooter>
+                    <DialogFooter className="gap-4">
                         <Button variant="outline" onClick={onCloseStatusDialog}>
                             Отмена
                         </Button>

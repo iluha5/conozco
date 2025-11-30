@@ -14,13 +14,18 @@ import { StageHeader } from './components/StageHeader';
 import { PlayWordButton } from './components/PlayWordButton';
 import { WordBuilder } from './components/WordBuilder';
 import { LettersGrid } from './components/LettersGrid';
+import { LoadingOverlay } from '../common/LoadingOverlay';
 import { useStage6Letters } from './hooks/useStage6Letters';
 import { useStage6WordBuilding } from './hooks/useStage6WordBuilding';
 import { useStage6Navigation } from './hooks/useStage6Navigation';
 import { useStage6AutoAdvance } from './hooks/useStage6AutoAdvance';
 import type { Stage6Props } from './typing';
 
-export function Stage6Training({ words, onComplete }: Stage6Props) {
+export function Stage6Training({
+    words,
+    onComplete,
+    isLastStage = false,
+}: Stage6Props) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [backgroundFlash, setBackgroundFlash] = useState<
         'green' | 'red' | null
@@ -30,6 +35,7 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
     const [lastCompletedIndex, setLastCompletedIndex] = useState<number | null>(
         null,
     );
+    const [isCompleting, setIsCompleting] = useState(false);
 
     // Filter only base words (exclude custom words)
     const baseWords = words.filter(word => word.baseWordId && !word.customWord);
@@ -190,11 +196,13 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
         isRetryMode,
         exerciseResults,
         baseWordsLength: baseWords.length,
+        isLastStage,
         onComplete,
         setCurrentIndex,
         setExerciseResults,
         setIsRetryMode,
         setHasCompletedFirstRound,
+        setIsCompleting,
         findNextErrorWithResults,
         findNextError,
         handleNext,
@@ -232,7 +240,8 @@ export function Stage6Training({ words, onComplete }: Stage6Props) {
     }
 
     return (
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-2xl mx-auto relative">
+            {isCompleting && <LoadingOverlay />}
             <Card
                 key={animationKey}
                 className={`shadow-xl transition-all duration-300 ease-in-out ${fadeIn ? 'opacity-100' : 'opacity-0'} ${

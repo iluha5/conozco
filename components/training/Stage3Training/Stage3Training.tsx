@@ -6,13 +6,18 @@ import { useTrainingStorage } from '@/hooks/training';
 import { StageHeader } from './components/StageHeader';
 import { ForeignWordsColumn } from './components/ForeignWordsColumn';
 import { TranslationsColumn } from './components/TranslationsColumn';
+import { LoadingOverlay } from '../common/LoadingOverlay';
 import { useStage3Pairs } from './hooks/useStage3Pairs';
 import { useStage3Matching } from './hooks/useStage3Matching';
 import { useStage3Navigation } from './hooks/useStage3Navigation';
 import { useStage3AutoAdvance } from './hooks/useStage3AutoAdvance';
 import type { Stage3Props } from './typing';
 
-export function Stage3Training({ words, onComplete }: Stage3Props) {
+export function Stage3Training({
+    words,
+    onComplete,
+    isLastStage = false,
+}: Stage3Props) {
     const storage = useTrainingStorage();
     const [currentBatch, setCurrentBatch] = useState(0);
     const [exerciseResults, setExerciseResults] = useState<(boolean | null)[]>(
@@ -25,6 +30,7 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
     const [_hasCompletedFirstRound, setHasCompletedFirstRound] =
         useState(false);
     const [refreshKey, setRefreshKey] = useState(0);
+    const [isCompleting, setIsCompleting] = useState(false);
 
     const wordsPerBatch = 10;
     const totalBatches = Math.ceil(words.length / wordsPerBatch);
@@ -91,16 +97,19 @@ export function Stage3Training({ words, onComplete }: Stage3Props) {
         totalBatches,
         exerciseResults,
         isRetryMode,
+        isLastStage,
         onComplete,
         setCurrentBatch,
         setRefreshKey,
         setHasCompletedFirstRound,
         setIsRetryMode,
+        setIsCompleting,
         findNextErrorBatch,
     });
 
     return (
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto relative">
+            {isCompleting && <LoadingOverlay />}
             <Card className="shadow-xl">
                 <StageHeader
                     currentBatch={currentBatch}

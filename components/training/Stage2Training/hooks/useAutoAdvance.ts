@@ -8,10 +8,13 @@ type UseAutoAdvanceParams = {
     currentIndex: number;
     isRetryMode: boolean;
     exerciseResults: (boolean | null)[];
+    wordsLength: number;
+    isLastStage?: boolean;
     onComplete: () => void;
     retryMode: UseRetryModeReturn;
     setExerciseResults: UseExerciseResultsReturn['setExerciseResults'];
     setCurrentIndex: (_index: number) => void;
+    setIsCompleting: (_value: boolean) => void;
     resetSelection: () => void;
     regenerateOptions: () => void;
     triggerAnimation: () => void;
@@ -32,10 +35,13 @@ export function useAutoAdvance({
     currentIndex,
     isRetryMode,
     exerciseResults,
+    wordsLength,
+    isLastStage = false,
     onComplete,
     retryMode,
     setExerciseResults,
     setCurrentIndex,
+    setIsCompleting,
     resetSelection,
     regenerateOptions,
     triggerAnimation,
@@ -58,12 +64,22 @@ export function useAutoAdvance({
                             );
                             if (nextErrorIndex === -1) {
                                 // Все ошибки исправлены - даем время увидеть все зеленые точки, затем завершаем этап
-                                setTimeout(() => {
-                                    onComplete();
-                                    setCurrentIndex(0);
-                                    retryMode.setIsRetryMode(false);
-                                    retryMode.setHasCompletedFirstRound(false);
-                                }, 1500); // Дополнительная задержка для визуального подтверждения
+                                // Если это последний этап, показываем лоадер
+                                if (isLastStage) {
+                                    setIsCompleting(true);
+                                    setTimeout(() => {
+                                        onComplete();
+                                    }, 500);
+                                } else {
+                                    setTimeout(() => {
+                                        onComplete();
+                                        setCurrentIndex(0);
+                                        retryMode.setIsRetryMode(false);
+                                        retryMode.setHasCompletedFirstRound(
+                                            false,
+                                        );
+                                    }, 1500); // Дополнительная задержка для визуального подтверждения
+                                }
                             } else {
                                 // Переходим к следующей ошибке
                                 setCurrentIndex(nextErrorIndex);
@@ -91,6 +107,26 @@ export function useAutoAdvance({
                     if (result.type === 'next' || result.type === 'retry') {
                         setCurrentIndex(result.nextIndex);
                     } else if (result.type === 'complete') {
+                        // Если это последний этап и последнее упражнение выполнено правильно
+                        if (
+                            isLastStage &&
+                            currentIndex === wordsLength - 1 &&
+                            isCorrect
+                        ) {
+                            // Проверяем, что все упражнения выполнены правильно
+                            const allCorrect = exerciseResults.every(
+                                result => result === true,
+                            );
+                            if (allCorrect) {
+                                // Показываем лоадер и завершаем тренировку
+                                setIsCompleting(true);
+                                setTimeout(() => {
+                                    onComplete();
+                                }, 500);
+                                return;
+                            }
+                        }
+                        // Обычное завершение этапа
                         onComplete();
                         setCurrentIndex(0);
                     }
@@ -105,10 +141,13 @@ export function useAutoAdvance({
         currentIndex,
         isRetryMode,
         exerciseResults,
+        wordsLength,
+        isLastStage,
         onComplete,
         retryMode,
         setExerciseResults,
         setCurrentIndex,
+        setIsCompleting,
         resetSelection,
         regenerateOptions,
         triggerAnimation,

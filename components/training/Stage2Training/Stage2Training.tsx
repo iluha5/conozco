@@ -11,14 +11,20 @@ import {
 } from '@/hooks/training';
 import { WordDisplay } from './components/WordDisplay';
 import { TranslationOptions } from './components/TranslationOptions';
+import { LoadingOverlay } from '../common/LoadingOverlay';
 import { useTranslationOptions } from './hooks/useTranslationOptions';
 import { useOptionSelection } from './hooks/useOptionSelection';
 import { useStage2Navigation } from './hooks/useStage2Navigation';
 import { useAutoAdvance } from './hooks/useAutoAdvance';
 import type { Stage2Props } from './typing';
 
-export function Stage2Training({ words, onComplete }: Stage2Props) {
+export function Stage2Training({
+    words,
+    onComplete,
+    isLastStage = false,
+}: Stage2Props) {
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [isCompleting, setIsCompleting] = useState(false);
     const currentWord = words[currentIndex];
 
     // Shared hooks
@@ -78,10 +84,13 @@ export function Stage2Training({ words, onComplete }: Stage2Props) {
         currentIndex,
         isRetryMode,
         exerciseResults,
+        wordsLength: words.length,
+        isLastStage,
         onComplete,
         retryMode,
         setExerciseResults,
         setCurrentIndex,
+        setIsCompleting,
         resetSelection,
         regenerateOptions,
         triggerAnimation,
@@ -95,7 +104,8 @@ export function Stage2Training({ words, onComplete }: Stage2Props) {
     }
 
     return (
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-2xl mx-auto relative">
+            {isCompleting && <LoadingOverlay />}
             <Card
                 key={animationKey}
                 className={`shadow-xl transition-opacity duration-300 ease-in-out ${fadeIn ? 'opacity-100' : 'opacity-0'}`}

@@ -7,6 +7,7 @@ type UseStage6AutoAdvanceParams = {
     isRetryMode: boolean;
     exerciseResults: (boolean | null)[];
     baseWordsLength: number;
+    isLastStage?: boolean;
     onComplete: () => void;
     setCurrentIndex: (_index: number) => void;
     setExerciseResults: React.Dispatch<
@@ -14,6 +15,7 @@ type UseStage6AutoAdvanceParams = {
     >;
     setIsRetryMode: (_value: boolean) => void;
     setHasCompletedFirstRound: (_value: boolean) => void;
+    setIsCompleting: (_value: boolean) => void;
     findNextErrorWithResults: (
         _startIndex: number,
         _results: (boolean | null)[],
@@ -41,11 +43,13 @@ export function useStage6AutoAdvance({
     isRetryMode,
     exerciseResults,
     baseWordsLength,
+    isLastStage = false,
     onComplete,
     setCurrentIndex,
     setExerciseResults,
     setIsRetryMode,
     setHasCompletedFirstRound,
+    setIsCompleting,
     findNextErrorWithResults,
     findNextError,
     handleNext,
@@ -117,6 +121,26 @@ export function useStage6AutoAdvance({
                         setHasCompletedFirstRound(true);
                         setCurrentIndex(result.nextIndex);
                     } else if (result.type === 'complete') {
+                        // Если это последний этап и последнее упражнение выполнено правильно
+                        if (
+                            isLastStage &&
+                            currentIndex === baseWordsLength - 1 &&
+                            isCorrect
+                        ) {
+                            // Проверяем, что все упражнения выполнены правильно
+                            const allCorrect = exerciseResults.every(
+                                result => result === true,
+                            );
+                            if (allCorrect) {
+                                // Показываем лоадер и завершаем тренировку
+                                setIsCompleting(true);
+                                setTimeout(() => {
+                                    onComplete();
+                                }, 500);
+                                return;
+                            }
+                        }
+                        // Обычное завершение этапа
                         onComplete();
                         setCurrentIndex(0);
                         setIsRetryMode(false);
@@ -134,11 +158,13 @@ export function useStage6AutoAdvance({
         isRetryMode,
         exerciseResults,
         baseWordsLength,
+        isLastStage,
         onComplete,
         setCurrentIndex,
         setExerciseResults,
         setIsRetryMode,
         setHasCompletedFirstRound,
+        setIsCompleting,
         findNextErrorWithResults,
         findNextError,
         handleNext,

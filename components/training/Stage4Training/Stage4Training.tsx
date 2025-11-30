@@ -10,6 +10,7 @@ import { TranslationDisplay } from './components/TranslationDisplay';
 import { WordBuilder } from './components/WordBuilder';
 import { LettersGrid } from './components/LettersGrid';
 import { NextButton } from './components/NextButton';
+import { LoadingOverlay } from '../common/LoadingOverlay';
 import { useStage4Letters } from './hooks/useStage4Letters';
 import { useStage4WordBuilding } from './hooks/useStage4WordBuilding';
 import { useStage4Navigation } from './hooks/useStage4Navigation';
@@ -17,7 +18,11 @@ import { useStage4AutoAdvance } from './hooks/useStage4AutoAdvance';
 import { useStage4Settings } from './hooks/useStage4Settings';
 import type { Stage4Props } from './typing';
 
-export function Stage4Training({ words, onComplete }: Stage4Props) {
+export function Stage4Training({
+    words,
+    onComplete,
+    isLastStage = false,
+}: Stage4Props) {
     const storage = useTrainingStorage();
     const { settings, updateSettings } = useStage4SettingsHook();
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -39,6 +44,7 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
     const [lastCompletedIndex, setLastCompletedIndex] = useState<number | null>(
         null,
     );
+    const [isCompleting, setIsCompleting] = useState(false);
 
     const currentWord = words[currentIndex];
 
@@ -148,11 +154,14 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
         currentIndex,
         isRetryMode,
         exerciseResults,
+        baseWordsLength: words.length,
+        isLastStage,
         onComplete,
         setCurrentIndex,
         setExerciseResults,
         setHasCompletedFirstRound,
         setIsRetryMode,
+        setIsCompleting,
         findNextErrorWithResults,
         handleNext,
     });
@@ -229,7 +238,8 @@ export function Stage4Training({ words, onComplete }: Stage4Props) {
     }
 
     return (
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-2xl mx-auto relative">
+            {isCompleting && <LoadingOverlay />}
             <Card
                 key={animationKey}
                 className={`shadow-xl transition-all duration-300 ease-in-out ${

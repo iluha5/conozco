@@ -267,6 +267,11 @@ export default function TrainingPage() {
                         stage={state.currentStage}
                         words={state.trainingWords}
                         onComplete={handleStageCompleteWrapper}
+                        isLastStage={
+                            enabledStages.length > 0 &&
+                            enabledStages[enabledStages.length - 1] ===
+                                state.currentStage
+                        }
                     />
                 )}
             </div>

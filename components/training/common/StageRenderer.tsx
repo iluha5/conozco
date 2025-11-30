@@ -10,12 +10,14 @@ interface StageRendererProps {
     stage: TrainingStage;
     words: Word[];
     onComplete: () => void;
+    isLastStage?: boolean;
 }
 
 export function StageRenderer({
     stage,
     words,
     onComplete,
+    isLastStage = false,
 }: StageRendererProps) {
     const StageComponents = {
         1: Stage1Training,
@@ -32,5 +34,11 @@ export function StageRenderer({
         return null;
     }
 
-    return <StageComponent words={words} onComplete={onComplete} />;
+    return (
+        <StageComponent
+            words={words}
+            onComplete={onComplete}
+            isLastStage={isLastStage}
+        />
+    );
 }
