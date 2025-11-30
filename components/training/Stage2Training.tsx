@@ -239,9 +239,6 @@ export function Stage2Training({ words, onComplete }: Stage2Props) {
                         <h2 className="text-5xl font-bold text-gray-900 mb-2">
                             {getWordText(currentWord)}
                         </h2>
-                        <p className="text-gray-600">
-                            Выберите правильный перевод
-                        </p>
                     </div>
 
                     <div className="grid grid-cols-1 gap-3">
