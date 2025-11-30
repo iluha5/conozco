@@ -11,6 +11,12 @@ export async function GET() {
 
     const userId = parseInt(session.user.id);
 
+    // Получаем язык обучения пользователя
+    const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { learnLanguageId: true },
+    });
+
     const activeGroups = await prisma.userWordGroup.findMany({
         where: { userId },
         include: {
@@ -19,14 +25,22 @@ export async function GET() {
                     _count: {
                         select: { baseWords: true },
                     },
+                    language: true,
                 },
             },
         },
         orderBy: { activatedAt: 'desc' },
     });
 
+    // Фильтруем группы по языку обучения пользователя, если он установлен
+    const filteredGroups = user?.learnLanguageId
+        ? activeGroups.filter(
+              ag => ag.wordGroup.languageId === user.learnLanguageId,
+          )
+        : activeGroups;
+
     return NextResponse.json(
-        activeGroups.map(ag => ({
+        filteredGroups.map(ag => ({
             id: ag.wordGroup.id,
             name: ag.wordGroup.name,
             wordsCount: ag.wordGroup._count.baseWords,

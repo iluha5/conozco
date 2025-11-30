@@ -11,19 +11,32 @@ export async function GET() {
 
     const userId = parseInt(session.user.id);
 
-    const availableGroups = await prisma.wordGroup.findMany({
-        where: {
-            OR: [
-                { visibility: 'PUBLIC', isApproved: true },
-                {
-                    visibility: 'SHARED',
-                    sharedWith: { some: { userId } },
-                },
-            ],
-            NOT: {
-                activeUsers: { some: { userId } },
+    // Получаем язык обучения пользователя
+    const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { learnLanguageId: true },
+    });
+
+    const whereClause: any = {
+        OR: [
+            { visibility: 'PUBLIC', isApproved: true },
+            {
+                visibility: 'SHARED',
+                sharedWith: { some: { userId } },
             },
+        ],
+        NOT: {
+            activeUsers: { some: { userId } },
         },
+    };
+
+    // Фильтруем по языку обучения пользователя, если он установлен
+    if (user?.learnLanguageId) {
+        whereClause.languageId = user.learnLanguageId;
+    }
+
+    const availableGroups = await prisma.wordGroup.findMany({
+        where: whereClause,
         include: {
             createdBy: {
                 select: { name: true, id: true },
