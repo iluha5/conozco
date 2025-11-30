@@ -10,9 +10,11 @@
 - ALWAYS ask for user permission before running database reset operations, even in unrestricted modes.
 - ALWAYS use named callbacks for actions instead of anonymous arrow functions in JSX onClick handlers and similar event handlers. Create descriptive function names that clearly indicate their purpose.
 - ALWAYS add empty lines before and after conditional statements (if) and all loop statements (for, while, do-while).
+- NEVER use single-letter variable names. Always use descriptive, meaningful variable names that clearly indicate their purpose (e.g., use `word` instead of `w`, `index` instead of `i`, `translation` instead of `t`, `result` instead of `r`).
 - For React components, create a dedicated folder with the component name (PascalCase) and export the component directly from a file with the same name, without using index.ts files or re-exports.
 - Break down complex JSX into logical atomic components within the main component's folder under a `components/` subdirectory.
 - Extract custom hooks and helper functions into respective `hooks/` and `helpers/` subdirectories within the component folder.
+- ALWAYS name hook files in CamelCase matching the hook name (e.g., `useTranslationOptions.ts` for hook `useTranslationOptions`, NOT `use-translation-options.ts`).
 - Extract shared types into a centralized `typing.ts` file within the component folder.
 - When creating dialog/popup components with action buttons (DialogFooter), ALWAYS place buttons in a row (flex-row) for mobile view when possible, instead of stacking them in a column. Use `flex-row justify-end gap-2` or similar classes to ensure buttons are displayed horizontally on mobile devices.
 
