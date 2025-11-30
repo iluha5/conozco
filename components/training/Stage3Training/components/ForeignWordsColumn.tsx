@@ -14,16 +14,9 @@ export function ForeignWordsColumn({
     errorForeign,
     onForeignClick,
 }: ForeignWordsColumnProps) {
-    const sortedPairs = [...pairs].sort((pairA, pairB) => {
-        // Сначала matched пары, затем неугаданные
-        if (pairA.matched && !pairB.matched) return -1;
-        if (!pairA.matched && pairB.matched) return 1;
-        return 0;
-    });
-
     return (
         <div className="space-y-3 transition-all duration-200 ease-in-out">
-            {sortedPairs.map(pair => (
+            {pairs.map(pair => (
                 <Button
                     key={pair.id}
                     variant={

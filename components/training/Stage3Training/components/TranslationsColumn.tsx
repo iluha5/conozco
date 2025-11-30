@@ -16,23 +16,9 @@ export function TranslationsColumn({
     errorTranslation,
     onTranslationClick,
 }: TranslationsColumnProps) {
-    const sortedTranslations = [...shuffledTranslations].sort(
-        (translationA, translationB) => {
-            // Сначала matched переводы, затем неугаданные
-            const pairA = pairs.find(p => p.translation === translationA);
-            const pairB = pairs.find(p => p.translation === translationB);
-            const isMatchedA = pairA?.matched || false;
-            const isMatchedB = pairB?.matched || false;
-
-            if (isMatchedA && !isMatchedB) return -1;
-            if (!isMatchedA && isMatchedB) return 1;
-            return 0;
-        },
-    );
-
     return (
         <div className="space-y-3 transition-all duration-200 ease-in-out">
-            {sortedTranslations.map(translation => {
+            {shuffledTranslations.map(translation => {
                 const pair = pairs.find(p => p.translation === translation);
                 const isMatched = pair?.matched || false;
 

@@ -37,13 +37,40 @@ export function useStage3Pairs({
             isRetryMode,
         );
 
-        setPairs(newPairs);
+        setPairs(prevPairs => {
+            // Если пары уже существуют, сохраняем состояние matched при переинициализации
+            if (prevPairs.length > 0) {
+                // Сохраняем состояние matched из предыдущих пар
+                return newPairs.map(newPair => {
+                    const existingPair = prevPairs.find(
+                        p => p.id === newPair.id,
+                    );
+                    if (existingPair?.matched) {
+                        return {
+                            ...newPair,
+                            matched: true,
+                            resultIndex: existingPair.resultIndex,
+                            errorCount: existingPair.errorCount,
+                        };
+                    }
+                    return newPair;
+                });
+            }
 
-        // Перемешиваем переводы
-        const translations = newPairs
-            .map(pair => pair.translation)
-            .sort(() => Math.random() - 0.5);
-        setShuffledTranslations(translations);
+            // Первая инициализация
+            return newPairs;
+        });
+
+        // Перемешиваем переводы только при первой инициализации или при refreshKey
+        setShuffledTranslations(prevTranslations => {
+            if (prevTranslations.length === 0) {
+                const translations = newPairs
+                    .map(pair => pair.translation)
+                    .sort(() => Math.random() - 0.5);
+                return translations;
+            }
+            return prevTranslations;
+        });
     }, [words, currentBatch, wordsPerBatch, exerciseResults, isRetryMode]);
 
     useEffect(() => {
