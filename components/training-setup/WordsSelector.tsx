@@ -3,19 +3,22 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { WordGroupsFilter } from '@/components/word-groups/WordGroupsFilter';
+import { Square, CheckSquare, MinusSquare } from 'lucide-react';
 import { Word } from '@/types/words.types';
+import { SelectionState } from '@/hooks/training-setup/use-words-selection';
 
 interface WordsSelectorProps {
     filteredWords: Word[];
     selectedWords: Set<string>;
     isLoading: boolean;
     onToggleWord: (_wordId: number) => void;
-    onSelectAll: () => void;
-    onDeselectAll: () => void;
+    onToggleAllWordsSelection: () => void;
     isWordSelected: (_wordId: number) => boolean;
     selectedGroupIds: number[];
     onToggleGroup: (_groupId: number) => void;
     onToggleAllGroups: (_groupIds: number[]) => void;
+    selectionState: SelectionState;
+    getBulkSelectText: () => string;
 }
 
 export const WordsSelector = ({
@@ -23,12 +26,13 @@ export const WordsSelector = ({
     selectedWords,
     isLoading,
     onToggleWord,
-    onSelectAll,
-    onDeselectAll,
+    onToggleAllWordsSelection,
     isWordSelected,
     selectedGroupIds,
     onToggleGroup,
     onToggleAllGroups,
+    selectionState,
+    getBulkSelectText,
 }: WordsSelectorProps) => {
     const [visibleWordsCount, setVisibleWordsCount] = useState(12);
 
@@ -44,25 +48,28 @@ export const WordsSelector = ({
                 Выберите слова для тренировки ({selectedWords.size} выбрано)
             </h3>
             <div className="flex flex-wrap gap-2 mb-4">
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={onToggleAllWordsSelection}
+                    disabled={isLoading}
+                >
+                    {(() => {
+                        if (selectionState === 'none') {
+                            return <Square className="mr-2 h-4 w-4" />;
+                        } else if (selectionState === 'all') {
+                            return <CheckSquare className="mr-2 h-4 w-4" />;
+                        } else {
+                            return <MinusSquare className="mr-2 h-4 w-4" />;
+                        }
+                    })()}
+                    {getBulkSelectText()}
+                </Button>
                 <WordGroupsFilter
                     selectedGroupIds={selectedGroupIds}
                     onToggleGroup={onToggleGroup}
                     onToggleAll={onToggleAllGroups}
                 />
-                <Button
-                    variant="outline"
-                    onClick={onSelectAll}
-                    disabled={isLoading}
-                >
-                    Выбрать все
-                </Button>
-                <Button
-                    variant="outline"
-                    onClick={onDeselectAll}
-                    disabled={isLoading}
-                >
-                    Снять
-                </Button>
             </div>
             <div className="relative border rounded-lg p-4 h-[350px] overflow-y-auto">
                 {isLoading ? (

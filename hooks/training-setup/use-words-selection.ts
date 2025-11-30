@@ -1,12 +1,44 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { Word } from '@/types/words.types';
 import { useTrainingWords } from '@/contexts/training-words-context';
+
+export type SelectionState = 'none' | 'partial' | 'all';
+
+const getSelectionState = (
+    selectedWords: Set<string>,
+    visibleWords: Word[],
+): SelectionState => {
+    const visibleWordIds = visibleWords.map(w => String(w.id));
+    const selectedVisibleCount = visibleWordIds.filter(id =>
+        selectedWords.has(id),
+    ).length;
+    const allSelected = selectedVisibleCount === visibleWords.length;
+    const hasSelection = selectedVisibleCount > 0;
+
+    if (!hasSelection) return 'none';
+    if (allSelected) return 'all';
+    return 'partial';
+};
+
+const getBulkSelectText = (selectionState: SelectionState) => {
+    return selectionState === 'all' ? 'Снять все' : 'Выбрать все';
+};
 
 export const useWordsSelection = (
     filteredWords: Word[],
     visibleCount: number,
 ) => {
     const { selectedWords, setSelectedWords } = useTrainingWords();
+
+    const visibleWords = useMemo(
+        () => filteredWords.slice(0, visibleCount),
+        [filteredWords, visibleCount],
+    );
+
+    const selectionState = useMemo(
+        () => getSelectionState(selectedWords, visibleWords),
+        [selectedWords, visibleWords],
+    );
 
     const toggleWord = useCallback(
         (wordId: number) => {
@@ -25,24 +57,37 @@ export const useWordsSelection = (
     );
 
     const selectAllVisible = useCallback(() => {
-        const visibleWordIds = filteredWords
-            .slice(0, visibleCount)
-            .map(w => String(w.id));
+        const visibleWordIds = visibleWords.map(w => String(w.id));
         setSelectedWords(
             prev => new Set([...Array.from(prev), ...visibleWordIds]),
         );
-    }, [filteredWords, visibleCount, setSelectedWords]);
+    }, [visibleWords, setSelectedWords]);
 
     const deselectAll = useCallback(() => {
-        const visibleWordIds = filteredWords
-            .slice(0, visibleCount)
-            .map(w => String(w.id));
+        const visibleWordIds = visibleWords.map(w => String(w.id));
         setSelectedWords(prev => {
             const newSet = new Set(prev);
             visibleWordIds.forEach(id => newSet.delete(id));
             return newSet;
         });
-    }, [filteredWords, visibleCount, setSelectedWords]);
+    }, [visibleWords, setSelectedWords]);
+
+    const toggleAllWordsSelection = useCallback(() => {
+        const visibleWordIds = visibleWords.map(w => String(w.id));
+        const allSelected = visibleWordIds.every(id => selectedWords.has(id));
+
+        if (allSelected) {
+            setSelectedWords(prev => {
+                const newSet = new Set(prev);
+                visibleWordIds.forEach(id => newSet.delete(id));
+                return newSet;
+            });
+        } else {
+            setSelectedWords(
+                prev => new Set([...Array.from(prev), ...visibleWordIds]),
+            );
+        }
+    }, [visibleWords, selectedWords, setSelectedWords]);
 
     const isWordSelected = useCallback(
         (wordId: number) => selectedWords.has(String(wordId)),
@@ -54,6 +99,9 @@ export const useWordsSelection = (
         toggleWord,
         selectAllVisible,
         deselectAll,
+        toggleAllWordsSelection,
         isWordSelected,
+        selectionState,
+        getBulkSelectText: () => getBulkSelectText(selectionState),
     };
 };

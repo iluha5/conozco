@@ -53,8 +53,13 @@ export default function TrainingSetupPage() {
     );
 
     // Выбор слов
-    const { toggleWord, selectAllVisible, deselectAll, isWordSelected } =
-        useWordsSelection(filteredWords, 12);
+    const {
+        toggleWord,
+        toggleAllWordsSelection,
+        isWordSelected,
+        selectionState,
+        getBulkSelectText,
+    } = useWordsSelection(filteredWords, 12);
 
     // Модальные окна настроек этапов
     const {
@@ -161,12 +166,15 @@ export default function TrainingSetupPage() {
                                 selectedWords={selectedWords}
                                 isLoading={isLoading}
                                 onToggleWord={toggleWord}
-                                onSelectAll={selectAllVisible}
-                                onDeselectAll={deselectAll}
+                                onToggleAllWordsSelection={
+                                    toggleAllWordsSelection
+                                }
                                 isWordSelected={isWordSelected}
                                 selectedGroupIds={selectedGroupIds}
                                 onToggleGroup={toggleGroup}
                                 onToggleAllGroups={toggleAll}
+                                selectionState={selectionState}
+                                getBulkSelectText={getBulkSelectText}
                             />
 
                             {/* Настройки этапов тренировки */}
