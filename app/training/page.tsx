@@ -3,13 +3,13 @@
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/Header';
-import { TrainingHeader } from '@/components/training/TrainingHeader';
-import { ExitConfirmationDialog } from '@/components/training/ExitConfirmationDialog';
-import { StageSelector } from '@/components/training/StageSelector';
-import { StageRenderer } from '@/components/training/StageRenderer';
-import { TrainingEmptyState } from '@/components/training/TrainingEmptyState';
-import { TrainingResults } from '@/components/training/TrainingResults';
-import { TrainingLoading } from '@/components/training/TrainingLoading';
+import { TrainingHeader } from '@/components/training/common/TrainingHeader';
+import { ExitConfirmationDialog } from '@/components/training/common/ExitConfirmationDialog';
+import { StageSelector } from '@/components/training/common/StageSelector';
+import { StageRenderer } from '@/components/training/common/StageRenderer';
+import { TrainingEmptyState } from '@/components/training/common/TrainingEmptyState';
+import { TrainingResults } from '@/components/training/common/TrainingResults';
+import { TrainingLoading } from '@/components/training/common/TrainingLoading';
 import {
     useTrainingState,
     useTrainingLogic,

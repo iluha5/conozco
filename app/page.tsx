@@ -21,8 +21,8 @@ import {
 } from '@/components/ui/dialog';
 import { Header } from '@/components/Header';
 import { Brain, HelpCircle, Languages } from 'lucide-react';
-import { ContinueTrainingCard } from '@/components/training/ContinueTrainingCard';
-import { NewTrainingConfirmationDialog } from '@/components/training/NewTrainingConfirmationDialog';
+import { ContinueTrainingCard } from '@/components/training/common/ContinueTrainingCard';
+import { NewTrainingConfirmationDialog } from '@/components/training/common/NewTrainingConfirmationDialog';
 import { useTrainingStorage } from '@/hooks/training';
 
 export default function HomePage() {

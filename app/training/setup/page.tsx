@@ -8,9 +8,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Header } from '@/components/Header';
 import { ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/shared';
-import { Stage1SettingsModal } from '@/components/training/Stage1SettingsModal';
-import { Stage4SettingsModal } from '@/components/training/Stage4SettingsModal';
-import { Stage5SettingsModal } from '@/components/training/Stage5SettingsModal';
+import { Stage1SettingsModal } from '@/components/training/common/Stage1SettingsModal';
+import { Stage4SettingsModal } from '@/components/training/common/Stage4SettingsModal';
+import { Stage5SettingsModal } from '@/components/training/common/Stage5SettingsModal';
 import { useTrainingSettings } from '@/hooks/shared/use-training-settings';
 import { useTrainingWords } from '@/contexts/training-words-context';
 import {

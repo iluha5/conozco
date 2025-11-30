@@ -1,5 +1,5 @@
 import { CardHeader, CardTitle } from '@/components/ui/card';
-import { ProgressDots } from '../../ProgressDots';
+import { ProgressDots } from '../../common/ProgressDots';
 
 type StageHeaderProps = {
     currentBatch: number;

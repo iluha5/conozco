@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { CardHeader, CardTitle } from '@/components/ui/card';
 import { Settings } from 'lucide-react';
-import { ProgressDots } from '../../ProgressDots';
+import { ProgressDots } from '../../common/ProgressDots';
 
 type StageHeaderProps = {
     totalExercises: number;

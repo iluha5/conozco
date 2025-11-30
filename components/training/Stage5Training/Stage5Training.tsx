@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Stage5SettingsModal } from '../Stage5SettingsModal';
+import { Stage5SettingsModal } from '../common/Stage5SettingsModal';
 import { useStage5Settings as useStage5SettingsHook } from '@/hooks/shared/use-training-settings';
 import { useTrainingStorage } from '@/hooks/training';
 import { StageHeader } from './components/StageHeader';

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Stage1SettingsModal } from '../Stage1SettingsModal';
+import { Stage1SettingsModal } from '../common/Stage1SettingsModal';
 import { useStage1Settings } from '@/hooks/shared/use-training-settings';
 import {
     useFadeAnimation,

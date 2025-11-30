@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ProgressDots } from '../ProgressDots';
+import { ProgressDots } from '../common/ProgressDots';
 import {
     useFadeAnimation,
     useRecordResult,
