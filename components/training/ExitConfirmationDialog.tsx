@@ -21,10 +21,10 @@ export function ExitConfirmationDialog({
 }: ExitConfirmationDialogProps) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="!left-4 !right-4 !translate-x-0 !w-auto sm:!left-[50%] sm:!right-auto sm:!translate-x-[-50%] sm:!w-full">
+            <DialogContent className="!left-4 !right-4 !translate-x-0 !w-auto sm:!left-[50%] sm:!right-auto sm:!translate-x-[-50%] ">
                 <DialogHeader>
                     <DialogTitle>Завершить тренировку?</DialogTitle>
-                    <DialogDescription>
+                    <DialogDescription className="!mt-6 !mb-4">
                         Результаты текущей тренировки будут сброшены.
                     </DialogDescription>
                 </DialogHeader>
