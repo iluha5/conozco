@@ -37,7 +37,8 @@ export default function TrainingSetupPage() {
     } = useTrainingSettings();
 
     const { settings: userSettings } = useUserSettings();
-    const { selectedWords, setSelectedWords } = useTrainingWords();
+    const { selectedWords, setSelectedWords, resetSelection } =
+        useTrainingWords();
 
     // Используем learnLanguage пользователя вместо фильтра
     const selectedLanguage = userSettings?.learnLanguage?.code || 'ALL';
@@ -59,7 +60,11 @@ export default function TrainingSetupPage() {
         isWordSelected,
         selectionState,
         getBulkSelectText,
-    } = useWordsSelection(filteredWords, 12);
+        visibleWords,
+        visibleWordsCount,
+        loadMoreWords,
+        hasMoreWords,
+    } = useWordsSelection(filteredWords);
 
     // Модальные окна настроек этапов
     const {
@@ -72,21 +77,26 @@ export default function TrainingSetupPage() {
         settings: stageSettings,
     } = useStageModals();
 
-    // Автовыбор первых 12 слов
+    // Очистка выбранных слов при монтировании страницы
+    useEffect(() => {
+        resetSelection();
+        setIsInitialSelection(true);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // Автовыбор первых видимых слов
     useEffect(() => {
         if (
-            filteredWords.length > 0 &&
+            visibleWords.length > 0 &&
             selectedWords.size === 0 &&
             isInitialSelection
         ) {
-            const first12Words = filteredWords
-                .slice(0, 12)
-                .map(word => String(word.id));
-            setSelectedWords(new Set(first12Words));
+            const firstWords = visibleWords.map(word => String(word.id));
+            setSelectedWords(new Set(firstWords));
             setIsInitialSelection(false);
         }
     }, [
-        filteredWords,
+        visibleWords,
         selectedWords.size,
         isInitialSelection,
         setSelectedWords,
@@ -175,6 +185,10 @@ export default function TrainingSetupPage() {
                                 onToggleAllGroups={toggleAll}
                                 selectionState={selectionState}
                                 getBulkSelectText={getBulkSelectText}
+                                visibleWords={visibleWords}
+                                visibleWordsCount={visibleWordsCount}
+                                loadMoreWords={loadMoreWords}
+                                hasMoreWords={hasMoreWords}
                             />
 
                             {/* Настройки этапов тренировки */}

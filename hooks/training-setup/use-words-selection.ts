@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Word } from '@/types/words.types';
 import { useTrainingWords } from '@/contexts/training-words-context';
 
@@ -24,16 +24,23 @@ const getBulkSelectText = (selectionState: SelectionState) => {
     return selectionState === 'all' ? 'Снять все' : 'Выбрать все';
 };
 
-export const useWordsSelection = (
-    filteredWords: Word[],
-    visibleCount: number,
-) => {
+export const useWordsSelection = (filteredWords: Word[]) => {
     const { selectedWords, setSelectedWords } = useTrainingWords();
+    const [visibleWordsCount, setVisibleWordsCount] = useState(10);
 
     const visibleWords = useMemo(
-        () => filteredWords.slice(0, visibleCount),
-        [filteredWords, visibleCount],
+        () => filteredWords.slice(0, visibleWordsCount),
+        [filteredWords, visibleWordsCount],
     );
+
+    const hasMoreWords = useMemo(
+        () => filteredWords.length > visibleWordsCount,
+        [filteredWords.length, visibleWordsCount],
+    );
+
+    const loadMoreWords = useCallback(() => {
+        setVisibleWordsCount(prev => Math.min(prev + 12, filteredWords.length));
+    }, [filteredWords.length]);
 
     const selectionState = useMemo(
         () => getSelectionState(selectedWords, visibleWords),
@@ -103,5 +110,9 @@ export const useWordsSelection = (
         isWordSelected,
         selectionState,
         getBulkSelectText: () => getBulkSelectText(selectionState),
+        visibleWords,
+        visibleWordsCount,
+        loadMoreWords,
+        hasMoreWords,
     };
 };

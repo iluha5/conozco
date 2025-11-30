@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -19,6 +18,10 @@ interface WordsSelectorProps {
     onToggleAllGroups: (_groupIds: number[]) => void;
     selectionState: SelectionState;
     getBulkSelectText: () => string;
+    visibleWords: Word[];
+    visibleWordsCount: number;
+    loadMoreWords: () => void;
+    hasMoreWords: boolean;
 }
 
 export const WordsSelector = ({
@@ -33,15 +36,11 @@ export const WordsSelector = ({
     onToggleAllGroups,
     selectionState,
     getBulkSelectText,
+    visibleWords,
+    visibleWordsCount,
+    loadMoreWords,
+    hasMoreWords,
 }: WordsSelectorProps) => {
-    const [visibleWordsCount, setVisibleWordsCount] = useState(12);
-
-    const loadMoreWords = () => {
-        setVisibleWordsCount(prev => Math.min(prev + 12, filteredWords.length));
-    };
-
-    const visibleWords = filteredWords.slice(0, visibleWordsCount);
-
     return (
         <div>
             <h3 className="text-lg font-semibold mb-2">
@@ -140,10 +139,10 @@ export const WordsSelector = ({
                         variant="ghost"
                         size="sm"
                         onClick={loadMoreWords}
-                        disabled={filteredWords.length <= visibleWordsCount}
+                        disabled={!hasMoreWords}
                         className="text-sm"
                     >
-                        {filteredWords.length > visibleWordsCount
+                        {hasMoreWords
                             ? `Показать еще (${Math.min(visibleWordsCount + 12, filteredWords.length) - visibleWordsCount} слов)`
                             : 'Все слова показаны'}
                     </Button>
