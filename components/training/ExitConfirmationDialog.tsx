@@ -28,7 +28,7 @@ export function ExitConfirmationDialog({
                         Результаты текущей тренировки будут сброшены.
                     </DialogDescription>
                 </DialogHeader>
-                <DialogFooter className="gap-2">
+                <DialogFooter className="gap-4">
                     <Button
                         variant="outline"
                         onClick={() => onOpenChange(false)}
