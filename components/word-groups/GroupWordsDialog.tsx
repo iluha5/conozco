@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
     Dialog,
@@ -55,12 +55,22 @@ export function GroupWordsDialog({
 }: GroupWordsDialogProps) {
     const [searchQuery, setSearchQuery] = useState('');
     const [displayedCount, setDisplayedCount] = useState(WORDS_PER_PAGE);
+    const searchInputRef = useRef<HTMLInputElement>(null);
 
     // Сбрасываем счетчик при открытии диалога
     useEffect(() => {
         if (open) {
             setDisplayedCount(WORDS_PER_PAGE);
             setSearchQuery('');
+            // Убираем фокус с поля ввода, если он был установлен
+            setTimeout(() => {
+                if (
+                    searchInputRef.current &&
+                    document.activeElement === searchInputRef.current
+                ) {
+                    searchInputRef.current.blur();
+                }
+            }, 0);
         }
         // eslint-disable-next-line no-unused-vars
     }, [open]);
@@ -144,6 +154,7 @@ export function GroupWordsDialog({
                 <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
+                        ref={searchInputRef}
                         placeholder="Поиск по словам..."
                         value={searchQuery}
                         onChange={e => {
@@ -151,6 +162,7 @@ export function GroupWordsDialog({
                             setDisplayedCount(WORDS_PER_PAGE);
                         }}
                         className="pl-9"
+                        autoFocus={false}
                     />
                 </div>
 
