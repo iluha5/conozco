@@ -1,13 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { WordGroupsFilter } from '@/components/word-groups/WordGroupsFilter';
 import { Word } from '@/types/words.types';
@@ -15,9 +8,7 @@ import { Word } from '@/types/words.types';
 interface WordsSelectorProps {
     filteredWords: Word[];
     selectedWords: Set<string>;
-    selectedLanguage: string;
     isLoading: boolean;
-    onLanguageChange: (_language: string) => void;
     onToggleWord: (_wordId: number) => void;
     onSelectAll: () => void;
     onDeselectAll: () => void;
@@ -30,9 +21,7 @@ interface WordsSelectorProps {
 export const WordsSelector = ({
     filteredWords,
     selectedWords,
-    selectedLanguage,
     isLoading,
-    onLanguageChange,
     onToggleWord,
     onSelectAll,
     onDeselectAll,
@@ -42,11 +31,6 @@ export const WordsSelector = ({
     onToggleAllGroups,
 }: WordsSelectorProps) => {
     const [visibleWordsCount, setVisibleWordsCount] = useState(12);
-
-    // Сброс видимых слов при изменении языка
-    useEffect(() => {
-        setVisibleWordsCount(12);
-    }, [selectedLanguage]);
 
     const loadMoreWords = () => {
         setVisibleWordsCount(prev => Math.min(prev + 12, filteredWords.length));
@@ -60,19 +44,6 @@ export const WordsSelector = ({
                 Выберите слова для тренировки ({selectedWords.size} выбрано)
             </h3>
             <div className="flex flex-wrap gap-2 mb-4">
-                <Select
-                    value={selectedLanguage}
-                    onValueChange={onLanguageChange}
-                >
-                    <SelectTrigger className="w-[140px]">
-                        <SelectValue placeholder="Выберите язык" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="ALL">Все языки</SelectItem>
-                        <SelectItem value="en">🇬🇧 Англ</SelectItem>
-                        <SelectItem value="es">🇪🇸 Исп</SelectItem>
-                    </SelectContent>
-                </Select>
                 <WordGroupsFilter
                     selectedGroupIds={selectedGroupIds}
                     onToggleGroup={onToggleGroup}
@@ -106,7 +77,7 @@ export const WordsSelector = ({
                 ) : filteredWords.length === 0 ? (
                     <div className="flex items-center justify-center h-full">
                         <p className="text-gray-500 text-center">
-                            Нет слов для выбранного языка.
+                            Нет слов для тренировки.
                             <br />
                             <span className="text-sm">
                                 Добавьте слова на странице{' '}

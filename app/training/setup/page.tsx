@@ -11,10 +11,7 @@ import { useToast } from '@/hooks/shared';
 import { Stage1SettingsModal } from '@/components/training/Stage1SettingsModal';
 import { Stage4SettingsModal } from '@/components/training/Stage4SettingsModal';
 import { Stage5SettingsModal } from '@/components/training/Stage5SettingsModal';
-import {
-    useTrainingSettings,
-    useTrainingSelection,
-} from '@/hooks/shared/use-training-settings';
+import { useTrainingSettings } from '@/hooks/shared/use-training-settings';
 import { useTrainingWords } from '@/contexts/training-words-context';
 import {
     useSetupWords,
@@ -22,6 +19,7 @@ import {
     useStageModals,
 } from '@/hooks/training-setup';
 import { useWordGroupsFilter } from '@/hooks/word-groups/use-word-groups-filter';
+import { useUserSettings } from '@/hooks/settings';
 import { WordsSelector, StagesSelector } from '@/components/training-setup';
 
 export default function TrainingSetupPage() {
@@ -38,8 +36,11 @@ export default function TrainingSetupPage() {
         isLoaded: trainingSettingsLoaded,
     } = useTrainingSettings();
 
-    const { selectedLanguage, setSelectedLanguage } = useTrainingSelection();
+    const { settings: userSettings } = useUserSettings();
     const { selectedWords, setSelectedWords } = useTrainingWords();
+
+    // Используем learnLanguage пользователя вместо фильтра
+    const selectedLanguage = userSettings?.learnLanguage?.code || 'ALL';
 
     // Фильтр по группам
     const { selectedGroupIds, toggleGroup, toggleAll } =
@@ -158,9 +159,7 @@ export default function TrainingSetupPage() {
                             <WordsSelector
                                 filteredWords={filteredWords}
                                 selectedWords={selectedWords}
-                                selectedLanguage={selectedLanguage}
                                 isLoading={isLoading}
-                                onLanguageChange={setSelectedLanguage}
                                 onToggleWord={toggleWord}
                                 onSelectAll={selectAllVisible}
                                 onDeselectAll={deselectAll}
