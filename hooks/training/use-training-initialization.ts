@@ -10,10 +10,10 @@ interface UseTrainingInitializationProps {
     selectedLanguage: string;
     hasUnfinishedTraining: boolean;
     savedState: any;
-    setTrainingWords: (words: Word[]) => void;
-    setCurrentStage: (stage: TrainingStage) => void;
+    setTrainingWords: (_words: Word[]) => void;
+    setCurrentStage: (_stage: TrainingStage) => void;
     clearProgress: () => void;
-    createNewSession: (config: {
+    createNewSession: (_config: {
         enabledStages: TrainingStage[];
         selectedLanguage: string;
         selectedWordIds: string[];
@@ -59,7 +59,15 @@ export function useTrainingInitialization({
 
                 if (restoredWords.length > 0) {
                     setTrainingWords(restoredWords);
-                    setCurrentStage(saved.currentStage);
+                    // Проверяем, включен ли сохраненный этап
+                    const savedStage = saved.currentStage;
+                    const isStageEnabled = enabledStages.includes(savedStage);
+                    if (isStageEnabled) {
+                        setCurrentStage(savedStage);
+                    } else {
+                        // Если сохраненный этап отключен, переключаемся на первый включенный
+                        setCurrentStage(enabledStages[0]);
+                    }
                     console.log(
                         'Restored training session:',
                         saved.sessionId,
@@ -77,6 +85,8 @@ export function useTrainingInitialization({
                             selectedWordIds: filteredWords.map(w => w.id),
                             stageSettings: {},
                         });
+                        // Устанавливаем первый включенный этап
+                        setCurrentStage(enabledStages[0]);
                         console.log(
                             'Created new training session:',
                             newSession.sessionId,
@@ -93,6 +103,8 @@ export function useTrainingInitialization({
                         selectedWordIds: filteredWords.map(w => w.id),
                         stageSettings: {},
                     });
+                    // Устанавливаем первый включенный этап
+                    setCurrentStage(enabledStages[0]);
                     console.log(
                         'Created new training session:',
                         newSession.sessionId,

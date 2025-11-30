@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/Header';
 import { TrainingHeader } from '@/components/training/common/TrainingHeader';
@@ -79,6 +79,18 @@ export default function TrainingPage() {
         clearProgress: storage.clearProgress,
         createNewSession: storage.createNewSession,
     });
+
+    // Валидация текущего этапа - если он отключен, переключаемся на первый включенный
+    useEffect(() => {
+        if (
+            enabledStages.length > 0 &&
+            !enabledStages.includes(state.currentStage)
+        ) {
+            state.setCurrentStage(enabledStages[0]);
+            storage.setCurrentStage(enabledStages[0]);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [enabledStages, state.currentStage, state.setCurrentStage, storage]);
 
     // Убрали автоматическую синхронизацию - сохраняем только при действиях пользователя
 

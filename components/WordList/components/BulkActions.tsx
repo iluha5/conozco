@@ -38,7 +38,6 @@ export function BulkActions({
 
     return (
         <div className="flex flex-wrap items-start justify-start gap-2 p-4 bg-white rounded-lg border">
-            {/*<div className="flex gap-2">*/}
             {!hideSelectAllButton && (
                 <Button
                     variant="outline"
@@ -76,7 +75,6 @@ export function BulkActions({
                 <X className="w-4 h-4 mr-2" />
                 Не выучено
             </Button>
-            {/*</div>*/}
             <Button
                 variant="destructive"
                 size="sm"
