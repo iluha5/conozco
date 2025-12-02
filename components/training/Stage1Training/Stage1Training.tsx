@@ -31,6 +31,7 @@ export function Stage1Training({
     const [showTranslation, setShowTranslation] = useState(false);
     const [showSettingsModal, setShowSettingsModal] = useState(false);
     const [isCompleting, setIsCompleting] = useState(false);
+    const [isLoadingNext, setIsLoadingNext] = useState(false);
 
     const currentWord = words[currentIndex];
 
@@ -76,9 +77,14 @@ export function Stage1Training({
     });
 
     const handleNextClick = async () => {
-        const result = await handleNext();
-        if (result.type === 'next') {
-            setCurrentIndex(result.nextIndex);
+        setIsLoadingNext(true);
+        try {
+            const result = await handleNext();
+            if (result.type === 'next') {
+                setCurrentIndex(result.nextIndex);
+            }
+        } finally {
+            setIsLoadingNext(false);
         }
     };
 
@@ -146,6 +152,7 @@ export function Stage1Training({
                             <NextButton
                                 onNext={handleNextClick}
                                 isLastWord={currentIndex >= words.length - 1}
+                                isLoading={isLoadingNext}
                             />
                         )}
                     </div>
