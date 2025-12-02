@@ -28,9 +28,9 @@ export function WordDisplayWithSound({
     };
 
     return (
-        <div className="bg-purple-50/50 border border-purple-200 rounded-xl px-4 py-5 sm:px-6 sm:py-8">
+        <div className="bg-white border border-gray-300 rounded-xl px-4 py-5 sm:px-6 sm:py-8">
             <div className="flex items-center justify-center flex-wrap gap-2 sm:gap-3">
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-light text-purple-900 tracking-tight break-words break-all">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-light text-gray-900 tracking-tight break-words break-all">
                     {wordText}
                 </h2>
                 <Button
@@ -38,7 +38,7 @@ export function WordDisplayWithSound({
                     variant="ghost"
                     onClick={handleSpeakClick}
                     onTouchEnd={handleTouchEnd}
-                    className={`rounded-full w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 bg-gradient-to-br from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white border-0 shadow-md hover:shadow-lg transition-all duration-200 shrink-0 inline-flex active:scale-95 ${
+                    className={`rounded-full w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 bg-gray-800 hover:bg-gray-700 text-white border-0 shadow-md hover:shadow-lg transition-all duration-200 shrink-0 inline-flex active:scale-95 ${
                         isPlaying ? 'opacity-90' : ''
                     }`}
                     disabled={!speechSupported}
