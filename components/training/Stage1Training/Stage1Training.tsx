@@ -110,8 +110,8 @@ export function Stage1Training({
                     currentIndex={currentIndex}
                     onOpenSettings={handleOpenSettings}
                 />
-                <CardContent className="p-4 sm:p-6 md:p-8">
-                    <div className="space-y-4 sm:space-y-6 md:space-y-8">
+                <CardContent className="p-4 sm:p-6 md:p-6">
+                    <div className="space-y-4 sm:space-y-6 md:space-y-5">
                         <WordDisplayWithSound
                             word={currentWord}
                             onSpeak={speak}

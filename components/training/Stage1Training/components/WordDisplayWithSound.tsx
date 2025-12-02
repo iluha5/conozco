@@ -28,9 +28,9 @@ export function WordDisplayWithSound({
     };
 
     return (
-        <div className="bg-white border border-gray-300 rounded-xl px-4 py-5 sm:px-6 sm:py-8">
+        <div className="bg-white border border-gray-300 rounded-xl px-4 py-4 sm:px-5 sm:py-5 md:px-5 md:py-4">
             <div className="flex items-center justify-center flex-wrap gap-2 sm:gap-3">
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-light text-gray-900 tracking-tight break-words break-all">
+                <h2 className="text-3xl sm:text-4xl md:text-4xl font-light text-gray-900 tracking-tight break-words break-all">
                     {wordText}
                 </h2>
                 <Button
@@ -38,15 +38,15 @@ export function WordDisplayWithSound({
                     variant="ghost"
                     onClick={handleSpeakClick}
                     onTouchEnd={handleTouchEnd}
-                    className={`rounded-full w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 bg-gray-800 hover:bg-gray-700 text-white border-0 shadow-md hover:shadow-lg transition-all duration-200 shrink-0 inline-flex active:scale-95 ${
+                    className={`rounded-full w-10 h-10 sm:w-11 sm:h-11 md:w-10 md:h-10 bg-gray-800 hover:bg-gray-700 text-white border-0 shadow-md hover:shadow-lg transition-all duration-200 shrink-0 inline-flex active:scale-95 ${
                         isPlaying ? 'opacity-90' : ''
                     }`}
                     disabled={!speechSupported}
                 >
                     {isPlaying ? (
-                        <Pause className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
+                        <Pause className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4" />
                     ) : (
-                        <Play className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
+                        <Play className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4" />
                     )}
                 </Button>
             </div>

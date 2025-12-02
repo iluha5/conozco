@@ -25,27 +25,27 @@ export function TranslationDisplay({
             : [];
 
     return (
-        <div className="space-y-4 sm:space-y-6">
+        <div className="space-y-3 sm:space-y-4 md:space-y-4">
             {/* Блок перевода */}
-            <div className="bg-gray-50 border border-gray-300 rounded-xl px-4 py-4 sm:px-6 sm:py-5 text-center">
-                <p className="text-xl sm:text-2xl md:text-3xl text-gray-800 font-medium break-words">
+            <div className="bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 sm:px-5 sm:py-4 md:px-6 md:py-4 text-center">
+                <p className="text-lg sm:text-xl md:text-2xl text-gray-800 font-medium break-words">
                     {getWordTranslation(word)}
                 </p>
             </div>
 
             {/* Блок примеров */}
             {filteredExamples.length > 0 && (
-                <div className="bg-gray-50 rounded-xl px-4 py-4 sm:px-6 sm:py-5">
-                    <div className="space-y-3 sm:space-y-4">
+                <div className="bg-gray-50 rounded-xl px-4 py-3 sm:px-5 sm:py-4 md:px-6 md:py-4">
+                    <div className="space-y-2.5 sm:space-y-3 md:space-y-3">
                         {filteredExamples.map((example, exampleIndex) => (
                             <div
                                 key={exampleIndex}
-                                className="border-l-4 border-gray-400 pl-3 sm:pl-4"
+                                className="border-l-4 border-gray-400 pl-3 sm:pl-3.5 md:pl-4"
                             >
-                                <p className="text-sm sm:text-base text-gray-700 mb-1 break-words">
+                                <p className="text-sm sm:text-sm md:text-base text-gray-700 mb-1 break-words">
                                     {example.example}
                                 </p>
-                                <p className="text-xs sm:text-sm text-gray-500 italic break-words">
+                                <p className="text-xs sm:text-xs md:text-sm text-gray-500 italic break-words">
                                     {example.translation}
                                 </p>
                             </div>
