@@ -71,6 +71,7 @@ export async function GET(request: NextRequest) {
                             include: {
                                 pronoun: true,
                                 sentenceType: true,
+                                translationLanguage: true,
                             },
                         },
                         grammaticalExamples: {
@@ -119,6 +120,13 @@ export async function GET(request: NextRequest) {
                           examples: baseWord.examples.map((example: any) => ({
                               ...example,
                               sentenceType: example.sentenceType,
+                              translationLanguage: example.translationLanguage
+                                  ? {
+                                        id: example.translationLanguage.id,
+                                        code: example.translationLanguage.code,
+                                        name: example.translationLanguage.name,
+                                    }
+                                  : null,
                           })),
                           grammaticalExamples: baseWord.grammaticalExamples.map(
                               (example: any) => ({
@@ -272,6 +280,7 @@ export async function POST(request: NextRequest) {
                             include: {
                                 pronoun: true,
                                 sentenceType: true,
+                                translationLanguage: true,
                             },
                         },
                         grammaticalExamples: {
@@ -296,6 +305,13 @@ export async function POST(request: NextRequest) {
                       examples: rest.baseWord.examples.map((example: any) => ({
                           ...example,
                           sentenceType: example.sentenceType,
+                          translationLanguage: example.translationLanguage
+                              ? {
+                                    id: example.translationLanguage.id,
+                                    code: example.translationLanguage.code,
+                                    name: example.translationLanguage.name,
+                                }
+                              : null,
                       })),
                       grammaticalExamples:
                           rest.baseWord.grammaticalExamples.map(

@@ -15,6 +15,13 @@ const serializeWord = (word: any) => {
                   examples: baseWord.examples.map((example: any) => ({
                       ...example,
                       sentenceType: example.sentenceType,
+                      translationLanguage: example.translationLanguage
+                          ? {
+                                id: example.translationLanguage.id,
+                                code: example.translationLanguage.code,
+                                name: example.translationLanguage.name,
+                            }
+                          : null,
                   })),
                   grammaticalExamples: baseWord.grammaticalExamples.map(
                       (example: any) => ({
@@ -110,6 +117,7 @@ export async function GET(
                             include: {
                                 pronoun: true,
                                 sentenceType: true,
+                                translationLanguage: true,
                             },
                         },
                         grammaticalExamples: {

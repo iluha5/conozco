@@ -37,6 +37,11 @@ export interface Word {
             pronoun: {
                 pronoun: string;
             };
+            translationLanguage?: {
+                id: number;
+                code: string;
+                name: string;
+            } | null;
             sentenceType?: {
                 id: number;
                 code: string;
