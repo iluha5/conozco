@@ -18,3 +18,4 @@ CREATE INDEX "WordExample_translationLanguageId_idx" ON "WordExample"("translati
 -- Шаг 5: Добавить внешний ключ
 ALTER TABLE "WordExample" ADD CONSTRAINT "WordExample_translationLanguageId_fkey" FOREIGN KEY ("translationLanguageId") REFERENCES "Language"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
+

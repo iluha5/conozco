@@ -23,27 +23,24 @@ export const useStageModals = () => {
     }, []);
 
     const handleStage1Change = useCallback(
-        (newSettings: typeof stage1.settings) => {
-            stage1.updateSettings(newSettings);
-            closeModal();
+        (newSettings: Partial<typeof stage1.settings>) => {
+            stage1.updateSettings({ ...stage1.settings, ...newSettings });
         },
-        [stage1, closeModal],
+        [stage1],
     );
 
     const handleStage4Change = useCallback(
-        (newSettings: typeof stage4.settings) => {
-            stage4.updateSettings(newSettings);
-            closeModal();
+        (newSettings: Partial<typeof stage4.settings>) => {
+            stage4.updateSettings({ ...stage4.settings, ...newSettings });
         },
-        [stage4, closeModal],
+        [stage4],
     );
 
     const handleStage5Change = useCallback(
-        (newSettings: typeof stage5.settings) => {
-            stage5.updateSettings(newSettings);
-            closeModal();
+        (newSettings: Partial<typeof stage5.settings>) => {
+            stage5.updateSettings({ ...stage5.settings, ...newSettings });
         },
-        [stage5, closeModal],
+        [stage5],
     );
 
     return {

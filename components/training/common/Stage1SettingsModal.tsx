@@ -64,6 +64,12 @@ export function Stage1SettingsModal({
                         изучаемым словом
                     </p>
                 </div>
+
+                <div className="flex flex-row justify-end gap-2 mt-6">
+                    <Button variant="outline" onClick={onClose}>
+                        Закрыть
+                    </Button>
+                </div>
             </div>
         </div>
     );
