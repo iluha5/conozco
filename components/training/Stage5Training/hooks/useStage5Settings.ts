@@ -3,7 +3,7 @@ import type { Stage5Settings } from '@/lib/training-settings';
 
 type UseStage5SettingsParams = {
     updateSettings: (_settings: Stage5Settings) => void;
-    setShowSettingsModal: (_show: boolean) => void;
+    currentSettings: Stage5Settings;
     setCurrentIndex: (_index: number) => void;
     setCurrentPhraseIndex: (_phraseIndex: number) => void;
     setIsFirstCard: (_value: boolean) => void;
@@ -11,15 +11,14 @@ type UseStage5SettingsParams = {
 
 export function useStage5Settings({
     updateSettings,
-    setShowSettingsModal,
+    currentSettings,
     setCurrentIndex,
     setCurrentPhraseIndex,
     setIsFirstCard,
 }: UseStage5SettingsParams) {
     const handleSettingsChange = useCallback(
-        (newSettings: Stage5Settings) => {
-            updateSettings(newSettings);
-            setShowSettingsModal(false);
+        (newSettings: Partial<Stage5Settings>) => {
+            updateSettings({ ...currentSettings, ...newSettings });
             // Сбрасываем прогресс при изменении количества предложений
             setCurrentIndex(0);
             setCurrentPhraseIndex(0);
@@ -27,7 +26,7 @@ export function useStage5Settings({
         },
         [
             updateSettings,
-            setShowSettingsModal,
+            currentSettings,
             setCurrentIndex,
             setCurrentPhraseIndex,
             setIsFirstCard,

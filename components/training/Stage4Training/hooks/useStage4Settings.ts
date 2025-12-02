@@ -3,26 +3,25 @@ import type { Stage4Settings } from '@/lib/training-settings';
 
 type UseStage4SettingsParams = {
     updateSettings: (_settings: Stage4Settings) => void;
-    setShowSettingsModal: (_show: boolean) => void;
+    currentSettings: Stage4Settings;
     setCurrentIndex: (_index: number) => void;
     setIsFirstCard: (_value: boolean) => void;
 };
 
 export function useStage4Settings({
     updateSettings,
-    setShowSettingsModal,
+    currentSettings,
     setCurrentIndex,
     setIsFirstCard,
 }: UseStage4SettingsParams) {
     const handleSettingsChange = useCallback(
-        (newSettings: Stage4Settings) => {
-            updateSettings(newSettings);
-            setShowSettingsModal(false);
+        (newSettings: Partial<Stage4Settings>) => {
+            updateSettings({ ...currentSettings, ...newSettings });
             // Сбрасываем прогресс при изменении сложности
             setCurrentIndex(0);
             setIsFirstCard(true);
         },
-        [updateSettings, setShowSettingsModal, setCurrentIndex, setIsFirstCard],
+        [updateSettings, currentSettings, setCurrentIndex, setIsFirstCard],
     );
 
     return {

@@ -3,19 +3,18 @@ import type { Stage1Settings } from '@/lib/training-settings';
 
 type UseSettingsManagementParams = {
     updateSettings: (_settings: Stage1Settings) => void;
-    setShowSettingsModal: (_show: boolean) => void;
+    currentSettings: Stage1Settings;
 };
 
 export function useSettingsManagement({
     updateSettings,
-    setShowSettingsModal,
+    currentSettings,
 }: UseSettingsManagementParams) {
     const handleSettingsChange = useCallback(
-        (newSettings: Stage1Settings) => {
-            updateSettings(newSettings);
-            setShowSettingsModal(false);
+        (newSettings: Partial<Stage1Settings>) => {
+            updateSettings({ ...currentSettings, ...newSettings });
         },
-        [updateSettings, setShowSettingsModal],
+        [updateSettings, currentSettings],
     );
 
     return {

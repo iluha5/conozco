@@ -152,7 +152,7 @@ export function Stage5Training({
 
     const { handleSettingsChange } = useStage5Settings({
         updateSettings,
-        setShowSettingsModal,
+        currentSettings: settings,
         setCurrentIndex,
         setCurrentPhraseIndex,
         setIsFirstCard,

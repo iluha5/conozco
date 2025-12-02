@@ -72,7 +72,7 @@ export function Stage1Training({
 
     const { handleSettingsChange } = useSettingsManagement({
         updateSettings,
-        setShowSettingsModal,
+        currentSettings: settings,
     });
 
     const handleNextClick = async () => {

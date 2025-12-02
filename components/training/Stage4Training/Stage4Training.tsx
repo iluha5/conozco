@@ -92,7 +92,7 @@ export function Stage4Training({
 
     const { handleSettingsChange } = useStage4Settings({
         updateSettings,
-        setShowSettingsModal,
+        currentSettings: settings,
         setCurrentIndex,
         setIsFirstCard,
     });

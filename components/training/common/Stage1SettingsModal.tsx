@@ -9,7 +9,7 @@ type Stage1SettingsModalProps = {
     isOpen: boolean;
     onClose: () => void;
     settings: Stage1Settings;
-    onChange: (_settings: Stage1Settings) => void;
+    onChange: (_settings: Partial<Stage1Settings>) => void;
 };
 
 export function Stage1SettingsModal({
