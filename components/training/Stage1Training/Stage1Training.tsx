@@ -40,7 +40,11 @@ export function Stage1Training({
         totalExercises: words.length,
     });
     const { recordResult } = useRecordResult();
-    const { speak, isSupported: speechSupported } = useSpeech({
+    const {
+        speak,
+        isPlaying,
+        isSupported: speechSupported,
+    } = useSpeech({
         languageCode: currentWord?.language.code || 'en',
     });
 
@@ -106,42 +110,45 @@ export function Stage1Training({
                     currentIndex={currentIndex}
                     onOpenSettings={handleOpenSettings}
                 />
-                <CardContent className="space-y-4">
-                    <div className="text-center">
+                <CardContent className="p-4 sm:p-6 md:p-8">
+                    <div className="space-y-4 sm:space-y-6 md:space-y-8">
                         <WordDisplayWithSound
                             word={currentWord}
                             onSpeak={speak}
                             speechSupported={speechSupported}
+                            isPlaying={isPlaying}
                         />
 
-                        <div className="relative mt-4 flex items-center justify-center">
-                            <div
-                                className={`inset-0 flex items-center justify-center transition-opacity duration-300 ${
-                                    showTranslation
-                                        ? 'opacity-100'
-                                        : 'opacity-0 pointer-events-none'
-                                }`}
-                            >
-                                <TranslationDisplay
-                                    word={currentWord}
-                                    showExamples={settings.showExamples}
-                                />
-                            </div>
+                        <div
+                            className={`transition-all duration-500 ease-in-out ${
+                                showTranslation
+                                    ? 'opacity-100 translate-y-0'
+                                    : 'opacity-0 translate-y-4 pointer-events-none'
+                            }`}
+                        >
+                            <TranslationDisplay
+                                word={currentWord}
+                                showExamples={settings.showExamples}
+                            />
                         </div>
                     </div>
 
-                    {!showTranslation && (
-                        <ShowTranslationButton
-                            onShowTranslation={() => setShowTranslation(true)}
-                            showTranslation={showTranslation}
-                        />
-                    )}
-                    {showTranslation && (
-                        <NextButton
-                            onNext={handleNextClick}
-                            isLastWord={currentIndex >= words.length - 1}
-                        />
-                    )}
+                    <div className="pt-4 sm:pt-6">
+                        {!showTranslation && (
+                            <ShowTranslationButton
+                                onShowTranslation={() =>
+                                    setShowTranslation(true)
+                                }
+                                showTranslation={showTranslation}
+                            />
+                        )}
+                        {showTranslation && (
+                            <NextButton
+                                onNext={handleNextClick}
+                                isLastWord={currentIndex >= words.length - 1}
+                            />
+                        )}
+                    </div>
                 </CardContent>
             </Card>
 
