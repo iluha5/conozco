@@ -34,31 +34,35 @@ export function TranslationDisplay({
             </div>
 
             {/* Блок примеров */}
-            <div
-                className={`bg-gray-50 rounded-xl px-4 py-3 sm:px-5 sm:py-4 md:px-6 md:py-4 ${
-                    showExamples && filteredExamples.length === 0
-                        ? 'min-h-[120px] sm:min-h-[140px] md:min-h-[130px]'
-                        : ''
-                }`}
-            >
-                {filteredExamples.length > 0 && (
-                    <div className="space-y-2.5 sm:space-y-3 md:space-y-3">
-                        {filteredExamples.map((example, exampleIndex) => (
-                            <div
-                                key={exampleIndex}
-                                className="border-l-4 border-gray-400 pl-3 sm:pl-3.5 md:pl-4"
-                            >
-                                <p className="text-sm sm:text-sm md:text-base text-gray-700 mb-1 break-words">
-                                    {example.example}
-                                </p>
-                                <p className="text-xs sm:text-xs md:text-sm text-gray-500 italic break-words">
-                                    {example.translation}
-                                </p>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </div>
+            {showExamples && (
+                <div
+                    className={`${
+                        filteredExamples.length > 0 ? 'bg-gray-50' : 'bg-white'
+                    } rounded-xl px-4 py-3 sm:px-5 sm:py-4 md:px-6 md:py-4 ${
+                        filteredExamples.length === 0
+                            ? 'min-h-[120px] sm:min-h-[140px] md:min-h-[130px]'
+                            : ''
+                    }`}
+                >
+                    {filteredExamples.length > 0 && (
+                        <div className="space-y-2.5 sm:space-y-3 md:space-y-3">
+                            {filteredExamples.map((example, exampleIndex) => (
+                                <div
+                                    key={exampleIndex}
+                                    className="border-l-4 border-gray-400 pl-3 sm:pl-3.5 md:pl-4"
+                                >
+                                    <p className="text-sm sm:text-sm md:text-base text-gray-700 mb-1 break-words">
+                                        {example.example}
+                                    </p>
+                                    <p className="text-xs sm:text-xs md:text-sm text-gray-500 italic break-words">
+                                        {example.translation}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 }
