@@ -34,8 +34,14 @@ export function TranslationDisplay({
             </div>
 
             {/* Блок примеров */}
-            {filteredExamples.length > 0 && (
-                <div className="bg-gray-50 rounded-xl px-4 py-3 sm:px-5 sm:py-4 md:px-6 md:py-4">
+            <div
+                className={`bg-gray-50 rounded-xl px-4 py-3 sm:px-5 sm:py-4 md:px-6 md:py-4 ${
+                    showExamples && filteredExamples.length === 0
+                        ? 'min-h-[120px] sm:min-h-[140px] md:min-h-[130px]'
+                        : ''
+                }`}
+            >
+                {filteredExamples.length > 0 && (
                     <div className="space-y-2.5 sm:space-y-3 md:space-y-3">
                         {filteredExamples.map((example, exampleIndex) => (
                             <div
@@ -51,8 +57,8 @@ export function TranslationDisplay({
                             </div>
                         ))}
                     </div>
-                </div>
-            )}
+                )}
+            </div>
         </div>
     );
 }
