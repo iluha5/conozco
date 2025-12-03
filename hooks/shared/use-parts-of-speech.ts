@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
 export type PartOfSpeech = {
     id: number;
@@ -6,42 +6,39 @@ export type PartOfSpeech = {
     displayName: string;
 };
 
+async function fetchPartsOfSpeech(
+    languageCode: string,
+): Promise<PartOfSpeech[]> {
+    const response = await fetch(
+        `/api/parts-of-speech?languageCode=${languageCode}`,
+    );
+
+    if (!response.ok) {
+        throw new Error('Failed to fetch parts of speech');
+    }
+
+    return response.json();
+}
+
 /**
- * Хук для загрузки частей речи
+ * Хук для загрузки частей речи с кэшированием через React Query
+ * Данные кэшируются глобально и переиспользуются между компонентами
  */
 export function usePartsOfSpeech(languageCode: string = 'ru') {
-    const [partsOfSpeech, setPartsOfSpeech] = useState<PartOfSpeech[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<Error | null>(null);
+    const {
+        data: partsOfSpeech = [],
+        isLoading: loading,
+        error,
+    } = useQuery({
+        queryKey: ['parts-of-speech', languageCode],
+        queryFn: () => fetchPartsOfSpeech(languageCode),
+        staleTime: 5 * 60 * 1000, // 5 минут - данные считаются свежими
+        gcTime: 30 * 60 * 1000, // 30 минут - хранить в кэше
+    });
 
-    useEffect(() => {
-        const fetchPartsOfSpeech = async () => {
-            setLoading(true);
-            setError(null);
-            try {
-                const response = await fetch(
-                    `/api/parts-of-speech?languageCode=${languageCode}`,
-                );
-                if (response.ok) {
-                    const data = await response.json();
-                    setPartsOfSpeech(data);
-                } else {
-                    throw new Error('Failed to fetch parts of speech');
-                }
-            } catch (err) {
-                console.error('Error fetching parts of speech:', err);
-                setError(
-                    err instanceof Error
-                        ? err
-                        : new Error('Unknown error occurred'),
-                );
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchPartsOfSpeech();
-    }, [languageCode]);
-
-    return { partsOfSpeech, loading, error };
+    return {
+        partsOfSpeech,
+        loading,
+        error: error as Error | null,
+    };
 }
