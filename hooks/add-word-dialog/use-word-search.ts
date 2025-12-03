@@ -9,6 +9,7 @@ import type { BaseWord } from '@/types/add-word-dialog.types';
 
 type UseWordSearchProps = {
     languageCode: 'en' | 'es';
+    ownLanguageCode?: string;
     open: boolean;
     skipAutoSearch: boolean;
     setSkipAutoSearch: (_value: boolean) => void;
@@ -17,6 +18,7 @@ type UseWordSearchProps = {
 
 export function useWordSearch({
     languageCode,
+    ownLanguageCode,
     open,
     skipAutoSearch,
     setSkipAutoSearch,
@@ -103,6 +105,11 @@ export function useWordSearch({
 
             if (debouncedSearchTerm.trim()) {
                 params.set('search', debouncedSearchTerm.trim());
+            }
+
+            // Добавляем код родного языка для поиска по переводам
+            if (ownLanguageCode) {
+                params.set('translationLanguageCode', ownLanguageCode);
             }
 
             if (selectedGroupIds.length > 0) {

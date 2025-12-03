@@ -31,6 +31,9 @@ export async function GET(request: NextRequest) {
         const languageCode = searchParams.get('languageCode');
         const partOfSpeech = searchParams.get('partOfSpeech');
         const search = searchParams.get('search');
+        const translationLanguageCode = searchParams.get(
+            'translationLanguageCode',
+        );
         const limit = parseInt(searchParams.get('limit') || '50');
         const offset = parseInt(searchParams.get('offset') || '0');
         const wordGroupIdsParam = searchParams.get('wordGroupIds');
@@ -42,6 +45,7 @@ export async function GET(request: NextRequest) {
             const language = await prisma.language.findUnique({
                 where: { code: languageCode },
             });
+
             if (language) {
                 where.languageId = language.id;
             }
@@ -51,11 +55,28 @@ export async function GET(request: NextRequest) {
             where.partOfSpeech = partOfSpeech;
         }
 
+        // Поиск по слову на изучаемом языке и/или по переводу на родном языке
         if (search) {
-            where.word = {
-                contains: search,
-                mode: 'insensitive',
-            };
+            const searchConditions: any[] = [
+                { word: { contains: search, mode: 'insensitive' } },
+            ];
+
+            // Добавляем поиск по переводам на родном языке пользователя
+            if (translationLanguageCode) {
+                searchConditions.push({
+                    translations: {
+                        some: {
+                            translation: {
+                                contains: search,
+                                mode: 'insensitive',
+                            },
+                            language: { code: translationLanguageCode },
+                        },
+                    },
+                });
+            }
+
+            where.OR = searchConditions;
         }
 
         // Фильтр по группам слов

@@ -79,6 +79,7 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
         resetSearch,
     } = useWordSearch({
         languageCode,
+        ownLanguageCode: userSettings?.ownLanguage?.code,
         open,
         skipAutoSearch,
         setSkipAutoSearch,
