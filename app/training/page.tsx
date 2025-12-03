@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/Header';
 import { TrainingHeader } from '@/components/training/common/TrainingHeader';
@@ -18,7 +18,11 @@ import {
     useTrainingStorage,
     useTrainingInitialization,
 } from '@/hooks/training';
-import { useTrainingSettings, useTrainingSelection } from '@/hooks/shared';
+import {
+    useTrainingSettings,
+    useTrainingSelection,
+    useHashDialog,
+} from '@/hooks/shared';
 import { useTrainingWords } from '@/contexts/training-words-context';
 import { trainingApi } from '@/lib/api/training.api';
 import { TrainingStage } from '@/types/training.types';
@@ -26,7 +30,8 @@ import { Card, CardContent } from '@/components/ui/card';
 
 export default function TrainingPage() {
     const router = useRouter();
-    const [isExitDialogOpen, setIsExitDialogOpen] = useState(false);
+    const { open: isExitDialogOpen, setOpen: setIsExitDialogOpen } =
+        useHashDialog('exit-training-confirm');
 
     const { settings: trainingSettings, isLoaded: settingsLoaded } =
         useTrainingSettings();

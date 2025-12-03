@@ -1,10 +1,15 @@
 import { useState } from 'react';
+import { useHashDialog } from '@/hooks/shared';
 
 export function useConfirmationDialogs() {
-    const [confirmDeleteDialogOpen, setConfirmDeleteDialogOpen] =
-        useState(false);
-    const [confirmStatusDialogOpen, setConfirmStatusDialogOpen] =
-        useState(false);
+    const {
+        open: confirmDeleteDialogOpen,
+        setOpen: setConfirmDeleteDialogOpen,
+    } = useHashDialog('confirm-delete-words');
+    const {
+        open: confirmStatusDialogOpen,
+        setOpen: setConfirmStatusDialogOpen,
+    } = useHashDialog('confirm-status-change');
     const [pendingStatusAction, setPendingStatusAction] = useState<
         'LEARNED' | 'NOT_LEARNED' | null
     >(null);
@@ -37,6 +42,7 @@ export function useConfirmationDialogs() {
 
     const setStatusDialogOpen = (open: boolean) => {
         setConfirmStatusDialogOpen(open);
+
         if (!open) {
             setPendingStatusAction(null);
         }

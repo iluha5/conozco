@@ -23,6 +23,7 @@ import {
 } from '@/hooks/word-groups/use-active-word-groups';
 import { toast } from 'sonner';
 import { GroupWordsDialog } from '@/components/word-groups/GroupWordsDialog';
+import { useHashDialog } from '@/hooks/shared';
 
 // Объединенный тип группы для отображения
 type CombinedWordGroup = {
@@ -42,11 +43,20 @@ export default function WordGroupsManagementPage() {
     const [optimisticActiveGroups, setOptimisticActiveGroups] = useState<
         Set<number>
     >(new Set());
-    const [selectedGroupForView, setSelectedGroupForView] = useState<{
+    const [selectedGroupForView, setSelectedGroupForViewData] = useState<{
         id: number;
         name: string;
         wordsCount: number;
     } | null>(null);
+    const { open: groupViewDialogOpen, setOpen: setGroupViewDialogOpen } =
+        useHashDialog('view-group-words');
+
+    const setSelectedGroupForView = (
+        group: { id: number; name: string; wordsCount: number } | null,
+    ) => {
+        setSelectedGroupForViewData(group);
+        setGroupViewDialogOpen(!!group);
+    };
 
     // Фильтры
     const [visibilityFilter, setVisibilityFilter] = useState<string>('ALL');
@@ -419,7 +429,7 @@ export default function WordGroupsManagementPage() {
             {/* Диалог просмотра слов группы */}
             {selectedGroupForView && (
                 <GroupWordsDialog
-                    open={!!selectedGroupForView}
+                    open={groupViewDialogOpen}
                     onOpenChange={open => {
                         if (!open) {
                             setSelectedGroupForView(null);

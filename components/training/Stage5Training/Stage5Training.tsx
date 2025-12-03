@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Stage5SettingsModal } from '../common/Stage5SettingsModal';
 import { useStage5Settings as useStage5SettingsHook } from '@/hooks/shared/use-training-settings';
 import { useTrainingStorage } from '@/hooks/training';
+import { useHashDialog } from '@/hooks/shared';
 import { StageHeader } from './components/StageHeader';
 import { TranslationDisplay } from './components/TranslationDisplay';
 import { SentenceBuilder } from './components/SentenceBuilder';
@@ -30,7 +31,8 @@ export function Stage5Training({
     const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
     const [currentPhrase, setCurrentPhrase] = useState<Phrase | null>(null);
     const [availableWords, setAvailableWords] = useState<WordState[]>([]);
-    const [showSettingsModal, setShowSettingsModal] = useState(false);
+    const { open: showSettingsModal, setOpen: setShowSettingsModal } =
+        useHashDialog('stage5-settings');
     const [isFirstCard, setIsFirstCard] = useState(true);
     const [fadeIn, setFadeIn] = useState(false);
     const [animationKey, setAnimationKey] = useState(0);

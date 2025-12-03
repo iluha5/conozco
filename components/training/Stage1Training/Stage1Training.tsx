@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Stage1SettingsModal } from '../common/Stage1SettingsModal';
 import { useStage1Settings } from '@/hooks/shared/use-training-settings';
+import { useHashDialog } from '@/hooks/shared';
 import {
     useFadeAnimation,
     useRecordResult,
@@ -29,7 +30,8 @@ export function Stage1Training({
     const { settings, updateSettings } = useStage1Settings();
     const [currentIndex, setCurrentIndex] = useState(0);
     const [showTranslation, setShowTranslation] = useState(false);
-    const [showSettingsModal, setShowSettingsModal] = useState(false);
+    const { open: showSettingsModal, setOpen: setShowSettingsModal } =
+        useHashDialog('stage1-settings');
     const [isCompleting, setIsCompleting] = useState(false);
     const [isLoadingNext, setIsLoadingNext] = useState(false);
 

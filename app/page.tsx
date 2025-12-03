@@ -12,7 +12,6 @@ import {
 } from '@/components/ui/card';
 import {
     Dialog,
-    DialogClose,
     DialogContent,
     DialogDescription,
     DialogHeader,
@@ -24,12 +23,16 @@ import { Brain, HelpCircle, Languages } from 'lucide-react';
 import { ContinueTrainingCard } from '@/components/training/common/ContinueTrainingCard';
 import { NewTrainingConfirmationDialog } from '@/components/training/common/NewTrainingConfirmationDialog';
 import { useTrainingStorage } from '@/hooks/training';
+import { useHashDialog } from '@/hooks/shared';
 
 export default function HomePage() {
     const router = useRouter();
     const { savedState, hasUnfinishedTraining, clearProgress } =
         useTrainingStorage();
-    const [showNewTrainingDialog, setShowNewTrainingDialog] = useState(false);
+    const { open: showNewTrainingDialog, setOpen: setShowNewTrainingDialog } =
+        useHashDialog('new-training-confirm');
+    const { open: showHelpDialog, setOpen: setShowHelpDialog } =
+        useHashDialog('training-help');
     const [isContinueLoading, setIsContinueLoading] = useState(false);
     const [isStartLoading, setIsStartLoading] = useState(false);
     const [isWordsLoading, setIsWordsLoading] = useState(false);
@@ -96,7 +99,10 @@ export default function HomePage() {
                                     <Brain className="w-6 h-6 text-purple-600" />
                                     Тренировка
                                 </CardTitle>
-                                <Dialog>
+                                <Dialog
+                                    open={showHelpDialog}
+                                    onOpenChange={setShowHelpDialog}
+                                >
                                     <DialogTrigger asChild>
                                         <Button
                                             variant="ghost"
@@ -107,20 +113,6 @@ export default function HomePage() {
                                         </Button>
                                     </DialogTrigger>
                                     <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-                                        <DialogClose className="absolute right-4 top-4 z-50 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
-                                            <svg
-                                                className="h-4 w-4"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                strokeWidth="2"
-                                            >
-                                                <path d="M18 6L6 18M6 6l12 12"></path>
-                                            </svg>
-                                            <span className="sr-only">
-                                                Close
-                                            </span>
-                                        </DialogClose>
                                         <DialogHeader className="pb-4">
                                             <DialogTitle>
                                                 Этапы обучения

@@ -16,7 +16,7 @@ import {
     DialogTrigger,
 } from '@/components/ui/dialog';
 import { PlusCircle } from 'lucide-react';
-import { usePartsOfSpeech } from '@/hooks/shared';
+import { usePartsOfSpeech, useHashDialog } from '@/hooks/shared';
 import { useUserSettings } from '@/hooks/settings';
 import {
     useWordSearch,
@@ -33,7 +33,7 @@ type AddWordDialogProps = {
 };
 
 export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
-    const [open, setOpen] = useState(false);
+    const { open, setOpen } = useHashDialog('add-word-dialog');
     const [needsScroll, setNeedsScroll] = useState(false);
     const [skipAutoSearch, setSkipAutoSearch] = useState(false);
     const [selectedPartsOfSpeech, setSelectedPartsOfSpeech] = useState<
@@ -45,8 +45,10 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
     const [selectedWordForTranslation, setSelectedWordForTranslation] =
         useState<any | null>(null);
     const [isClient, setIsClient] = useState(false);
-    const [confirmToggleAllDialogOpen, setConfirmToggleAllDialogOpen] =
-        useState(false);
+    const {
+        open: confirmToggleAllDialogOpen,
+        setOpen: setConfirmToggleAllDialogOpen,
+    } = useHashDialog('confirm-toggle-all-words');
     const [pendingToggleAllWords, setPendingToggleAllWords] = useState<
         BaseWord[] | null
     >(null);

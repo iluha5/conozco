@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Stage4SettingsModal } from '../common/Stage4SettingsModal';
 import { useStage4Settings as useStage4SettingsHook } from '@/hooks/shared/use-training-settings';
 import { useTrainingStorage } from '@/hooks/training';
+import { useHashDialog } from '@/hooks/shared';
 import { StageHeader } from './components/StageHeader';
 import { TranslationDisplay } from './components/TranslationDisplay';
 import { WordBuilder } from './components/WordBuilder';
@@ -26,7 +27,8 @@ export function Stage4Training({
     const storage = useTrainingStorage();
     const { settings, updateSettings } = useStage4SettingsHook();
     const [currentIndex, setCurrentIndex] = useState(0);
-    const [showSettingsModal, setShowSettingsModal] = useState(false);
+    const { open: showSettingsModal, setOpen: setShowSettingsModal } =
+        useHashDialog('stage4-settings');
     const [isFirstCard, setIsFirstCard] = useState(true);
     const [exerciseResults, setExerciseResults] = useState<(boolean | null)[]>(
         [],
