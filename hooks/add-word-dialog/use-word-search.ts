@@ -57,6 +57,14 @@ export function useWordSearch({
 
     // Поиск слов при изменении параметров
     useEffect(() => {
+        // Не запускаем поиск, если поле поиска пустое
+        if (!debouncedSearchTerm.trim()) {
+            setAvailableWords([]);
+            setOffset(0);
+            setHasMore(true);
+            return;
+        }
+
         if (open && !skipAutoSearch) {
             setOffset(0);
             setAvailableWords([]);

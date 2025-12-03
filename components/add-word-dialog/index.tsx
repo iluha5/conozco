@@ -352,6 +352,7 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                             partsOfSpeech={partsOfSpeech}
                             onTranslationSave={handleTranslationSave}
                             isClient={isClient}
+                            searchTerm={searchTerm}
                         />
                     </div>
 
