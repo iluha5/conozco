@@ -18,6 +18,7 @@
 - ALWAYS name hook files in CamelCase matching the hook name (e.g., `useTranslationOptions.ts` for hook `useTranslationOptions`, NOT `use-translation-options.ts`).
 - Extract shared types into a centralized `typing.ts` file within the component folder.
 - When creating dialog/popup components with action buttons (DialogFooter), ALWAYS place buttons in a row (flex-row) for mobile view when possible, instead of stacking them in a column. Use `flex-row justify-end gap-2` or similar classes to ensure buttons are displayed horizontally on mobile devices.
+- ALWAYS use the `useHashDialog` hook from `@/hooks/shared` for ALL dialogs and modals. This enables closing dialogs with the browser back button. Usage: `const { open, setOpen } = useHashDialog('unique-dialog-id');` where `unique-dialog-id` is a unique string identifier for the dialog (e.g., 'add-word-dialog', 'confirm-delete', 'settings-modal').
 
 ## Database Operations Guidelines
 - **ALWAYS create a database backup BEFORE performing any dangerous database operations.**
