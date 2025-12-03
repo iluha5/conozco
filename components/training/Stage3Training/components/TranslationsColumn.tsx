@@ -32,7 +32,7 @@ export function TranslationsColumn({
                                   ? 'default'
                                   : 'outline'
                         }
-                        className={`w-full h-auto py-4 text-lg transition-all duration-500 ease-in-out ${
+                        className={`w-full h-auto py-4 text-lg transition-all duration-500 ease-in-out whitespace-normal ${
                             isMatched
                                 ? 'bg-green-500 border-green-500 text-white cursor-not-allowed'
                                 : errorTranslation === translation
@@ -42,7 +42,9 @@ export function TranslationsColumn({
                         onClick={() => onTranslationClick(translation)}
                         disabled={isMatched}
                     >
-                        {translation}
+                        <span className="break-words break-all">
+                            {translation}
+                        </span>
                     </Button>
                 );
             })}

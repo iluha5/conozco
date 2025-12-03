@@ -26,7 +26,7 @@ export function ForeignWordsColumn({
                               ? 'default'
                               : 'outline'
                     }
-                    className={`w-full h-auto py-4 text-lg transition-all duration-200 ease-in-out ${
+                    className={`w-full h-auto py-4 text-lg transition-all duration-200 ease-in-out whitespace-normal ${
                         pair.matched
                             ? 'bg-green-500 border-green-500 text-white cursor-not-allowed'
                             : errorForeign === pair.foreign
@@ -36,7 +36,9 @@ export function ForeignWordsColumn({
                     onClick={() => onForeignClick(pair.foreign)}
                     disabled={pair.matched}
                 >
-                    {pair.foreign}
+                    <span className="break-words break-all">
+                        {pair.foreign}
+                    </span>
                 </Button>
             ))}
         </div>
