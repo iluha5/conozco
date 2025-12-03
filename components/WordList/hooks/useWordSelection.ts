@@ -38,10 +38,15 @@ export function useWordSelection(words: Word[]) {
         return selectedWords.includes(wordId);
     };
 
+    const clearSelection = () => {
+        setSelectedWords([]);
+    };
+
     return {
         selectedWords,
         toggleWordSelection,
         toggleAllWordsSelection,
+        clearSelection,
         isWordSelected,
         // Внутренние функции для обратной совместимости
         _selectAllWords,

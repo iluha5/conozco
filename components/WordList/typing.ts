@@ -56,6 +56,7 @@ export type WordSelection = {
     selectedWords: (string | number)[];
     toggleWordSelection: (_wordId: string | number) => void;
     toggleAllWordsSelection: () => void;
+    clearSelection: () => void;
     isWordSelected: (_wordId: string | number) => boolean;
 };
 

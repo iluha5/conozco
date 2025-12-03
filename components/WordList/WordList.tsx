@@ -85,7 +85,7 @@ export function WordsList({
             description: `${successCount} слов ${newStatus === 'LEARNED' ? 'отмечено как выученные' : 'отмечено как невыученные'}`,
             variant: 'success',
         });
-        selection.toggleAllWordsSelection(); // Сбросить выделение
+        selection.clearSelection();
         confirmations.closeStatusConfirmation();
     };
 
@@ -114,7 +114,7 @@ export function WordsList({
             description: `${successCount} слов удалено`,
             variant: 'success',
         });
-        selection.toggleAllWordsSelection(); // Сбросить выделение
+        selection.clearSelection();
         confirmations.handleCloseDeleteDialog();
     };
 

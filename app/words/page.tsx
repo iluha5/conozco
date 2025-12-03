@@ -120,7 +120,7 @@ export default function WordsPage() {
             description: `${successCount} слов ${newStatus === 'LEARNED' ? 'отмечено как выученные' : 'отмечено как невыученные'}`,
             variant: 'success',
         });
-        wordSelection.toggleAllWordsSelection(); // Сбросить выделение
+        wordSelection.clearSelection();
         confirmations.closeStatusConfirmation();
     };
 
@@ -149,7 +149,7 @@ export default function WordsPage() {
             description: `${successCount} слов удалено`,
             variant: 'success',
         });
-        wordSelection.toggleAllWordsSelection(); // Сбросить выделение
+        wordSelection.clearSelection();
         confirmations.handleCloseDeleteDialog();
     };
 
