@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { QUERY_STALE_TIME, QUERY_GC_TIME } from '@/config/react-query';
 
 export interface Language {
     id: number;
@@ -27,70 +28,72 @@ export interface UpdateUserSettings {
     hasConfigured?: boolean;
 }
 
+async function fetchUserSettings(): Promise<UserSettings> {
+    const response = await fetch('/api/user/settings');
+
+    if (!response.ok) {
+        throw new Error('Failed to fetch settings');
+    }
+
+    return response.json();
+}
+
+async function patchUserSettings(
+    updates: UpdateUserSettings,
+): Promise<UserSettings> {
+    const response = await fetch('/api/user/settings', {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updates),
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update settings');
+    }
+
+    return response.json();
+}
+
+/**
+ * Хук для работы с настройками пользователя с кэшированием через React Query
+ * Данные кэшируются глобально и переиспользуются между компонентами
+ */
 export function useUserSettings() {
-    const [settings, setSettings] = useState<UserSettings | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const queryClient = useQueryClient();
 
-    const fetchSettings = async () => {
-        try {
-            setLoading(true);
-            setError(null);
+    const {
+        data: settings = null,
+        isLoading: loading,
+        error: queryError,
+        refetch,
+    } = useQuery({
+        queryKey: ['user-settings'],
+        queryFn: fetchUserSettings,
+        staleTime: QUERY_STALE_TIME,
+        gcTime: QUERY_GC_TIME,
+    });
 
-            const response = await fetch('/api/user/settings');
-            if (!response.ok) {
-                throw new Error('Failed to fetch settings');
-            }
-
-            const data = await response.json();
-            setSettings(data);
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Unknown error');
-        } finally {
-            setLoading(false);
-        }
-    };
+    const mutation = useMutation({
+        mutationFn: patchUserSettings,
+        onSuccess: updatedSettings => {
+            // Обновляем кэш с новыми данными
+            queryClient.setQueryData(['user-settings'], updatedSettings);
+        },
+    });
 
     const updateSettings = async (updates: UpdateUserSettings) => {
-        try {
-            setSaving(true);
-            setError(null);
-
-            const response = await fetch('/api/user/settings', {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(updates),
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Failed to update settings');
-            }
-
-            const updatedSettings = await response.json();
-            setSettings(updatedSettings);
-            return updatedSettings;
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Unknown error');
-            throw err;
-        } finally {
-            setSaving(false);
-        }
+        return mutation.mutateAsync(updates);
     };
-
-    useEffect(() => {
-        fetchSettings();
-    }, []);
 
     return {
         settings,
         loading,
-        saving,
-        error,
-        refetch: fetchSettings,
+        saving: mutation.isPending,
+        error: queryError?.message || mutation.error?.message || null,
+        refetch,
         updateSettings,
     };
 }

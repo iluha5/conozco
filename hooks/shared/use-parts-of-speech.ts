@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { QUERY_STALE_TIME, QUERY_GC_TIME } from '@/config/react-query';
 
 export type PartOfSpeech = {
     id: number;
@@ -32,8 +33,8 @@ export function usePartsOfSpeech(languageCode: string = 'ru') {
     } = useQuery({
         queryKey: ['parts-of-speech', languageCode],
         queryFn: () => fetchPartsOfSpeech(languageCode),
-        staleTime: 5 * 60 * 1000, // 5 минут - данные считаются свежими
-        gcTime: 30 * 60 * 1000, // 30 минут - хранить в кэше
+        staleTime: QUERY_STALE_TIME,
+        gcTime: QUERY_GC_TIME,
     });
 
     return {
