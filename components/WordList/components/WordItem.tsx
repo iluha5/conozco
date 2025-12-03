@@ -10,7 +10,7 @@ import {
     getTranslationsCountText,
     hasTranslations,
 } from '@/lib/word-utils';
-import { usePartsOfSpeech } from '@/hooks/shared';
+import type { PartOfSpeech } from '@/hooks/shared';
 import type { Word } from '../typing';
 
 interface WordItemProps {
@@ -22,6 +22,7 @@ interface WordItemProps {
     isClient: boolean;
     translationDialogOpen: { [key: string | number]: boolean };
     selectedWordForTranslation: Word | null;
+    partsOfSpeech: PartOfSpeech[];
     onToggleSelection: (_wordId: string | number) => void;
     onToggleStatus: (_word: Word) => void;
     onDelete: (_wordId: string | number) => void;
@@ -40,6 +41,7 @@ export function WordItem({
     isClient,
     translationDialogOpen,
     selectedWordForTranslation,
+    partsOfSpeech,
     onToggleSelection,
     onToggleStatus,
     onDelete,
@@ -48,7 +50,6 @@ export function WordItem({
     onTranslationSave,
     readOnly = false,
 }: WordItemProps) {
-    const { partsOfSpeech } = usePartsOfSpeech('ru');
     const displayWord = optimisticWord || word;
 
     return (

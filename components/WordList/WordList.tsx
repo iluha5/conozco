@@ -1,6 +1,6 @@
 'use client';
 
-import { useToast } from '@/hooks/shared';
+import { useToast, usePartsOfSpeech } from '@/hooks/shared';
 // Кастомные хуки
 import { useClientCheck } from './hooks/useClientCheck';
 import { useWordSelection } from './hooks/useWordSelection';
@@ -39,6 +39,7 @@ export function WordsList({
     const loading = useWordLoading();
     const status = useWordStatus({ onWordUpdate, onWordsChange, readOnly });
     const deletion = useWordDeletion({ onWordRemove, onWordsChange, readOnly });
+    const { partsOfSpeech } = usePartsOfSpeech('ru');
 
     const { toast } = useToast();
 
@@ -159,6 +160,7 @@ export function WordsList({
                             selectedWordForTranslation={
                                 translation.selectedWordForTranslation
                             }
+                            partsOfSpeech={partsOfSpeech}
                             onToggleSelection={selection.toggleWordSelection}
                             onToggleStatus={handleToggleStatus}
                             onDelete={handleDeleteWord}
