@@ -110,7 +110,8 @@ export default function TrainingPage() {
     const handleConfirmExit = () => {
         // Очищаем сохраненное состояние при выходе
         storage.clearProgress();
-        setIsExitDialogOpen(false);
+        // Не вызываем setIsExitDialogOpen(false) - это вызовет history.back()
+        // и создаст конфликт с router.push. Диалог закроется при переходе.
         router.push('/');
     };
 
