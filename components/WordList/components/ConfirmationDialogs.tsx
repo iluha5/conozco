@@ -7,12 +7,15 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
 
 interface ConfirmationDialogsProps {
     deleteDialogOpen: boolean;
     statusDialogOpen: boolean;
     pendingStatusAction: 'LEARNED' | 'NOT_LEARNED' | null;
     selectedWordsCount: number;
+    isDeleting?: boolean;
+    isUpdatingStatus?: boolean;
     onCloseDeleteDialog: () => void;
     onCloseStatusDialog: () => void;
     onConfirmDelete: () => void;
@@ -24,15 +27,32 @@ export function ConfirmationDialogs({
     statusDialogOpen,
     pendingStatusAction,
     selectedWordsCount,
+    isDeleting = false,
+    isUpdatingStatus = false,
     onCloseDeleteDialog,
     onCloseStatusDialog,
     onConfirmDelete,
     onConfirmStatus,
 }: ConfirmationDialogsProps) {
+    const handleCloseDeleteDialog = () => {
+        if (!isDeleting) {
+            onCloseDeleteDialog();
+        }
+    };
+
+    const handleCloseStatusDialog = () => {
+        if (!isUpdatingStatus) {
+            onCloseStatusDialog();
+        }
+    };
+
     return (
         <>
             {/* Диалог подтверждения удаления */}
-            <Dialog open={deleteDialogOpen} onOpenChange={onCloseDeleteDialog}>
+            <Dialog
+                open={deleteDialogOpen}
+                onOpenChange={handleCloseDeleteDialog}
+            >
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Подтверждение удаления</DialogTitle>
@@ -42,10 +62,21 @@ export function ConfirmationDialogs({
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
-                        <Button variant="outline" onClick={onCloseDeleteDialog}>
+                        <Button
+                            variant="outline"
+                            onClick={handleCloseDeleteDialog}
+                            disabled={isDeleting}
+                        >
                             Отмена
                         </Button>
-                        <Button variant="destructive" onClick={onConfirmDelete}>
+                        <Button
+                            variant="destructive"
+                            onClick={onConfirmDelete}
+                            disabled={isDeleting}
+                        >
+                            {isDeleting && (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            )}
                             Удалить
                         </Button>
                     </DialogFooter>
@@ -53,7 +84,10 @@ export function ConfirmationDialogs({
             </Dialog>
 
             {/* Диалог подтверждения изменения статуса */}
-            <Dialog open={statusDialogOpen} onOpenChange={onCloseStatusDialog}>
+            <Dialog
+                open={statusDialogOpen}
+                onOpenChange={handleCloseStatusDialog}
+            >
                 <DialogContent className="sm:max-w-xl">
                     <DialogHeader>
                         <DialogTitle>
@@ -69,10 +103,22 @@ export function ConfirmationDialogs({
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter className="gap-4">
-                        <Button variant="outline" onClick={onCloseStatusDialog}>
+                        <Button
+                            variant="outline"
+                            onClick={handleCloseStatusDialog}
+                            disabled={isUpdatingStatus}
+                        >
                             Отмена
                         </Button>
-                        <Button onClick={onConfirmStatus}>Подтвердить</Button>
+                        <Button
+                            onClick={onConfirmStatus}
+                            disabled={isUpdatingStatus}
+                        >
+                            {isUpdatingStatus && (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            )}
+                            Подтвердить
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

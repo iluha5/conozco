@@ -87,42 +87,48 @@ export function useWordStatus({
 
     const executeBulkStatusChange = async (
         selectedWords: (string | number)[],
-        _newStatus: 'LEARNED' | 'NOT_LEARNED',
+        newStatus: 'LEARNED' | 'NOT_LEARNED',
         onWordUpdate?: WordUpdateCallback,
         onWordsChange?: () => Promise<void>,
-    ) => {
-        let successCount = 0;
-        let _errorCount = 0;
+        onError?: (_message: string) => void,
+    ): Promise<boolean> => {
+        if (selectedWords.length === 0) return false;
 
         try {
-            for (const wordId of selectedWords) {
-                const response = await fetch(`/api/words/${wordId}`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ status: _newStatus }),
-                });
-
-                if (response.ok) {
-                    successCount++;
-                    // Обновляем состояние отдельного слова, если есть callback
-                    if (onWordUpdate) {
-                        onWordUpdate(wordId, { status: _newStatus });
-                    }
-                } else {
-                    _errorCount++;
+            // Оптимистичное обновление - сразу обновляем UI
+            if (onWordUpdate) {
+                for (const wordId of selectedWords) {
+                    onWordUpdate(wordId, { status: newStatus });
                 }
             }
 
-            if (successCount > 0) {
-                // Перезагружаем только если нет callback для обновления
-                if (!onWordUpdate) {
-                    await onWordsChange?.();
-                }
+            // Один запрос для всех слов
+            const response = await fetch('/api/words/bulk', {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    wordIds: selectedWords,
+                    status: newStatus,
+                }),
+            });
+
+            if (!response.ok) {
+                // Ошибка - перезагружаем данные для отката
+                console.error('Bulk status update failed');
+                await onWordsChange?.();
+                onError?.('Не удалось изменить статус слов');
+                return false;
             }
+
+            return true;
         } catch (error) {
             console.error('Error updating words status:', error);
+            // При ошибке перезагружаем данные
+            await onWordsChange?.();
+            onError?.('Произошла ошибка при изменении статуса слов');
+            return false;
         }
     };
 

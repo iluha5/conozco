@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useToast, usePartsOfSpeech } from '@/hooks/shared';
 // Кастомные хуки
 import { useClientCheck } from './hooks/useClientCheck';
@@ -30,6 +31,10 @@ export function WordsList({
     externalSelection,
     hideSelectAllButton = false,
 }: WordsListProps) {
+    // Состояния загрузки для bulk операций
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+
     // Кастомные хуки
     const { isClient } = useClientCheck();
     const internalSelection = useWordSelection(words);
@@ -72,19 +77,34 @@ export function WordsList({
         if (!confirmations.pendingStatusAction) return;
 
         const newStatus = confirmations.pendingStatusAction;
-        await status.executeBulkStatusChange(
+        const successCount = selection.selectedWords.length;
+
+        setIsUpdatingStatus(true);
+
+        const success = await status.executeBulkStatusChange(
             selection.selectedWords,
             newStatus,
             onWordUpdate,
             onWordsChange,
+            errorMessage => {
+                toast({
+                    title: 'Ошибка',
+                    description: errorMessage,
+                    variant: 'destructive',
+                });
+            },
         );
 
-        const successCount = selection.selectedWords.length;
-        toast({
-            title: 'Успешно',
-            description: `${successCount} слов ${newStatus === 'LEARNED' ? 'отмечено как выученные' : 'отмечено как невыученные'}`,
-            variant: 'success',
-        });
+        setIsUpdatingStatus(false);
+
+        if (success) {
+            toast({
+                title: 'Успешно',
+                description: `${successCount} слов ${newStatus === 'LEARNED' ? 'отмечено как выученные' : 'отмечено как невыученные'}`,
+                variant: 'success',
+            });
+        }
+
         selection.clearSelection();
         confirmations.closeStatusConfirmation();
     };
@@ -102,18 +122,33 @@ export function WordsList({
     };
 
     const executeBulkDelete = async () => {
-        await deletion.executeBulkDelete(
+        const successCount = selection.selectedWords.length;
+
+        setIsDeleting(true);
+
+        const success = await deletion.executeBulkDelete(
             selection.selectedWords,
             onWordRemove,
             onWordsChange,
+            errorMessage => {
+                toast({
+                    title: 'Ошибка',
+                    description: errorMessage,
+                    variant: 'destructive',
+                });
+            },
         );
 
-        const successCount = selection.selectedWords.length;
-        toast({
-            title: 'Успешно',
-            description: `${successCount} слов удалено`,
-            variant: 'success',
-        });
+        setIsDeleting(false);
+
+        if (success) {
+            toast({
+                title: 'Успешно',
+                description: `${successCount} слов удалено`,
+                variant: 'success',
+            });
+        }
+
         selection.clearSelection();
         confirmations.handleCloseDeleteDialog();
     };
@@ -182,6 +217,8 @@ export function WordsList({
                 statusDialogOpen={confirmations.confirmStatusDialogOpen}
                 pendingStatusAction={confirmations.pendingStatusAction}
                 selectedWordsCount={selection.selectedWords.length}
+                isDeleting={isDeleting}
+                isUpdatingStatus={isUpdatingStatus}
                 onCloseDeleteDialog={confirmations.handleCloseDeleteDialog}
                 onCloseStatusDialog={confirmations.handleCloseStatusDialog}
                 onConfirmDelete={executeBulkDelete}

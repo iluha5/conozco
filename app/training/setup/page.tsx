@@ -21,6 +21,7 @@ import {
 import { useWordGroupsFilter } from '@/hooks/word-groups/use-word-groups-filter';
 import { useUserSettings } from '@/hooks/settings';
 import { WordsSelector, StagesSelector } from '@/components/training-setup';
+import { STORAGE_KEYS } from '@/config/storage-keys';
 
 export default function TrainingSetupPage() {
     const router = useRouter();
@@ -146,6 +147,8 @@ export default function TrainingSetupPage() {
             return;
         }
         setIsStarting(true);
+        // Устанавливаем флаг, что переход происходит со страницы настройки
+        sessionStorage.setItem(STORAGE_KEYS.TRAINING_FROM_SETUP, 'true');
         router.push('/training');
     };
 

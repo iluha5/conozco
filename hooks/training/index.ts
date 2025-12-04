@@ -9,6 +9,7 @@ export { useTrainingWordsFilter } from './use-training-words-filter';
 export { useTrainingData } from './use-training-data';
 export { useTrainingStorage } from './use-training-storage';
 export { useTrainingInitialization } from './use-training-initialization';
+export { useTrainingStorageCheck } from './use-training-storage-check';
 
 // Новые хуки для stage компонентов
 export { useRetryMode } from './use-retry-mode';

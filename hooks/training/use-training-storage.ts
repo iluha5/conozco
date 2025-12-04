@@ -5,8 +5,9 @@ import {
     TrainingStage,
     WordProgress,
 } from '@/types/training.types';
+import { STORAGE_KEYS } from '@/config/storage-keys';
 
-const STORAGE_KEY = 'flashcards_training_progress';
+const STORAGE_KEY = STORAGE_KEYS.TRAINING_PROGRESS;
 
 /**
  * Хук для работы с сохранением прогресса тренировки в localStorage

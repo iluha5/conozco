@@ -17,6 +17,7 @@ import {
     useTrainingData,
     useTrainingStorage,
     useTrainingInitialization,
+    useTrainingStorageCheck,
 } from '@/hooks/training';
 import {
     useTrainingSettings,
@@ -27,6 +28,9 @@ import { useTrainingWords } from '@/contexts/training-words-context';
 import { trainingApi } from '@/lib/api/training.api';
 import { TrainingStage } from '@/types/training.types';
 import { Card, CardContent } from '@/components/ui/card';
+import { STORAGE_KEYS } from '@/config/storage-keys';
+
+const STORAGE_KEY = STORAGE_KEYS.TRAINING_PROGRESS;
 
 export default function TrainingPage() {
     const router = useRouter();
@@ -43,10 +47,15 @@ export default function TrainingPage() {
     const { handleStageComplete } = useTrainingLogic();
     const storage = useTrainingStorage();
 
-    // Загрузка данных
+    // Проверка наличия незавершённой тренировки и редирект
+    const { isStorageChecked, shouldRedirect } = useTrainingStorageCheck({
+        selectedWordsCount: selectedWords.size,
+    });
+
+    // Загрузка данных - только после проверки localStorage
     useTrainingData(
-        settingsLoaded,
-        selectionLoaded,
+        isStorageChecked && !shouldRedirect && settingsLoaded,
+        isStorageChecked && !shouldRedirect && selectionLoaded,
         state.setWords,
         state.setIsLoading,
     );
@@ -69,10 +78,10 @@ export default function TrainingPage() {
         [trainingSettings],
     );
 
-    // Инициализация или восстановление тренировки
+    // Инициализация или восстановление тренировки - только после проверки localStorage
     useTrainingInitialization({
-        settingsLoaded,
-        selectionLoaded,
+        settingsLoaded: isStorageChecked && !shouldRedirect && settingsLoaded,
+        selectionLoaded: isStorageChecked && !shouldRedirect && selectionLoaded,
         allWords: state.words,
         filteredWords,
         enabledStages,
@@ -133,9 +142,7 @@ export default function TrainingPage() {
                 state.setCompletedWords(result.learnedWords);
 
                 // Читаем актуальное состояние из localStorage для сохранения лога
-                const savedProgress = localStorage.getItem(
-                    'flashcards_training_progress',
-                );
+                const savedProgress = localStorage.getItem(STORAGE_KEY);
                 if (savedProgress) {
                     try {
                         const currentState = JSON.parse(savedProgress);
@@ -155,9 +162,7 @@ export default function TrainingPage() {
                 // Этап завершен, но тренировка не завершена
                 // Используем небольшую задержку чтобы дать время обновиться localStorage
                 setTimeout(() => {
-                    const savedProgress = localStorage.getItem(
-                        'flashcards_training_progress',
-                    );
+                    const savedProgress = localStorage.getItem(STORAGE_KEY);
 
                     if (savedProgress) {
                         const currentState = JSON.parse(savedProgress);
@@ -231,6 +236,18 @@ export default function TrainingPage() {
         if (stage === state.currentStage) return 'current';
         return 'pending';
     };
+
+    // Показываем лоадер пока проверяется localStorage или выполняется редирект
+    if (!isStorageChecked || shouldRedirect) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100">
+                <Header />
+                <div className="container mx-auto px-4 py-8">
+                    <TrainingLoading />
+                </div>
+            </div>
+        );
+    }
 
     // Рендер экрана результатов
     if (state.isCompleted) {

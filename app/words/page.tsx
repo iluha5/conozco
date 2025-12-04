@@ -31,6 +31,8 @@ export default function WordsPage() {
     const { settings: userSettings } = useUserSettings();
     const [selectedStatus, setSelectedStatus] = useState<string>('NOT_LEARNED');
     const [isClient, setIsClient] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
     // Загрузка данных
     const { words, loading, refetch, updateWord, removeWord } = useWordsData();
@@ -104,7 +106,11 @@ export default function WordsPage() {
         if (!confirmations.pendingStatusAction) return;
 
         const newStatus = confirmations.pendingStatusAction;
-        await status.executeBulkStatusChange(
+        const successCount = wordSelection.selectedWords.length;
+
+        setIsUpdatingStatus(true);
+
+        const success = await status.executeBulkStatusChange(
             wordSelection.selectedWords,
             newStatus,
             (wordId, updates) => {
@@ -112,14 +118,25 @@ export default function WordsPage() {
                 updateWord(Number(wordId), typedUpdates);
             },
             refetch,
+            errorMessage => {
+                toast({
+                    title: 'Ошибка',
+                    description: errorMessage,
+                    variant: 'destructive',
+                });
+            },
         );
 
-        const successCount = wordSelection.selectedWords.length;
-        toast({
-            title: 'Успешно',
-            description: `${successCount} слов ${newStatus === 'LEARNED' ? 'отмечено как выученные' : 'отмечено как невыученные'}`,
-            variant: 'success',
-        });
+        setIsUpdatingStatus(false);
+
+        if (success) {
+            toast({
+                title: 'Успешно',
+                description: `${successCount} слов ${newStatus === 'LEARNED' ? 'отмечено как выученные' : 'отмечено как невыученные'}`,
+                variant: 'success',
+            });
+        }
+
         wordSelection.clearSelection();
         confirmations.closeStatusConfirmation();
     };
@@ -137,18 +154,33 @@ export default function WordsPage() {
     };
 
     const executeBulkDelete = async () => {
-        await deletion.executeBulkDelete(
+        const successCount = wordSelection.selectedWords.length;
+
+        setIsDeleting(true);
+
+        const success = await deletion.executeBulkDelete(
             wordSelection.selectedWords,
             wordId => removeWord(Number(wordId)),
             refetch,
+            errorMessage => {
+                toast({
+                    title: 'Ошибка',
+                    description: errorMessage,
+                    variant: 'destructive',
+                });
+            },
         );
 
-        const successCount = wordSelection.selectedWords.length;
-        toast({
-            title: 'Успешно',
-            description: `${successCount} слов удалено`,
-            variant: 'success',
-        });
+        setIsDeleting(false);
+
+        if (success) {
+            toast({
+                title: 'Успешно',
+                description: `${successCount} слов удалено`,
+                variant: 'success',
+            });
+        }
+
         wordSelection.clearSelection();
         confirmations.handleCloseDeleteDialog();
     };
@@ -356,6 +388,8 @@ export default function WordsPage() {
                     statusDialogOpen={confirmations.confirmStatusDialogOpen}
                     pendingStatusAction={confirmations.pendingStatusAction}
                     selectedWordsCount={wordSelection.selectedWords.length}
+                    isDeleting={isDeleting}
+                    isUpdatingStatus={isUpdatingStatus}
                     onCloseDeleteDialog={confirmations.handleCloseDeleteDialog}
                     onCloseStatusDialog={confirmations.handleCloseStatusDialog}
                     onConfirmDelete={executeBulkDelete}

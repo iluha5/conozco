@@ -89,35 +89,44 @@ export function useWordDeletion({
         selectedWords: (string | number)[],
         onWordRemove?: WordRemoveCallback,
         onWordsChange?: () => Promise<void>,
-    ) => {
-        let successCount = 0;
-        let _errorCount = 0;
+        onError?: (_message: string) => void,
+    ): Promise<boolean> => {
+        if (selectedWords.length === 0) return false;
 
         try {
-            for (const wordId of selectedWords) {
-                const response = await fetch(`/api/words/${wordId}`, {
-                    method: 'DELETE',
-                });
-
-                if (response.ok) {
-                    successCount++;
-                    // Удаляем слово из состояния, если есть callback
-                    if (onWordRemove) {
-                        onWordRemove(wordId);
-                    }
-                } else {
-                    _errorCount++;
+            // Оптимистичное обновление - сразу удаляем из UI
+            if (onWordRemove) {
+                for (const wordId of selectedWords) {
+                    onWordRemove(wordId);
                 }
             }
 
-            if (successCount > 0) {
-                // Перезагружаем только если нет callback для удаления
-                if (!onWordRemove) {
-                    await onWordsChange?.();
-                }
+            // Один запрос для всех слов
+            const response = await fetch('/api/words/bulk', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    wordIds: selectedWords,
+                }),
+            });
+
+            if (!response.ok) {
+                // Ошибка - перезагружаем данные для отката
+                console.error('Bulk delete failed');
+                await onWordsChange?.();
+                onError?.('Не удалось удалить слова');
+                return false;
             }
+
+            return true;
         } catch (error) {
             console.error('Error deleting words:', error);
+            // При ошибке перезагружаем данные
+            await onWordsChange?.();
+            onError?.('Произошла ошибка при удалении слов');
+            return false;
         }
     };
 
