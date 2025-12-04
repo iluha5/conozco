@@ -3,6 +3,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Word } from '@/types/words.types';
 import { QUERY_STALE_TIME, QUERY_GC_TIME } from '@/config/react-query';
 
+const EMPTY_WORDS: Word[] = [];
+
 async function fetchWords(): Promise<Word[]> {
     const response = await fetch('/api/words');
 
@@ -20,7 +22,7 @@ export const useWordsData = () => {
     const queryClient = useQueryClient();
 
     const {
-        data: words = [],
+        data,
         isLoading: loading,
         error,
         refetch: queryRefetch,
@@ -30,6 +32,9 @@ export const useWordsData = () => {
         staleTime: QUERY_STALE_TIME,
         gcTime: QUERY_GC_TIME,
     });
+
+    // Используем стабильную ссылку на пустой массив
+    const words = data ?? EMPTY_WORDS;
 
     // Показываем toast при ошибке
     if (error) {
