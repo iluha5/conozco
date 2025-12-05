@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Word } from '@/types/training.types';
 import { getWordText, getWordTranslation } from '../helpers/getWordTranslation';
+import { getWordExamples } from '../helpers/getWordExamples';
 import { useSwipeGesture } from '../hooks/useSwipeGesture';
 import { SwipeDirection } from '../typing';
 import { Card } from '@/components/ui/card';
@@ -53,6 +54,12 @@ export function FlashCard({
 
     const wordText = getWordText(word);
     const translation = getWordTranslation(word);
+
+    // Получаем до 2 случайных примеров из базы данных
+    const examples = useMemo(
+        () => getWordExamples(word, ownLanguageCode),
+        [word, ownLanguageCode],
+    );
 
     // Автоматически переворачиваем карточку обратно при смене слова, если она была перевернута
     useEffect(() => {
@@ -133,13 +140,33 @@ export function FlashCard({
                     }}
                 >
                     <WatermarkCardSide variant="back">
-                        <div className="text-center">
+                        <div className="text-center flex flex-col h-full justify-center">
                             <div className="text-sm text-gray-500 mb-2">
                                 {ownLanguageCode.toUpperCase()}
                             </div>
-                            <div className="text-3xl font-semibold text-gray-900">
+                            <div className="text-3xl font-semibold text-gray-900 mb-4">
                                 {translation}
                             </div>
+
+                            {/* Примеры предложений */}
+                            {examples.length > 0 && (
+                                <div className="mt-4 space-y-2.5 max-w-full px-4">
+                                    {examples.map((example, exampleIndex) => (
+                                        <div
+                                            key={exampleIndex}
+                                            className="border-l-4 border-gray-400 pl-3 text-left bg-white/50 rounded-r-lg py-2"
+                                        >
+                                            <p className="text-sm text-gray-700 mb-1 break-words">
+                                                {example.example}
+                                            </p>
+                                            <p className="text-xs text-gray-500 italic break-words">
+                                                {example.translation}
+                                            </p>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
                             <div className="text-sm text-gray-400 mt-4">
                                 Свайпните влево/вправо или используйте кнопки
                             </div>
