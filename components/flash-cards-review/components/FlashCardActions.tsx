@@ -1,17 +1,19 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { X, Check, Trash2 } from 'lucide-react';
+import { X, Check, Trash2, SkipForward } from 'lucide-react';
 import { CardAction } from '../typing';
 
 interface FlashCardActionsProps {
     onAction: (_action: CardAction) => void;
     disabled?: boolean;
+    belongsToUser?: boolean;
 }
 
 export function FlashCardActions({
     onAction,
     disabled = false,
+    belongsToUser = true,
 }: FlashCardActionsProps) {
     const handleDontKnow = () => {
         if (!disabled) {
@@ -25,9 +27,9 @@ export function FlashCardActions({
         }
     };
 
-    const handleDelete = () => {
+    const handleDeleteOrSkip = () => {
         if (!disabled) {
-            onAction('delete');
+            onAction(belongsToUser ? 'delete' : 'skip');
         }
     };
 
@@ -36,29 +38,38 @@ export function FlashCardActions({
             <Button
                 variant="destructive"
                 size="lg"
-                onClick={handleDontKnow}
+                onClick={handleDeleteOrSkip}
                 disabled={disabled}
                 className="flex items-center gap-2"
             >
-                <X className="w-5 h-5" />
-                Не знаю
+                {belongsToUser ? (
+                    <>
+                        <Trash2 className="w-5 h-5" />
+                        Удалить
+                    </>
+                ) : (
+                    <>
+                        <SkipForward className="w-5 h-5" />
+                        Пропустить
+                    </>
+                )}
             </Button>
             <Button
                 variant="outline"
                 size="lg"
-                onClick={handleDelete}
+                onClick={handleDontKnow}
                 disabled={disabled}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 bg-white text-gray-900 hover:bg-gray-50"
             >
-                <Trash2 className="w-5 h-5" />
-                Удалить
+                <X className="w-5 h-5" />
+                Не знаю
             </Button>
             <Button
                 variant="default"
                 size="lg"
                 onClick={handleKnow}
                 disabled={disabled}
-                className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+                className="flex items-center gap-2 bg-black text-white hover:bg-gray-800"
             >
                 <Check className="w-5 h-5" />
                 Знаю

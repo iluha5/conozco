@@ -1,21 +1,20 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Word } from '@/types/training.types';
 import { getWordText, getWordTranslation } from '../helpers/getWordTranslation';
 import { getWordExamples } from '../helpers/getWordExamples';
 import { useSwipeGesture } from '../hooks/useSwipeGesture';
-import { SwipeDirection } from '../typing';
+import { SwipeDirection, FlashCardWord } from '../typing';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Trash2 } from 'lucide-react';
+import { Trash2, SkipForward } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { WatermarkCardSide } from './FlashCardBackgrounds';
 
 interface FlashCardProps {
-    word: Word;
-    onAction: (_action: 'know' | 'dont-know' | 'delete') => void;
+    word: FlashCardWord;
+    onAction: (_action: 'know' | 'dont-know' | 'delete' | 'skip') => void;
     learnLanguageCode: string;
     ownLanguageCode: string;
 }
@@ -195,24 +194,40 @@ export function FlashCard({
 }
 
 interface FlashCardDeleteButtonProps {
-    onDelete: () => void;
+    onAction: () => void;
     disabled?: boolean;
+    belongsToUser?: boolean;
 }
 
 export function FlashCardDeleteButton({
-    onDelete,
+    onAction,
     disabled = false,
+    belongsToUser = true,
 }: FlashCardDeleteButtonProps) {
     return (
         <div className="flex justify-center mt-4 md:hidden">
             <Button
-                variant="destructive"
-                size="icon"
-                onClick={onDelete}
+                variant={belongsToUser ? 'destructive' : 'outline'}
+                size="lg"
+                onClick={onAction}
                 disabled={disabled}
-                className="h-10 w-10 rounded-full bg-red-500 hover:bg-red-600"
+                className={
+                    belongsToUser
+                        ? 'flex items-center gap-2 bg-red-500 hover:bg-red-600'
+                        : 'flex items-center gap-2'
+                }
             >
-                <Trash2 className="w-5 h-5" />
+                {belongsToUser ? (
+                    <>
+                        <Trash2 className="w-5 h-5" />
+                        Удалить
+                    </>
+                ) : (
+                    <>
+                        <SkipForward className="w-5 h-5" />
+                        Пропустить
+                    </>
+                )}
             </Button>
         </div>
     );

@@ -1,7 +1,10 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Word } from '@/types/training.types';
-import { FlashCardsReviewParams, FlashCardsReviewStats } from '../typing';
+import {
+    FlashCardsReviewParams,
+    FlashCardsReviewStats,
+    FlashCardWord,
+} from '../typing';
 import { useFlashCardsMutations } from './useFlashCardsMutations';
 import { useUserSettings } from '@/hooks/settings/use-user-settings';
 
@@ -10,7 +13,7 @@ import { useUserSettings } from '@/hooks/settings/use-user-settings';
  */
 async function fetchReviewWords(
     params: FlashCardsReviewParams,
-): Promise<Word[]> {
+): Promise<FlashCardWord[]> {
     const searchParams = new URLSearchParams();
 
     if (params.status) {
@@ -110,12 +113,12 @@ export function useFlashCardsReview(
 
     // Обработка действия с карточкой
     const handleAction = useCallback(
-        async (action: 'know' | 'dont-know' | 'delete') => {
+        async (action: 'know' | 'dont-know' | 'delete' | 'skip') => {
             const currentWord = words[currentIndex];
             if (!currentWord) return;
 
             // Обновляем статистику сразу (оптимистично)
-            if (action === 'delete') {
+            if (action === 'delete' || action === 'skip') {
                 setStats(prev => ({
                     ...prev,
                     deleted: prev.deleted + 1,
@@ -144,6 +147,9 @@ export function useFlashCardsReview(
             try {
                 if (action === 'delete') {
                     await deleteWord.mutateAsync(currentWord.id);
+                } else if (action === 'skip') {
+                    // Для 'skip' не нужно делать запрос, просто пропускаем слово
+                    // Статистика уже обновлена оптимистично
                 } else if (action === 'dont-know') {
                     await updateWordStatus.mutateAsync({
                         wordId: currentWord.id,
@@ -157,7 +163,7 @@ export function useFlashCardsReview(
                 // Откатываем переход к следующей карточке
                 setCurrentIndex(currentIndex);
                 // Откатываем статистику
-                if (action === 'delete') {
+                if (action === 'delete' || action === 'skip') {
                     setStats(prev => ({
                         ...prev,
                         deleted: Math.max(0, prev.deleted - 1),

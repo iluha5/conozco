@@ -198,9 +198,13 @@ export async function GET(request: NextRequest) {
         const serializedWords = words.map((word: any) => {
             const { status, baseWord, customTranslations, ...restWord } = word;
 
+            // Определяем, принадлежит ли слово пользователю (вычисляем перед запуском упражнения)
+            const belongsToUser = word.userId === userId;
+
             return {
                 ...restWord,
                 status: status.code,
+                belongsToUser,
                 baseWord: baseWord
                     ? {
                           ...baseWord,

@@ -163,10 +163,17 @@ export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
                                 ownLanguageCode={ownLanguageCode}
                             />
                         </div>
-                        {/* Кнопка удаления для мобильной версии */}
+                        {/* Кнопка удаления/пропуска для мобильной версии */}
                         <FlashCardDeleteButton
-                            onDelete={() => handleAction('delete')}
+                            onAction={() =>
+                                handleAction(
+                                    currentWord.belongsToUser
+                                        ? 'delete'
+                                        : 'skip',
+                                )
+                            }
                             disabled={!currentWord}
+                            belongsToUser={currentWord?.belongsToUser ?? true}
                         />
                     </div>
                 )}
@@ -176,6 +183,7 @@ export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
                     <FlashCardActions
                         onAction={handleAction}
                         disabled={!currentWord}
+                        belongsToUser={currentWord?.belongsToUser ?? true}
                     />
                 </div>
             </div>
