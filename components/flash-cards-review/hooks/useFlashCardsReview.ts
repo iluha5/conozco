@@ -4,7 +4,6 @@ import { Word } from '@/types/training.types';
 import { FlashCardsReviewParams, FlashCardsReviewStats } from '../typing';
 import { useFlashCardsMutations } from './useFlashCardsMutations';
 import { useUserSettings } from '@/hooks/settings/use-user-settings';
-import { QUERY_STALE_TIME, QUERY_GC_TIME } from '@/config/react-query';
 
 /**
  * Загрузка слов для проверки
@@ -44,7 +43,10 @@ async function fetchReviewWords(
 /**
  * Хук для управления тренировкой с карточками
  */
-export function useFlashCardsReview(params: FlashCardsReviewParams) {
+export function useFlashCardsReview(
+    params: FlashCardsReviewParams,
+    enabled: boolean = true,
+) {
     const { settings: userSettings } = useUserSettings();
     const [currentIndex, setCurrentIndex] = useState(0);
     const [stats, setStats] = useState<FlashCardsReviewStats>({
@@ -54,6 +56,7 @@ export function useFlashCardsReview(params: FlashCardsReviewParams) {
         deleted: 0,
     });
     const [isCompleted, setIsCompleted] = useState(false);
+    const [sessionId] = useState(() => Date.now().toString());
 
     // Определяем язык для фильтрации
     const reviewParams: FlashCardsReviewParams = {
@@ -64,18 +67,18 @@ export function useFlashCardsReview(params: FlashCardsReviewParams) {
             undefined,
     };
 
-    // Загружаем слова
+    // Загружаем слова с уникальным sessionId для перемешивания при каждом открытии
     const {
         data: words = [],
         isLoading,
         error,
         refetch,
     } = useQuery({
-        queryKey: ['flash-cards-words', reviewParams],
+        queryKey: ['flash-cards-words', reviewParams, sessionId],
         queryFn: () => fetchReviewWords(reviewParams),
-        staleTime: QUERY_STALE_TIME,
-        gcTime: QUERY_GC_TIME,
-        enabled: !!userSettings?.learnLanguage?.code,
+        staleTime: 0, // Не кэшируем, чтобы каждый раз получать новый набор
+        gcTime: 0, // Не храним в кэше
+        enabled: enabled && !!userSettings?.learnLanguage?.code,
     });
 
     // Мутации для действий с карточками

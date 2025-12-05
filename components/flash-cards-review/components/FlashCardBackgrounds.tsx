@@ -61,6 +61,18 @@ export function WatermarkCardSide({ children, variant }: CardSideProps) {
     const selectedPattern =
         variant === 'front' ? circuitBoardPattern : floatingCogsPattern;
 
+    // Получаем URL паттерна (Next.js может импортировать SVG по-разному)
+    const getPatternUrl = () => {
+        if (typeof selectedPattern === 'string') {
+            return selectedPattern;
+        }
+        // Проверяем различные варианты импорта SVG в Next.js
+        const pattern = selectedPattern as any;
+        return pattern?.src || pattern?.default || pattern;
+    };
+
+    const patternUrl = getPatternUrl();
+
     return (
         <div
             className={cn(
@@ -71,22 +83,20 @@ export function WatermarkCardSide({ children, variant }: CardSideProps) {
             )}
             style={{ width: '100%', height: '100%' }}
         >
-            {/* Паттерн как фоновое изображение - уменьшен в 10 раз и повторяется */}
-            <div
-                className="absolute inset-0 pointer-events-none opacity-[0.075]"
-                style={{
-                    width: '100%',
-                    height: '100%',
-                    backgroundImage: `url(${
-                        typeof selectedPattern === 'string'
-                            ? selectedPattern
-                            : selectedPattern.src || selectedPattern
-                    })`,
-                    backgroundSize: '20%',
-                    backgroundPosition: '0 0',
-                    backgroundRepeat: 'repeat',
-                }}
-            />
+            {/* Паттерн как фоновое изображение - уменьшен и повторяется */}
+            {patternUrl && (
+                <div
+                    className="absolute inset-0 pointer-events-none opacity-[0.06]"
+                    style={{
+                        width: '100%',
+                        height: '100%',
+                        backgroundImage: `url(${patternUrl})`,
+                        backgroundSize: '20%',
+                        backgroundPosition: '0 0',
+                        backgroundRepeat: 'repeat',
+                    }}
+                />
+            )}
             {/* Текст по центру */}
             <div className="relative z-10 w-full h-full flex items-center justify-center p-8">
                 {children}

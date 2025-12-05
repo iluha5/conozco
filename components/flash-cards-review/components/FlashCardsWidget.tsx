@@ -12,44 +12,12 @@ import {
 import { FlashCardsReview } from '../FlashCardsReview';
 import { useHashDialog } from '@/hooks/shared';
 import { useUserSettings } from '@/hooks/settings/use-user-settings';
-import { useQuery } from '@tanstack/react-query';
 import { FlashCardsReviewParams } from '../typing';
-import { Loader2 } from 'lucide-react';
-import { QUERY_STALE_TIME, QUERY_GC_TIME } from '@/config/react-query';
-
-/**
- * Проверка наличия изученных слов
- */
-async function checkLearnedWords(
-    languageCode?: string,
-): Promise<{ hasWords: boolean; count: number }> {
-    const searchParams = new URLSearchParams();
-    searchParams.append('status', 'LEARNED');
-    searchParams.append('limit', '1');
-    searchParams.append('random', 'false');
-
-    if (languageCode) {
-        searchParams.append('languageCode', languageCode);
-    }
-
-    const response = await fetch(
-        `/api/words/review?${searchParams.toString()}`,
-    );
-
-    if (!response.ok) {
-        return { hasWords: false, count: 0 };
-    }
-
-    const words = await response.json();
-    return {
-        hasWords: words.length > 0,
-        count: words.length,
-    };
-}
 
 export function FlashCardsWidget() {
     const { settings: userSettings } = useUserSettings();
     const { open, setOpen } = useHashDialog('flash-cards-review');
+    const [shouldLoadExercise, setShouldLoadExercise] = useState(false);
     const [reviewParams, setReviewParams] = useState<FlashCardsReviewParams>({
         status: 'LEARNED',
         limit: 10,
@@ -57,15 +25,6 @@ export function FlashCardsWidget() {
     });
 
     const languageCode = userSettings?.learnLanguage?.code;
-
-    // Проверяем наличие изученных слов
-    const { data: wordsCheck, isLoading } = useQuery({
-        queryKey: ['flash-cards-check', languageCode],
-        queryFn: () => checkLearnedWords(languageCode),
-        staleTime: QUERY_STALE_TIME,
-        gcTime: QUERY_GC_TIME,
-        enabled: !!languageCode,
-    });
 
     // Обновляем параметры при изменении языка
     useEffect(() => {
@@ -78,29 +37,18 @@ export function FlashCardsWidget() {
     }, [languageCode]);
 
     const handleStartReview = () => {
+        setShouldLoadExercise(true);
         setOpen(true);
     };
 
     const handleClose = () => {
         setOpen(false);
+        // Сбрасываем флаг загрузки при закрытии, чтобы при следующем открытии загрузились новые слова
+        setShouldLoadExercise(false);
     };
 
-    // Не показываем виджет если еще загружаемся
-    if (isLoading) {
-        return (
-            <Card className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        Проверка изученных слов
-                    </CardTitle>
-                </CardHeader>
-            </Card>
-        );
-    }
-
-    // Не показываем виджет если нет изученных слов
-    if (!wordsCheck?.hasWords) {
+    // Не показываем виджет если язык еще не загружен
+    if (!languageCode) {
         return null;
     }
 
@@ -128,7 +76,7 @@ export function FlashCardsWidget() {
                 </CardContent>
             </Card>
 
-            {open && (
+            {open && shouldLoadExercise && (
                 <FlashCardsReview params={reviewParams} onClose={handleClose} />
             )}
         </>

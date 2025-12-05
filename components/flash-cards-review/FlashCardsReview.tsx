@@ -26,7 +26,7 @@ export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
         stats,
         progress,
         handleAction,
-    } = useFlashCardsReview(params);
+    } = useFlashCardsReview(params, true);
 
     const learnLanguageCode = userSettings?.learnLanguage?.code || 'en';
     const ownLanguageCode = userSettings?.ownLanguage?.code || 'ru';
