@@ -23,6 +23,7 @@ import { Brain, HelpCircle, Languages } from 'lucide-react';
 import { ContinueTrainingCard } from '@/components/training/common/ContinueTrainingCard';
 import { NewTrainingConfirmationDialog } from '@/components/training/common/NewTrainingConfirmationDialog';
 import { FlashCardsWidget } from '@/components/flash-cards-review/components/FlashCardsWidget';
+import { FlashCardsGroupWidget } from '@/components/flash-cards-review/components/FlashCardsGroupWidget';
 import { useTrainingStorage } from '@/hooks/training';
 import { useHashDialog } from '@/hooks/shared';
 
@@ -94,6 +95,7 @@ export default function HomePage() {
 
                 <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto mb-12">
                     <FlashCardsWidget />
+                    <FlashCardsGroupWidget />
 
                     <Card className="hover:shadow-lg transition-shadow">
                         <CardHeader className="relative">

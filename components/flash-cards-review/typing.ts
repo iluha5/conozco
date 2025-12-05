@@ -7,6 +7,9 @@ export interface FlashCardsReviewParams {
     random?: boolean;
     groupIds?: number[];
     languageCode?: string;
+    source?: 'user' | 'base'; // Источник слов: 'user' - из словаря пользователя, 'base' - из BaseWord по группам
+    includeAllGroups?: boolean; // Включить все доступные группы пользователя (работает только с source='base')
+    selectedGroupName?: string; // Название выбранной группы для отображения
 }
 
 /**

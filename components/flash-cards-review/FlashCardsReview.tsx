@@ -124,7 +124,9 @@ export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
                 <div className="flex items-center justify-between mb-6">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900">
-                            Проверка изученных слов
+                            {params.selectedGroupName
+                                ? `Проверка: ${params.selectedGroupName}`
+                                : 'Проверка изученных слов'}
                         </h1>
                         <p className="text-sm text-gray-600 mt-1">
                             {currentWord
@@ -153,7 +155,7 @@ export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
                 </div>
 
                 {/* Карточка */}
-                {currentWord && (
+                {currentWord && !isCompleted && (
                     <div className="mb-6">
                         <div className="h-[400px] md:h-[500px] relative">
                             <FlashCard

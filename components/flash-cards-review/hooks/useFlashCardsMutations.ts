@@ -15,15 +15,48 @@ export function useFlashCardsMutations(params: FlashCardsReviewParams) {
 
     /**
      * Обновление статуса слова
+     * Если слова нет в словаре пользователя (belongsToUser=false), сначала создает его
      */
     const updateWordStatus = useMutation({
         mutationFn: async ({
             wordId,
             status,
+            baseWordId,
+            belongsToUser,
         }: {
             wordId: string;
             status: 'LEARNED' | 'NOT_LEARNED';
+            baseWordId?: string;
+            belongsToUser?: boolean;
         }) => {
+            // Если слова нет в словаре, сначала создаем его
+            if (!belongsToUser && baseWordId) {
+                // Извлекаем baseWordId из wordId если он в формате "base-{id}"
+                const actualBaseWordId = wordId.startsWith('base-')
+                    ? wordId.replace('base-', '')
+                    : baseWordId;
+
+                // Создаем слово
+                const createResponse = await fetch('/api/words', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ baseWordId: actualBaseWordId }),
+                });
+
+                if (!createResponse.ok) {
+                    const error = await createResponse.json();
+                    throw new Error(
+                        error.error || 'Failed to create word in dictionary',
+                    );
+                }
+
+                const createdWord = await createResponse.json();
+                wordId = createdWord.id;
+            }
+
+            // Обновляем статус
             const response = await fetch(`/api/words/${wordId}`, {
                 method: 'PATCH',
                 headers: {

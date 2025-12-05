@@ -12,6 +12,8 @@ import { prisma } from '@/lib/prisma';
  * - random: true | false (по умолчанию true)
  * - groupIds: массив ID групп через запятую (опционально)
  * - languageCode: код языка для фильтрации (опционально, по умолчанию learnLanguage пользователя)
+ * - source: user | base (по умолчанию 'user') - источник слов: 'user' - из словаря пользователя, 'base' - из BaseWord по группам
+ * - includeAllGroups: true | false (по умолчанию false) - включить все доступные группы (работает только с source='base')
  */
 export async function GET(request: NextRequest) {
     try {
@@ -48,6 +50,8 @@ export async function GET(request: NextRequest) {
         const randomParam = searchParams.get('random');
         const groupIdsParam = searchParams.get('groupIds');
         const languageCodeParam = searchParams.get('languageCode');
+        const sourceParam = searchParams.get('source') || 'user';
+        const includeAllGroupsParam = searchParams.get('includeAllGroups');
 
         // Определяем язык для фильтрации
         const languageCode =
@@ -62,6 +66,8 @@ export async function GET(request: NextRequest) {
             50,
         );
         const random = randomParam !== 'false';
+        const source = sourceParam === 'base' ? 'base' : 'user';
+        const includeAllGroups = includeAllGroupsParam === 'true';
         const groupIds = groupIdsParam
             ? groupIdsParam
                   .split(',')
@@ -94,6 +100,271 @@ export async function GET(request: NextRequest) {
             }
         }
 
+        // Если source='base', получаем слова из BaseWord по группам
+        if (source === 'base') {
+            // Определяем группы для запроса
+            let targetGroupIds: number[] = [];
+
+            if (includeAllGroups) {
+                // Получаем все доступные группы пользователя
+                const availableGroups = await prisma.wordGroup.findMany({
+                    where: {
+                        OR: [
+                            { visibility: 'PUBLIC', isApproved: true },
+                            {
+                                visibility: 'SHARED',
+                                sharedWith: { some: { userId } },
+                            },
+                            { createdByUserId: userId },
+                        ],
+                        ...(languageCode
+                            ? {
+                                  language: { code: languageCode },
+                              }
+                            : {}),
+                    },
+                    select: { id: true },
+                });
+                targetGroupIds = availableGroups.map(g => g.id);
+            } else if (groupIds && groupIds.length > 0) {
+                // Проверяем доступ к указанным группам
+                const accessibleGroups = await prisma.wordGroup.findMany({
+                    where: {
+                        id: { in: groupIds },
+                        OR: [
+                            { visibility: 'PUBLIC', isApproved: true },
+                            {
+                                visibility: 'SHARED',
+                                sharedWith: { some: { userId } },
+                            },
+                            { createdByUserId: userId },
+                        ],
+                    },
+                    select: { id: true },
+                });
+                targetGroupIds = accessibleGroups.map(g => g.id);
+            }
+
+            if (targetGroupIds.length === 0) {
+                return NextResponse.json([]);
+            }
+
+            // Получаем BaseWord из выбранных групп
+            const baseWordsInGroups = await prisma.baseWordOnWordGroup.findMany(
+                {
+                    where: {
+                        wordGroupId: { in: targetGroupIds },
+                    },
+                    select: {
+                        baseWordId: true,
+                    },
+                },
+            );
+
+            const baseWordIds = Array.from(
+                new Set(baseWordsInGroups.map(bw => bw.baseWordId)),
+            );
+
+            if (baseWordIds.length === 0) {
+                return NextResponse.json([]);
+            }
+
+            // Получаем BaseWord с переводами и примерами
+            const baseWords = await prisma.baseWord.findMany({
+                where: {
+                    id: { in: baseWordIds },
+                    ...(languageCode
+                        ? {
+                              language: { code: languageCode },
+                          }
+                        : {}),
+                },
+                include: {
+                    language: true,
+                    translations: {
+                        where: {
+                            language: { code: translationLanguageCode },
+                        },
+                        orderBy: { priority: 'asc' },
+                        include: {
+                            partOfSpeech: true,
+                        },
+                    },
+                    examples: {
+                        include: {
+                            pronoun: true,
+                            sentenceType: true,
+                            translationLanguage: true,
+                        },
+                    },
+                    grammaticalExamples: {
+                        include: {
+                            pronoun: true,
+                            tense: true,
+                            sentenceType: true,
+                        },
+                    },
+                    wordGroups: {
+                        select: {
+                            wordGroupId: true,
+                        },
+                    },
+                    userWords: {
+                        where: { userId },
+                        select: {
+                            id: true,
+                            statusId: true,
+                            selectedTranslationId: true,
+                        },
+                        take: 1,
+                    },
+                },
+            });
+
+            // Получаем существующие слова пользователя для проверки belongsToUser
+            const userWordsMap = new Map(
+                (
+                    await prisma.word.findMany({
+                        where: {
+                            userId,
+                            baseWordId: { in: baseWordIds },
+                        },
+                        select: {
+                            id: true,
+                            baseWordId: true,
+                            statusId: true,
+                            selectedTranslationId: true,
+                        },
+                    })
+                ).map(w => [w.baseWordId, w]),
+            );
+
+            // Преобразуем BaseWord в формат Word для совместимости
+            const wordStatusNotLearned = await prisma.wordStatus.findFirst({
+                where: { code: 'NOT_LEARNED' },
+            });
+            const wordStatusLearned = await prisma.wordStatus.findUnique({
+                where: { code: 'LEARNED' },
+            });
+
+            let words = baseWords.map(baseWord => {
+                const userWord = userWordsMap.get(baseWord.id);
+                const belongsToUser = !!userWord;
+
+                return {
+                    id: userWord?.id?.toString() || `base-${baseWord.id}`,
+                    userId: userId.toString(),
+                    baseWordId: baseWord.id.toString(),
+                    customWord: null,
+                    languageId: baseWord.languageId.toString(),
+                    language: {
+                        id: baseWord.language.id.toString(),
+                        code: baseWord.language.code,
+                        name: baseWord.language.name,
+                    },
+                    status: userWord
+                        ? userWord.statusId === wordStatusLearned?.id
+                            ? 'LEARNED'
+                            : 'NOT_LEARNED'
+                        : 'NOT_LEARNED',
+                    statusId:
+                        userWord?.statusId || wordStatusNotLearned?.id || 1,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    belongsToUser,
+                    baseWord: {
+                        ...baseWord,
+                        id: baseWord.id.toString(),
+                        languageId: baseWord.languageId.toString(),
+                        examples: baseWord.examples.map((example: any) => ({
+                            ...example,
+                            sentenceType: example.sentenceType,
+                            translationLanguage: example.translationLanguage
+                                ? {
+                                      id: example.translationLanguage.id,
+                                      code: example.translationLanguage.code,
+                                      name: example.translationLanguage.name,
+                                  }
+                                : null,
+                        })),
+                        grammaticalExamples: baseWord.grammaticalExamples.map(
+                            (example: any) => ({
+                                ...example,
+                                sentenceType: example.sentenceType,
+                            }),
+                        ),
+                    },
+                    customTranslations: [],
+                    trainingSessions: [],
+                };
+            });
+
+            // Применяем случайный порядок если нужно
+            if (random && words.length > 0) {
+                // Fisher-Yates shuffle
+                for (let index = words.length - 1; index > 0; index--) {
+                    const randomIndex = Math.floor(Math.random() * (index + 1));
+                    [words[index], words[randomIndex]] = [
+                        words[randomIndex],
+                        words[index],
+                    ];
+                }
+            }
+
+            // Ограничиваем количество
+            words = words.slice(0, limit);
+
+            // Сериализуем слова
+            const serializedWords = words.map((word: any) => {
+                const {
+                    status,
+                    baseWord,
+                    customTranslations: _customTranslations,
+                    ...restWord
+                } = word;
+
+                return {
+                    ...restWord,
+                    status: typeof status === 'string' ? status : status.code,
+                    baseWord: baseWord
+                        ? {
+                              ...baseWord,
+                              examples: baseWord.examples.map(
+                                  (example: any) => ({
+                                      ...example,
+                                      sentenceType: example.sentenceType,
+                                      translationLanguage:
+                                          example.translationLanguage
+                                              ? {
+                                                    id: example
+                                                        .translationLanguage.id,
+                                                    code: example
+                                                        .translationLanguage
+                                                        .code,
+                                                    name: example
+                                                        .translationLanguage
+                                                        .name,
+                                                }
+                                              : null,
+                                  }),
+                              ),
+                              grammaticalExamples:
+                                  baseWord.grammaticalExamples.map(
+                                      (example: any) => ({
+                                          ...example,
+                                          sentenceType: example.sentenceType,
+                                      }),
+                                  ),
+                          }
+                        : undefined,
+                    customTranslations: [],
+                };
+            });
+
+            return NextResponse.json(serializedWords);
+        }
+
+        // Оригинальная логика для source='user'
         // Фильтр по группам слов
         if (groupIds && groupIds.length > 0) {
             // Получаем baseWordId из групп
