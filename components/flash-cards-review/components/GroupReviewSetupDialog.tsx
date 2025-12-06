@@ -9,17 +9,13 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
+// removed unused Select imports after UI refactor
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useQuery } from '@tanstack/react-query';
-import { Plus, Minus } from 'lucide-react';
+import { Plus, Minus, Loader2, Search, Crown } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { FlashCardsReviewParams } from '../typing';
 
 interface AccessibleWordGroup {
@@ -136,7 +132,7 @@ export function GroupReviewSetupDialog({
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent
-                className="sm:max-w-[500px]"
+                className="sm:max-w-[500px] max-h-[90dvh] flex flex-col"
                 onOpenAutoFocus={e => e.preventDefault()}
             >
                 <DialogHeader>
@@ -146,50 +142,116 @@ export function GroupReviewSetupDialog({
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="space-y-6 py-4">
-                    {/* Выбор группы */}
-                    <div className="space-y-2">
-                        <Label htmlFor="group-select">Группа слов</Label>
-                        <div className="space-y-2">
-                            <Input
-                                placeholder="Поиск группы..."
-                                value={searchQuery}
-                                onChange={e => setSearchQuery(e.target.value)}
-                                className="mb-2"
-                            />
-                            <Select
-                                value={selectedGroupId}
-                                onValueChange={setSelectedGroupId}
-                            >
-                                <SelectTrigger id="group-select">
-                                    <SelectValue placeholder="Выберите группу" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">
-                                        Все группы
-                                    </SelectItem>
-                                    {filteredGroups.map(group => (
-                                        <SelectItem
-                                            key={group.id}
-                                            value={group.id.toString()}
-                                        >
-                                            <div className="flex items-center justify-between w-full">
-                                                <span>{group.name}</span>
-                                                <span className="text-xs text-gray-500 ml-2">
-                                                    ({group.wordsCount} слов)
-                                                </span>
-                                            </div>
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                {/* Центральная зона, которая подстраивается по высоте */}
+                <div className="space-y-6 py-4 flex-1 min-h-0 flex flex-col">
+                    {/* Выбор группы (как на странице Управление группами, без фильтров) */}
+                    <div className="space-y-3 flex-1 min-h-0 flex flex-col">
+                        {/* Поле поиска с иконкой + счетчик в одной строке */}
+                        <div className="flex items-center gap-4">
+                            <div className="relative flex-1">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    placeholder="Поиск групп..."
+                                    value={searchQuery}
+                                    onChange={e =>
+                                        setSearchQuery(e.target.value)
+                                    }
+                                    className="pl-9"
+                                />
+                            </div>
+                            <Badge variant="outline" className="shrink-0">
+                                {filteredGroups.length + 1}
+                            </Badge>
                         </div>
-                        {selectedGroup && (
-                            <p className="text-sm text-gray-500">
-                                В группе доступно {selectedGroup.wordsCount}{' '}
-                                слов
-                            </p>
+
+                        {/* Список групп */}
+                        {isLoading ? (
+                            <div className="flex items-center justify-center py-8">
+                                <Loader2 className="h-6 w-6 animate-spin" />
+                            </div>
+                        ) : (
+                            // Делаем только список адаптивным и прокручиваемым
+                            <div className="grid grid-cols-1 gap-1 flex-1 min-h-0 overflow-y-auto">
+                                {/* Все группы */}
+                                <Card
+                                    key="all"
+                                    className={`transition-all hover:bg-gray-50 m-1 ${
+                                        selectedGroupId === 'all'
+                                            ? 'ring-2 ring-black'
+                                            : ''
+                                    }`}
+                                    onClick={() => setSelectedGroupId('all')}
+                                >
+                                    <CardContent className="p-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex-1 min-w-0">
+                                                <div className="font-medium truncate">
+                                                    Все группы
+                                                </div>
+                                                <div className="flex items-center gap-2 text-sm text-gray-600">
+                                                    <Badge
+                                                        variant="outline"
+                                                        className="text-xs"
+                                                    >
+                                                        Разные типы
+                                                    </Badge>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                {filteredGroups.map(group => (
+                                    <Card
+                                        key={group.id}
+                                        className={`transition-all hover:bg-gray-50 m-1 ${
+                                            selectedGroupId ===
+                                            group.id.toString()
+                                                ? 'ring-2 ring-black'
+                                                : ''
+                                        }`}
+                                        onClick={() =>
+                                            setSelectedGroupId(
+                                                group.id.toString(),
+                                            )
+                                        }
+                                    >
+                                        <CardContent className="p-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="font-medium truncate">
+                                                        {group.name}
+                                                    </div>
+                                                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                                                        <span>
+                                                            {group.wordsCount}{' '}
+                                                            слов
+                                                        </span>
+                                                        <Badge
+                                                            variant="outline"
+                                                            className="text-xs"
+                                                        >
+                                                            {group.visibility ===
+                                                            'PUBLIC'
+                                                                ? 'Публичная'
+                                                                : group.visibility ===
+                                                                    'PRIVATE'
+                                                                  ? 'Личная'
+                                                                  : 'Общая'}
+                                                        </Badge>
+                                                        {group.isOwner && (
+                                                            <Crown className="w-3 h-3 text-amber-500" />
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </div>
                         )}
+
+                        {/* Информация о количестве слов в группе удалена по требованиям */}
                         {showWarning && (
                             <p className="text-sm text-yellow-600">
                                 В группе только {maxWordsInGroup} слов. Будет
