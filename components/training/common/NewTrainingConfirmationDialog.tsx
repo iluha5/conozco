@@ -44,14 +44,14 @@ export function NewTrainingConfirmationDialog({
                         будет сброшен.
                     </DialogDescription>
                 </DialogHeader>
-                <DialogFooter className="gap-2 sm:gap-0">
+                <DialogFooter className="gap-2 sm:gap-2 justify-end">
                     <Button
                         variant="outline"
                         onClick={onContinue}
                         className="flex-1"
                         loading={continueLoading}
                     >
-                        Продолжить существующую
+                        Продолжить
                     </Button>
                     <Button
                         variant="default"
@@ -59,7 +59,7 @@ export function NewTrainingConfirmationDialog({
                         className="flex-1"
                         loading={startNewLoading}
                     >
-                        Начать заново
+                        Начать новую
                     </Button>
                 </DialogFooter>
             </DialogContent>

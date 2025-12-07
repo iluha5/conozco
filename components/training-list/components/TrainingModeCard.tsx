@@ -51,7 +51,7 @@ export function TrainingModeCard({
             )}
 
             <div className="relative z-10 flex items-start justify-between mb-3">
-                <div className="p-2 sm:p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                <div className="p-2 sm:p-3 bg-white/20 rounded-xl backdrop-blur-sm transition-all duration-300 group-hover:scale-105 origin-center">
                     <Icon className="w-5 h-5 md:w-8 md:h-8 text-white" />
                 </div>
 

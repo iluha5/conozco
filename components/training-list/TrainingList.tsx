@@ -2,6 +2,7 @@
 
 import { TrainingModeCard } from './components/TrainingModeCard';
 import { NoWordsDialog } from './components/NoWordsDialog';
+import { NewTrainingConfirmationDialog } from '@/components/training/common/NewTrainingConfirmationDialog';
 import { useTrainingModes } from './hooks/useTrainingModes';
 import { Loader2 } from 'lucide-react';
 
@@ -13,6 +14,11 @@ export function TrainingList() {
         isStarting,
         showNoWordsDialog,
         setShowNoWordsDialog,
+        showConfirmDialog,
+        setShowConfirmDialog,
+        handleContinueExisting,
+        handleStartNew,
+        isContinueLoading,
     } = useTrainingModes();
 
     const handleModeClick = (modeId: string) => {
@@ -53,6 +59,15 @@ export function TrainingList() {
             <NoWordsDialog
                 open={showNoWordsDialog}
                 onOpenChange={setShowNoWordsDialog}
+            />
+
+            <NewTrainingConfirmationDialog
+                open={showConfirmDialog}
+                onOpenChange={setShowConfirmDialog}
+                onContinue={handleContinueExisting}
+                onStartNew={handleStartNew}
+                continueLoading={isContinueLoading}
+                startNewLoading={isStarting}
             />
         </div>
     );

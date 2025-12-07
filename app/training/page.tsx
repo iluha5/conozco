@@ -207,12 +207,6 @@ export default function TrainingPage() {
         }
     };
 
-    const handleStartNewTraining = () => {
-        state.resetTraining();
-        storage.clearProgress();
-        router.push('/training/setup');
-    };
-
     // Обработчик ручного переключения этапов
     const handleStageSelect = (stage: TrainingStage) => {
         state.setCurrentStage(stage);
@@ -258,7 +252,6 @@ export default function TrainingPage() {
                     <TrainingResults
                         completedWords={state.completedWords}
                         onReload={handleReloadWords}
-                        onStartNew={handleStartNewTraining}
                     />
                 </div>
             </div>

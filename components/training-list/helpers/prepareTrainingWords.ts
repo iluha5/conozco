@@ -11,7 +11,7 @@ export function getLastAddedWords(
     return words
         .filter(
             word =>
-                word.languageId === String(languageId) &&
+                Number(word.languageId) === languageId &&
                 word.status !== 'LEARNED',
         )
         .sort((a, b) => {

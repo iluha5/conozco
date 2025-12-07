@@ -7,13 +7,11 @@ import { Word } from '@/types/training.types';
 interface TrainingResultsProps {
     completedWords: Word[];
     onReload: () => Promise<void>;
-    onStartNew: () => void;
 }
 
 export function TrainingResults({
     completedWords,
     onReload,
-    onStartNew,
 }: TrainingResultsProps) {
     return (
         <>
@@ -24,7 +22,9 @@ export function TrainingResults({
                         Главная
                     </Button>
                 </Link>
-                <Button onClick={onStartNew}>Новая тренировка</Button>
+                <Link href="/training/list">
+                    <Button>Новая тренировка</Button>
+                </Link>
             </div>
 
             <div className="mb-8 text-center">
