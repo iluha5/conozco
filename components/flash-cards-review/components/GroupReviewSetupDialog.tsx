@@ -261,8 +261,8 @@ export function GroupReviewSetupDialog({
                     </div>
 
                     {/* Количество слов */}
-                    <div className="space-y-2">
-                        <Label>Количество слов</Label>
+                    <div className="flex items-center justify-between">
+                        <Label className="mr-4">Количество слов (5 - 50)</Label>
                         <div className="flex items-center gap-4">
                             <Button
                                 type="button"
@@ -273,11 +273,9 @@ export function GroupReviewSetupDialog({
                             >
                                 <Minus className="h-4 w-4" />
                             </Button>
-                            <div className="flex-1 text-center">
-                                <span className="text-2xl font-semibold">
-                                    {wordCount}
-                                </span>
-                            </div>
+                            <span className="w-10 text-center text-2xl font-semibold">
+                                {wordCount}
+                            </span>
                             <Button
                                 type="button"
                                 variant="outline"
@@ -288,9 +286,6 @@ export function GroupReviewSetupDialog({
                                 <Plus className="h-4 w-4" />
                             </Button>
                         </div>
-                        <p className="text-xs text-gray-500 text-center">
-                            Минимум: 5, Максимум: 50
-                        </p>
                     </div>
                 </div>
 

@@ -70,7 +70,7 @@ export function Header() {
                     <nav className="hidden md:flex items-center justify-between gap-4 w-full">
                         <div className="flex items-center gap-4">
                             <Link
-                                href="/training/setup"
+                                href="/training/list"
                                 className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900 relative group mr-6"
                             >
                                 <Activity className="w-4 h-4" />

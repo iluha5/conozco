@@ -121,7 +121,7 @@ export default function TrainingPage() {
         storage.clearProgress();
         // Не вызываем setIsExitDialogOpen(false) - это вызовет history.back()
         // и создаст конфликт с router.push. Диалог закроется при переходе.
-        router.push('/');
+        router.push('/training/list');
     };
 
     const handleStageCompleteWrapper = async () => {
@@ -197,9 +197,9 @@ export default function TrainingPage() {
     const handleReloadWords = async () => {
         try {
             const allWords = await trainingApi.fetchWords();
-            const trainedWordIds = state.trainingWords.map(w => w.id);
+            const trainedWordIds = state.trainingWords.map(w => String(w.id));
             const learnedWords = allWords.filter(w =>
-                trainedWordIds.includes(w.id),
+                trainedWordIds.includes(String(w.id)),
             );
             state.setCompletedWords(learnedWords);
         } catch (error) {

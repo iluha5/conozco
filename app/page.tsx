@@ -19,7 +19,7 @@ import {
     DialogTrigger,
 } from '@/components/ui/dialog';
 import { Header } from '@/components/Header';
-import { Brain, HelpCircle, Languages } from 'lucide-react';
+import { Brain, HelpCircle, Languages, Zap } from 'lucide-react';
 import { ContinueTrainingCard } from '@/components/training/common/ContinueTrainingCard';
 import { NewTrainingConfirmationDialog } from '@/components/training/common/NewTrainingConfirmationDialog';
 import { FlashCardsWidget } from '@/components/flash-cards-review/components/FlashCardsWidget';
@@ -70,6 +70,10 @@ export default function HomePage() {
         setIsWordsLoading(true);
         router.push('/words');
     };
+
+    const handleGoToTrainingList = () => {
+        router.push('/training/list');
+    };
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
             <Header />
@@ -96,6 +100,28 @@ export default function HomePage() {
                 <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto mb-12">
                     <FlashCardsWidget />
                     <FlashCardsGroupWidget />
+
+                    <Card className="hover:shadow-lg transition-shadow">
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <Zap className="w-6 h-6 text-purple-600" />
+                                Быстрые режимы
+                            </CardTitle>
+                            <CardDescription>
+                                Готовые режимы тренировок с предустановленными
+                                настройками
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <Button
+                                onClick={handleGoToTrainingList}
+                                variant="default"
+                                className="w-full"
+                            >
+                                Выбрать режим
+                            </Button>
+                        </CardContent>
+                    </Card>
 
                     <Card className="hover:shadow-lg transition-shadow">
                         <CardHeader className="relative">

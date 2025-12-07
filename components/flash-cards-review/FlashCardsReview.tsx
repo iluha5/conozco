@@ -101,7 +101,7 @@ export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
                             </div>
                             <div className="flex justify-between">
                                 <span className="text-orange-600">
-                                    Удалено:
+                                    Удалено/Пропущено:
                                 </span>
                                 <span className="font-semibold text-orange-600">
                                     {stats.deleted}

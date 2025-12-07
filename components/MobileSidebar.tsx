@@ -107,7 +107,7 @@ export function MobileSidebar({
                             {/* Navigation Links */}
                             <div className="space-y-2">
                                 <Link
-                                    href="/training/setup"
+                                    href="/training/list"
                                     onClick={onClose}
                                     className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 hover:text-gray-900 relative pb-1.5 group"
                                 >
