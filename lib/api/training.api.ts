@@ -1,5 +1,4 @@
-import { SavedTrainingState } from '@/types/training.types';
-import { Word } from '@/types/words.types';
+import { Word, SavedTrainingState } from '@/types/training.types';
 
 export const trainingApi = {
     /**

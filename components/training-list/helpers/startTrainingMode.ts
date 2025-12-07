@@ -1,5 +1,5 @@
 import { TrainingModeId, TrainingModeConfig } from '../types/typing';
-import { Word } from '@/types/words.types';
+import { Word } from '@/types/training.types';
 import { getLastAddedWords } from './prepareTrainingWords';
 import {
     saveEnabledStages,

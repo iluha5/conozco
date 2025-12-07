@@ -1,4 +1,4 @@
-import { Word } from '@/types/words.types';
+import { Word } from '@/types/training.types';
 
 /**
  * Получить последние добавленные слова для текущего языка
@@ -10,7 +10,9 @@ export function getLastAddedWords(
 ): Word[] {
     return words
         .filter(
-            word => word.languageId === languageId && word.status !== 'LEARNED',
+            word =>
+                word.languageId === String(languageId) &&
+                word.status !== 'LEARNED',
         )
         .sort((a, b) => {
             const dateA = new Date(a.createdAt).getTime();

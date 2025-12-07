@@ -5,7 +5,7 @@ import { useUserSettings } from '@/hooks/settings';
 import { useTrainingWords } from '@/contexts/training-words-context';
 import { useToast } from '@/hooks/shared';
 import { trainingApi } from '@/lib/api/training.api';
-import { Word } from '@/types/words.types';
+import { Word } from '@/types/training.types';
 import { TrainingModeId } from '../types/typing';
 import { TRAINING_MODES } from '../constants/training-modes';
 import { startTrainingMode } from '../helpers/startTrainingMode';
