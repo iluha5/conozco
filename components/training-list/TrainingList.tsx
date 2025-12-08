@@ -45,14 +45,18 @@ export function TrainingList() {
                 </p>
             </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 md:grid-cols-4">
                 {modes.map(mode => (
-                    <TrainingModeCard
+                    <div
                         key={mode.id}
-                        mode={mode}
-                        onClick={() => handleModeClick(mode.id)}
-                        disabled={isStarting}
-                    />
+                        className="md:max-w-[230px] lg:max-w-none"
+                    >
+                        <TrainingModeCard
+                            mode={mode}
+                            onClick={() => handleModeClick(mode.id)}
+                            disabled={isStarting}
+                        />
+                    </div>
                 ))}
             </div>
 
