@@ -23,7 +23,7 @@ function HeaderSkeleton() {
                 <div className="h-7 w-32 bg-gray-200 rounded animate-pulse" />
 
                 {/* Desktop version skeleton */}
-                <div className="hidden md:flex items-center gap-4">
+                <div className="hidden lg:flex items-center gap-4">
                     <div className="flex items-center gap-2">
                         <div className="w-4 h-4 bg-gray-200 rounded-full animate-pulse" />
                         <div className="h-5 w-40 bg-gray-200 rounded animate-pulse" />
@@ -32,7 +32,7 @@ function HeaderSkeleton() {
                 </div>
 
                 {/* Mobile hamburger skeleton */}
-                <div className="md:hidden">
+                <div className="lg:hidden">
                     <div className="w-10 h-10 bg-gray-200 rounded animate-pulse" />
                 </div>
             </div>
@@ -57,7 +57,7 @@ export function Header() {
             <header className="border-b bg-white">
                 <div
                     data-test="header-wrapper"
-                    className="container mx-auto px-4 py-3 flex items-center justify-between md:justify-start md:gap-10"
+                    className="container mx-auto px-4 py-3 flex items-center justify-between lg:justify-start lg:gap-10"
                 >
                     <Link
                         href="/"
@@ -67,7 +67,7 @@ export function Header() {
                     </Link>
 
                     {/* Desktop version */}
-                    <nav className="hidden md:flex items-center justify-between gap-4 w-full">
+                    <nav className="hidden lg:flex items-center justify-between gap-4 w-full">
                         <div className="flex items-center gap-4">
                             <Link
                                 href="/training/list"
@@ -103,7 +103,7 @@ export function Header() {
                             </Link>
                         </div>
 
-                        <div className="hidden md:flex items-center justify-end gap-6">
+                        <div className="hidden lg:flex items-center justify-end gap-6">
                             <div className="flex items-center gap-2 text-sm">
                                 <User className="w-4 h-4 text-gray-600" />
                                 <span className="text-gray-700">
@@ -130,7 +130,7 @@ export function Header() {
                     </nav>
 
                     {/* Mobile hamburger menu */}
-                    <div className="md:hidden">
+                    <div className="lg:hidden">
                         <Button
                             variant="ghost"
                             size="icon"
