@@ -30,7 +30,7 @@ export function NewTrainingConfirmationDialog({
 }: NewTrainingConfirmationDialogProps) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="!left-4 !right-4 !translate-x-0 !w-auto sm:!left-[50%] sm:!right-auto sm:!translate-x-[-50%] sm:!w-full">
+            <DialogContent className="!left-4 !right-4 !translate-x-0 !w-auto sm:!left-[50%] sm:!right-auto sm:!translate-x-[-50%] sm:!w-full sm:!max-w-[500px]">
                 <DialogHeader>
                     <div className="flex items-center gap-2">
                         <AlertTriangle className="w-5 h-5 text-yellow-600" />
@@ -44,11 +44,10 @@ export function NewTrainingConfirmationDialog({
                         будет сброшен.
                     </DialogDescription>
                 </DialogHeader>
-                <DialogFooter className="gap-2 sm:gap-2 justify-end">
+                <DialogFooter className="gap-4 sm:gap-2 justify-end">
                     <Button
                         variant="outline"
                         onClick={onContinue}
-                        className="flex-1"
                         loading={continueLoading}
                     >
                         Продолжить
@@ -56,7 +55,6 @@ export function NewTrainingConfirmationDialog({
                     <Button
                         variant="default"
                         onClick={onStartNew}
-                        className="flex-1"
                         loading={startNewLoading}
                     >
                         Начать новую
