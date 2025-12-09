@@ -3,6 +3,7 @@
  */
 
 import { Word } from '@/types/training.types';
+import { shuffle } from 'lodash-es';
 
 /**
  * Получить перевод слова (приоритет: customTranslations -> baseWord.translations)
@@ -73,4 +74,14 @@ export function getSpeechLanguageCode(languageCode: string): string {
     };
 
     return languageMap[languageCode] || 'en-US';
+}
+
+/**
+ * Перемешать массив используя lodash-es shuffle (алгоритм Fisher-Yates)
+ * Создает новый массив, не изменяя исходный
+ * @param array - массив для перемешивания
+ * @returns новый перемешанный массив
+ */
+export function shuffleArray<T>(array: T[]): T[] {
+    return shuffle(array);
 }

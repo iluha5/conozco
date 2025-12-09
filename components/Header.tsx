@@ -71,7 +71,7 @@ export function Header() {
                     <nav className="hidden md:flex items-center justify-between gap-4 w-full">
                         <div className="flex items-center gap-4">
                             <NavigationLink
-                                href="/training/setup"
+                                href="/training/list"
                                 icon={Activity}
                                 className="mr-6"
                             >

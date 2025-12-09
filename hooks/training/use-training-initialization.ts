@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Word, TrainingStage } from '@/types/training.types';
+import { shuffleArray } from '@/lib/training-utils';
 
 interface UseTrainingInitializationProps {
     settingsLoaded: boolean;
@@ -52,10 +53,13 @@ export function useTrainingInitialization({
                 // Восстанавливаем сохраненную тренировку
                 const saved = savedState;
 
-                // Восстанавливаем исходные слова по сохраненным ID
-                const restoredWords = allWords.filter(w =>
-                    saved.selectedWordIds.includes(w.id),
-                );
+                // Восстанавливаем исходные слова по сохраненным ID с сохранением порядка
+                const restoredWords = saved.selectedWordIds
+                    .map((id: string) => allWords.find(w => w.id === id))
+                    .filter(
+                        (word: Word | undefined): word is Word =>
+                            word !== undefined,
+                    );
 
                 if (restoredWords.length > 0) {
                     setTrainingWords(restoredWords);
@@ -78,11 +82,13 @@ export function useTrainingInitialization({
                     console.warn('Saved words not found, creating new session');
                     clearProgress();
                     if (filteredWords.length > 0) {
-                        setTrainingWords(filteredWords);
+                        // Перемешиваем слова перед созданием новой сессии
+                        const shuffledWords = shuffleArray(filteredWords);
+                        setTrainingWords(shuffledWords);
                         const newSession = createNewSession({
                             enabledStages,
                             selectedLanguage,
-                            selectedWordIds: filteredWords.map(w => w.id),
+                            selectedWordIds: shuffledWords.map(w => w.id),
                             stageSettings: {},
                         });
                         // Устанавливаем первый включенный этап
@@ -96,11 +102,13 @@ export function useTrainingInitialization({
             } else {
                 // Создаем новую сессию
                 if (filteredWords.length > 0) {
-                    setTrainingWords(filteredWords);
+                    // Перемешиваем слова перед созданием новой сессии
+                    const shuffledWords = shuffleArray(filteredWords);
+                    setTrainingWords(shuffledWords);
                     const newSession = createNewSession({
                         enabledStages,
                         selectedLanguage,
-                        selectedWordIds: filteredWords.map(w => w.id),
+                        selectedWordIds: shuffledWords.map(w => w.id),
                         stageSettings: {},
                     });
                     // Устанавливаем первый включенный этап

@@ -20,6 +20,15 @@
 - When creating dialog/popup components with action buttons (DialogFooter), ALWAYS place buttons in a row (flex-row) for mobile view when possible, instead of stacking them in a column. Use `flex-row justify-end gap-2` or similar classes to ensure buttons are displayed horizontally on mobile devices.
 - ALWAYS use the `useHashDialog` hook from `@/hooks/shared` for ALL dialogs and modals. This enables closing dialogs with the browser back button. Usage: `const { open, setOpen } = useHashDialog('unique-dialog-id');` where `unique-dialog-id` is a unique string identifier for the dialog (e.g., 'add-word-dialog', 'confirm-delete', 'settings-modal').
 
+## Utility Libraries Guidelines
+- **PREFER using Lodash utilities over custom implementations** when available. Before writing custom utility functions (e.g., array manipulation, object operations, string manipulation, etc.), check if Lodash provides a suitable function.
+- Use `lodash-es` package (ES modules version) for better tree-shaking support. Import individual functions: `import { shuffle, merge, memoize } from 'lodash-es';`
+- Next.js Webpack configuration automatically performs tree-shaking for ES modules, so only used functions will be included in the bundle.
+- Only create custom utility functions when:
+  - Lodash doesn't provide the needed functionality
+  - The custom implementation is significantly simpler or more performant for the specific use case
+  - The functionality is domain-specific and wouldn't benefit from a generic library
+
 ## Database Operations Guidelines
 - **ALWAYS create a database backup BEFORE performing any dangerous database operations.**
 - Dangerous database operations include:
