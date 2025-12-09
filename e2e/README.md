@@ -109,14 +109,16 @@ e2e/
 │   ├── test-data.ts      # Генераторы тестовых данных
 │   └── api-helpers.ts    # Хелперы для API запросов
 ├── page-objects/          # Page Object Model
-│   ├── BasePage.ts
+│   ├── BasePage.ts        # Базовый класс
 │   ├── LoginPage.ts
 │   ├── RegisterPage.ts
 │   ├── HomePage.ts
 │   ├── WordsPage.ts
 │   ├── TrainingSetupPage.ts
 │   ├── TrainingPage.ts
-│   └── SettingsPage.ts
+│   ├── SettingsPage.ts
+│   ├── Header.ts          # Компонент Header
+│   └── index.ts           # Экспорт всех Page Objects
 └── tests/                 # Тесты
     ├── auth/
     ├── words/
@@ -126,11 +128,27 @@ e2e/
 
 ## Написание тестов
 
+### Использование Page Object Model
+
+Все Page Objects находятся в `e2e/page-objects/` и наследуются от `BasePage`.
+
+**Доступные Page Objects:**
+
+- `BasePage` - базовый класс с общими методами
+- `LoginPage` - страница входа
+- `RegisterPage` - страница регистрации
+- `HomePage` - главная страница
+- `WordsPage` - страница управления словами
+- `TrainingSetupPage` - страница настройки тренировки
+- `TrainingPage` - страница тренировки
+- `SettingsPage` - страница настроек
+- `HeaderPage` - компонент Header (используется на всех страницах)
+
 ### Пример базового теста
 
 ```typescript
 import { test, expect } from '@playwright/test';
-import { LoginPage } from '../page-objects/LoginPage';
+import { LoginPage, HomePage } from '../page-objects';
 import { createTestUser, cleanupTestDatabase } from '../fixtures/test-data';
 
 test.beforeEach(async () => {
@@ -142,10 +160,47 @@ test('успешный вход', async ({ page }) => {
     // Создание тестового пользователя
     const user = await createTestUser('test@example.com', 'password123');
 
+    // Использование Page Object
     const loginPage = new LoginPage(page);
     await loginPage.goto();
+    await loginPage.expectPageLoaded();
     await loginPage.login(user.email, 'password123');
-    await expect(page).toHaveURL('/');
+
+    // Проверка успешного входа
+    await loginPage.expectSuccessfulLogin();
+
+    // Использование другого Page Object
+    const homePage = new HomePage(page);
+    await homePage.expectPageLoaded();
+});
+```
+
+### Пример теста с несколькими страницами
+
+```typescript
+import { test } from '@playwright/test';
+import { LoginPage, WordsPage, HeaderPage } from '../page-objects';
+import { createTestUser, createTestWord } from '../fixtures/test-data';
+
+test('переход к словам после входа', async ({ page }) => {
+    // Создание пользователя и слова
+    const user = await createTestUser();
+    await createTestWord(user.id, { customWord: 'hello' });
+
+    // Вход в систему
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.login(user.email, 'testpassword123');
+
+    // Использование Header для навигации
+    const header = new HeaderPage(page);
+    await header.expectHeaderVisible();
+    await header.goToWords();
+
+    // Работа со страницей слов
+    const wordsPage = new WordsPage(page);
+    await wordsPage.expectPageLoaded();
+    await wordsPage.expectWordInList('hello');
 });
 ```
 
