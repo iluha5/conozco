@@ -144,12 +144,42 @@ e2e/
 - `SettingsPage` - страница настроек
 - `HeaderPage` - компонент Header (используется на всех страницах)
 
+### Использование фикстур
+
+Все фикстуры экспортируются из `e2e/fixtures/index.ts` для удобного импорта.
+
+**Доступные фикстуры:**
+
+- **Database utilities** (`db.ts`):
+    - `createTestPrismaClient()` - создание Prisma Client для тестовой БД
+    - `cleanupTestDatabase()` - очистка тестовой БД
+    - `withTransaction()` - выполнение операций в транзакции
+
+- **Test data generators** (`test-data.ts`):
+    - `createTestUser()` - создание тестового пользователя в БД
+    - `createTestWord()` - создание тестового слова
+    - `createTestWords()` - создание нескольких слов
+    - `createTestWordGroup()` - создание группы слов
+    - `createTestBaseWord()` - создание базового слова с переводом
+    - `getRoleId()`, `getWordStatusId()`, `getLanguageId()` - получение ID справочных данных
+
+- **Authentication helpers** (`auth.ts`):
+    - `createAndLoginUser()` - создание пользователя в БД и авторизация через UI
+    - `registerAndLoginUser()` - регистрация через API и авторизация через UI
+    - `loginViaUI()` - авторизация через UI
+    - `logoutViaUI()` - выход из системы через UI
+
+- **API helpers** (`api-helpers.ts`):
+    - `apiGet()`, `apiPost()`, `apiPut()`, `apiDelete()` - базовые HTTP методы
+    - `getWordsViaAPI()`, `createWordViaAPI()`, `updateWordViaAPI()`, `deleteWordViaAPI()` - работа со словами
+    - `getWordGroupsViaAPI()`, `createWordGroupViaAPI()` - работа с группами слов
+
 ### Пример базового теста
 
 ```typescript
 import { test, expect } from '@playwright/test';
 import { LoginPage, HomePage } from '../page-objects';
-import { createTestUser, cleanupTestDatabase } from '../fixtures/test-data';
+import { createAndLoginUser, cleanupTestDatabase } from '../fixtures';
 
 test.beforeEach(async () => {
     // Очистка БД перед каждым тестом (опционально)
@@ -157,21 +187,48 @@ test.beforeEach(async () => {
 });
 
 test('успешный вход', async ({ page }) => {
-    // Создание тестового пользователя
-    const user = await createTestUser('test@example.com', 'password123');
-
-    // Использование Page Object
-    const loginPage = new LoginPage(page);
-    await loginPage.goto();
-    await loginPage.expectPageLoaded();
-    await loginPage.login(user.email, 'password123');
+    // Создание пользователя и авторизация через UI (удобная функция)
+    const user = await createAndLoginUser(page, {
+        email: 'test@example.com',
+        password: 'password123',
+    });
 
     // Проверка успешного входа
-    await loginPage.expectSuccessfulLogin();
-
-    // Использование другого Page Object
     const homePage = new HomePage(page);
     await homePage.expectPageLoaded();
+
+    // Используем user.id для дальнейших операций
+    expect(user.id).toBeGreaterThan(0);
+});
+```
+
+### Пример теста с использованием API helpers
+
+```typescript
+import { test, expect } from '@playwright/test';
+import { WordsPage } from '../page-objects';
+import { createAndLoginUser } from '../fixtures';
+import { createWordViaAPI, getWordsViaAPI } from '../fixtures';
+
+test('создание слова через API и проверка в UI', async ({ page, request }) => {
+    // Создаем пользователя и авторизуем
+    const user = await createAndLoginUser(page);
+
+    // Создаем слово через API
+    const word = await createWordViaAPI(request, {
+        customWord: 'hello',
+        languageId: 1, // English
+        statusId: 1, // NOT_LEARNED
+    });
+
+    // Проверяем через API
+    const words = await getWordsViaAPI(request, user.id);
+    expect(words.length).toBeGreaterThan(0);
+
+    // Проверяем в UI
+    const wordsPage = new WordsPage(page);
+    await wordsPage.goto();
+    await wordsPage.expectWordVisible('hello');
 });
 ```
 
@@ -180,14 +237,14 @@ test('успешный вход', async ({ page }) => {
 ```typescript
 import { test } from '@playwright/test';
 import { LoginPage, WordsPage, HeaderPage } from '../page-objects';
-import { createTestUser, createTestWord } from '../fixtures/test-data';
+import { createTestUser, createTestWord } from '../fixtures';
 
 test('переход к словам после входа', async ({ page }) => {
     // Создание пользователя и слова
     const user = await createTestUser();
     await createTestWord(user.id, { customWord: 'hello' });
 
-    // Вход в систему
+    // Вход в систему через UI
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.login(user.email, 'testpassword123');
@@ -207,8 +264,12 @@ test('переход к словам после входа', async ({ page }) =>
 ### Работа с тестовой БД
 
 ```typescript
-import { createTestPrismaClient, cleanupTestDatabase } from '../fixtures/db';
-import { createTestUser, createTestWord } from '../fixtures/test-data';
+import {
+    createTestPrismaClient,
+    cleanupTestDatabase,
+    createTestUser,
+    createTestWord,
+} from '../fixtures';
 
 test('пример работы с БД', async ({ page }) => {
     // Создание пользователя

@@ -79,6 +79,19 @@ async function globalSetup() {
 
         console.log('✅ Database migrations completed');
 
+        // Синхронизируем схему с БД (на случай если миграции не полностью применились)
+        console.log('🔄 Syncing database schema...');
+        execSync(
+            `DATABASE_URL="${testDatabaseUrl}" npx prisma db push --accept-data-loss --skip-generate`,
+            {
+                stdio: 'inherit',
+                env: {
+                    ...process.env,
+                    DATABASE_URL: testDatabaseUrl,
+                },
+            },
+        );
+
         // Генерируем Prisma Client для тестовой БД
         console.log('🔧 Generating Prisma Client...');
         execSync(`DATABASE_URL="${testDatabaseUrl}" npx prisma generate`, {
@@ -88,6 +101,19 @@ async function globalSetup() {
                 DATABASE_URL: testDatabaseUrl,
             },
         });
+
+        // Заполняем справочные данные (роли, статусы, языки)
+        console.log('🌱 Seeding reference data...');
+        execSync(
+            `DATABASE_URL="${testDatabaseUrl}" npx tsx e2e/seed-reference-data.ts`,
+            {
+                stdio: 'inherit',
+                env: {
+                    ...process.env,
+                    DATABASE_URL: testDatabaseUrl,
+                },
+            },
+        );
 
         console.log('✅ E2E test environment setup completed!');
     } catch (error) {
