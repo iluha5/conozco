@@ -4,6 +4,7 @@
     "private": true,
     "scripts": {
         "dev": "next dev -H 0.0.0.0 -p 8000",
+        "dev:test": "next dev -H 0.0.0.0 -p ${PORT:-8001}",
         "build": "next build",
         "start": "next start -p 8000",
         "lint": "next lint",
@@ -16,6 +17,10 @@
         "test:e2e:headed": "playwright test --headed",
         "test:e2e:debug": "playwright test --debug",
         "test:e2e:report": "playwright show-report",
+        "test:db:up": "docker compose -f docker-compose.test.yml up -d",
+        "test:db:down": "docker compose -f docker-compose.test.yml down",
+        "test:db:logs": "docker compose -f docker-compose.test.yml logs -f",
+        "test:db:clean": "docker compose -f docker-compose.test.yml down -v",
         "verify": "npm run type-check && npm run lint && npm run format:check",
         "format": "prettier --write .",
         "format:check": "prettier --check .",

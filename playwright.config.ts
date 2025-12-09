@@ -8,6 +8,10 @@ export default defineConfig({
     // Тестируемое приложение
     testDir: './e2e/tests',
 
+    // Global setup и teardown для запуска/остановки тестовой БД
+    globalSetup: './e2e/global-setup.ts',
+    globalTeardown: './e2e/global-teardown.ts',
+
     // Максимальное время выполнения одного теста
     timeout: 30 * 1000,
 
@@ -38,7 +42,8 @@ export default defineConfig({
     // Общие настройки для всех проектов
     use: {
         // Базовый URL приложения
-        baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:8000',
+        // Используется порт 8001 для тестового приложения, чтобы не конфликтовать с основным (8000)
+        baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:8001',
 
         // Трассировка для отладки
         trace: 'on-first-retry',
@@ -62,11 +67,15 @@ export default defineConfig({
         },
     ],
 
-    // Настройки веб-сервера для запуска приложения перед тестами (опционально)
-    // webServer: {
-    //     command: 'npm run dev',
-    //     url: 'http://localhost:8000',
-    //     reuseExistingServer: !process.env.CI,
-    //     timeout: 120 * 1000,
-    // },
+    // Настройки веб-сервера для запуска приложения перед тестами
+    // Используется порт 8001 и тестовая БД для изоляции от основного приложения
+    webServer: {
+        command:
+            'DATABASE_URL="postgresql://flashcards_test:flashcards_test_password@localhost:5434/flashcards_test" npm run dev:test',
+        url: 'http://localhost:8001',
+        reuseExistingServer: !process.env.CI, // Переиспользовать существующий сервер локально
+        timeout: 120 * 1000, // 2 минуты на запуск
+        stdout: 'pipe',
+        stderr: 'pipe',
+    },
 });
