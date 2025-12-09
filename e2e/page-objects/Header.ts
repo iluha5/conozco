@@ -1,5 +1,6 @@
 import { Page, expect } from '@playwright/test';
 import { BasePage } from './BasePage';
+import { TIMEOUTS, SELECTORS } from '../utils/constants';
 
 /**
  * Page Object для Header компонента
@@ -27,9 +28,7 @@ export class HeaderPage extends BasePage {
      * Проверка, что Header виден
      */
     async expectHeaderVisible() {
-        await expect(
-            this.page.locator('[data-test="header-wrapper"]'),
-        ).toBeVisible();
+        await expect(this.page.locator(SELECTORS.HEADER)).toBeVisible();
     }
 
     /**
@@ -37,7 +36,7 @@ export class HeaderPage extends BasePage {
      */
     async clickLogo() {
         await this.click(this.logo);
-        await this.waitForNavigation();
+        await this.waitForLoadState();
     }
 
     /**
@@ -47,14 +46,23 @@ export class HeaderPage extends BasePage {
         // Пробуем сначала desktop версию
         const desktopLogout = this.page.locator(this.logoutButton);
         if (await desktopLogout.isVisible()) {
+            // Кликаем по кнопке выхода и ждем редирект
             await desktopLogout.click();
+            // Ждем редирект на страницу логина после выхода (signOut использует callbackUrl)
+            await this.page.waitForURL(/\/auth\/login/, {
+                timeout: TIMEOUTS.NAVIGATION,
+            });
         } else {
             // Если desktop не виден, открываем mobile меню
             await this.openMobileMenu();
             const mobileLogout = this.page.locator('button:has-text("Выйти")');
+            // Кликаем по кнопке выхода и ждем редирект
             await mobileLogout.click();
+            // Ждем редирект на страницу логина после выхода (signOut использует callbackUrl)
+            await this.page.waitForURL(/\/auth\/login/, {
+                timeout: TIMEOUTS.NAVIGATION,
+            });
         }
-        await this.waitForNavigation();
     }
 
     /**
@@ -71,7 +79,7 @@ export class HeaderPage extends BasePage {
      */
     async goToTraining() {
         await this.click(this.trainingLink);
-        await this.waitForNavigation();
+        await this.waitForLoadState();
     }
 
     /**
@@ -79,7 +87,7 @@ export class HeaderPage extends BasePage {
      */
     async goToWords() {
         await this.click(this.wordsLink);
-        await this.waitForNavigation();
+        await this.waitForLoadState();
     }
 
     /**
@@ -87,7 +95,7 @@ export class HeaderPage extends BasePage {
      */
     async goToWordGroups() {
         await this.click(this.wordGroupsLink);
-        await this.waitForNavigation();
+        await this.waitForLoadState();
     }
 
     /**
@@ -95,7 +103,7 @@ export class HeaderPage extends BasePage {
      */
     async goToSettings() {
         await this.click(this.settingsLink);
-        await this.waitForNavigation();
+        await this.waitForLoadState();
     }
 
     /**

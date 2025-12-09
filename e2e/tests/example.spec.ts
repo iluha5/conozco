@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { HomePage } from '../page-objects/HomePage';
 import { createAndLoginUser } from '../fixtures';
+import { generateUniqueEmail } from '../utils/test-helpers';
 
 /**
  * Пример теста для проверки конфигурации Playwright
@@ -28,7 +29,7 @@ test.describe('Примеры использования фикстур', () => 
     test('пример использования фикстур авторизации', async ({ page }) => {
         // Создаем пользователя и авторизуем его через UI
         const user = await createAndLoginUser(page, {
-            email: `test-${Date.now()}@example.com`,
+            email: generateUniqueEmail(),
             password: 'testpassword123',
             name: 'Test User',
         });

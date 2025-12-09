@@ -3,12 +3,15 @@ import { APIRequestContext } from '@playwright/test';
 import { createTestUser } from './test-data';
 import { LoginPage } from '../page-objects/LoginPage';
 import { HeaderPage } from '../page-objects/Header';
+import { generateUniqueEmail, generateUniqueName } from '../utils/test-helpers';
+import { DEFAULT_TEST_VALUES, TIMEOUTS } from '../utils/constants';
 
 /**
  * Админ пароль для регистрации (по умолчанию из кода)
  */
 const ADMIN_REGISTRATION_PASSWORD =
-    process.env.ADMIN_REGISTRATION_PASSWORD || 'admin123';
+    process.env.ADMIN_REGISTRATION_PASSWORD ||
+    DEFAULT_TEST_VALUES.ADMIN_PASSWORD;
 
 /**
  * Данные тестового пользователя
@@ -61,6 +64,14 @@ export async function loginViaUI(
 
     await loginPage.goto();
     await loginPage.login(credentials.email, credentials.password);
+
+    // Ждем успешного входа - редирект на главную страницу
+    // Может потребоваться время на установку сессии NextAuth
+    await page.waitForURL('/', { timeout: TIMEOUTS.SESSION_SETUP });
+
+    // Дополнительно ждем, пока страница полностью загрузится
+    await page.waitForLoadState('networkidle');
+
     await loginPage.expectSuccessfulLogin();
 }
 
@@ -107,9 +118,9 @@ export async function createAndLoginUser(
     page: Page,
     credentials?: Partial<TestUserCredentials>,
 ): Promise<TestUserCredentials & { id: number }> {
-    const email = credentials?.email || `test-${Date.now()}@example.com`;
-    const password = credentials?.password || 'testpassword123';
-    const name = credentials?.name || `Test User ${Date.now()}`;
+    const email = credentials?.email || generateUniqueEmail();
+    const password = credentials?.password || DEFAULT_TEST_VALUES.PASSWORD;
+    const name = credentials?.name || generateUniqueName();
 
     // Создаем пользователя в БД
     const user = await createTestUser(email, password, name);
@@ -138,9 +149,9 @@ export async function registerAndLoginUser(
     apiContext: APIRequestContext,
     credentials?: Partial<TestUserCredentials>,
 ): Promise<TestUserCredentials & { id: number }> {
-    const email = credentials?.email || `test-${Date.now()}@example.com`;
-    const password = credentials?.password || 'testpassword123';
-    const name = credentials?.name || `Test User ${Date.now()}`;
+    const email = credentials?.email || generateUniqueEmail();
+    const password = credentials?.password || DEFAULT_TEST_VALUES.PASSWORD;
+    const name = credentials?.name || generateUniqueName();
 
     // Регистрируем через API
     const result = await registerUserViaAPI(apiContext, {

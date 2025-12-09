@@ -1,5 +1,6 @@
 import { Page, expect } from '@playwright/test';
 import { BasePage } from './BasePage';
+import { TIMEOUTS, SELECTORS } from '../utils/constants';
 
 /**
  * Page Object для страницы регистрации
@@ -11,7 +12,7 @@ export class RegisterPage extends BasePage {
     private readonly passwordInputs = 'input[type="password"]';
     private readonly submitButton = 'button[type="submit"]';
     private readonly loginLink = 'a[href="/auth/login"]';
-    private readonly cardTitle = 'text=Регистрация';
+    private readonly cardTitle = 'h3:has-text("Регистрация")'; // Используем более специфичный селектор
 
     constructor(page: Page) {
         super(page);
@@ -64,6 +65,13 @@ export class RegisterPage extends BasePage {
     }
 
     /**
+     * Клик по кнопке отправки формы
+     */
+    async clickSubmit() {
+        await this.click(this.submitButton);
+    }
+
+    /**
      * Выполнение регистрации
      */
     async register(
@@ -78,8 +86,13 @@ export class RegisterPage extends BasePage {
         }
         await this.enterPassword(password);
         await this.enterAdminPassword(adminPassword);
-        await this.click(this.submitButton);
-        await this.waitForNavigation();
+        // Ждем либо редирект на логин (успех), либо остаемся на странице регистрации (ошибка)
+        await Promise.all([
+            this.page.waitForURL(/\/auth\/(login|register)/, {
+                timeout: 5000,
+            }),
+            this.clickSubmit(),
+        ]);
     }
 
     /**
@@ -87,17 +100,28 @@ export class RegisterPage extends BasePage {
      */
     async clickLoginLink() {
         await this.click(this.loginLink);
-        await this.waitForNavigation();
+        await this.waitForLoadState();
     }
 
     /**
      * Проверка наличия ошибки
+     * Ищет ошибку в toast сообщении (description), а не в заголовке
      */
     async expectError(message?: string) {
-        const errorElement = this.page.locator('text=/Ошибка|ошибка/i');
-        await expect(errorElement.first()).toBeVisible();
+        // Ищем toast с ошибкой
+        // Toast может быть в разных местах, используем более широкий поиск
+        const errorText = this.page.locator(SELECTORS.TOAST_ERROR);
+
+        // Ждем появления toast с ошибкой (может появиться с задержкой)
+        await expect(errorText.first()).toBeVisible({
+            timeout: TIMEOUTS.TOAST,
+        });
+
         if (message) {
-            await expect(errorElement.first()).toContainText(message);
+            // Проверяем текст ошибки в toast
+            await expect(errorText.first()).toContainText(message, {
+                ignoreCase: true,
+            });
         }
     }
 

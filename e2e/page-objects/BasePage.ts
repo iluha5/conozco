@@ -1,4 +1,5 @@
 import { Page, expect } from '@playwright/test';
+import { TIMEOUTS, SELECTORS } from '../utils/constants';
 
 /**
  * Базовый класс для всех Page Objects
@@ -30,14 +31,17 @@ export class BasePage {
     /**
      * Ожидание появления элемента
      */
-    async waitForElement(selector: string, timeout?: number) {
+    async waitForElement(selector: string, timeout: number = TIMEOUTS.ELEMENT) {
         await this.page.waitForSelector(selector, { timeout });
     }
 
     /**
      * Ожидание исчезновения элемента
      */
-    async waitForElementHidden(selector: string, timeout?: number) {
+    async waitForElementHidden(
+        selector: string,
+        timeout: number = TIMEOUTS.ELEMENT,
+    ) {
         await this.page.waitForSelector(selector, { state: 'hidden', timeout });
     }
 
@@ -113,19 +117,35 @@ export class BasePage {
     /**
      * Ожидание загрузки (исчезновение loading индикатора)
      */
-    async waitForLoading(timeout: number = 5000) {
+    async waitForLoading(timeout: number = TIMEOUTS.ELEMENT) {
         try {
             // Ожидаем исчезновение любых loading индикаторов
-            await this.page.waitForSelector(
-                '[data-testid="loading"], .loading, [aria-busy="true"]',
-                {
-                    state: 'hidden',
-                    timeout,
-                },
-            );
+            await this.page.waitForSelector(SELECTORS.LOADING, {
+                state: 'hidden',
+                timeout,
+            });
         } catch {
             // Если нет loading индикаторов, просто ждем немного
             await this.page.waitForTimeout(500);
         }
+    }
+
+    /**
+     * Заполнение формы (последовательный ввод в несколько полей)
+     */
+    async fillForm(fields: Array<{ selector: string; value: string }>) {
+        for (const field of fields) {
+            await this.fill(field.selector, field.value);
+        }
+    }
+
+    /**
+     * Ожидание появления toast сообщения
+     */
+    async waitForToast(timeout: number = TIMEOUTS.TOAST) {
+        await this.page.waitForSelector(SELECTORS.TOAST_ERROR, {
+            timeout,
+            state: 'visible',
+        });
     }
 }

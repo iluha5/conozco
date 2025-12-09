@@ -1,4 +1,10 @@
 import { createTestPrismaClient } from './db';
+import {
+    generateUniqueEmail,
+    generateUniqueName,
+    generateUniqueGroupName,
+} from '../utils/test-helpers';
+import { DEFAULT_TEST_VALUES } from '../utils/constants';
 
 /**
  * Генераторы тестовых данных для E2E тестов
@@ -72,16 +78,24 @@ export async function getLanguageId(code: string): Promise<number> {
 /**
  * Создает тестового пользователя
  */
+/**
+ * Опции для создания тестового пользователя
+ */
+export interface CreateTestUserOptions {
+    roleId?: number;
+    ownLanguageId?: number;
+    learnLanguageId?: number;
+    interfaceLanguageId?: number;
+}
+
+/**
+ * Создает тестового пользователя
+ */
 export async function createTestUser(
-    email: string = `test-${Date.now()}@example.com`,
-    password: string = 'testpassword123',
+    email: string = generateUniqueEmail(),
+    password: string = DEFAULT_TEST_VALUES.PASSWORD,
     name?: string,
-    options?: {
-        roleId?: number;
-        ownLanguageId?: number;
-        learnLanguageId?: number;
-        interfaceLanguageId?: number;
-    },
+    options?: CreateTestUserOptions,
 ) {
     const prisma = createTestPrismaClient();
     const bcrypt = require('bcryptjs');
@@ -94,7 +108,7 @@ export async function createTestUser(
         const userData: any = {
             email,
             password: hashedPassword,
-            name: name || `Test User ${Date.now()}`,
+            name: name || generateUniqueName(),
             roleId,
         };
 
@@ -146,7 +160,7 @@ export async function createTestWord(
             languageId = await getLanguageId(options.languageCode);
         }
         if (!languageId) {
-            languageId = await getLanguageId('en'); // English by default
+            languageId = await getLanguageId(DEFAULT_TEST_VALUES.LANGUAGE_CODE);
         }
 
         // Определяем statusId
@@ -155,7 +169,7 @@ export async function createTestWord(
             statusId = await getWordStatusId(options.statusCode);
         }
         if (!statusId) {
-            statusId = await getWordStatusId('NOT_LEARNED'); // NOT_LEARNED by default
+            statusId = await getWordStatusId(DEFAULT_TEST_VALUES.WORD_STATUS);
         }
 
         const word = await prisma.word.create({
@@ -206,12 +220,12 @@ export async function createTestWordGroup(
             languageId = await getLanguageId(options.languageCode);
         }
         if (!languageId) {
-            languageId = await getLanguageId('en'); // English by default
+            languageId = await getLanguageId(DEFAULT_TEST_VALUES.LANGUAGE_CODE);
         }
 
         const wordGroup = await prisma.wordGroup.create({
             data: {
-                name: `test-group-${Date.now()}-${name}`,
+                name: generateUniqueGroupName(name),
                 createdByUserId,
                 languageId,
                 visibility: options?.visibility || 'PRIVATE',
@@ -249,7 +263,7 @@ export async function createTestWords(
     for (let i = 0; i < count; i++) {
         const word = await createTestWord(userId, {
             ...options,
-            customWord: `test-word-${Date.now()}-${i}`,
+            customWord: `test-word-${Date.now()}-${Math.random().toString(36).substring(2, 9)}-${i}`,
         });
         words.push(word);
     }
