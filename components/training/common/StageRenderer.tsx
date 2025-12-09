@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Stage1Training } from '../Stage1Training/Stage1Training';
 import { Stage2Training } from '../Stage2Training/Stage2Training';
 import { Stage3Training } from '../Stage3Training/Stage3Training';
@@ -5,6 +6,7 @@ import { Stage4Training } from '../Stage4Training/Stage4Training';
 import { Stage5Training } from '../Stage5Training/Stage5Training';
 import { Stage6Training } from '../Stage6Training/Stage6Training';
 import { Word, TrainingStage } from '@/types/training.types';
+import { shuffleArray } from '@/lib/training-utils';
 
 interface StageRendererProps {
     stage: TrainingStage;
@@ -19,6 +21,13 @@ export function StageRenderer({
     onComplete,
     isLastStage = false,
 }: StageRendererProps) {
+    // Перемешиваем слова для каждого этапа отдельно
+    // Это гарантирует, что каждый этап получает свой случайный порядок слов
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const shuffledWords = useMemo(() => {
+        return shuffleArray(words);
+    }, [stage, words]);
+
     const StageComponents = {
         1: Stage1Training,
         2: Stage2Training,
@@ -36,7 +45,7 @@ export function StageRenderer({
 
     return (
         <StageComponent
-            words={words}
+            words={shuffledWords}
             onComplete={onComplete}
             isLastStage={isLastStage}
         />
