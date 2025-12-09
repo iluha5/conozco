@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/shared';
 import { trainingApi } from '@/lib/api/training.api';
 import {
@@ -13,6 +14,7 @@ import {
  */
 export function useTrainingLogic() {
     const { toast } = useToast();
+    const queryClient = useQueryClient();
 
     const handleStageComplete = useCallback(
         async (
@@ -39,6 +41,19 @@ export function useTrainingLogic() {
                     await trainingApi.markWordsAsLearned(
                         trainingWords.map(w => w.id),
                     );
+
+                    // Инвалидируем кэш React Query для обновления списков слов
+                    // Это гарантирует, что при следующем открытии /training/setup
+                    // будут загружены актуальные данные без уже выученных слов
+                    await queryClient.invalidateQueries({
+                        queryKey: ['words'],
+                    });
+                    await queryClient.invalidateQueries({
+                        queryKey: [
+                            'words',
+                            { status: 'NOT_LEARNED', limit: 120 },
+                        ],
+                    });
 
                     // Получаем обновленный список слов
                     const allWords = await trainingApi.fetchWords();
@@ -91,7 +106,7 @@ export function useTrainingLogic() {
                 completed: false,
             };
         },
-        [toast],
+        [toast, queryClient],
     );
 
     return { handleStageComplete };
