@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { MobileSidebar } from './MobileSidebar';
 
+import { NavigationLink } from './Header/components/NavigationLink';
 function HeaderSkeleton() {
     return (
         <header className="border-b bg-white">
@@ -23,7 +24,7 @@ function HeaderSkeleton() {
                 <div className="h-7 w-32 bg-gray-200 rounded animate-pulse" />
 
                 {/* Desktop version skeleton */}
-                <div className="hidden lg:flex items-center gap-4">
+                <div className="hidden md:flex items-center gap-4">
                     <div className="flex items-center gap-2">
                         <div className="w-4 h-4 bg-gray-200 rounded-full animate-pulse" />
                         <div className="h-5 w-40 bg-gray-200 rounded animate-pulse" />
@@ -32,7 +33,7 @@ function HeaderSkeleton() {
                 </div>
 
                 {/* Mobile hamburger skeleton */}
-                <div className="lg:hidden">
+                <div className="md:hidden">
                     <div className="w-10 h-10 bg-gray-200 rounded animate-pulse" />
                 </div>
             </div>
@@ -57,7 +58,7 @@ export function Header() {
             <header className="border-b bg-white">
                 <div
                     data-test="header-wrapper"
-                    className="container mx-auto px-4 py-3 flex items-center justify-between lg:justify-start lg:gap-10"
+                    className="container mx-auto px-4 py-3 flex items-center justify-between md:justify-start md:gap-10"
                 >
                     <Link
                         href="/"
@@ -67,43 +68,35 @@ export function Header() {
                     </Link>
 
                     {/* Desktop version */}
-                    <nav className="hidden lg:flex items-center justify-between gap-4 w-full">
+                    <nav className="hidden md:flex items-center justify-between gap-4 w-full">
                         <div className="flex items-center gap-4">
-                            <Link
-                                href="/training/list"
-                                className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900 relative group mr-6"
+                            <NavigationLink
+                                href="/training/setup"
+                                icon={Activity}
+                                className="mr-6"
                             >
-                                <Activity className="w-4 h-4" />
                                 Тренировка
-                                <span className="absolute -bottom-1 left-0 w-0 h-px bg-gray-900 transition-all duration-200 group-hover:w-full" />
-                            </Link>
-                            <Link
+                            </NavigationLink>
+                            <NavigationLink
                                 href="/words"
-                                className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900 relative group mr-6"
+                                icon={BookOpen}
+                                className="mr-6"
                             >
-                                <BookOpen className="w-4 h-4" />
                                 Слова
-                                <span className="absolute -bottom-1 left-0 w-0 h-px bg-gray-900 transition-all duration-200 group-hover:w-full" />
-                            </Link>
-                            <Link
+                            </NavigationLink>
+                            <NavigationLink
                                 href="/word-groups"
-                                className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900 relative group mr-6"
+                                icon={Layers}
+                                className="mr-6"
                             >
-                                <Layers className="w-4 h-4" />
                                 Группы слов
-                                <span className="absolute -bottom-1 left-0 w-0 h-px bg-gray-900 transition-all duration-200 group-hover:w-full" />
-                            </Link>
-                            <Link
-                                href="/settings"
-                                className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900 relative group"
-                            >
-                                <Settings className="w-4 h-4" />
+                            </NavigationLink>
+                            <NavigationLink href="/settings" icon={Settings}>
                                 Настройки
-                                <span className="absolute -bottom-1 left-0 w-0 h-px bg-gray-900 transition-all duration-200 group-hover:w-full" />
-                            </Link>
+                            </NavigationLink>
                         </div>
 
-                        <div className="hidden lg:flex items-center justify-end gap-6">
+                        <div className="hidden md:flex items-center justify-end gap-6">
                             <div className="flex items-center gap-2 text-sm">
                                 <User className="w-4 h-4 text-gray-600" />
                                 <span className="text-gray-700">
@@ -130,7 +123,7 @@ export function Header() {
                     </nav>
 
                     {/* Mobile hamburger menu */}
-                    <div className="lg:hidden">
+                    <div className="md:hidden">
                         <Button
                             variant="ghost"
                             size="icon"
