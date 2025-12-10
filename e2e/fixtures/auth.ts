@@ -122,8 +122,35 @@ export async function createAndLoginUser(
     const password = credentials?.password || DEFAULT_TEST_VALUES.PASSWORD;
     const name = credentials?.name || generateUniqueName();
 
-    // Создаем пользователя в БД
-    const user = await createTestUser(email, password, name);
+    // Получаем ID языков для настройки пользователя по умолчанию
+    const { getLanguageId } = await import('./test-data');
+    const enLanguageId = await getLanguageId('en');
+    const ruLanguageId = await getLanguageId('ru');
+
+    // Создаем пользователя в БД с настройками языков
+    const user = await createTestUser(email, password, name, {
+        learnLanguageId: enLanguageId,
+        ownLanguageId: ruLanguageId,
+        interfaceLanguageId: ruLanguageId,
+    });
+
+    // Обновляем флаг hasConfigured для пользователя (если пользователь существует)
+    try {
+        const { createTestPrismaClient } = await import('./db');
+        const prisma = createTestPrismaClient();
+        const existingUser = await prisma.user.findUnique({
+            where: { id: user.id },
+        });
+        if (existingUser) {
+            await prisma.user.update({
+                where: { id: user.id },
+                data: { hasConfigured: true },
+            });
+        }
+        await prisma.$disconnect();
+    } catch (error) {
+        // Игнорируем ошибки обновления - пользователь может быть уже настроен
+    }
 
     // Авторизуем через UI
     await loginViaUI(page, { email, password, name });

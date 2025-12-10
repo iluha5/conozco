@@ -302,17 +302,12 @@ export async function createTestBaseWord(
             throw new Error('Word source "native" not found');
         }
 
-        const baseWord = await prisma.baseWord.create({
-            data: {
-                word,
-                languageId,
-                sourceId: source.id,
-                translations: {
-                    create: {
-                        languageId: translationLanguageId,
-                        translation,
-                        priority: 1,
-                    },
+        // Проверяем, существует ли уже базовое слово
+        let baseWord = await prisma.baseWord.findUnique({
+            where: {
+                word_languageId: {
+                    word,
+                    languageId,
                 },
             },
             include: {
@@ -320,6 +315,57 @@ export async function createTestBaseWord(
                 language: true,
             },
         });
+
+        if (!baseWord) {
+            // Создаем новое базовое слово
+            baseWord = await prisma.baseWord.create({
+                data: {
+                    word,
+                    languageId,
+                    sourceId: source.id,
+                    translations: {
+                        create: {
+                            languageId: translationLanguageId,
+                            translation,
+                            priority: 1,
+                        },
+                    },
+                },
+                include: {
+                    translations: true,
+                    language: true,
+                },
+            });
+        } else {
+            // Проверяем, существует ли уже перевод
+            const existingTranslation = await prisma.wordTranslation.findFirst({
+                where: {
+                    baseWordId: baseWord.id,
+                    languageId: translationLanguageId,
+                },
+            });
+
+            if (!existingTranslation) {
+                // Добавляем перевод к существующему слову
+                await prisma.wordTranslation.create({
+                    data: {
+                        baseWordId: baseWord.id,
+                        languageId: translationLanguageId,
+                        translation,
+                        priority: 1,
+                    },
+                });
+
+                // Обновляем объект baseWord с новым переводом
+                baseWord = await prisma.baseWord.findUnique({
+                    where: { id: baseWord.id },
+                    include: {
+                        translations: true,
+                        language: true,
+                    },
+                });
+            }
+        }
 
         return baseWord;
     } finally {
