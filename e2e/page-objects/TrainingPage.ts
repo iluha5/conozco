@@ -91,4 +91,70 @@ export class TrainingPage extends BasePage {
         );
         await expect(stageIndicator.first()).toBeVisible();
     }
+
+    /**
+     * Клик на этап в селекторе этапов
+     * @param stage - номер этапа (1-6)
+     */
+    async clickStage(stage: number) {
+        // Ищем карточку этапа по тексту "Этап {stage}" (десктоп) или просто "{stage}" (мобильный)
+        // Используем селектор, который находит видимый текст
+        const stageTextDesktop = this.page
+            .locator(`text=/^Этап ${stage}$/i`)
+            .filter({ hasNotText: 'md:hidden' }); // Исключаем скрытые элементы
+
+        const stageTextMobile = this.page
+            .locator(`text=/^${stage}$/i`)
+            .filter({ hasNotText: 'hidden' }); // Исключаем скрытые элементы
+
+        // Пробуем найти видимый текст этапа
+        let stageText = null;
+        const desktopCount = await stageTextDesktop.count();
+        if (desktopCount > 0) {
+            stageText = stageTextDesktop.first();
+        } else {
+            const mobileCount = await stageTextMobile.count();
+            if (mobileCount > 0) {
+                stageText = stageTextMobile.first();
+            }
+        }
+
+        if (stageText) {
+            // Находим родительский Card компонент (карточку этапа)
+            // Card компонент содержит этот текст и имеет onClick обработчик
+            const stageCard = stageText
+                .locator('..')
+                .locator('..')
+                .locator('..')
+                .first();
+            await stageCard.waitFor({ state: 'visible', timeout: 3000 });
+            await stageCard.click();
+        } else {
+            // Fallback: находим все карточки этапов и кликаем по индексу
+            // Ищем контейнер с карточками этапов (обычно это div с flex классом)
+            const cardsContainer = this.page
+                .locator('div:has-text("Этап 1"), div:has-text("1")')
+                .locator('..')
+                .locator('..');
+            const cards = cardsContainer.locator('div[class*="Card"]');
+            const cardCount = await cards.count();
+
+            if (cardCount >= stage) {
+                await cards.nth(stage - 1).click();
+            } else {
+                throw new Error(`Stage ${stage} card not found`);
+            }
+        }
+
+        await this.waitForLoading();
+    }
+
+    /**
+     * Проверка заголовка этапа
+     * @param expectedTitle - ожидаемый заголовок этапа
+     */
+    async expectStageTitle(expectedTitle: string) {
+        const title = this.page.locator(`text=/^${expectedTitle}$/i`);
+        await expect(title.first()).toBeVisible({ timeout: 5000 });
+    }
 }
