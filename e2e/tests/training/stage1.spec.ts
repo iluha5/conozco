@@ -68,22 +68,21 @@ test.describe('Тренировки - Этап 1', () => {
                 await page.waitForURL(/\/training/, { timeout: 5000 });
                 await page.waitForTimeout(2000); // Ждем загрузки страницы
 
-                // Проверяем, что тренировка началась и этап 1 загрузился
+                // Проверяем, что тренировка началась
                 const trainingPage = new TrainingPage(page);
 
                 // Проверяем загрузку страницы тренировки
                 await trainingPage.expectPageLoaded();
 
+                // Кликаем на этап 1 в селекторе этапов
+                await trainingPage.clickStage(1);
+                await page.waitForTimeout(1000); // Ждем переключения этапа
+
                 // Проверяем, что этап 1 отображается
-                try {
-                    await trainingPage.expectStage(1);
-                } catch (error) {
-                    // Если этап не найден, проверяем хотя бы наличие элементов тренировки
-                    const stageIndicator = page.locator('text=/Этап|Stage/i');
-                    await stageIndicator
-                        .first()
-                        .waitFor({ state: 'visible', timeout: 3000 });
-                }
+                await trainingPage.expectStage(1);
+
+                // Проверяем заголовок этапа 1
+                await trainingPage.expectStageTitle('Просмотр и запоминание');
             }
         }
     });
