@@ -172,4 +172,36 @@ export class TrainingSetupPage extends BasePage {
         const button = this.page.locator(this.startTrainingButton);
         await expect(button).toBeDisabled();
     }
+
+    /**
+     * Ждет загрузки списка слов и запускает тренировку
+     * @returns true если тренировка успешно запущена, false если кнопка не активна
+     */
+    async waitAndStartTraining(): Promise<boolean> {
+        // Ждем загрузки списка слов (приложение автоматически выбирает первые слова)
+        await this.page.waitForTimeout(2000);
+
+        // Проверяем, что кнопка запуска существует и видна
+        const startButton = this.page.locator(this.startTrainingButton);
+        const buttonVisible = await startButton
+            .isVisible({ timeout: 5000 })
+            .catch(() => false);
+
+        if (!buttonVisible) {
+            return false;
+        }
+
+        // Проверяем, что кнопка активна (если слова выбраны автоматически)
+        const isEnabled = await startButton.isEnabled().catch(() => false);
+
+        if (!isEnabled) {
+            return false;
+        }
+
+        // Запускаем тренировку
+        await this.startTraining();
+        await this.page.waitForTimeout(3000);
+
+        return true;
+    }
 }

@@ -46,3 +46,12 @@ export {
     getWordGroupsViaAPI,
     createWordGroupViaAPI,
 } from './api-helpers';
+
+// Training fixtures
+export {
+    setupTrainingWithWords,
+    openTrainingStage,
+    createTrainingWordPair,
+    type TrainingWordPair,
+    type TrainingSetupResult,
+} from './training';

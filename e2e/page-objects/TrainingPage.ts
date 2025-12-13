@@ -157,4 +157,63 @@ export class TrainingPage extends BasePage {
         const title = this.page.locator(`text=/^${expectedTitle}$/i`);
         await expect(title.first()).toBeVisible({ timeout: 5000 });
     }
+
+    /**
+     * Ждет запуска тренировки и загрузки страницы
+     */
+    async waitForTrainingStart() {
+        // Ждем перехода на URL /training
+        await this.page.waitForURL(/\/training/, { timeout: 5000 });
+        // Ждем загрузки страницы
+        await this.page.waitForTimeout(2000);
+        // Проверяем, что страница тренировки загружена
+        await this.expectPageLoaded();
+    }
+
+    /**
+     * Проверяет, что этап загружен и отображается
+     * @param stage - номер этапа
+     * @param expectedTitle - ожидаемый заголовок этапа
+     */
+    async expectStageLoaded(stage: number, expectedTitle: string) {
+        // Проверяем номер этапа
+        await this.expectStage(stage);
+        // Проверяем заголовок этапа
+        await this.expectStageTitle(expectedTitle);
+
+        // Для этапа 6 дополнительно проверяем наличие специфичных элементов
+        if (stage === 6) {
+            await this.expectStage6Content();
+        }
+    }
+
+    /**
+     * Проверяет наличие специфичных элементов этапа 6 (составление слова по голосу)
+     */
+    async expectStage6Content() {
+        // Проверяем наличие кнопки "Прослушать слово"
+        const playButton = this.page.locator(
+            'button:has-text("Прослушать слово"), button:has-text("Проигрывается...")',
+        );
+        await expect(playButton.first()).toBeVisible({ timeout: 5000 });
+
+        // Проверяем наличие области для составления слова
+        // Ищем либо текст "Выберите буквы ниже", либо область с буквами
+        const wordBuilderArea = this.page.locator(
+            'text=Выберите буквы ниже, div:has-text("Выберите буквы ниже")',
+        );
+        const hasWordBuilder = await wordBuilderArea
+            .isVisible({ timeout: 3000 })
+            .catch(() => false);
+
+        // Если не нашли текст, проверяем наличие области с border-dashed (характерная для WordBuilder)
+        if (!hasWordBuilder) {
+            const dashedBorderArea = this.page.locator(
+                'div.border-dashed.border-gray-300',
+            );
+            await expect(dashedBorderArea.first()).toBeVisible({
+                timeout: 5000,
+            });
+        }
+    }
 }
