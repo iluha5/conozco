@@ -19,6 +19,7 @@ export function NextButton({
                 onClick={onNext}
                 className="gap-2"
                 disabled={isLoading}
+                data-testid="stage1-next-button"
             >
                 {isLastWord ? 'Завершить' : 'Следующее слово'}
                 {isLoading ? (

@@ -152,10 +152,16 @@ export class TrainingPage extends BasePage {
     /**
      * Проверка заголовка этапа
      * @param expectedTitle - ожидаемый заголовок этапа
+     * @param options - опции для проверки (timeout)
      */
-    async expectStageTitle(expectedTitle: string) {
+    async expectStageTitle(
+        expectedTitle: string,
+        options?: { timeout?: number },
+    ) {
         const title = this.page.locator(`text=/^${expectedTitle}$/i`);
-        await expect(title.first()).toBeVisible({ timeout: 5000 });
+        await expect(title.first()).toBeVisible({
+            timeout: options?.timeout || 5000,
+        });
     }
 
     /**
@@ -227,6 +233,192 @@ export class TrainingPage extends BasePage {
             '[data-testid="stage1-show-translation-button"]',
         );
         await showTranslationButton.count(); // Проверяем наличие элемента в DOM
+    }
+
+    /**
+     * Показывает перевод на этапе 1
+     */
+    async showTranslationStage1() {
+        const showTranslationButton = this.page.locator(
+            '[data-testid="stage1-show-translation-button"]',
+        );
+        const isVisible = await showTranslationButton
+            .isVisible({ timeout: 2000 })
+            .catch(() => false);
+        if (isVisible) {
+            await showTranslationButton.click();
+            // Ждем появления кнопки "Следующее слово" или "Завершить"
+            await this.page
+                .locator('[data-testid="stage1-next-button"]')
+                .waitFor({ timeout: 3000 });
+        }
+    }
+
+    /**
+     * Нажимает кнопку "Следующее слово" или "Завершить" на этапе 1
+     */
+    async clickNextStage1() {
+        const nextButton = this.page.locator(
+            '[data-testid="stage1-next-button"]',
+        );
+        await expect(nextButton).toBeVisible({ timeout: 5000 });
+        await nextButton.click();
+        // Ждем завершения действия (переход к следующему слову или завершение этапа)
+        await this.page.waitForTimeout(500);
+    }
+
+    /**
+     * Выбирает правильный перевод на этапе 2
+     * @param correctTranslation Правильный перевод слова
+     */
+    async selectCorrectTranslationStage2(correctTranslation: string) {
+        const translationOptions = this.page.locator(
+            '[data-testid="stage2-translation-options"]',
+        );
+        await expect(translationOptions).toBeVisible({ timeout: 5000 });
+
+        // Находим кнопку с правильным переводом
+        const correctButton = translationOptions.locator(
+            `button:has-text("${correctTranslation}")`,
+        );
+        await expect(correctButton).toBeVisible({ timeout: 5000 });
+        await correctButton.click();
+
+        // Ждем завершения действия (автоматический переход или завершение этапа)
+        await this.page.waitForTimeout(2000);
+    }
+
+    /**
+     * Сопоставляет все пары на этапе 3
+     * Для упрощения, сопоставляет первую пару
+     */
+    async matchAllPairsStage3() {
+        const foreignWordsColumn = this.page.locator(
+            '[data-testid="stage3-foreign-words-column"]',
+        );
+        const translationsColumn = this.page.locator(
+            '[data-testid="stage3-translations-column"]',
+        );
+
+        await expect(foreignWordsColumn).toBeVisible({ timeout: 5000 });
+        await expect(translationsColumn).toBeVisible({ timeout: 5000 });
+
+        // Получаем все пары слов
+        const foreignWords = foreignWordsColumn.locator(
+            'button:not([disabled])',
+        );
+        const translations = translationsColumn.locator(
+            'button:not([disabled])',
+        );
+
+        const foreignWordsCount = await foreignWords.count();
+        const translationsCount = await translations.count();
+
+        // Сопоставляем все пары
+        for (
+            let i = 0;
+            i < Math.min(foreignWordsCount, translationsCount);
+            i++
+        ) {
+            const foreignWord = foreignWords.nth(i);
+            const translation = translations.nth(i);
+
+            await foreignWord.click();
+            await this.page.waitForTimeout(300);
+            await translation.click();
+            await this.page.waitForTimeout(1500); // Ждем завершения сопоставления
+        }
+
+        // Ждем завершения этапа (автоматический переход)
+        await this.page.waitForTimeout(2000);
+    }
+
+    /**
+     * Составляет слово по буквам на этапе 4
+     * @param word Текст слова для составления
+     */
+    async buildWordStage4(word: string) {
+        const lettersGrid = this.page.locator(
+            '[data-testid="stage4-letters-grid"]',
+        );
+        await expect(lettersGrid).toBeVisible({ timeout: 5000 });
+
+        const letters = word.toLowerCase().split('');
+
+        // Кликаем на буквы в правильном порядке
+        for (const letter of letters) {
+            const letterButton = lettersGrid
+                .locator(`button:not([disabled]):has-text("${letter}")`)
+                .first();
+            await expect(letterButton).toBeVisible({ timeout: 5000 });
+            await letterButton.click();
+            await this.page.waitForTimeout(300);
+        }
+
+        // Ждем завершения действия (автоматический переход или завершение этапа)
+        await this.page.waitForTimeout(2000);
+    }
+
+    /**
+     * Составляет предложение на этапе 5
+     * @param sentenceWords Массив слов предложения в правильном порядке
+     */
+    async buildSentenceStage5(sentenceWords: string[]) {
+        const wordsGrid = this.page.locator(
+            '[data-testid="stage5-words-grid"]',
+        );
+        await expect(wordsGrid).toBeVisible({ timeout: 5000 });
+
+        // Кликаем на слова в правильном порядке
+        for (const word of sentenceWords) {
+            const wordButton = wordsGrid
+                .locator(`button:not([disabled]):has-text("${word}")`)
+                .first();
+            await expect(wordButton).toBeVisible({ timeout: 5000 });
+            await wordButton.click();
+            await this.page.waitForTimeout(300);
+        }
+
+        // Ждем завершения действия (автоматический переход или завершение этапа)
+        await this.page.waitForTimeout(2000);
+    }
+
+    /**
+     * Составляет слово по голосу на этапе 6
+     * @param word Текст слова для составления
+     */
+    async buildWordStage6(word: string) {
+        // Проигрываем слово (если нужно)
+        const playButton = this.page.locator(
+            '[data-testid="stage6-play-button"]',
+        );
+        const isPlayButtonVisible = await playButton
+            .isVisible({ timeout: 2000 })
+            .catch(() => false);
+        if (isPlayButtonVisible && !(await playButton.isDisabled())) {
+            await playButton.click();
+            await this.page.waitForTimeout(1000); // Ждем проигрывания
+        }
+
+        const lettersGrid = this.page.locator(
+            '[data-testid="stage6-letters-grid"]',
+        );
+        await expect(lettersGrid).toBeVisible({ timeout: 5000 });
+
+        const letters = word.toLowerCase().split('');
+
+        // Кликаем на буквы в правильном порядке
+        for (const letter of letters) {
+            const letterButton = lettersGrid
+                .locator(`button:not([disabled]):has-text("${letter}")`)
+                .first();
+            await expect(letterButton).toBeVisible({ timeout: 5000 });
+            await letterButton.click();
+            await this.page.waitForTimeout(300);
+        }
+
+        // Ждем завершения действия (автоматический переход или завершение этапа)
+        await this.page.waitForTimeout(2000);
     }
 
     /**
