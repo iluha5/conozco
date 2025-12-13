@@ -20,6 +20,7 @@ export function PlayWordButton({
                 variant="outline"
                 size="sm"
                 className="gap-2"
+                data-testid="stage6-play-button"
             >
                 <Volume2
                     className={`w-4 h-4 ${isPlaying ? 'animate-pulse' : ''}`}

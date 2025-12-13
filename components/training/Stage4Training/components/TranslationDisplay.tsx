@@ -7,7 +7,10 @@ type TranslationDisplayProps = {
 
 export function TranslationDisplay({ word }: TranslationDisplayProps) {
     return (
-        <div className="text-center mb-6">
+        <div
+            className="text-center mb-6"
+            data-testid="stage4-translation-display"
+        >
             <p className="text-4xl font-bold text-purple-600 mb-2 font-ubuntu">
                 {getWordTranslation(word)}
             </p>

@@ -15,7 +15,10 @@ export function ForeignWordsColumn({
     onForeignClick,
 }: ForeignWordsColumnProps) {
     return (
-        <div className="space-y-3 transition-all duration-200 ease-in-out">
+        <div
+            className="space-y-3 transition-all duration-200 ease-in-out"
+            data-testid="stage3-foreign-words-column"
+        >
             {pairs.map(pair => (
                 <Button
                     key={pair.id}

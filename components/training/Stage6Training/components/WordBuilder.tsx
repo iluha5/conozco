@@ -16,7 +16,10 @@ export function WordBuilder({
     onRemoveLetter,
 }: WordBuilderProps) {
     return (
-        <div className="relative min-h-[132px] p-3 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+        <div
+            className="relative min-h-[132px] p-3 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300"
+            data-testid="stage6-word-builder"
+        >
             <div className="flex flex-wrap gap-2 justify-center">
                 {userWord.length === 0 ? (
                     <p className="text-gray-400">Выберите буквы ниже</p>

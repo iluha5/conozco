@@ -17,7 +17,10 @@ export function TranslationsColumn({
     onTranslationClick,
 }: TranslationsColumnProps) {
     return (
-        <div className="space-y-3 transition-all duration-200 ease-in-out">
+        <div
+            className="space-y-3 transition-all duration-200 ease-in-out"
+            data-testid="stage3-translations-column"
+        >
             {shuffledTranslations.map(translation => {
                 const pair = pairs.find(p => p.translation === translation);
                 const isMatched = pair?.matched || false;

@@ -16,7 +16,10 @@ export function SentenceBuilder({
     onRemoveWord,
 }: SentenceBuilderProps) {
     return (
-        <div className="relative min-h-[132px] p-3 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+        <div
+            className="relative min-h-[132px] p-3 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300"
+            data-testid="stage5-sentence-builder"
+        >
             <div className="flex flex-wrap gap-2 justify-center">
                 {userSentence.length === 0 ? (
                     <p className="text-gray-400">Выберите слова ниже</p>

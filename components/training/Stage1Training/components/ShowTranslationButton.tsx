@@ -19,6 +19,7 @@ export function ShowTranslationButton({
                         ? 'opacity-0 pointer-events-none'
                         : 'opacity-100'
                 }`}
+                data-testid="stage1-show-translation-button"
             >
                 Показать перевод
             </Button>

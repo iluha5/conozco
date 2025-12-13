@@ -14,7 +14,10 @@ export function LettersGrid({
     onLetterClick,
 }: LettersGridProps) {
     return (
-        <div className="flex flex-wrap gap-2 justify-center max-w-md mx-auto">
+        <div
+            className="flex flex-wrap gap-2 justify-center max-w-md mx-auto"
+            data-testid="stage6-letters-grid"
+        >
             {letters.map((letterState, index) => (
                 <div key={index} className="relative w-12 h-12">
                     {letterState.selected ? (

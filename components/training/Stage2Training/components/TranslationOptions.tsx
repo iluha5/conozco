@@ -22,7 +22,10 @@ export function TranslationOptions({
     const correctTranslation = getWordTranslation(currentWord);
 
     return (
-        <div className="grid grid-cols-1 gap-3">
+        <div
+            className="grid grid-cols-1 gap-3"
+            data-testid="stage2-translation-options"
+        >
             {options.map((translationOption, optionIndex) => {
                 const styles = getButtonStyles(
                     translationOption,

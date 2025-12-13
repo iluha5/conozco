@@ -45,6 +45,47 @@ async function main() {
     }
     console.log('✅ Ensured word statuses');
 
+    // Create sentence types
+    const sentenceTypesData = [
+        {
+            code: 'AFFIRMATIVE',
+            displayName: 'Утвердительное',
+            isNegative: false,
+            isQuestion: false,
+        },
+        {
+            code: 'NEGATIVE',
+            displayName: 'Отрицательное',
+            isNegative: true,
+            isQuestion: false,
+        },
+        {
+            code: 'QUESTION',
+            displayName: 'Вопросительное',
+            isNegative: false,
+            isQuestion: true,
+        },
+        {
+            code: 'NEGATIVE_QUESTION',
+            displayName: 'Отрицательно-вопросительное',
+            isNegative: true,
+            isQuestion: true,
+        },
+    ];
+
+    for (const type of sentenceTypesData) {
+        await prisma.sentenceType.upsert({
+            where: { code: type.code },
+            update: {
+                displayName: type.displayName,
+                isNegative: type.isNegative,
+                isQuestion: type.isQuestion,
+            },
+            create: type,
+        });
+    }
+    console.log('✅ Ensured sentence types');
+
     // Create languages
     const languagesData = [
         { code: 'en', name: 'English' },

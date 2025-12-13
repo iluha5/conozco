@@ -6,7 +6,7 @@ type TranslationDisplayProps = {
 
 export function TranslationDisplay({ phrase }: TranslationDisplayProps) {
     return (
-        <div className="text-center">
+        <div className="text-center" data-testid="stage5-translation-display">
             <p className="text-2xl font-bold text-purple-600 mb-2">
                 {phrase.translation}
             </p>

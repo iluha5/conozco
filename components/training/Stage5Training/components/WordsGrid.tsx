@@ -14,7 +14,10 @@ export function WordsGrid({
     onWordClick,
 }: WordsGridProps) {
     return (
-        <div className="flex flex-wrap gap-2 justify-center max-w-2xl mx-auto">
+        <div
+            className="flex flex-wrap gap-2 justify-center max-w-2xl mx-auto"
+            data-testid="stage5-words-grid"
+        >
             {words.map((wordState, index) => (
                 <div key={index} className="relative">
                     {wordState.selected ? (

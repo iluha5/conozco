@@ -28,7 +28,10 @@ export function WordDisplayWithSound({
     };
 
     return (
-        <div className="bg-white border border-gray-300 rounded-xl px-4 py-4 sm:px-5 sm:py-5 md:px-5 md:py-4">
+        <div
+            className="bg-white border border-gray-300 rounded-xl px-4 py-4 sm:px-5 sm:py-5 md:px-5 md:py-4"
+            data-testid="stage1-word-display"
+        >
             <div className="flex items-center justify-center flex-wrap gap-2 sm:gap-3">
                 <h2 className="text-3xl sm:text-4xl md:text-4xl font-light text-gray-900 tracking-tight break-words break-all">
                     {wordText}
@@ -42,6 +45,7 @@ export function WordDisplayWithSound({
                         isPlaying ? 'opacity-90' : ''
                     }`}
                     disabled={!speechSupported}
+                    data-testid="stage1-play-button"
                 >
                     {isPlaying ? (
                         <Pause className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4" />
