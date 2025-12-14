@@ -1,0 +1,69 @@
+## Global Rules for All AI Models in Cursor
+
+## Git Commit Guidelines
+- NEVER commit without explicit user instruction
+- ALWAYS write git commit messages in English.
+
+## General Instructions
+- Follow the user's instructions precisely.
+- Use English for all code comments and documentation unless specified otherwise.
+- ALWAYS ask for user permission before running database reset operations, even in unrestricted modes.
+- ALWAYS use named callbacks for actions instead of anonymous arrow functions in JSX onClick handlers and similar event handlers. Create descriptive function names that clearly indicate their purpose.
+- ALWAYS add empty lines before and after conditional statements (if) and all loop statements (for, while, do-while).
+- NEVER use single-letter variable names. Always use descriptive, meaningful variable names that clearly indicate their purpose (e.g., use `word` instead of `w`, `index` instead of `i`, `translation` instead of `t`, `result` instead of `r`).
+- ALWAYS check for and remove unused variables (excluding type definitions). Before committing, verify that all declared variables are actually used in the code. Remove any unused state variables, function parameters (unless required by interface), and destructured values that are not used.
+- For React components, create a dedicated folder with the component name (PascalCase) and export the component directly from a file with the same name, without using index.ts files or re-exports.
+- Break down complex JSX into logical atomic components within the main component's folder under a `components/` subdirectory.
+- Extract custom hooks and helper functions into respective `hooks/` and `helpers/` subdirectories within the component folder.
+- ALWAYS name hook files in CamelCase matching the hook name (e.g., `useTranslationOptions.ts` for hook `useTranslationOptions`, NOT `use-translation-options.ts`).
+- Extract shared types into a centralized `typing.ts` file within the component folder.
+- When creating dialog/popup components with action buttons (DialogFooter), ALWAYS place buttons in a row (flex-row) for mobile view when possible, instead of stacking them in a column. Use `flex-row justify-end gap-2` or similar classes to ensure buttons are displayed horizontally on mobile devices.
+- ALWAYS use the `useHashDialog` hook from `@/hooks/shared` for ALL dialogs and modals. This enables closing dialogs with the browser back button. Usage: `const { open, setOpen } = useHashDialog('unique-dialog-id');` where `unique-dialog-id` is a unique string identifier for the dialog (e.g., 'add-word-dialog', 'confirm-delete', 'settings-modal').
+
+## Utility Libraries Guidelines
+- **PREFER using Lodash utilities over custom implementations** when available. Before writing custom utility functions (e.g., array manipulation, object operations, string manipulation, etc.), check if Lodash provides a suitable function.
+- Use `lodash-es` package (ES modules version) for better tree-shaking support. Import individual functions: `import { shuffle, merge, memoize } from 'lodash-es';`
+- Next.js Webpack configuration automatically performs tree-shaking for ES modules, so only used functions will be included in the bundle.
+- Only create custom utility functions when:
+  - Lodash doesn't provide the needed functionality
+  - The custom implementation is significantly simpler or more performant for the specific use case
+  - The functionality is domain-specific and wouldn't benefit from a generic library
+
+## Database Operations Guidelines
+- **ALWAYS create a database backup BEFORE performing any dangerous database operations.**
+- Dangerous database operations include:
+  - Database resets or drops (DROP DATABASE, DROP TABLE, TRUNCATE)
+  - Mass deletions (DELETE without WHERE, or deleting large amounts of data)
+  - Schema changes that could cause data loss (ALTER TABLE DROP COLUMN, etc.)
+  - Migration operations that modify or delete existing data
+  - Any operation that could result in irreversible data loss
+- To create a backup, run: `./scripts/backup-db.sh`
+- Wait for backup confirmation before proceeding with the dangerous operation.
+- If the backup fails, DO NOT proceed with the dangerous operation.
+- For automated backups schedule, see: `scripts/backup-db/QUICK_START.md`
+
+### Database Migrations
+- **ALWAYS create a backup BEFORE running any database migrations.**
+- Before running migrations, execute: `./scripts/backup-db.sh` or `npm run db:backup`
+- Migration commands that REQUIRE backup:
+  - `npm run prisma:migrate` or `prisma migrate dev`
+  - `prisma migrate deploy`
+  - `prisma db push`
+  - `npm run prisma:seed` (when seeding production data)
+  - Any command that modifies database schema or data
+- Workflow:
+  1. Run backup: `./scripts/backup-db.sh`
+  2. Verify backup succeeded (check output for ✅)
+  3. Save backup file path for potential rollback
+  4. Proceed with migration command
+  5. Inform user of backup location
+- After successful backup, inform the user that backup is complete before proceeding.
+- Keep the backup file path visible in case rollback is needed.
+
+---
+
+You are an AI coding assistant, powered by grok-code-fast-1. You operate in Cursor.
+
+---
+
+You are an AI coding assistant, powered by sonnet 4.5. You operate in Cursor.
