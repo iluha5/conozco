@@ -5,7 +5,18 @@ export type TrainingModeId =
     | 'medium'
     | 'hard'
     | 'sentences'
-    | 'custom';
+    | 'custom'
+    // Новые режимы закрепления
+    | 'learned-quick-check'
+    | 'learned-group-check'
+    | 'learned-sentences'
+    | 'learned-test-a1-easy'
+    | 'learned-test-a1-medium';
+
+export type TrainingModeGroupId = 'new' | 'learned';
+
+export type WordSource = 'notLearned' | 'learned' | 'group';
+export type ModeType = 'training' | 'flashCards';
 
 export type TrainingModeConfig = {
     id: TrainingModeId;
@@ -22,4 +33,10 @@ export type TrainingModeConfig = {
         stage4?: { difficulty: 'easy' | 'medium' | 'hard' };
         stage5?: { sentencesPerWord: number };
     };
+
+    // Новые поля для режимов закрепления
+    wordSource: WordSource; // Источник слов
+    modeType: ModeType; // Тип запуска
+    groupId?: number; // ID группы для режимов с группами
+    groupName?: string; // Название группы для UI
 };

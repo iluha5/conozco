@@ -9,7 +9,7 @@ const getPatternUrl = (pattern: any): string => {
     return pattern?.src || pattern?.default || pattern;
 };
 
-export const TRAINING_MODES: TrainingModeConfig[] = [
+export const NEW_WORDS_TRAINING_MODES: TrainingModeConfig[] = [
     {
         id: 'quick',
         title: 'Быстрый',
@@ -26,6 +26,8 @@ export const TRAINING_MODES: TrainingModeConfig[] = [
             stage1: { showExamples: false },
             stage4: { difficulty: 'easy' },
         },
+        wordSource: 'notLearned',
+        modeType: 'training',
     },
     {
         id: 'medium',
@@ -44,6 +46,8 @@ export const TRAINING_MODES: TrainingModeConfig[] = [
             stage4: { difficulty: 'easy' },
             stage5: { sentencesPerWord: 1 },
         },
+        wordSource: 'notLearned',
+        modeType: 'training',
     },
     {
         id: 'hard',
@@ -61,6 +65,8 @@ export const TRAINING_MODES: TrainingModeConfig[] = [
             stage4: { difficulty: 'hard' },
             stage5: { sentencesPerWord: 3 },
         },
+        wordSource: 'notLearned',
+        modeType: 'training',
     },
     {
         id: 'sentences',
@@ -77,6 +83,8 @@ export const TRAINING_MODES: TrainingModeConfig[] = [
             stage1: { showExamples: false },
             stage5: { sentencesPerWord: 5 },
         },
+        wordSource: 'notLearned',
+        modeType: 'training',
     },
     {
         id: 'custom',
@@ -93,5 +101,9 @@ export const TRAINING_MODES: TrainingModeConfig[] = [
         enabledStages: [1, 2, 3, 4, 5, 6],
         wordCount: 0,
         settings: {},
+        wordSource: 'notLearned',
+        modeType: 'training',
     },
 ];
+
+export const TRAINING_MODES = NEW_WORDS_TRAINING_MODES;
