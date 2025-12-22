@@ -67,14 +67,20 @@ export async function GET(request: NextRequest) {
                 baseWord: {
                     include: {
                         translations: {
-                            where: { language: { code: translationLanguageCode } },
+                            where: {
+                                language: { code: translationLanguageCode },
+                            },
                             orderBy: { priority: 'asc' },
                             include: {
                                 partOfSpeech: true,
                             },
                         },
                         examples: {
-                            where: { translationLanguage: { code: translationLanguageCode } },
+                            where: {
+                                translationLanguage: {
+                                    code: translationLanguageCode,
+                                },
+                            },
                             include: {
                                 pronoun: true,
                                 sentenceType: true,
@@ -82,7 +88,11 @@ export async function GET(request: NextRequest) {
                             },
                         },
                         grammaticalExamples: {
-                            where: { translationLanguage: { code: translationLanguageCode } },
+                            where: {
+                                translationLanguage: {
+                                    code: translationLanguageCode,
+                                },
+                            },
                             include: {
                                 pronoun: true,
                                 tense: true,
@@ -284,14 +294,20 @@ export async function POST(request: NextRequest) {
                 baseWord: {
                     include: {
                         translations: {
-                            where: { language: { code: translationLanguageCode } },
+                            where: {
+                                language: { code: translationLanguageCode },
+                            },
                             orderBy: { priority: 'asc' },
                             include: {
                                 partOfSpeech: true,
                             },
                         },
                         examples: {
-                            where: { translationLanguage: { code: translationLanguageCode } },
+                            where: {
+                                translationLanguage: {
+                                    code: translationLanguageCode,
+                                },
+                            },
                             include: {
                                 pronoun: true,
                                 sentenceType: true,
@@ -299,7 +315,11 @@ export async function POST(request: NextRequest) {
                             },
                         },
                         grammaticalExamples: {
-                            where: { translationLanguage: { code: translationLanguageCode } },
+                            where: {
+                                translationLanguage: {
+                                    code: translationLanguageCode,
+                                },
+                            },
                             include: {
                                 pronoun: true,
                                 tense: true,

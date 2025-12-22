@@ -1,5 +1,6 @@
 {
     "extends": ["next/core-web-vitals", "plugin:prettier/recommended"],
+    "ignorePatterns": ["**/*.md"],
     "rules": {
         "no-unused-vars": [
             "error",

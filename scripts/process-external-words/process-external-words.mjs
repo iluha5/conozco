@@ -106,7 +106,8 @@ async function main() {
         CURSOR_AGENT_CMD,
         [
             '--print', // Print mode for scripts
-            '--model', DEFAULT_AI_MODEL, // Force specific AI model
+            '--model',
+            DEFAULT_AI_MODEL, // Force specific AI model
         ],
         {
             stdio: ['pipe', 'inherit', 'inherit'], // stdin for prompt, stdout/stderr inherit

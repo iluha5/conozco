@@ -87,7 +87,9 @@ export async function POST(request: NextRequest) {
                     },
                 },
                 examples: {
-                    where: { translationLanguage: { code: translationLanguageCode } },
+                    where: {
+                        translationLanguage: { code: translationLanguageCode },
+                    },
                     include: {
                         pronoun: true,
                         sentenceType: true,
@@ -95,7 +97,9 @@ export async function POST(request: NextRequest) {
                     },
                 },
                 grammaticalExamples: {
-                    where: { translationLanguage: { code: translationLanguageCode } },
+                    where: {
+                        translationLanguage: { code: translationLanguageCode },
+                    },
                     include: {
                         pronoun: true,
                         tense: true,
@@ -179,7 +183,9 @@ export async function POST(request: NextRequest) {
             });
 
             if (!targetLanguage) {
-                throw new Error(`Target language (${translationLanguageCode}) not found`);
+                throw new Error(
+                    `Target language (${translationLanguageCode}) not found`,
+                );
             }
 
             // Добавляем переводы (если их еще нет)
@@ -283,7 +289,11 @@ export async function POST(request: NextRequest) {
                         },
                     },
                     examples: {
-                        where: { translationLanguage: { code: translationLanguageCode } },
+                        where: {
+                            translationLanguage: {
+                                code: translationLanguageCode,
+                            },
+                        },
                         include: {
                             pronoun: true,
                             sentenceType: true,
@@ -291,7 +301,11 @@ export async function POST(request: NextRequest) {
                         },
                     },
                     grammaticalExamples: {
-                        where: { translationLanguage: { code: translationLanguageCode } },
+                        where: {
+                            translationLanguage: {
+                                code: translationLanguageCode,
+                            },
+                        },
                         include: {
                             pronoun: true,
                             tense: true,

@@ -27,6 +27,6 @@ pnpm-lock.yaml
 coverage
 
 # Documentation (if you want to exclude)
-# *.md
+*.md
 
 data/

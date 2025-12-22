@@ -11,8 +11,8 @@ import { STORAGE_KEYS } from '@/config/storage-keys';
 export function useTrainingData(
     settingsLoaded: boolean,
     selectionLoaded: boolean,
-    onWordsLoaded: (words: Word[]) => void,
-    onLoadingChange: (loading: boolean) => void,
+    onWordsLoaded: (_words: Word[]) => void,
+    onLoadingChange: (_loading: boolean) => void,
 ) {
     const { toast } = useToast();
 
@@ -24,8 +24,7 @@ export function useTrainingData(
                 typeof window !== 'undefined'
                     ? sessionStorage.getItem(STORAGE_KEYS.TRAINING_WORD_SOURCE)
                     : null;
-            const status =
-                wordSource === 'LEARNED' ? 'LEARNED' : 'NOT_LEARNED';
+            const status = wordSource === 'LEARNED' ? 'LEARNED' : 'NOT_LEARNED';
 
             const data = await trainingApi.fetchWords(status);
             onWordsLoaded(data);

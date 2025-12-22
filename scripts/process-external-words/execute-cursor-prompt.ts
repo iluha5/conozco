@@ -8,12 +8,8 @@ import { DEFAULT_AI_MODEL } from '../cursor/config.mjs';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Пути к файлам
-const tempDir = path.join(__dirname, 'temp');
-
 // Счетчик пайплайна
 const counterFile = path.join(__dirname, 'temp', 'pipeline-counter.txt');
-let counter = 1;
 
 async function getCurrentCounter(): Promise<number> {
     try {
@@ -157,19 +153,6 @@ async function extractWordFromPromptFileName(
     return word;
 }
 
-async function extractWordFromPromptContent(
-    promptContent: string,
-): Promise<string> {
-    // Резервная функция: ищем слово в промпте по паттерну: For the Spanish word "word"
-    const match = promptContent.match(/For the \w+ word "([^"]+)"/);
-    if (!match) {
-        throw new Error('Could not extract word from prompt content');
-    }
-    const word = match[1];
-    await log(`🔤 Extracted word from prompt: "${word}"`);
-    return word;
-}
-
 async function executeCursorAgent(
     promptContent: string,
     word: string,
@@ -231,13 +214,19 @@ async function executeCursorAgent(
                     await log(`⚠️ Cursor agent stderr: ${stderr}`);
                 }
                 if (stdout && stdout.trim() && code !== 0) {
-                    await log(`📋 Cursor agent stdout: ${stdout.substring(0, 500)}${stdout.length > 500 ? '...' : ''}`);
+                    await log(
+                        `📋 Cursor agent stdout: ${stdout.substring(0, 500)}${stdout.length > 500 ? '...' : ''}`,
+                    );
                 }
-                
+
                 if (code === 0) {
                     resolve();
                 } else {
-                    reject(new Error(`Cursor agent exited with code ${code}. Check stderr/stdout above for details.`));
+                    reject(
+                        new Error(
+                            `Cursor agent exited with code ${code}. Check stderr/stdout above for details.`,
+                        ),
+                    );
                 }
             });
 

@@ -192,7 +192,9 @@ export async function GET(request: NextRequest) {
                     },
                     examples: {
                         where: {
-                            translationLanguage: { code: translationLanguageCode },
+                            translationLanguage: {
+                                code: translationLanguageCode,
+                            },
                         },
                         include: {
                             pronoun: true,
@@ -202,7 +204,9 @@ export async function GET(request: NextRequest) {
                     },
                     grammaticalExamples: {
                         where: {
-                            translationLanguage: { code: translationLanguageCode },
+                            translationLanguage: {
+                                code: translationLanguageCode,
+                            },
                         },
                         include: {
                             pronoun: true,
@@ -414,7 +418,9 @@ export async function GET(request: NextRequest) {
                         },
                         examples: {
                             where: {
-                                translationLanguage: { code: translationLanguageCode },
+                                translationLanguage: {
+                                    code: translationLanguageCode,
+                                },
                             },
                             include: {
                                 pronoun: true,
@@ -424,7 +430,9 @@ export async function GET(request: NextRequest) {
                         },
                         grammaticalExamples: {
                             where: {
-                                translationLanguage: { code: translationLanguageCode },
+                                translationLanguage: {
+                                    code: translationLanguageCode,
+                                },
                             },
                             include: {
                                 pronoun: true,

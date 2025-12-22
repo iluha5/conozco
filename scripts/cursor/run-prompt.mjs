@@ -287,7 +287,11 @@ async function main() {
             );
         } else {
             // Interactive mode: pipe prompt to stdin
-            childProcess = spawn(CURSOR_AGENT_CMD, ['--model', DEFAULT_AI_MODEL], spawnOptions);
+            childProcess = spawn(
+                CURSOR_AGENT_CMD,
+                ['--model', DEFAULT_AI_MODEL],
+                spawnOptions,
+            );
             childProcess.stdin.write(promptContent);
             childProcess.stdin.end();
         }

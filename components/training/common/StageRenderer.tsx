@@ -23,9 +23,9 @@ export function StageRenderer({
 }: StageRendererProps) {
     // Перемешиваем слова для каждого этапа отдельно
     // Это гарантирует, что каждый этап получает свой случайный порядок слов
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     const shuffledWords = useMemo(() => {
         return shuffleArray(words);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [stage, words]);
 
     const StageComponents = {

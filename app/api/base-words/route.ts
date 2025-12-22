@@ -38,7 +38,8 @@ export async function GET(request: NextRequest) {
             'translationLanguageCode',
         );
         // Определяем язык для переводов (приоритет параметру, затем ownLanguage пользователя)
-        const translationLanguageCode = translationLanguageCodeParam || user.ownLanguage?.code || 'ru';
+        const translationLanguageCode =
+            translationLanguageCodeParam || user.ownLanguage?.code || 'ru';
         const limit = parseInt(searchParams.get('limit') || '50');
         const offset = parseInt(searchParams.get('offset') || '0');
         const wordGroupIdsParam = searchParams.get('wordGroupIds');
@@ -116,7 +117,9 @@ export async function GET(request: NextRequest) {
                     },
                 },
                 examples: {
-                    where: { translationLanguage: { code: translationLanguageCode } },
+                    where: {
+                        translationLanguage: { code: translationLanguageCode },
+                    },
                     include: {
                         pronoun: true,
                         sentenceType: true,
