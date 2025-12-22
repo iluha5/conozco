@@ -18,6 +18,9 @@ export async function GET(request: NextRequest) {
         // Проверить, существует ли пользователь в базе данных
         const user = await prisma.user.findUnique({
             where: { id: parseInt(session.user.id) },
+            include: {
+                ownLanguage: true,
+            },
         });
 
         if (!user) {
@@ -31,9 +34,11 @@ export async function GET(request: NextRequest) {
         const languageCode = searchParams.get('languageCode');
         const partOfSpeech = searchParams.get('partOfSpeech');
         const search = searchParams.get('search');
-        const translationLanguageCode = searchParams.get(
+        const translationLanguageCodeParam = searchParams.get(
             'translationLanguageCode',
         );
+        // Определяем язык для переводов (приоритет параметру, затем ownLanguage пользователя)
+        const translationLanguageCode = translationLanguageCodeParam || user.ownLanguage?.code || 'ru';
         const limit = parseInt(searchParams.get('limit') || '50');
         const offset = parseInt(searchParams.get('offset') || '0');
         const wordGroupIdsParam = searchParams.get('wordGroupIds');
@@ -104,21 +109,24 @@ export async function GET(request: NextRequest) {
             include: {
                 language: true,
                 translations: {
-                    where: { language: { code: 'ru' } },
+                    where: { language: { code: translationLanguageCode } },
                     orderBy: { priority: 'asc' },
                     include: {
                         partOfSpeech: true,
                     },
                 },
                 examples: {
+                    where: { translationLanguage: { code: translationLanguageCode } },
                     include: {
                         pronoun: true,
                         sentenceType: true,
+                        translationLanguage: true,
                     },
                     take: 3, // Ограничим количество примеров
                 },
                 grammaticalExamples: {
                     where: {
+                        translationLanguage: { code: translationLanguageCode },
                         tense: {
                             language: languageCode
                                 ? { code: languageCode }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useUserSettings } from '@/hooks/settings';
@@ -7,9 +7,11 @@ import { useToast, useHashDialog } from '@/hooks/shared';
 import { useTrainingStorage } from '@/hooks/training';
 import { trainingApi } from '@/lib/api/training.api';
 import { Word } from '@/types/training.types';
-import { TrainingModeId } from '../types/typing';
-import { TRAINING_MODES } from '../constants/training-modes';
+import { TrainingModeId, TrainingModeGroupId } from '../types/typing';
+import { NEW_WORDS_TRAINING_MODES } from '../constants/training-modes';
+import { LEARNED_TRAINING_MODES } from '../constants/learned-training-modes';
 import { startTrainingMode } from '../helpers/startTrainingMode';
+import { FlashCardsReviewParams } from '@/components/flash-cards-review/typing';
 
 export function useTrainingModes() {
     const router = useRouter();
@@ -29,6 +31,20 @@ export function useTrainingModes() {
         null,
     );
     const [isContinueLoading, setIsContinueLoading] = useState(false);
+
+    // Новое состояние для табов и FlashCards
+    const [activeTab, setActiveTab] = useState<TrainingModeGroupId>('new');
+    const [flashCardsParams, setFlashCardsParams] =
+        useState<FlashCardsReviewParams | null>(null);
+    const [showFlashCardsReview, setShowFlashCardsReview] = useState(false);
+    const [showGroupReviewSetup, setShowGroupReviewSetup] = useState(false);
+
+    // Мемоизация слов по статусу
+    const { learnedWords, notLearnedWords } = useMemo(() => {
+        const learned = allWords.filter(w => w.status === 'LEARNED');
+        const notLearned = allWords.filter(w => w.status !== 'LEARNED');
+        return { learnedWords: learned, notLearnedWords: notLearned };
+    }, [allWords]);
 
     useEffect(() => {
         const loadWords = async () => {
@@ -51,6 +67,17 @@ export function useTrainingModes() {
         loadWords();
     }, [toast]);
 
+    // Обработчик открытия FlashCards
+    const handleFlashCardsOpen = (params: FlashCardsReviewParams) => {
+        setFlashCardsParams(params);
+        setShowFlashCardsReview(true);
+    };
+
+    // Обработчик открытия диалога выбора группы
+    const handleGroupSetupOpen = () => {
+        setShowGroupReviewSetup(true);
+    };
+
     const handleStartMode = async (modeId: TrainingModeId) => {
         if (!session?.user?.id || !userSettings?.learnLanguage?.id) {
             toast({
@@ -68,7 +95,10 @@ export function useTrainingModes() {
             return;
         }
 
-        const config = TRAINING_MODES.find(mode => mode.id === modeId);
+        const config = [
+            ...NEW_WORDS_TRAINING_MODES,
+            ...LEARNED_TRAINING_MODES,
+        ].find(mode => mode.id === modeId);
 
         if (!config) {
             return;
@@ -86,6 +116,8 @@ export function useTrainingModes() {
                 router,
                 setSelectedWords,
                 toast,
+                handleFlashCardsOpen,
+                handleGroupSetupOpen,
             );
 
             if (!result.success && result.noWords) {
@@ -130,7 +162,10 @@ export function useTrainingModes() {
         // Wait for dialog close animation and hash removal
         await new Promise(resolve => setTimeout(resolve, 100));
 
-        const config = TRAINING_MODES.find(mode => mode.id === modeIdToStart);
+        const config = [
+            ...NEW_WORDS_TRAINING_MODES,
+            ...LEARNED_TRAINING_MODES,
+        ].find(mode => mode.id === modeIdToStart);
 
         if (!config) {
             return;
@@ -148,6 +183,8 @@ export function useTrainingModes() {
                 router,
                 setSelectedWords,
                 toast,
+                handleFlashCardsOpen,
+                handleGroupSetupOpen,
             );
 
             if (!result.success && result.noWords) {
@@ -165,8 +202,23 @@ export function useTrainingModes() {
         }
     };
 
+    // Обработчик закрытия FlashCards
+    const handleFlashCardsClose = () => {
+        setShowFlashCardsReview(false);
+        setIsStarting(false);
+    };
+
+    // Обработчик закрытия диалога выбора группы
+    const handleGroupSetupClose = (open: boolean) => {
+        setShowGroupReviewSetup(open);
+        if (!open) {
+            setIsStarting(false);
+        }
+    };
+
     return {
-        modes: TRAINING_MODES,
+        modes: NEW_WORDS_TRAINING_MODES,
+        learnedModes: LEARNED_TRAINING_MODES,
         startMode: handleStartMode,
         isLoading,
         isStarting,
@@ -177,5 +229,18 @@ export function useTrainingModes() {
         handleContinueExisting,
         handleStartNew,
         isContinueLoading,
+        // Новые возвращаемые значения
+        activeTab,
+        setActiveTab,
+        learnedWords,
+        notLearnedWords,
+        flashCardsParams,
+        showFlashCardsReview,
+        setShowFlashCardsReview,
+        showGroupReviewSetup,
+        handleFlashCardsOpen,
+        handleFlashCardsClose,
+        handleGroupSetupOpen,
+        handleGroupSetupClose,
     };
 }

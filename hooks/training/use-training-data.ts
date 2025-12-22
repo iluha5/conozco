@@ -2,9 +2,11 @@ import { useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/shared';
 import { trainingApi } from '@/lib/api/training.api';
 import { Word } from '@/types/training.types';
+import { STORAGE_KEYS } from '@/config/storage-keys';
 
 /**
  * Хук для загрузки данных тренировки
+ * Поддерживает загрузку как неизученных, так и изученных слов
  */
 export function useTrainingData(
     settingsLoaded: boolean,
@@ -17,7 +19,15 @@ export function useTrainingData(
     const fetchWords = useCallback(async () => {
         onLoadingChange(true);
         try {
-            const data = await trainingApi.fetchWords('NOT_LEARNED');
+            // Проверяем источник слов из sessionStorage
+            const wordSource =
+                typeof window !== 'undefined'
+                    ? sessionStorage.getItem(STORAGE_KEYS.TRAINING_WORD_SOURCE)
+                    : null;
+            const status =
+                wordSource === 'LEARNED' ? 'LEARNED' : 'NOT_LEARNED';
+
+            const data = await trainingApi.fetchWords(status);
             onWordsLoaded(data);
         } catch (error) {
             console.error('Error fetching words:', error);

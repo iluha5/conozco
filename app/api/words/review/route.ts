@@ -191,6 +191,9 @@ export async function GET(request: NextRequest) {
                         },
                     },
                     examples: {
+                        where: {
+                            translationLanguage: { code: translationLanguageCode },
+                        },
                         include: {
                             pronoun: true,
                             sentenceType: true,
@@ -198,6 +201,9 @@ export async function GET(request: NextRequest) {
                         },
                     },
                     grammaticalExamples: {
+                        where: {
+                            translationLanguage: { code: translationLanguageCode },
+                        },
                         include: {
                             pronoun: true,
                             tense: true,
@@ -407,6 +413,9 @@ export async function GET(request: NextRequest) {
                             },
                         },
                         examples: {
+                            where: {
+                                translationLanguage: { code: translationLanguageCode },
+                            },
                             include: {
                                 pronoun: true,
                                 sentenceType: true,
@@ -414,6 +423,9 @@ export async function GET(request: NextRequest) {
                             },
                         },
                         grammaticalExamples: {
+                            where: {
+                                translationLanguage: { code: translationLanguageCode },
+                            },
                             include: {
                                 pronoun: true,
                                 tense: true,

@@ -79,6 +79,9 @@ export async function GET(
         // Проверить, существует ли пользователь в базе данных
         const user = await prisma.user.findUnique({
             where: { id: parseInt(session.user.id) },
+            include: {
+                ownLanguage: true,
+            },
         });
 
         if (!user) {
@@ -87,6 +90,9 @@ export async function GET(
                 { status: 401 },
             );
         }
+
+        // Определяем язык для переводов (ownLanguage пользователя)
+        const translationLanguageCode = user.ownLanguage?.code || 'ru';
 
         const wordId = parseInt(params.id);
         if (isNaN(wordId)) {
@@ -107,13 +113,14 @@ export async function GET(
                 baseWord: {
                     include: {
                         translations: {
-                            where: { language: { code: 'ru' } },
+                            where: { language: { code: translationLanguageCode } },
                             orderBy: { priority: 'asc' },
                             include: {
                                 partOfSpeech: true,
                             },
                         },
                         examples: {
+                            where: { translationLanguage: { code: translationLanguageCode } },
                             include: {
                                 pronoun: true,
                                 sentenceType: true,
@@ -121,6 +128,7 @@ export async function GET(
                             },
                         },
                         grammaticalExamples: {
+                            where: { translationLanguage: { code: translationLanguageCode } },
                             include: {
                                 pronoun: true,
                                 tense: true,
@@ -185,6 +193,9 @@ export async function PATCH(
         // Проверить, существует ли пользователь в базе данных
         const user = await prisma.user.findUnique({
             where: { id: parseInt(session.user.id) },
+            include: {
+                ownLanguage: true,
+            },
         });
 
         if (!user) {
@@ -193,6 +204,9 @@ export async function PATCH(
                 { status: 401 },
             );
         }
+
+        // Определяем язык для переводов (ownLanguage пользователя)
+        const translationLanguageCode = user.ownLanguage?.code || 'ru';
 
         const wordId = parseInt(params.id);
         if (isNaN(wordId)) {
@@ -342,16 +356,19 @@ export async function PATCH(
                 baseWord: {
                     include: {
                         translations: {
-                            where: { language: { code: 'ru' } },
+                            where: { language: { code: translationLanguageCode } },
                             orderBy: { priority: 'asc' },
                         },
                         examples: {
+                            where: { translationLanguage: { code: translationLanguageCode } },
                             include: {
                                 pronoun: true,
                                 sentenceType: true,
+                                translationLanguage: true,
                             },
                         },
                         grammaticalExamples: {
+                            where: { translationLanguage: { code: translationLanguageCode } },
                             include: {
                                 pronoun: true,
                                 tense: true,
@@ -363,6 +380,9 @@ export async function PATCH(
                 customTranslations: {
                     where: {
                         userId: parseInt(session.user.id),
+                        translationLanguage: {
+                            code: translationLanguageCode,
+                        },
                     },
                     include: {
                         partOfSpeech: true,

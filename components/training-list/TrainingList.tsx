@@ -1,14 +1,21 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import { TrainingModeCard } from './components/TrainingModeCard';
 import { NoWordsDialog } from './components/NoWordsDialog';
 import { NewTrainingConfirmationDialog } from '@/components/training/common/NewTrainingConfirmationDialog';
+import { FlashCardsReview } from '@/components/flash-cards-review/FlashCardsReview';
+import { GroupReviewSetupDialog } from '@/components/flash-cards-review/components/GroupReviewSetupDialog';
 import { useTrainingModes } from './hooks/useTrainingModes';
 import { Loader2 } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { TRAINING_MODE_GROUPS } from './constants/training-modes-config';
+
+const LEARNED_TAB_HASH = 'learned';
 
 export function TrainingList() {
     const {
-        modes,
         startMode,
         isLoading,
         isStarting,
@@ -19,7 +26,79 @@ export function TrainingList() {
         handleContinueExisting,
         handleStartNew,
         isContinueLoading,
+        activeTab,
+        setActiveTab,
+        learnedWords,
+        notLearnedWords,
+        flashCardsParams,
+        showFlashCardsReview,
+        showGroupReviewSetup,
+        handleFlashCardsOpen,
+        handleFlashCardsClose,
+        handleGroupSetupClose,
     } = useTrainingModes();
+
+    const hadFlashCardsOpen = useRef(false);
+
+    // Инициализация таба на основе хеша при монтировании
+    useEffect(() => {
+        const hash = window.location.hash.slice(1);
+        if (hash === LEARNED_TAB_HASH) {
+            setActiveTab('learned');
+        }
+    }, [setActiveTab]);
+
+    // Обработка изменений хеша (кнопка "назад" в браузере)
+    useEffect(() => {
+        const handleHashChange = () => {
+            const hash = window.location.hash.slice(1);
+            if (hash === LEARNED_TAB_HASH) {
+                setActiveTab('learned');
+            } else {
+                setActiveTab('new');
+            }
+        };
+
+        window.addEventListener('hashchange', handleHashChange);
+        return () => {
+            window.removeEventListener('hashchange', handleHashChange);
+        };
+    }, [setActiveTab]);
+
+    useEffect(() => {
+        if (showFlashCardsReview) {
+            hadFlashCardsOpen.current = true;
+            return;
+        }
+
+        if (hadFlashCardsOpen.current && activeTab === 'learned') {
+            hadFlashCardsOpen.current = false;
+            if (window.location.hash.slice(1) === LEARNED_TAB_HASH) {
+                window.history.replaceState(null, '', window.location.pathname);
+            }
+            setActiveTab('new');
+        }
+    }, [showFlashCardsReview, activeTab, setActiveTab]);
+
+    // Обработчик переключения табов с управлением хешем
+    const handleTabChange = (value: string) => {
+        if (value === 'learned') {
+            // Добавляем хеш для таба "Закрепление"
+            window.history.pushState(null, '', `#${LEARNED_TAB_HASH}`);
+            setActiveTab('learned');
+        } else {
+            // Убираем хеш для таба "Новые слова"
+            if (window.location.hash) {
+                // Используем history.back() только если это переход от learned к new
+                // В противном случае просто убираем хеш
+                const currentHash = window.location.hash.slice(1);
+                if (currentHash === LEARNED_TAB_HASH) {
+                    window.history.back();
+                }
+            }
+            setActiveTab('new');
+        }
+    };
 
     const handleModeClick = (modeId: string) => {
         startMode(modeId as any);
@@ -45,24 +124,73 @@ export function TrainingList() {
                 </p>
             </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 md:grid-cols-4">
-                {modes.map(mode => (
-                    <div
-                        key={mode.id}
-                        className="md:max-w-[230px] lg:max-w-none"
-                    >
-                        <TrainingModeCard
-                            mode={mode}
-                            onClick={() => handleModeClick(mode.id)}
-                            disabled={isStarting}
-                        />
-                    </div>
-                ))}
-            </div>
+            <Tabs
+                value={activeTab}
+                onValueChange={handleTabChange}
+                className="w-full"
+            >
+                <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto mb-8">
+                    <TabsTrigger value="new" className="relative">
+                        Новые слова
+                        <Badge variant="secondary" className="ml-2">
+                            {notLearnedWords.length}
+                        </Badge>
+                    </TabsTrigger>
+                    <TabsTrigger value="learned" className="relative">
+                        Закрепление
+                        <Badge variant="secondary" className="ml-2">
+                            {learnedWords.length}
+                        </Badge>
+                    </TabsTrigger>
+                </TabsList>
 
+                <TabsContent value="new" className="animate-fade-in">
+                    <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 md:grid-cols-4">
+                        {TRAINING_MODE_GROUPS.new.modes.map(mode => (
+                            <div
+                                key={mode.id}
+                                className="md:max-w-[230px] lg:max-w-none"
+                            >
+                                <TrainingModeCard
+                                    mode={mode}
+                                    onClick={() => handleModeClick(mode.id)}
+                                    disabled={isStarting}
+                                />
+                            </div>
+                        ))}
+                    </div>
+                </TabsContent>
+
+                <TabsContent value="learned" className="animate-fade-in">
+                    <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 md:grid-cols-4">
+                        {TRAINING_MODE_GROUPS.learned.modes.map(mode => (
+                            <div
+                                key={mode.id}
+                                className="md:max-w-[230px] lg:max-w-none"
+                            >
+                                <TrainingModeCard
+                                    mode={mode}
+                                    onClick={() => handleModeClick(mode.id)}
+                                    disabled={
+                                        isStarting || learnedWords.length === 0
+                                    }
+                                />
+                            </div>
+                        ))}
+                    </div>
+                    {learnedWords.length === 0 && (
+                        <div className="text-center py-8 text-gray-500">
+                            Нет изученных слов для закрепления
+                        </div>
+                    )}
+                </TabsContent>
+            </Tabs>
+
+            {/* Диалоги */}
             <NoWordsDialog
                 open={showNoWordsDialog}
                 onOpenChange={setShowNoWordsDialog}
+                mode={activeTab}
             />
 
             <NewTrainingConfirmationDialog
@@ -72,6 +200,26 @@ export function TrainingList() {
                 onStartNew={handleStartNew}
                 continueLoading={isContinueLoading}
                 startNewLoading={isStarting}
+            />
+
+            {/* FlashCards Review */}
+            {showFlashCardsReview && flashCardsParams && (
+                <FlashCardsReview
+                    params={flashCardsParams}
+                    onClose={handleFlashCardsClose}
+                />
+            )}
+
+            {/* Group Setup Dialog */}
+            <GroupReviewSetupDialog
+                open={showGroupReviewSetup}
+                onOpenChange={handleGroupSetupClose}
+                onStart={params => {
+                    // Устанавливаем параметры для FlashCardsReview
+                    handleFlashCardsOpen(params);
+                    // Закрываем диалог настроек
+                    handleGroupSetupClose(false);
+                }}
             />
         </div>
     );

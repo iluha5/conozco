@@ -24,6 +24,9 @@ export async function POST(request: NextRequest) {
         // Проверить, существует ли пользователь в базе данных
         const user = await prisma.user.findUnique({
             where: { id: userId },
+            include: {
+                ownLanguage: true,
+            },
         });
 
         if (!user) {
@@ -32,6 +35,9 @@ export async function POST(request: NextRequest) {
                 { status: 401 },
             );
         }
+
+        // Определяем язык для переводов (ownLanguage пользователя)
+        const translationLanguageCode = user.ownLanguage?.code || 'ru';
 
         const { word, languageCode } = await request.json();
 
@@ -74,19 +80,22 @@ export async function POST(request: NextRequest) {
             include: {
                 language: true,
                 translations: {
-                    where: { language: { code: 'ru' } },
+                    where: { language: { code: translationLanguageCode } },
                     orderBy: { priority: 'asc' },
                     include: {
                         partOfSpeech: true,
                     },
                 },
                 examples: {
+                    where: { translationLanguage: { code: translationLanguageCode } },
                     include: {
                         pronoun: true,
                         sentenceType: true,
+                        translationLanguage: true,
                     },
                 },
                 grammaticalExamples: {
+                    where: { translationLanguage: { code: translationLanguageCode } },
                     include: {
                         pronoun: true,
                         tense: true,
@@ -113,7 +122,7 @@ export async function POST(request: NextRequest) {
         const wordData = await getWordData(
             trimmedWord,
             languageCode,
-            'ru', // Целевой язык - русский
+            translationLanguageCode, // Целевой язык - родной язык пользователя
             userId,
         );
 
@@ -164,13 +173,13 @@ export async function POST(request: NextRequest) {
                 },
             });
 
-            // Получаем язык для переводов (русский)
+            // Получаем язык для переводов (родной язык пользователя)
             const targetLanguage = await tx.language.findUnique({
-                where: { code: 'ru' },
+                where: { code: translationLanguageCode },
             });
 
             if (!targetLanguage) {
-                throw new Error('Target language (ru) not found');
+                throw new Error(`Target language (${translationLanguageCode}) not found`);
             }
 
             // Добавляем переводы (если их еще нет)
@@ -267,19 +276,22 @@ export async function POST(request: NextRequest) {
                 include: {
                     language: true,
                     translations: {
-                        where: { language: { code: 'ru' } },
+                        where: { language: { code: translationLanguageCode } },
                         orderBy: { priority: 'asc' },
                         include: {
                             partOfSpeech: true,
                         },
                     },
                     examples: {
+                        where: { translationLanguage: { code: translationLanguageCode } },
                         include: {
                             pronoun: true,
                             sentenceType: true,
+                            translationLanguage: true,
                         },
                     },
                     grammaticalExamples: {
+                        where: { translationLanguage: { code: translationLanguageCode } },
                         include: {
                             pronoun: true,
                             tense: true,

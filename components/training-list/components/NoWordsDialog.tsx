@@ -15,9 +15,14 @@ import { useRouter } from 'next/navigation';
 interface NoWordsDialogProps {
     open: boolean;
     onOpenChange: (_isOpen: boolean) => void;
+    mode?: 'new' | 'learned'; // Новый проп
 }
 
-export function NoWordsDialog({ open, onOpenChange }: NoWordsDialogProps) {
+export function NoWordsDialog({
+    open,
+    onOpenChange,
+    mode = 'new',
+}: NoWordsDialogProps) {
     const router = useRouter();
 
     const handleGoHome = () => {
@@ -30,14 +35,26 @@ export function NoWordsDialog({ open, onOpenChange }: NoWordsDialogProps) {
         router.push('/words');
     };
 
+    const title =
+        mode === 'learned' ? 'Нет изученных слов' : 'Нет слов для тренировки';
+
+    const description =
+        mode === 'learned'
+            ? 'У вас пока нет изученных слов. Пройдите тренировку новых слов, чтобы пополнить список изученных.'
+            : 'У вас нет слов для изучения на текущем языке. Выберите один из вариантов:';
+
+    const primaryButtonText =
+        mode === 'learned'
+            ? 'Перейти к новым словам'
+            : 'Пройти проверку по группам слов';
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle>Нет слов для тренировки</DialogTitle>
+                    <DialogTitle>{title}</DialogTitle>
                     <DialogDescription className="!mt-6 !mb-4">
-                        У вас нет слов для изучения на текущем языке. Выберите
-                        один из вариантов:
+                        {description}
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter className="flex-col gap-3 sm:flex-col">
@@ -47,16 +64,18 @@ export function NoWordsDialog({ open, onOpenChange }: NoWordsDialogProps) {
                         variant="default"
                     >
                         <Home className="w-4 h-4 mr-2" />
-                        Пройти проверку по группам слов
+                        {primaryButtonText}
                     </Button>
-                    <Button
-                        onClick={handleGoToWords}
-                        className="w-full"
-                        variant="outline"
-                    >
-                        <BookOpen className="w-4 h-4 mr-2" />
-                        Добавить слова вручную
-                    </Button>
+                    {mode === 'new' && (
+                        <Button
+                            onClick={handleGoToWords}
+                            className="w-full"
+                            variant="outline"
+                        >
+                            <BookOpen className="w-4 h-4 mr-2" />
+                            Добавить слова вручную
+                        </Button>
+                    )}
                 </DialogFooter>
             </DialogContent>
         </Dialog>

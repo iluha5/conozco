@@ -18,6 +18,9 @@ export async function GET(request: NextRequest) {
         // Проверить, существует ли пользователь в базе данных
         const user = await prisma.user.findUnique({
             where: { id: parseInt(session.user.id) },
+            include: {
+                ownLanguage: true,
+            },
         });
 
         if (!user) {
@@ -26,6 +29,9 @@ export async function GET(request: NextRequest) {
                 { status: 401 },
             );
         }
+
+        // Определяем язык для переводов (ownLanguage пользователя)
+        const translationLanguageCode = user.ownLanguage?.code || 'ru';
 
         const { searchParams } = new URL(request.url);
         const languageCode = searchParams.get('languageCode');
@@ -61,13 +67,14 @@ export async function GET(request: NextRequest) {
                 baseWord: {
                     include: {
                         translations: {
-                            where: { language: { code: 'ru' } },
+                            where: { language: { code: translationLanguageCode } },
                             orderBy: { priority: 'asc' },
                             include: {
                                 partOfSpeech: true,
                             },
                         },
                         examples: {
+                            where: { translationLanguage: { code: translationLanguageCode } },
                             include: {
                                 pronoun: true,
                                 sentenceType: true,
@@ -75,6 +82,7 @@ export async function GET(request: NextRequest) {
                             },
                         },
                         grammaticalExamples: {
+                            where: { translationLanguage: { code: translationLanguageCode } },
                             include: {
                                 pronoun: true,
                                 tense: true,
@@ -202,6 +210,9 @@ export async function POST(request: NextRequest) {
         // Проверить, существует ли пользователь в базе данных
         const user = await prisma.user.findUnique({
             where: { id: parseInt(session.user.id) },
+            include: {
+                ownLanguage: true,
+            },
         });
 
         if (!user) {
@@ -210,6 +221,9 @@ export async function POST(request: NextRequest) {
                 { status: 401 },
             );
         }
+
+        // Определяем язык для переводов (ownLanguage пользователя)
+        const translationLanguageCode = user.ownLanguage?.code || 'ru';
 
         const { baseWordId } = await request.json();
 
@@ -226,7 +240,7 @@ export async function POST(request: NextRequest) {
             include: {
                 language: true,
                 translations: {
-                    where: { language: { code: 'ru' } },
+                    where: { language: { code: translationLanguageCode } },
                     orderBy: { priority: 'asc' },
                     take: 1,
                 },
@@ -270,13 +284,14 @@ export async function POST(request: NextRequest) {
                 baseWord: {
                     include: {
                         translations: {
-                            where: { language: { code: 'ru' } },
+                            where: { language: { code: translationLanguageCode } },
                             orderBy: { priority: 'asc' },
                             include: {
                                 partOfSpeech: true,
                             },
                         },
                         examples: {
+                            where: { translationLanguage: { code: translationLanguageCode } },
                             include: {
                                 pronoun: true,
                                 sentenceType: true,
@@ -284,6 +299,7 @@ export async function POST(request: NextRequest) {
                             },
                         },
                         grammaticalExamples: {
+                            where: { translationLanguage: { code: translationLanguageCode } },
                             include: {
                                 pronoun: true,
                                 tense: true,

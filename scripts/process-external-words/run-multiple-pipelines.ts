@@ -9,7 +9,7 @@ const __dirname = path.dirname(__filename);
 
 // Получаем количество запусков из аргументов командной строки
 const args = process.argv.slice(2);
-const numRuns = args.length > 0 ? parseInt(args[0]) : 10;
+const numRuns = args.length > 0 ? parseInt(args[0]) : 40;
 
 // Валидация аргумента
 if (isNaN(numRuns) || numRuns <= 0) {
@@ -75,8 +75,8 @@ async function main(): Promise<void> {
 
             // Добавляем задержку между запусками (кроме последнего)
             if (i < numRuns) {
-                console.log(`⏳ Waiting 5 seconds before next run...`);
-                await delay(5000); // 5 секунд
+                console.log(`⏳ Waiting 1 seconds before next run...`);
+                await delay(1000); // 1 секунд
             }
         }
 

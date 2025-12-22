@@ -6,4 +6,5 @@ export const STORAGE_KEYS = {
     TRAINING_PROGRESS: 'flashcards_training_progress',
     // sessionStorage
     TRAINING_FROM_SETUP: 'training_from_setup',
+    TRAINING_WORD_SOURCE: 'training_word_source', // 'LEARNED' | 'NOT_LEARNED'
 } as const;

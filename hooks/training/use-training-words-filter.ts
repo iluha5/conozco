@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { Word } from '@/types/training.types';
+import { STORAGE_KEYS } from '@/config/storage-keys';
 
 /**
  * Хук для фильтрации слов по языку и выбранным словам
@@ -10,7 +11,16 @@ export function useTrainingWordsFilter(
     selectedWords: Set<string>,
 ) {
     return useMemo(() => {
-        let filtered = words.filter(w => w.status === 'NOT_LEARNED');
+        // Определяем статус слов из sessionStorage
+        const wordSource =
+            typeof window !== 'undefined'
+                ? sessionStorage.getItem(STORAGE_KEYS.TRAINING_WORD_SOURCE)
+                : null;
+        const expectedStatus =
+            wordSource === 'LEARNED' ? 'LEARNED' : 'NOT_LEARNED';
+
+        // Фильтруем по статусу (LEARNED или NOT_LEARNED)
+        let filtered = words.filter(w => w.status === expectedStatus);
 
         if (selectedLanguage !== 'ALL') {
             filtered = filtered.filter(
