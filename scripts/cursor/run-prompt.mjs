@@ -26,6 +26,7 @@ import {
     LOGS_DIR,
     CURSOR_OUTPUT_DIR,
     CURSOR_AGENT_CMD,
+    DEFAULT_AI_MODEL,
 } from './config.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -270,6 +271,10 @@ async function main() {
             env: {
                 ...process.env,
                 CURSOR_OUTPUT_DIR: CURSOR_OUTPUT_DIR, // Pass output dir as env var
+                // Force specific AI model for consistent results and cost control
+                CURSOR_MODEL: DEFAULT_AI_MODEL,
+                MODEL: DEFAULT_AI_MODEL,
+                AI_MODEL: DEFAULT_AI_MODEL,
             },
         };
 
@@ -277,12 +282,12 @@ async function main() {
             // Non-interactive mode: use -p flag
             childProcess = spawn(
                 CURSOR_AGENT_CMD,
-                ['-p', promptContent],
+                ['-p', promptContent, '--model', DEFAULT_AI_MODEL],
                 spawnOptions,
             );
         } else {
             // Interactive mode: pipe prompt to stdin
-            childProcess = spawn(CURSOR_AGENT_CMD, [], spawnOptions);
+            childProcess = spawn(CURSOR_AGENT_CMD, ['--model', DEFAULT_AI_MODEL], spawnOptions);
             childProcess.stdin.write(promptContent);
             childProcess.stdin.end();
         }

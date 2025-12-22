@@ -2,6 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { spawn } from 'child_process';
+import { DEFAULT_AI_MODEL } from '../cursor/config.mjs';
 
 // Получаем директорию текущего файла
 const __filename = fileURLToPath(import.meta.url);
@@ -182,10 +183,12 @@ async function executeCursorAgent(
     const resultFileName = `${currentCounter}-${word}-cursor-result-${timestamp}.json`;
     const resultFilePath = path.join(tempDatePath, resultFileName);
 
-    // Используем cursor agent с --print --output-format json
-    const cursorCommand = `/Applications/Cursor.app/Contents/Resources/app/bin/cursor agent --print --output-format json`;
+    // Используем cursor agent с --print --output-format json --model
+    const cursorCommand = `/Applications/Cursor.app/Contents/Resources/app/bin/cursor agent --print --output-format json --model ${DEFAULT_AI_MODEL}`;
 
     await log(`🚀 Executing Cursor Agent with prompt for word: "${word}"`);
+    await log(`🤖 Using AI model: ${DEFAULT_AI_MODEL}`);
+    await log(`📝 Command: ${cursorCommand}`);
     await log(`📄 Result will be saved to: ${resultFilePath}`);
 
     try {
@@ -195,6 +198,13 @@ async function executeCursorAgent(
             cwd: tempDatePath,
             stdio: ['pipe', 'pipe', 'pipe'], // stdin, stdout, stderr
             shell: true,
+            env: {
+                ...process.env,
+                // Force specific AI model for consistent results and cost control
+                CURSOR_MODEL: DEFAULT_AI_MODEL,
+                MODEL: DEFAULT_AI_MODEL,
+                AI_MODEL: DEFAULT_AI_MODEL,
+            },
         });
 
         let stdout = '';
@@ -215,20 +225,24 @@ async function executeCursorAgent(
 
         // Ждем завершения
         await new Promise<void>((resolve, reject) => {
-            childProcess.on('close', code => {
+            childProcess.on('close', async code => {
+                // Логируем вывод перед проверкой кода возврата
+                if (stderr && stderr.trim()) {
+                    await log(`⚠️ Cursor agent stderr: ${stderr}`);
+                }
+                if (stdout && stdout.trim() && code !== 0) {
+                    await log(`📋 Cursor agent stdout: ${stdout.substring(0, 500)}${stdout.length > 500 ? '...' : ''}`);
+                }
+                
                 if (code === 0) {
                     resolve();
                 } else {
-                    reject(new Error(`Cursor agent exited with code ${code}`));
+                    reject(new Error(`Cursor agent exited with code ${code}. Check stderr/stdout above for details.`));
                 }
             });
 
             childProcess.on('error', reject);
         });
-
-        if (stderr && stderr.trim()) {
-            await log(`⚠️ Cursor agent stderr: ${stderr}`);
-        }
 
         await log(`✅ Cursor agent completed successfully`);
         await log(`📊 Result size: ${stdout.length} characters`);

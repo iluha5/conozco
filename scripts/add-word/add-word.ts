@@ -4,6 +4,7 @@ import { spawn } from 'child_process';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { DEFAULT_AI_MODEL } from '../cursor/config.mjs';
 
 // Получаем директорию текущего файла
 const __filename = fileURLToPath(import.meta.url);
@@ -191,14 +192,22 @@ async function generateWordData(
     await fs.writeFile(promptFile, prompt, 'utf8');
 
     console.log(`📝 Created prompt file: ${promptFile}`);
+    console.log(`🤖 Using AI model: ${DEFAULT_AI_MODEL}`);
 
     // Execute Cursor CLI directly (like execute-cursor-prompt.ts)
     return new Promise<WordData>((resolve, reject) => {
-        const cursorCommand = `/Applications/Cursor.app/Contents/Resources/app/bin/cursor agent --print --output-format json`;
+        const cursorCommand = `/Applications/Cursor.app/Contents/Resources/app/bin/cursor agent --print --output-format json --model ${DEFAULT_AI_MODEL}`;
         const cursorProcess = spawn(cursorCommand, {
             cwd: tempDir,
             stdio: ['pipe', 'pipe', 'pipe'], // stdin, stdout, stderr
             shell: true,
+            env: {
+                ...process.env,
+                // Force specific AI model for consistent results and cost control
+                CURSOR_MODEL: DEFAULT_AI_MODEL,
+                MODEL: DEFAULT_AI_MODEL,
+                AI_MODEL: DEFAULT_AI_MODEL,
+            },
         });
 
         let stdout = '';
