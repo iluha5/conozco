@@ -8,9 +8,8 @@ import { FlashCardsReview } from '@/components/flash-cards-review/FlashCardsRevi
 import { GroupReviewSetupDialog } from '@/components/flash-cards-review/components/GroupReviewSetupDialog';
 import { useTrainingModes } from './hooks/useTrainingModes';
 import { Loader2 } from 'lucide-react';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
 import { TRAINING_MODE_GROUPS } from './constants/training-modes-config';
+import { TrainingTabs } from './components/TrainingTabs';
 
 const LEARNED_TAB_HASH = 'learned';
 
@@ -124,68 +123,62 @@ export function TrainingList() {
                 </p>
             </div>
 
-            <Tabs
-                value={activeTab}
-                onValueChange={handleTabChange}
-                className="w-full"
+            <TrainingTabs
+                activeTab={activeTab}
+                onTabChange={handleTabChange}
+                notLearnedCount={notLearnedWords.length}
+                learnedCount={learnedWords.length}
             >
-                <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto mb-8">
-                    <TabsTrigger value="new" className="relative">
-                        Новые слова
-                        <Badge variant="secondary" className="ml-2">
-                            {notLearnedWords.length}
-                        </Badge>
-                    </TabsTrigger>
-                    <TabsTrigger value="learned" className="relative">
-                        Закрепление
-                        <Badge variant="secondary" className="ml-2">
-                            {learnedWords.length}
-                        </Badge>
-                    </TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="new" className="animate-fade-in">
-                    <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 md:grid-cols-4">
-                        {TRAINING_MODE_GROUPS.new.modes.map(mode => (
-                            <div
-                                key={mode.id}
-                                className="md:max-w-[230px] lg:max-w-none"
-                            >
-                                <TrainingModeCard
-                                    mode={mode}
-                                    onClick={() => handleModeClick(mode.id)}
-                                    disabled={isStarting}
-                                />
-                            </div>
-                        ))}
-                    </div>
-                </TabsContent>
-
-                <TabsContent value="learned" className="animate-fade-in">
-                    <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 md:grid-cols-4">
-                        {TRAINING_MODE_GROUPS.learned.modes.map(mode => (
-                            <div
-                                key={mode.id}
-                                className="md:max-w-[230px] lg:max-w-none"
-                            >
-                                <TrainingModeCard
-                                    mode={mode}
-                                    onClick={() => handleModeClick(mode.id)}
-                                    disabled={
-                                        isStarting || learnedWords.length === 0
-                                    }
-                                    variant="learned"
-                                />
-                            </div>
-                        ))}
-                    </div>
-                    {learnedWords.length === 0 && (
-                        <div className="text-center py-8 text-gray-500">
-                            Нет изученных слов для закрепления
+                {{
+                    new: (
+                        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 md:grid-cols-4">
+                            {TRAINING_MODE_GROUPS.new.modes.map(mode => (
+                                <div
+                                    key={mode.id}
+                                    className="md:max-w-[230px] lg:max-w-none"
+                                >
+                                    <TrainingModeCard
+                                        mode={mode}
+                                        onClick={() => handleModeClick(mode.id)}
+                                        disabled={isStarting}
+                                    />
+                                </div>
+                            ))}
                         </div>
-                    )}
-                </TabsContent>
-            </Tabs>
+                    ),
+                    learned: (
+                        <>
+                            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 md:grid-cols-4">
+                                {TRAINING_MODE_GROUPS.learned.modes.map(
+                                    mode => (
+                                        <div
+                                            key={mode.id}
+                                            className="md:max-w-[230px] lg:max-w-none"
+                                        >
+                                            <TrainingModeCard
+                                                mode={mode}
+                                                onClick={() =>
+                                                    handleModeClick(mode.id)
+                                                }
+                                                disabled={
+                                                    isStarting ||
+                                                    learnedWords.length === 0
+                                                }
+                                                variant="learned"
+                                            />
+                                        </div>
+                                    ),
+                                )}
+                            </div>
+                            {learnedWords.length === 0 && (
+                                <div className="text-center py-8 text-gray-500">
+                                    Нет изученных слов для закрепления
+                                </div>
+                            )}
+                        </>
+                    ),
+                }}
+            </TrainingTabs>
 
             {/* Диалоги */}
             <NoWordsDialog
