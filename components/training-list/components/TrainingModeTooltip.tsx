@@ -6,12 +6,14 @@ import {
     TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { HelpCircle } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface TrainingModeTooltipProps {
     content: string;
+    variant?: 'default' | 'learned';
 }
 
-export function TrainingModeTooltip({ content }: TrainingModeTooltipProps) {
+export function TrainingModeTooltip({ content, variant = 'default' }: TrainingModeTooltipProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [isDesktop, setIsDesktop] = useState(false);
     const tooltipRef = useRef<HTMLDivElement>(null);
@@ -76,12 +78,17 @@ export function TrainingModeTooltip({ content }: TrainingModeTooltipProps) {
                 <Tooltip open={isOpen}>
                     <TooltipTrigger asChild>
                         <button
-                            className="p-1 rounded-full hover:bg-white/20 transition-colors"
+                            className={cn(
+                                'p-1 rounded-full transition-colors',
+                                variant === 'learned'
+                                    ? 'hover:bg-gray-100 text-gray-400 hover:text-gray-600'
+                                    : 'hover:bg-white/20 text-white',
+                            )}
                             onClick={handleClick}
                             onMouseEnter={handleMouseEnter}
                             onMouseLeave={handleMouseLeave}
                         >
-                            <HelpCircle className="w-5 h-5 text-white" />
+                            <HelpCircle className="w-5 h-5" />
                         </button>
                     </TooltipTrigger>
                     <TooltipContent

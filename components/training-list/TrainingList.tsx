@@ -174,6 +174,7 @@ export function TrainingList() {
                                     disabled={
                                         isStarting || learnedWords.length === 0
                                     }
+                                    variant="learned"
                                 />
                             </div>
                         ))}
