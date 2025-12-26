@@ -13,7 +13,7 @@ export function getTabFromHash(hash: string): TrainingModeGroupId | null {
         return tabConfig.id;
     }
     
-    // Если хеш пустой или не найден, возвращаем первый таб (new)
+    // Если хеш пустой или не найден, возвращаем первый таб (new) по умолчанию
     if (!normalizedHash) {
         return 'new';
     }
@@ -31,7 +31,6 @@ export function getHashFromTab(tab: TrainingModeGroupId): string | null {
         return null;
     }
     
-    // Если хеш пустой, возвращаем null (для таба "new")
     return tabConfig.hash || null;
 }
 
@@ -42,22 +41,13 @@ export function updateUrlHash(tab: TrainingModeGroupId): void {
     const hash = getHashFromTab(tab);
     const currentHash = window.location.hash.slice(1);
     
-    if (hash === null) {
-        // Убираем хеш для таба "new"
-        if (currentHash) {
-            // Используем history.back() только если это переход от другого таба
-            const currentTab = getTabFromHash(currentHash);
-            if (currentTab && currentTab !== 'new') {
-                window.history.back();
-            } else {
-                window.history.pushState(null, '', window.location.pathname + window.location.search);
-            }
-        }
-    } else {
-        // Добавляем хеш для других табов
-        if (currentHash !== hash) {
-            window.history.pushState(null, '', `#${hash}`);
-        }
+    if (!hash) {
+        return;
+    }
+    
+    // Обновляем хеш только если он отличается от текущего
+    if (currentHash !== hash) {
+        window.history.pushState(null, '', `#${hash}`);
     }
 }
 

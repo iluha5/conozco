@@ -41,7 +41,7 @@ export const TABS_CONFIG: TabConfig[] = [
     {
         id: 'new',
         title: 'Новые слова',
-        hash: '',
+        hash: 'new',
         showBadge: true,
         colorScheme: {
             active: {
