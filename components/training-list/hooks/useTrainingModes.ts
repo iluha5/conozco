@@ -12,6 +12,7 @@ import { NEW_WORDS_TRAINING_MODES } from '../constants/training-modes';
 import { LEARNED_TRAINING_MODES } from '../constants/learned-training-modes';
 import { startTrainingMode } from '../helpers/startTrainingMode';
 import { FlashCardsReviewParams } from '@/components/flash-cards-review/typing';
+import { getTrainingModeConfig } from '../helpers/getTrainingModeConfig';
 
 export function useTrainingModes() {
     const router = useRouter();
@@ -102,10 +103,7 @@ export function useTrainingModes() {
             return;
         }
 
-        const config = [
-            ...NEW_WORDS_TRAINING_MODES,
-            ...LEARNED_TRAINING_MODES,
-        ].find(mode => mode.id === modeId);
+        const config = getTrainingModeConfig(modeId);
 
         if (!config) {
             return;
@@ -169,10 +167,7 @@ export function useTrainingModes() {
         // Wait for dialog close animation and hash removal
         await new Promise(resolve => setTimeout(resolve, 100));
 
-        const config = [
-            ...NEW_WORDS_TRAINING_MODES,
-            ...LEARNED_TRAINING_MODES,
-        ].find(mode => mode.id === modeIdToStart);
+        const config = getTrainingModeConfig(modeIdToStart);
 
         if (!config) {
             return;
@@ -241,6 +236,7 @@ export function useTrainingModes() {
         setActiveTab,
         learnedWords,
         notLearnedWords,
+        allWords,
         flashCardsParams,
         showFlashCardsReview,
         setShowFlashCardsReview,

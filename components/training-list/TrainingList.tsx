@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect } from 'react';
-import { TrainingModeCard } from './components/TrainingModeCard';
 import { NoWordsDialog } from './components/NoWordsDialog';
 import { NewTrainingConfirmationDialog } from '@/components/training/common/NewTrainingConfirmationDialog';
 import { FlashCardsReview } from '@/components/flash-cards-review/FlashCardsReview';
@@ -10,8 +9,11 @@ import { useTrainingModes } from './hooks/useTrainingModes';
 import { Loader2 } from 'lucide-react';
 import { TRAINING_MODE_GROUPS } from './constants/training-modes-config';
 import { TrainingTabs } from './components/TrainingTabs';
-
-const LEARNED_TAB_HASH = 'learned';
+import { TrainingModeCardsGrid } from './components/TrainingModeCardsGrid';
+import { TrainingListHeader } from './components/TrainingListHeader';
+import { EmptyState } from './components/EmptyState';
+import { getTabFromHash, updateUrlHash } from './helpers/tab-navigation';
+import { TrainingModeGroupId } from './types/typing';
 
 export function TrainingList() {
     const {
@@ -29,6 +31,7 @@ export function TrainingList() {
         setActiveTab,
         learnedWords,
         notLearnedWords,
+        allWords,
         flashCardsParams,
         showFlashCardsReview,
         showGroupReviewSetup,
@@ -40,8 +43,9 @@ export function TrainingList() {
     // Инициализация таба на основе хеша при монтировании
     useEffect(() => {
         const hash = window.location.hash.slice(1);
-        if (hash === LEARNED_TAB_HASH) {
-            setActiveTab('learned');
+        const tabFromHash = getTabFromHash(hash);
+        if (tabFromHash) {
+            setActiveTab(tabFromHash);
         }
     }, [setActiveTab]);
 
@@ -49,8 +53,9 @@ export function TrainingList() {
     useEffect(() => {
         const handleHashChange = () => {
             const hash = window.location.hash.slice(1);
-            if (hash === LEARNED_TAB_HASH) {
-                setActiveTab('learned');
+            const tabFromHash = getTabFromHash(hash);
+            if (tabFromHash) {
+                setActiveTab(tabFromHash);
             } else {
                 setActiveTab('new');
             }
@@ -64,22 +69,9 @@ export function TrainingList() {
 
     // Обработчик переключения табов с управлением хешем
     const handleTabChange = (value: string) => {
-        if (value === 'learned') {
-            // Добавляем хеш для таба "Закрепление"
-            window.history.pushState(null, '', `#${LEARNED_TAB_HASH}`);
-            setActiveTab('learned');
-        } else {
-            // Убираем хеш для таба "Новые слова"
-            if (window.location.hash) {
-                // Используем history.back() только если это переход от learned к new
-                // В противном случае просто убираем хеш
-                const currentHash = window.location.hash.slice(1);
-                if (currentHash === LEARNED_TAB_HASH) {
-                    window.history.back();
-                }
-            }
-            setActiveTab('new');
-        }
+        const newTab = value as TrainingModeGroupId;
+        updateUrlHash(newTab);
+        setActiveTab(newTab);
     };
 
     const handleModeClick = (modeId: string) => {
@@ -96,67 +88,36 @@ export function TrainingList() {
 
     return (
         <div className="space-y-8">
-            <div className="text-center">
-                <h1 className="text-3xl font-bold text-gray-900 mb-3">
-                    Режимы тренировок
-                </h1>
-                <p className="text-gray-600 max-w-2xl mx-auto">
-                    Выберите подходящий режим тренировки или настройте свой
-                    собственный
-                </p>
-            </div>
+            <TrainingListHeader
+                title="Режимы тренировок"
+                description="Выберите подходящий режим тренировки или настройте свой собственный"
+            />
 
             <TrainingTabs
                 activeTab={activeTab}
                 onTabChange={handleTabChange}
-                notLearnedCount={notLearnedWords.length}
-                learnedCount={learnedWords.length}
+                words={allWords}
             >
                 {{
                     new: (
-                        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 md:grid-cols-4">
-                            {TRAINING_MODE_GROUPS.new.modes.map(mode => (
-                                <div
-                                    key={mode.id}
-                                    className="md:max-w-[230px] lg:max-w-none"
-                                >
-                                    <TrainingModeCard
-                                        mode={mode}
-                                        onClick={() => handleModeClick(mode.id)}
-                                        disabled={isStarting}
-                                    />
-                                </div>
-                            ))}
-                        </div>
+                        <TrainingModeCardsGrid
+                            modes={TRAINING_MODE_GROUPS.new.modes}
+                            onModeClick={handleModeClick}
+                            disabled={isStarting}
+                        />
                     ),
                     learned: (
                         <>
-                            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 md:grid-cols-4">
-                                {TRAINING_MODE_GROUPS.learned.modes.map(
-                                    mode => (
-                                        <div
-                                            key={mode.id}
-                                            className="md:max-w-[230px] lg:max-w-none"
-                                        >
-                                            <TrainingModeCard
-                                                mode={mode}
-                                                onClick={() =>
-                                                    handleModeClick(mode.id)
-                                                }
-                                                disabled={
-                                                    isStarting ||
-                                                    learnedWords.length === 0
-                                                }
-                                                variant="learned"
-                                            />
-                                        </div>
-                                    ),
-                                )}
-                            </div>
+                            <TrainingModeCardsGrid
+                                modes={TRAINING_MODE_GROUPS.learned.modes}
+                                onModeClick={handleModeClick}
+                                disabled={
+                                    isStarting || learnedWords.length === 0
+                                }
+                                variant="learned"
+                            />
                             {learnedWords.length === 0 && (
-                                <div className="text-center py-8 text-gray-500">
-                                    Нет изученных слов для закрепления
-                                </div>
+                                <EmptyState message="Нет изученных слов для закрепления" />
                             )}
                         </>
                     ),
