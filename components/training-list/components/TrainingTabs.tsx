@@ -36,7 +36,7 @@ export function TrainingTabs({
         >
             <TabsList
                 className={cn(
-                    'grid w-full grid-cols-2 max-w-md mx-auto mb-8 h-auto bg-transparent p-0 gap-0.5 sm:gap-1',
+                    'grid w-full grid-cols-3 max-w-2xl mx-auto mb-8 h-auto bg-transparent p-0 gap-0.5 sm:gap-1',
                     'border-b-2 border-gray-200',
                     'overflow-x-auto',
                     // На очень маленьких экранах используем flex для горизонтального скролла

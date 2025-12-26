@@ -1,6 +1,7 @@
 import { TrainingModeId, TrainingModeConfig } from '../types/typing';
 import { NEW_WORDS_TRAINING_MODES } from '../constants/training-modes';
 import { LEARNED_TRAINING_MODES } from '../constants/learned-training-modes';
+import { TEST_TRAINING_MODES } from '../constants/test-training-modes';
 
 /**
  * Объединенный массив всех режимов тренировок
@@ -8,6 +9,7 @@ import { LEARNED_TRAINING_MODES } from '../constants/learned-training-modes';
 const ALL_TRAINING_MODES: TrainingModeConfig[] = [
     ...NEW_WORDS_TRAINING_MODES,
     ...LEARNED_TRAINING_MODES,
+    ...TEST_TRAINING_MODES,
 ];
 
 /**

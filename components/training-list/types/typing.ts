@@ -13,7 +13,7 @@ export type TrainingModeId =
     | 'learned-test-a1-easy'
     | 'learned-test-a1-medium';
 
-export type TrainingModeGroupId = 'new' | 'learned';
+export type TrainingModeGroupId = 'new' | 'learned' | 'tests';
 
 export type WordSource = 'notLearned' | 'learned' | 'group';
 export type ModeType = 'training' | 'flashCards';

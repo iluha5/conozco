@@ -106,5 +106,37 @@ export const TABS_CONFIG: TabConfig[] = [
         getBadgeCount: (words: Word[]) =>
             words.filter(w => w.status === 'LEARNED').length,
     },
+    {
+        id: 'tests',
+        title: 'Тесты',
+        hash: 'tests',
+        showBadge: false,
+        colorScheme: {
+            active: {
+                text: 'text-blue-700',
+                border: 'border-blue-600',
+                after: 'bg-blue-600',
+            },
+            inactive: {
+                text: 'text-gray-500',
+                hover: {
+                    text: 'hover:text-gray-700',
+                    bg: 'hover:bg-gray-50',
+                },
+            },
+            badge: {
+                active: {
+                    bg: 'bg-blue-100',
+                    text: 'text-blue-700',
+                    border: 'border-blue-200',
+                },
+                inactive: {
+                    bg: 'bg-gray-100',
+                    text: 'text-gray-600',
+                    border: 'border-gray-200',
+                },
+            },
+        },
+    },
 ];
 

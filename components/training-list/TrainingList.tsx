@@ -121,6 +121,14 @@ export function TrainingList() {
                             )}
                         </>
                     ),
+                    tests: (
+                        <TrainingModeCardsGrid
+                            modes={TRAINING_MODE_GROUPS.tests.modes}
+                            onModeClick={handleModeClick}
+                            disabled={isStarting}
+                            variant="learned"
+                        />
+                    ),
                 }}
             </TrainingTabs>
 
