@@ -37,6 +37,14 @@ export function FlashCardsWidget() {
     }, [languageCode]);
 
     const handleStartReview = () => {
+        const returnUrl =
+            window.location.pathname +
+            window.location.search +
+            window.location.hash;
+        setReviewParams(prev => ({
+            ...prev,
+            returnUrl,
+        }));
         setShouldLoadExercise(true);
         setOpen(true);
     };

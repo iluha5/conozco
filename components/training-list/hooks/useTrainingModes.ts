@@ -69,7 +69,14 @@ export function useTrainingModes() {
 
     // Обработчик открытия FlashCards
     const handleFlashCardsOpen = (params: FlashCardsReviewParams) => {
-        setFlashCardsParams(params);
+        const returnUrl =
+            window.location.pathname +
+            window.location.search +
+            window.location.hash;
+        setFlashCardsParams({
+            ...params,
+            returnUrl,
+        });
         setShowFlashCardsReview(true);
     };
 

@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { X, Loader2 } from 'lucide-react';
@@ -17,6 +18,7 @@ interface FlashCardsReviewProps {
 }
 
 export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
+    const router = useRouter();
     const { settings: userSettings } = useUserSettings();
     const {
         currentWord,
@@ -32,6 +34,13 @@ export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
 
     const learnLanguageCode = userSettings?.learnLanguage?.code || 'en';
     const ownLanguageCode = userSettings?.ownLanguage?.code || 'ru';
+
+    const handleClose = () => {
+        if (params.returnUrl) {
+            router.push(params.returnUrl);
+        }
+        onClose();
+    };
 
     // Блокируем прокрутку body при открытии модального окна
     useEffect(() => {
@@ -63,7 +72,7 @@ export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
                             <p className="text-red-600">
                                 Ошибка загрузки слов. Попробуйте еще раз.
                             </p>
-                            <Button onClick={onClose}>Закрыть</Button>
+                            <Button onClick={handleClose}>Закрыть</Button>
                         </div>
                     </Card>
                 </div>
@@ -75,8 +84,10 @@ export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
                 <div className="fixed inset-0 top-0 left-0 right-0 bottom-0 bg-black/50 flex items-center justify-center z-50">
                     <Card className="p-8 max-w-md">
                         <div className="flex flex-col items-center gap-4">
-                            <p className="text-gray-600">Нет слов для проверки</p>
-                            <Button onClick={onClose}>Закрыть</Button>
+                            <p className="text-gray-600">
+                                Нет слов для проверки
+                            </p>
+                            <Button onClick={handleClose}>Закрыть</Button>
                         </div>
                     </Card>
                 </div>
@@ -93,19 +104,25 @@ export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
                             </h2>
                             <div className="w-full space-y-2">
                                 <div className="flex justify-between">
-                                    <span className="text-gray-600">Всего:</span>
+                                    <span className="text-gray-600">
+                                        Всего:
+                                    </span>
                                     <span className="font-semibold">
                                         {stats.total}
                                     </span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-green-600">Знаю:</span>
+                                    <span className="text-green-600">
+                                        Знаю:
+                                    </span>
                                     <span className="font-semibold text-green-600">
                                         {stats.known}
                                     </span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-red-600">Не знаю:</span>
+                                    <span className="text-red-600">
+                                        Не знаю:
+                                    </span>
                                     <span className="font-semibold text-red-600">
                                         {stats.dontKnow}
                                     </span>
@@ -119,7 +136,11 @@ export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
                                     </span>
                                 </div>
                             </div>
-                            <Button onClick={onClose} size="lg" className="w-full">
+                            <Button
+                                onClick={handleClose}
+                                size="lg"
+                                className="w-full"
+                            >
                                 Закрыть
                             </Button>
                         </div>
@@ -148,7 +169,7 @@ export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
                         <Button
                             variant="ghost"
                             size="icon"
-                            onClick={onClose}
+                            onClick={handleClose}
                             className="h-10 w-10"
                         >
                             <X className="w-5 h-5" />
@@ -186,7 +207,9 @@ export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
                                     )
                                 }
                                 disabled={!currentWord}
-                                belongsToUser={currentWord?.belongsToUser ?? true}
+                                belongsToUser={
+                                    currentWord?.belongsToUser ?? true
+                                }
                             />
                         </div>
                     )}

@@ -34,9 +34,14 @@ export function FlashCardsGroupWidget() {
     };
 
     const handleStartReview = (params: FlashCardsReviewParams) => {
+        const returnUrl =
+            window.location.pathname +
+            window.location.search +
+            window.location.hash;
         const finalParams = {
             ...params,
             languageCode: languageCode || params.languageCode,
+            returnUrl,
         };
         setReviewParams(finalParams);
         setShouldLoadExercise(true);

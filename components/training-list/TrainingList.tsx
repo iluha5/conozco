@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { TrainingModeCard } from './components/TrainingModeCard';
 import { NoWordsDialog } from './components/NoWordsDialog';
 import { NewTrainingConfirmationDialog } from '@/components/training/common/NewTrainingConfirmationDialog';
@@ -37,8 +37,6 @@ export function TrainingList() {
         handleGroupSetupClose,
     } = useTrainingModes();
 
-    const hadFlashCardsOpen = useRef(false);
-
     // Инициализация таба на основе хеша при монтировании
     useEffect(() => {
         const hash = window.location.hash.slice(1);
@@ -63,21 +61,6 @@ export function TrainingList() {
             window.removeEventListener('hashchange', handleHashChange);
         };
     }, [setActiveTab]);
-
-    useEffect(() => {
-        if (showFlashCardsReview) {
-            hadFlashCardsOpen.current = true;
-            return;
-        }
-
-        if (hadFlashCardsOpen.current && activeTab === 'learned') {
-            hadFlashCardsOpen.current = false;
-            if (window.location.hash.slice(1) === LEARNED_TAB_HASH) {
-                window.history.replaceState(null, '', window.location.pathname);
-            }
-            setActiveTab('new');
-        }
-    }, [showFlashCardsReview, activeTab, setActiveTab]);
 
     // Обработчик переключения табов с управлением хешем
     const handleTabChange = (value: string) => {
