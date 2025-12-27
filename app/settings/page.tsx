@@ -18,7 +18,7 @@ import { Header } from '@/components/Header';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import { useUserSettings, useLanguages } from '@/hooks/settings';
 import { useToast } from '@/hooks/shared';
-import { useI18n } from '@/lib/i18n';
+import { useI18n, useTranslation } from '@/lib/i18n';
 
 export default function SettingsPage() {
     const { data: session } = useSession();
@@ -31,6 +31,7 @@ export default function SettingsPage() {
     const { languages, loading: languagesLoading } = useLanguages();
     const { toast } = useToast();
     const i18n = useI18n();
+    const { t } = useTranslation();
 
     const [formData, setFormData] = useState({
         name: '',
@@ -92,15 +93,14 @@ export default function SettingsPage() {
             }
 
             toast({
-                title: 'Настройки сохранены',
-                description: 'Ваши настройки успешно обновлены.',
+                title: t('Settings saved'),
+                description: t('Your settings have been successfully updated.'),
                 variant: 'success',
             });
         } catch (error) {
             toast({
-                title: 'Ошибка',
-                description:
-                    'Не удалось сохранить настройки. Попробуйте еще раз.',
+                title: t('Error'),
+                description: t('Failed to save settings. Please try again.'),
                 variant: 'destructive',
             });
         }
@@ -121,7 +121,7 @@ export default function SettingsPage() {
                 <Header />
                 <div className="container mx-auto px-4 py-8">
                     <div className="text-center py-12">
-                        <p className="text-gray-600">Загрузка...</p>
+                        <p className="text-gray-600">{t('Loading...')}</p>
                     </div>
                 </div>
             </div>
@@ -136,14 +136,14 @@ export default function SettingsPage() {
                     <Link href="/">
                         <Button variant="ghost">
                             <ArrowLeft className="w-4 h-4 mr-2" />
-                            Назад
+                            {t('Back')}
                         </Button>
                     </Link>
                 </div>
 
                 <div className="flex flex-row justify-between items-center gap-4 mb-8">
                     <h1 className="text-4xl font-bold text-gray-900">
-                        Настройки
+                        {t('Settings')}
                     </h1>
                 </div>
 
@@ -151,12 +151,12 @@ export default function SettingsPage() {
                     {/* Личная информация */}
                     <Card>
                         <CardHeader>
-                            <CardTitle>Личная информация</CardTitle>
+                            <CardTitle>{t('Personal information')}</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="email">Email</Label>
+                                    <Label htmlFor="email">{t('Email')}</Label>
                                     <Input
                                         id="email"
                                         type="email"
@@ -169,12 +169,12 @@ export default function SettingsPage() {
                                         className="bg-gray-50"
                                     />
                                     <p className="text-xs text-gray-500">
-                                        Email изменить нельзя
+                                        {t('Email cannot be changed')}
                                     </p>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="name">Имя</Label>
+                                    <Label htmlFor="name">{t('Name')}</Label>
                                     <Input
                                         id="name"
                                         type="text"
@@ -188,8 +188,8 @@ export default function SettingsPage() {
                                         }}
                                         placeholder={
                                             settingsLoading
-                                                ? 'Загрузка...'
-                                                : 'Введите ваше имя'
+                                                ? t('Loading...')
+                                                : t('Enter your name')
                                         }
                                         disabled={settingsLoading}
                                     />
@@ -201,12 +201,12 @@ export default function SettingsPage() {
                     {/* Настройки языков */}
                     <Card>
                         <CardHeader>
-                            <CardTitle>Настройки языков</CardTitle>
+                            <CardTitle>{t('Language settings')}</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-6">
                             <div className="space-y-2">
                                 <Label htmlFor="own-language">
-                                    Родной язык
+                                    {t('Native language')}
                                 </Label>
                                 <Select
                                     value={formData.ownLanguageId}
@@ -226,8 +226,10 @@ export default function SettingsPage() {
                                             placeholder={
                                                 settingsLoading ||
                                                 languagesLoading
-                                                    ? 'Загрузка...'
-                                                    : 'Выберите ваш родной язык'
+                                                    ? t('Loading...')
+                                                    : t(
+                                                          'Select your native language',
+                                                      )
                                             }
                                         />
                                     </SelectTrigger>
@@ -253,7 +255,7 @@ export default function SettingsPage() {
 
                             <div className="space-y-2">
                                 <Label htmlFor="learn-language">
-                                    Изучаемый язык
+                                    {t('Language to learn')}
                                 </Label>
                                 <Select
                                     value={formData.learnLanguageId}
@@ -273,8 +275,10 @@ export default function SettingsPage() {
                                             placeholder={
                                                 settingsLoading ||
                                                 languagesLoading
-                                                    ? 'Загрузка...'
-                                                    : 'Выберите язык для изучения'
+                                                    ? t('Loading...')
+                                                    : t(
+                                                          'Select language to learn',
+                                                      )
                                             }
                                         />
                                     </SelectTrigger>
@@ -300,7 +304,7 @@ export default function SettingsPage() {
 
                             <div className="space-y-2">
                                 <Label htmlFor="interface-language">
-                                    Язык интерфейса
+                                    {t('Interface language')}
                                 </Label>
                                 <Select
                                     value={formData.interfaceLanguageId}
@@ -320,8 +324,10 @@ export default function SettingsPage() {
                                             placeholder={
                                                 settingsLoading ||
                                                 languagesLoading
-                                                    ? 'Загрузка...'
-                                                    : 'Выберите язык интерфейса'
+                                                    ? t('Loading...')
+                                                    : t(
+                                                          'Select interface language',
+                                                      )
                                             }
                                         />
                                     </SelectTrigger>
@@ -357,12 +363,12 @@ export default function SettingsPage() {
                             {saving ? (
                                 <>
                                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                    Сохранение...
+                                    {t('Saving...')}
                                 </>
                             ) : (
                                 <>
                                     <Save className="w-4 h-4 mr-2" />
-                                    Сохранить
+                                    {t('Save')}
                                 </>
                             )}
                         </Button>

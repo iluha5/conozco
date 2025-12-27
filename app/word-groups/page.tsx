@@ -24,6 +24,7 @@ import {
 import { toast } from 'sonner';
 import { GroupWordsDialog } from '@/components/word-groups/GroupWordsDialog';
 import { useHashDialog } from '@/hooks/shared';
+import { useTranslation } from '@/lib/i18n';
 
 // Объединенный тип группы для отображения
 type CombinedWordGroup = {
@@ -38,6 +39,7 @@ type CombinedWordGroup = {
 };
 
 export default function WordGroupsManagementPage() {
+    const { t } = useTranslation();
     const [searchQuery, setSearchQuery] = useState('');
     const [loadingGroups, setLoadingGroups] = useState<Set<number>>(new Set());
     const [optimisticActiveGroups, setOptimisticActiveGroups] = useState<
@@ -89,7 +91,7 @@ export default function WordGroupsManagementPage() {
                     name: group.name,
                     wordsCount: group.wordsCount,
                     visibility: group.visibility,
-                    createdBy: 'Вы', // Для активных групп не показываем создателя
+                    createdBy: t('You'), // Для активных групп не показываем создателя
                     isActive: true,
                     isOwner: group.isOwner,
                     canRemove: group.canRemove,
@@ -141,10 +143,12 @@ export default function WordGroupsManagementPage() {
         try {
             if (currentlyActive) {
                 await deactivateMutation.mutateAsync(groupId);
-                toast.success(`Группа "${groupName}" удалена`);
+                toast.success(
+                    t('Group "{{name}}" removed', { name: groupName }),
+                );
             } else {
                 await activateMutation.mutateAsync(groupId);
-                toast.success(`Группа "${groupName}" добавлена`);
+                toast.success(t('Group "{{name}}" added', { name: groupName }));
             }
         } catch (error) {
             // Откат оптимистичного обновления в случае ошибки
@@ -161,8 +165,8 @@ export default function WordGroupsManagementPage() {
                 error instanceof Error
                     ? error.message
                     : currentlyActive
-                      ? 'Ошибка при удалении группы'
-                      : 'Ошибка при добавлении группы',
+                      ? t('Error removing group')
+                      : t('Error adding group'),
             );
         } finally {
             // Убираем состояние загрузки
@@ -197,11 +201,11 @@ export default function WordGroupsManagementPage() {
     const getVisibilityText = (visibility: 'PUBLIC' | 'PRIVATE' | 'SHARED') => {
         switch (visibility) {
             case 'PUBLIC':
-                return 'Публичная';
+                return t('Public');
             case 'PRIVATE':
-                return 'Личная';
+                return t('Private');
             case 'SHARED':
-                return 'Общая';
+                return t('Shared');
         }
     };
 
@@ -213,11 +217,10 @@ export default function WordGroupsManagementPage() {
                     <Card className="mb-6">
                         <CardHeader>
                             <CardTitle className="text-2xl">
-                                Управление группами слов
+                                {t('Word groups management')}
                             </CardTitle>
                             <p className="hidden sm:block text-sm text-muted-foreground mt-2">
-                                Добавляйте или удаляйте группы слов для
-                                фильтрации
+                                {t('Add or remove word groups for filtering')}
                             </p>
                         </CardHeader>
                         <CardContent className="space-y-6">
@@ -225,7 +228,7 @@ export default function WordGroupsManagementPage() {
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                 <Input
-                                    placeholder="Поиск групп..."
+                                    placeholder={t('Search groups...')}
                                     value={searchQuery}
                                     onChange={e =>
                                         setSearchQuery(e.target.value)
@@ -246,16 +249,16 @@ export default function WordGroupsManagementPage() {
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="ALL">
-                                                Все типы
+                                                {t('All types')}
                                             </SelectItem>
                                             <SelectItem value="PUBLIC">
-                                                Публичные
+                                                {t('Public')}
                                             </SelectItem>
                                             <SelectItem value="PRIVATE">
-                                                Приватные
+                                                {t('Private')}
                                             </SelectItem>
                                             <SelectItem value="SHARED">
-                                                Общие
+                                                {t('Shared')}
                                             </SelectItem>
                                         </SelectContent>
                                     </Select>
@@ -269,13 +272,13 @@ export default function WordGroupsManagementPage() {
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="ALL">
-                                                Все группы
+                                                {t('All groups')}
                                             </SelectItem>
                                             <SelectItem value="ACTIVE">
-                                                Активные
+                                                {t('Active')}
                                             </SelectItem>
                                             <SelectItem value="INACTIVE">
-                                                Неактивные
+                                                {t('Inactive')}
                                             </SelectItem>
                                         </SelectContent>
                                     </Select>
@@ -300,7 +303,7 @@ export default function WordGroupsManagementPage() {
                                 </div>
 
                                 <div className="text-sm text-gray-600 sm:ml-auto">
-                                    Показано:{' '}
+                                    {t('Shown:')}{' '}
                                     <span className="font-semibold text-gray-900">
                                         {filteredGroups.length}
                                     </span>
@@ -371,7 +374,9 @@ export default function WordGroupsManagementPage() {
                                                                         {
                                                                             group.wordsCount
                                                                         }{' '}
-                                                                        слов
+                                                                        {t(
+                                                                            'words',
+                                                                        )}
                                                                     </span>
                                                                     <Badge
                                                                         variant="outline"
@@ -402,7 +407,9 @@ export default function WordGroupsManagementPage() {
                                                                     },
                                                                 );
                                                             }}
-                                                            title="Просмотреть слова"
+                                                            title={t(
+                                                                'View words',
+                                                            )}
                                                         >
                                                             <Eye className="h-4 w-4" />
                                                         </Button>
@@ -416,8 +423,8 @@ export default function WordGroupsManagementPage() {
                                 <div className="text-center py-12">
                                     <p className="text-gray-600">
                                         {searchQuery
-                                            ? 'Группы не найдены'
-                                            : 'Нет доступных групп'}
+                                            ? t('Groups not found')
+                                            : t('No available groups')}
                                     </p>
                                 </div>
                             )}

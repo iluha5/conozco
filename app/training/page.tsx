@@ -29,10 +29,12 @@ import { trainingApi } from '@/lib/api/training.api';
 import { TrainingStage } from '@/types/training.types';
 import { Card, CardContent } from '@/components/ui/card';
 import { STORAGE_KEYS } from '@/config/storage-keys';
+import { useTranslation } from '@/lib/i18n';
 
 const STORAGE_KEY = STORAGE_KEYS.TRAINING_PROGRESS;
 
 export default function TrainingPage() {
+    const { t } = useTranslation();
     const router = useRouter();
     const { open: isExitDialogOpen, setOpen: setIsExitDialogOpen } =
         useHashDialog('exit-training-confirm');
@@ -286,7 +288,9 @@ export default function TrainingPage() {
                     <Card>
                         <CardContent className="pt-6">
                             <p className="text-center text-gray-600">
-                                Этап {state.currentStage} отключен в настройках.
+                                {t('Stage {{stage}} is disabled in settings.', {
+                                    stage: state.currentStage,
+                                })}
                             </p>
                         </CardContent>
                     </Card>

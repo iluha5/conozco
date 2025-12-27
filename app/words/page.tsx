@@ -26,6 +26,7 @@ import {
     getBulkSelectText,
 } from '@/components/WordList/helpers/selectionHelpers';
 import { WordsFilter, Word } from '@/types/words.types';
+import { useTranslation } from '@/lib/i18n';
 
 export default function WordsPage() {
     const { settings: userSettings } = useUserSettings();
@@ -80,6 +81,7 @@ export default function WordsPage() {
         onWordsChange: refetch,
     });
     const { toast } = useToast();
+    const { t } = useTranslation();
 
     useEffect(() => {
         setIsClient(true);
@@ -93,8 +95,8 @@ export default function WordsPage() {
     const handleBulkStatusChange = (newStatus: 'LEARNED' | 'NOT_LEARNED') => {
         if (wordSelection.selectedWords.length === 0) {
             toast({
-                title: 'Ошибка',
-                description: 'Выберите слова для изменения статуса',
+                title: t('Error'),
+                description: t('Select words to change status'),
                 variant: 'destructive',
             });
             return;
@@ -130,9 +132,13 @@ export default function WordsPage() {
         setIsUpdatingStatus(false);
 
         if (success) {
+            const statusText =
+                newStatus === 'LEARNED'
+                    ? t('marked as learned')
+                    : t('marked as not learned');
             toast({
-                title: 'Успешно',
-                description: `${successCount} слов ${newStatus === 'LEARNED' ? 'отмечено как выученные' : 'отмечено как невыученные'}`,
+                title: t('Success'),
+                description: `${successCount} ${t('words')} ${statusText}`,
                 variant: 'success',
             });
         }
@@ -144,8 +150,8 @@ export default function WordsPage() {
     const handleBulkDelete = () => {
         if (wordSelection.selectedWords.length === 0) {
             toast({
-                title: 'Ошибка',
-                description: 'Выберите слова для удаления',
+                title: t('Error'),
+                description: t('Select words to delete'),
                 variant: 'destructive',
             });
             return;
@@ -175,8 +181,8 @@ export default function WordsPage() {
 
         if (success) {
             toast({
-                title: 'Успешно',
-                description: `${successCount} слов удалено`,
+                title: t('Success'),
+                description: `${successCount} ${t('words')} ${t('deleted')}`,
                 variant: 'success',
             });
         }
@@ -195,7 +201,7 @@ export default function WordsPage() {
                 <Header />
                 <div className="container mx-auto px-4 py-8">
                     <div className="text-center py-12">
-                        <p className="text-gray-600">Загрузка...</p>
+                        <p className="text-gray-600">{t('Loading...')}</p>
                     </div>
                 </div>
             </div>
@@ -210,14 +216,14 @@ export default function WordsPage() {
                     <Link href="/">
                         <Button variant="ghost">
                             <ArrowLeft className="w-4 h-4 mr-2" />
-                            Назад
+                            {t('Back')}
                         </Button>
                     </Link>
                 </div>
 
                 <div className="flex flex-row justify-between items-center gap-4 mb-6">
                     <h1 className="text-4xl font-bold text-gray-900">
-                        Мои слова
+                        {t('My words')}
                     </h1>
                     <div className="flex flex-row gap-2 w-auto">
                         <div className="flex-none min-w-0">
@@ -237,7 +243,7 @@ export default function WordsPage() {
                     >
                         <CardHeader className="pb-2">
                             <CardTitle className="text-sm font-medium">
-                                Всего слов
+                                {t('Total words')}
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
@@ -257,7 +263,7 @@ export default function WordsPage() {
                     >
                         <CardHeader className="pb-2">
                             <CardTitle className="text-sm font-medium">
-                                Не выучено
+                                {t('Not learned')}
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
@@ -277,7 +283,7 @@ export default function WordsPage() {
                     >
                         <CardHeader className="pb-2">
                             <CardTitle className="text-sm font-medium">
-                                Выучено
+                                {t('Learned')}
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
@@ -335,7 +341,7 @@ export default function WordsPage() {
                         />
                         <div className="flex items-center gap-2">
                             <span className="hidden sm:inline text-sm text-gray-600">
-                                Показано:{' '}
+                                {t('Shown:')}{' '}
                             </span>
                             <Badge
                                 variant="outline"
@@ -361,7 +367,7 @@ export default function WordsPage() {
 
                 {loading ? (
                     <div className="text-center py-12">
-                        <p className="text-gray-600">Загрузка...</p>
+                        <p className="text-gray-600">{t('Loading...')}</p>
                     </div>
                 ) : (
                     <WordsList
@@ -377,7 +383,7 @@ export default function WordsPage() {
                             removeWord(Number(wordId));
                         }}
                         showBulkActions={false}
-                        emptyMessage="Слова не найдены. Добавьте новое слово!"
+                        emptyMessage={t('No words found. Add a new word!')}
                         externalSelection={wordSelection}
                     />
                 )}

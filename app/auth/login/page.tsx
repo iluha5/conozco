@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/card';
 import { useToast } from '@/hooks/shared';
 import { Loader2 } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -22,14 +23,15 @@ export default function LoginPage() {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
     const { toast } = useToast();
+    const { t } = useTranslation();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         if (!email || !password) {
             toast({
-                title: 'Ошибка',
-                description: 'Заполните все поля',
+                title: t('Error'),
+                description: t('Fill all fields'),
                 variant: 'destructive',
             });
             return;
@@ -46,8 +48,8 @@ export default function LoginPage() {
 
             if (result?.error) {
                 toast({
-                    title: 'Ошибка входа',
-                    description: 'Неверный email или пароль',
+                    title: t('Login error'),
+                    description: t('Invalid email or password'),
                     variant: 'destructive',
                 });
             } else {
@@ -57,8 +59,8 @@ export default function LoginPage() {
         } catch (error) {
             console.error('Login error:', error);
             toast({
-                title: 'Ошибка',
-                description: 'Произошла ошибка при входе',
+                title: t('Error'),
+                description: t('An error occurred during login'),
                 variant: 'destructive',
             });
         } finally {
@@ -71,19 +73,21 @@ export default function LoginPage() {
             <Card className="w-full max-w-md">
                 <CardHeader className="space-y-1">
                     <CardTitle className="text-2xl font-bold text-center">
-                        Вход
+                        {t('Login')}
                     </CardTitle>
                     <CardDescription className="text-center">
-                        Введите email и пароль для входа
+                        {t('Enter email and password to login')}
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="space-y-2">
-                            <label className="text-sm font-medium">Email</label>
+                            <label className="text-sm font-medium">
+                                {t('Email')}
+                            </label>
                             <Input
                                 type="email"
-                                placeholder="your@email.com"
+                                placeholder={t('your@email.com')}
                                 value={email}
                                 onChange={e => setEmail(e.target.value)}
                                 disabled={loading}
@@ -92,7 +96,7 @@ export default function LoginPage() {
 
                         <div className="space-y-2">
                             <label className="text-sm font-medium">
-                                Пароль
+                                {t('Password')}
                             </label>
                             <Input
                                 type="password"
@@ -111,20 +115,20 @@ export default function LoginPage() {
                             {loading ? (
                                 <>
                                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                    Вход...
+                                    {t('Logging in...')}
                                 </>
                             ) : (
-                                'Войти'
+                                t('Sign in')
                             )}
                         </Button>
 
                         <div className="text-center text-sm text-gray-600">
-                            Нет аккаунта?{' '}
+                            {t("Don't have an account?")}{' '}
                             <Link
                                 href="/auth/register"
                                 className="text-blue-600 hover:underline"
                             >
-                                Зарегистрироваться
+                                {t('Sign up')}
                             </Link>
                         </div>
                     </form>

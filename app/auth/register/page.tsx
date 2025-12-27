@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/card';
 import { useToast } from '@/hooks/shared';
 import { Loader2, AlertCircle } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n';
 
 export default function RegisterPage() {
     const [email, setEmail] = useState('');
@@ -23,14 +24,15 @@ export default function RegisterPage() {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
     const { toast } = useToast();
+    const { t } = useTranslation();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         if (!email || !password || !adminPassword) {
             toast({
-                title: 'Ошибка',
-                description: 'Заполните все обязательные поля',
+                title: t('Error'),
+                description: t('Fill all required fields'),
                 variant: 'destructive',
             });
             return;
@@ -38,8 +40,8 @@ export default function RegisterPage() {
 
         if (password.length < 6) {
             toast({
-                title: 'Ошибка',
-                description: 'Пароль должен содержать минимум 6 символов',
+                title: t('Error'),
+                description: t('Password must be at least 6 characters'),
                 variant: 'destructive',
             });
             return;
@@ -65,25 +67,24 @@ export default function RegisterPage() {
 
             if (!response.ok) {
                 toast({
-                    title: 'Ошибка регистрации',
-                    description:
-                        data.error || 'Не удалось создать пользователя',
+                    title: t('Registration error'),
+                    description: data.error || t('Failed to create user'),
                     variant: 'destructive',
                 });
                 return;
             }
 
             toast({
-                title: 'Успешно',
-                description: 'Пользователь создан. Можете войти в систему.',
+                title: t('Success'),
+                description: t('User created. You can now login.'),
             });
 
             router.push('/auth/login');
         } catch (error) {
             console.error('Registration error:', error);
             toast({
-                title: 'Ошибка',
-                description: 'Произошла ошибка при регистрации',
+                title: t('Error'),
+                description: t('An error occurred during registration'),
                 variant: 'destructive',
             });
         } finally {
@@ -96,28 +97,30 @@ export default function RegisterPage() {
             <Card className="w-full max-w-md">
                 <CardHeader className="space-y-1">
                     <CardTitle className="text-2xl font-bold text-center">
-                        Регистрация
+                        {t('Registration')}
                     </CardTitle>
                     <CardDescription className="text-center">
-                        Только администратор может создавать новых пользователей
+                        {t('Only administrator can create new users')}
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md flex gap-2">
                         <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
                         <p className="text-sm text-yellow-800">
-                            Для регистрации требуется пароль администратора
+                            {t(
+                                'Administrator password required for registration',
+                            )}
                         </p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="space-y-2">
                             <label className="text-sm font-medium">
-                                Email *
+                                {t('Email *')}
                             </label>
                             <Input
                                 type="email"
-                                placeholder="user@example.com"
+                                placeholder={t('user@example.com')}
                                 value={email}
                                 onChange={e => setEmail(e.target.value)}
                                 disabled={loading}
@@ -126,11 +129,11 @@ export default function RegisterPage() {
 
                         <div className="space-y-2">
                             <label className="text-sm font-medium">
-                                Имя (опционально)
+                                {t('Name (optional)')}
                             </label>
                             <Input
                                 type="text"
-                                placeholder="Иван Иванов"
+                                placeholder={t('John Doe')}
                                 value={name}
                                 onChange={e => setName(e.target.value)}
                                 disabled={loading}
@@ -139,7 +142,7 @@ export default function RegisterPage() {
 
                         <div className="space-y-2">
                             <label className="text-sm font-medium">
-                                Пароль *
+                                {t('Password *')}
                             </label>
                             <Input
                                 type="password"
@@ -149,13 +152,13 @@ export default function RegisterPage() {
                                 disabled={loading}
                             />
                             <p className="text-xs text-gray-500">
-                                Минимум 6 символов
+                                {t('Minimum 6 characters')}
                             </p>
                         </div>
 
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-orange-600">
-                                Пароль администратора *
+                                {t('Administrator password *')}
                             </label>
                             <Input
                                 type="password"
@@ -174,20 +177,20 @@ export default function RegisterPage() {
                             {loading ? (
                                 <>
                                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                    Создание...
+                                    {t('Creating...')}
                                 </>
                             ) : (
-                                'Создать пользователя'
+                                t('Create user')
                             )}
                         </Button>
 
                         <div className="text-center text-sm text-gray-600">
-                            Уже есть аккаунт?{' '}
+                            {t('Already have an account?')}{' '}
                             <Link
                                 href="/auth/login"
                                 className="text-blue-600 hover:underline"
                             >
-                                Войти
+                                {t('Sign in')}
                             </Link>
                         </div>
                     </form>

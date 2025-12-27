@@ -22,10 +22,12 @@ import { useWordGroupsFilter } from '@/hooks/word-groups/use-word-groups-filter'
 import { useUserSettings } from '@/hooks/settings';
 import { WordsSelector, StagesSelector } from '@/components/training-setup';
 import { STORAGE_KEYS } from '@/config/storage-keys';
+import { useTranslation } from '@/lib/i18n';
 
 export default function TrainingSetupPage() {
     const router = useRouter();
     const { toast } = useToast();
+    const { t } = useTranslation();
     const [isInitialSelection, setIsInitialSelection] = useState(true);
     const [isStarting, setIsStarting] = useState(false);
 
@@ -125,9 +127,10 @@ export default function TrainingSetupPage() {
                 updateEnabledStages(Array.from(newSet));
             } else {
                 toast({
-                    title: 'Ошибка',
-                    description:
-                        'Должен быть выбран хотя бы один этап тренировки',
+                    title: t('Error'),
+                    description: t(
+                        'At least one training stage must be selected',
+                    ),
                     variant: 'destructive',
                 });
             }
@@ -140,8 +143,8 @@ export default function TrainingSetupPage() {
     const startTraining = () => {
         if (selectedWords.size === 0) {
             toast({
-                title: 'Ошибка',
-                description: 'Выберите хотя бы одно слово для тренировки',
+                title: t('Error'),
+                description: t('Select at least one word for training'),
                 variant: 'destructive',
             });
             return;
@@ -161,7 +164,7 @@ export default function TrainingSetupPage() {
                         <Link href="/">
                             <Button variant="ghost">
                                 <ArrowLeft className="w-4 h-4 mr-2" />
-                                Назад
+                                {t('Back')}
                             </Button>
                         </Link>
                     </div>
@@ -169,7 +172,7 @@ export default function TrainingSetupPage() {
                     <Card className="mb-8">
                         <CardHeader>
                             <CardTitle className="text-center text-2xl">
-                                Настройка тренировки
+                                {t('Training setup')}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-8">
@@ -215,7 +218,7 @@ export default function TrainingSetupPage() {
                                     }
                                     loading={isStarting}
                                 >
-                                    Начать тренировку
+                                    {t('Start training')}
                                 </Button>
                             </div>
                         </CardContent>
