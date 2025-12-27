@@ -62,4 +62,3 @@ export function ScrollAnimation({
         </motion.div>
     );
 }
-

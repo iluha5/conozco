@@ -25,4 +25,3 @@ export function ActiveTraining({ content }: ActiveTrainingProps) {
         </Card>
     );
 }
-

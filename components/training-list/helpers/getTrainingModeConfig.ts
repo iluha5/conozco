@@ -20,4 +20,3 @@ export function getTrainingModeConfig(
 ): TrainingModeConfig | undefined {
     return ALL_TRAINING_MODES.find(mode => mode.id === modeId);
 }
-

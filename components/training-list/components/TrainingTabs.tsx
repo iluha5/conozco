@@ -9,7 +9,7 @@ import { Word } from '@/types/training.types';
 
 interface TrainingTabsProps {
     activeTab: TrainingModeGroupId;
-    onTabChange: (value: string) => void;
+    onTabChange: (_value: string) => void;
     words: Word[];
     children: Record<TrainingModeGroupId, React.ReactNode>;
 }
@@ -29,11 +29,7 @@ export function TrainingTabs({
     children,
 }: TrainingTabsProps) {
     return (
-        <Tabs
-            value={activeTab}
-            onValueChange={onTabChange}
-            className="w-full"
-        >
+        <Tabs value={activeTab} onValueChange={onTabChange} className="w-full">
             <TabsList
                 className={cn(
                     'grid w-full grid-cols-3 max-w-2xl mx-auto mb-8 h-auto bg-transparent p-0 gap-0.5 sm:gap-1',

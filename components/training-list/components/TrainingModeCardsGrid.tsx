@@ -3,7 +3,7 @@ import { TrainingModeCard } from './TrainingModeCard';
 
 interface TrainingModeCardsGridProps {
     modes: TrainingModeConfig[];
-    onModeClick: (modeId: string) => void;
+    onModeClick: (_modeId: string) => void;
     disabled?: boolean;
     variant?: 'default' | 'learned';
     showEmptyState?: boolean;
@@ -29,10 +29,7 @@ export function TrainingModeCardsGrid({
     return (
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 md:grid-cols-4">
             {modes.map(mode => (
-                <div
-                    key={mode.id}
-                    className="md:max-w-[230px] lg:max-w-none"
-                >
+                <div key={mode.id} className="md:max-w-[230px] lg:max-w-none">
                     <TrainingModeCard
                         mode={mode}
                         onClick={() => onModeClick(mode.id)}
@@ -44,4 +41,3 @@ export function TrainingModeCardsGrid({
         </div>
     );
 }
-

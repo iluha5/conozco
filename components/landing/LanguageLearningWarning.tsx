@@ -24,13 +24,10 @@ export function LanguageLearningWarning({
                         <h3 className="font-semibold text-amber-900 mb-2">
                             {content.title}
                         </h3>
-                        <p className="text-sm text-amber-800">
-                            {content.text}
-                        </p>
+                        <p className="text-sm text-amber-800">{content.text}</p>
                     </div>
                 </div>
             </CardContent>
         </Card>
     );
 }
-

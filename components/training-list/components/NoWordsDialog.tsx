@@ -11,11 +11,12 @@ import {
 } from '@/components/ui/dialog';
 import { BookOpen, Home } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { TrainingModeGroupId } from '../types/typing';
 
 interface NoWordsDialogProps {
     open: boolean;
     onOpenChange: (_isOpen: boolean) => void;
-    mode?: 'new' | 'learned'; // Новый проп
+    mode?: TrainingModeGroupId;
 }
 
 export function NoWordsDialog({
@@ -35,18 +36,19 @@ export function NoWordsDialog({
         router.push('/words');
     };
 
-    const title =
-        mode === 'learned' ? 'Нет изученных слов' : 'Нет слов для тренировки';
+    const isLearnedMode = mode === 'learned' || mode === 'tests';
 
-    const description =
-        mode === 'learned'
-            ? 'У вас пока нет изученных слов. Пройдите тренировку новых слов, чтобы пополнить список изученных.'
-            : 'У вас нет слов для изучения на текущем языке. Выберите один из вариантов:';
+    const title = isLearnedMode
+        ? 'Нет изученных слов'
+        : 'Нет слов для тренировки';
 
-    const primaryButtonText =
-        mode === 'learned'
-            ? 'Перейти к новым словам'
-            : 'Пройти проверку по группам слов';
+    const description = isLearnedMode
+        ? 'У вас пока нет изученных слов. Пройдите тренировку новых слов, чтобы пополнить список изученных.'
+        : 'У вас нет слов для изучения на текущем языке. Выберите один из вариантов:';
+
+    const primaryButtonText = isLearnedMode
+        ? 'Перейти к новым словам'
+        : 'Пройти проверку по группам слов';
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>

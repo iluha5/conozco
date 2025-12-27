@@ -17,7 +17,7 @@ export function TabTriggerWithBadge({
     badgeCount,
 }: TabTriggerWithBadgeProps) {
     const { colorScheme, showBadge } = config;
-    
+
     return (
         <TabsTrigger
             value={config.id}
@@ -69,4 +69,3 @@ export function TabTriggerWithBadge({
         </TabsTrigger>
     );
 }
-

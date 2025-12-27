@@ -34,7 +34,7 @@ export interface TabConfig {
     hash: string;
     colorScheme: TabColorScheme;
     showBadge: boolean;
-    getBadgeCount?: (words: Word[]) => number;
+    getBadgeCount?: (_words: Word[]) => number;
 }
 
 export const TABS_CONFIG: TabConfig[] = [
@@ -69,8 +69,8 @@ export const TABS_CONFIG: TabConfig[] = [
                 },
             },
         },
-        getBadgeCount: (words: Word[]) =>
-            words.filter(w => w.status === 'NOT_LEARNED').length,
+        getBadgeCount: (_words: Word[]) =>
+            _words.filter(w => w.status === 'NOT_LEARNED').length,
     },
     {
         id: 'learned',
@@ -103,8 +103,8 @@ export const TABS_CONFIG: TabConfig[] = [
                 },
             },
         },
-        getBadgeCount: (words: Word[]) =>
-            words.filter(w => w.status === 'LEARNED').length,
+        getBadgeCount: (_words: Word[]) =>
+            _words.filter(w => w.status === 'LEARNED').length,
     },
     {
         id: 'tests',
@@ -139,4 +139,3 @@ export const TABS_CONFIG: TabConfig[] = [
         },
     },
 ];
-

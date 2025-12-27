@@ -47,4 +47,3 @@ export const TEST_TRAINING_MODES: TrainingModeConfig[] = [
         groupName: A1_GROUP_NAME,
     },
 ];
-

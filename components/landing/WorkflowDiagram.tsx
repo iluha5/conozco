@@ -48,9 +48,9 @@ export function WorkflowDiagram({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
                 {steps.map((step, index) => {
                     const gradient = gradients[index];
-                    const borderColor = getBorderColorClass(gradient);
-                    const iconColor = getTextColorClass(gradient);
-                    const iconBgColor = getBackgroundColorClass(gradient);
+                    const _borderColor = getBorderColorClass(gradient);
+                    const _iconColor = getTextColorClass(gradient);
+                    const _iconBgColor = getBackgroundColorClass(gradient);
 
                     return (
                         <motion.div

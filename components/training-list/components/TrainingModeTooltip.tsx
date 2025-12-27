@@ -13,7 +13,10 @@ interface TrainingModeTooltipProps {
     variant?: 'default' | 'learned';
 }
 
-export function TrainingModeTooltip({ content, variant = 'default' }: TrainingModeTooltipProps) {
+export function TrainingModeTooltip({
+    content,
+    variant = 'default',
+}: TrainingModeTooltipProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [isDesktop, setIsDesktop] = useState(false);
     const tooltipRef = useRef<HTMLDivElement>(null);

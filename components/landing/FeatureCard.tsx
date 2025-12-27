@@ -41,7 +41,11 @@ const icons: LucideIcon[] = [
     Gift, // Весь функционал сервиса бесплатен
 ];
 
-export function FeatureCard({ title, gradient, index }: FeatureCardProps) {
+export function FeatureCard({
+    title,
+    gradient: _gradient,
+    index,
+}: FeatureCardProps) {
     const cardGradient = gradients[index % gradients.length];
     const borderColor = getBorderColorClass(cardGradient);
     const iconColor = getTextColorClass(cardGradient);

@@ -13,7 +13,7 @@ export function ScrollIndicator() {
             // Скрываем стрелку когда прокрутили больше 300px или когда следующий блок начинает появляться
             const scrollY = window.scrollY || window.pageYOffset;
             const windowHeight = window.innerHeight;
-            
+
             // Скрываем если прокрутили больше половины экрана или если следующий блок виден
             if (scrollY > windowHeight * 0.3) {
                 setIsVisible(false);
@@ -22,8 +22,8 @@ export function ScrollIndicator() {
 
         // Также проверяем видимость следующего блока через IntersectionObserver
         const observer = new IntersectionObserver(
-            (entries) => {
-                entries.forEach((entry) => {
+            entries => {
+                entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         setIsVisible(false);
                     }
@@ -32,7 +32,7 @@ export function ScrollIndicator() {
             {
                 threshold: 0.1,
                 rootMargin: '-100px 0px',
-            }
+            },
         );
 
         // Находим следующий блок (Workflow Section)

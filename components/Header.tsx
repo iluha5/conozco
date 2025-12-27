@@ -142,9 +142,7 @@ export function Header() {
                                     </Button>
                                 </Link>
                                 <Link href="/auth/register">
-                                    <Button size="sm">
-                                        Регистрация
-                                    </Button>
+                                    <Button size="sm">Регистрация</Button>
                                 </Link>
                             </div>
                         )}

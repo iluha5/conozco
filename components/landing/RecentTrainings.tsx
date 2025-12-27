@@ -25,4 +25,3 @@ export function RecentTrainings({ content }: RecentTrainingsProps) {
         </Card>
     );
 }
-

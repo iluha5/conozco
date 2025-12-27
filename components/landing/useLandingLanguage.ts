@@ -8,9 +8,8 @@ const STORAGE_KEY = 'landing_language';
 const DEFAULT_LANGUAGE: LandingLanguage = 'ru';
 
 export function useLandingLanguage() {
-    const [language, setLanguageState] = useState<LandingLanguage>(
-        DEFAULT_LANGUAGE,
-    );
+    const [language, setLanguageState] =
+        useState<LandingLanguage>(DEFAULT_LANGUAGE);
     const [isLoaded, setIsLoaded] = useState(false);
 
     // Загружаем язык при монтировании
@@ -43,4 +42,3 @@ export function useLandingLanguage() {
         isLoaded,
     };
 }
-

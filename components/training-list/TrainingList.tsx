@@ -30,7 +30,7 @@ export function TrainingList() {
         activeTab,
         setActiveTab,
         learnedWords,
-        notLearnedWords,
+        notLearnedWords: _notLearnedWords,
         allWords,
         flashCardsParams,
         showFlashCardsReview,
