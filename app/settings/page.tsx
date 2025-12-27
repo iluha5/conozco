@@ -18,6 +18,7 @@ import { Header } from '@/components/Header';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import { useUserSettings, useLanguages } from '@/hooks/settings';
 import { useToast } from '@/hooks/shared';
+import { useI18n } from '@/lib/i18n';
 
 export default function SettingsPage() {
     const { data: session } = useSession();
@@ -29,6 +30,7 @@ export default function SettingsPage() {
     } = useUserSettings();
     const { languages, loading: languagesLoading } = useLanguages();
     const { toast } = useToast();
+    const i18n = useI18n();
 
     const [formData, setFormData] = useState({
         name: '',
@@ -73,7 +75,21 @@ export default function SettingsPage() {
                 hasConfigured: true, // Отмечаем, что пользователь прошел настройку
             };
 
-            await updateSettings(updates);
+            const updatedSettings = await updateSettings(updates);
+
+            // Если изменился язык интерфейса, переключаем его сразу
+            if (
+                updatedSettings?.interfaceLanguage?.code &&
+                updatedSettings.interfaceLanguage.code !== i18n.language
+            ) {
+                const newLanguageCode = updatedSettings.interfaceLanguage.code;
+                await i18n.changeLanguage(newLanguageCode);
+
+                // Обновляем HTML lang атрибут
+                if (typeof document !== 'undefined') {
+                    document.documentElement.lang = newLanguageCode;
+                }
+            }
 
             toast({
                 title: 'Настройки сохранены',

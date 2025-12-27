@@ -30,7 +30,8 @@
         "prisma:seed": "tsx prisma/seed.ts",
         "db:backup": "./scripts/backup-db.sh",
         "db:migrate:safe": "./scripts/safe-migrate.sh \"npm run prisma:migrate\"",
-        "prepare": "husky"
+        "prepare": "husky",
+        "process-locales": "i18next"
     },
     "prisma": {
         "seed": "tsx prisma/seed.ts"
@@ -62,14 +63,18 @@
         "class-variance-authority": "^0.7.0",
         "clsx": "^2.0.0",
         "framer-motion": "^12.23.26",
+        "i18next": "23.4.2",
+        "i18next-http-backend": "2.2.1",
         "lodash-es": "^4.17.21",
         "lucide-react": "^0.303.0",
         "next": "14.0.4",
         "next-auth": "^4.24.5",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
+        "react-i18next": "13.0.3",
         "react-intersection-observer": "^10.0.0",
         "react-use": "^17.6.0",
+        "reflect-metadata": "0.1.13",
         "sonner": "^2.0.7",
         "tailwind-merge": "^2.2.0",
         "zod": "^3.22.4"
@@ -88,6 +93,7 @@
         "eslint-config-prettier": "^10.1.8",
         "eslint-plugin-prettier": "^5.5.4",
         "husky": "^9.1.7",
+        "i18next-parser": "9.0.2",
         "jest": "^30.2.0",
         "lint-staged": "^16.2.6",
         "postcss": "^8.4.32",

@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { MobileSidebar } from './MobileSidebar';
 import { NavigationLink } from './Header/components/NavigationLink';
+import { useTranslation } from '@/lib/i18n';
 
 function HeaderSkeleton() {
     return (
@@ -48,6 +49,7 @@ export function Header() {
     const pathname = usePathname();
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
     const isHomePage = pathname === '/';
+    const { t } = useTranslation();
 
     if (status === 'loading') {
         return <HeaderSkeleton />;
@@ -82,21 +84,21 @@ export function Header() {
                                         icon={Activity}
                                         className="mr-6"
                                     >
-                                        Тренировка
+                                        {t('Training')}
                                     </NavigationLink>
                                     <NavigationLink
                                         href="/words"
                                         icon={BookOpen}
                                         className="mr-6"
                                     >
-                                        Слова
+                                        {t('Words')}
                                     </NavigationLink>
                                     <NavigationLink
                                         href="/word-groups"
                                         icon={Layers}
                                         className="mr-6"
                                     >
-                                        Группы слов
+                                        {t('Word groups')}
                                     </NavigationLink>
                                     <NavigationLink
                                         href="/settings"
