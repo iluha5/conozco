@@ -1,7 +1,10 @@
+'use client';
+
 import { Button } from '@/components/ui/button';
 import { CardHeader, CardTitle } from '@/components/ui/card';
 import { Settings } from 'lucide-react';
 import { ProgressDots } from '../../common/ProgressDots';
+import { useTranslation } from '@/lib/i18n';
 
 type StageHeaderProps = {
     totalExercises: number;
@@ -20,11 +23,12 @@ export function StageHeader({
     isFirstCard,
     onOpenSettings,
 }: StageHeaderProps) {
+    const { t } = useTranslation();
     return (
         <CardHeader>
             <div className="flex items-center justify-between">
                 <CardTitle className="text-gray-600">
-                    Составление слова по буквам
+                    {t('Word building from letters')}
                 </CardTitle>
                 {isFirstCard && (
                     <Button
@@ -32,7 +36,7 @@ export function StageHeader({
                         size="sm"
                         onClick={onOpenSettings}
                         className="p-2 h-auto"
-                        title="Настройки тренировки"
+                        title={t('Training settings')}
                     >
                         <Settings className="w-4 h-4" />
                     </Button>

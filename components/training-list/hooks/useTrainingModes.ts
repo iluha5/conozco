@@ -13,8 +13,10 @@ import { LEARNED_TRAINING_MODES } from '../constants/learned-training-modes';
 import { startTrainingMode } from '../helpers/startTrainingMode';
 import { FlashCardsReviewParams } from '@/components/flash-cards-review/typing';
 import { getTrainingModeConfig } from '../helpers/getTrainingModeConfig';
+import { useTranslation } from '@/lib/i18n';
 
 export function useTrainingModes() {
+    const { t } = useTranslation();
     const router = useRouter();
     const { data: session } = useSession();
     const { settings: userSettings } = useUserSettings();
@@ -56,8 +58,8 @@ export function useTrainingModes() {
             } catch (error) {
                 console.error('Failed to load words:', error);
                 toast({
-                    title: 'Ошибка',
-                    description: 'Не удалось загрузить слова',
+                    title: t('Error'),
+                    description: t('Failed to load words'),
                     variant: 'destructive',
                 });
             } finally {
@@ -66,7 +68,7 @@ export function useTrainingModes() {
         };
 
         loadWords();
-    }, [toast]);
+    }, [toast, t]);
 
     // Обработчик открытия FlashCards
     const handleFlashCardsOpen = (params: FlashCardsReviewParams) => {
@@ -89,8 +91,8 @@ export function useTrainingModes() {
     const handleStartMode = async (modeId: TrainingModeId) => {
         if (!session?.user?.id || !userSettings?.learnLanguage?.id) {
             toast({
-                title: 'Ошибка',
-                description: 'Не удалось получить настройки пользователя',
+                title: t('Error'),
+                description: t('Failed to get user settings'),
                 variant: 'destructive',
             });
             return;
@@ -132,8 +134,8 @@ export function useTrainingModes() {
         } catch (error) {
             console.error('Failed to start training mode:', error);
             toast({
-                title: 'Ошибка',
-                description: 'Не удалось запустить тренировку',
+                title: t('Error'),
+                description: t('Failed to start training'),
                 variant: 'destructive',
             });
             setIsStarting(false);
@@ -196,8 +198,8 @@ export function useTrainingModes() {
         } catch (error) {
             console.error('Failed to start training mode:', error);
             toast({
-                title: 'Ошибка',
-                description: 'Не удалось запустить тренировку',
+                title: t('Error'),
+                description: t('Failed to start training'),
                 variant: 'destructive',
             });
             setIsStarting(false);

@@ -1,4 +1,5 @@
 import { getWordTranslation } from '@/lib/training-utils';
+import { tServerSync } from '@/lib/i18n';
 import type { Word } from '@/types/training.types';
 
 /**
@@ -9,9 +10,11 @@ export function generateOptions(
     currentWord: Word,
     currentIndex: number,
     allWords: Word[],
+    lang: string = 'en',
 ): string[] {
     const correctTranslation = getWordTranslation(currentWord);
     const otherWords = allWords.filter((word, index) => index !== currentIndex);
+    const noTranslationText = tServerSync('No translation', lang);
 
     // Выбираем 3 случайных неправильных ответа
     const shuffledOthers = [...otherWords].sort(() => Math.random() - 0.5);
@@ -21,7 +24,7 @@ export function generateOptions(
         .filter(
             translation =>
                 translation !== correctTranslation &&
-                translation !== 'Нет перевода',
+                translation !== noTranslationText,
         );
 
     // Добавляем правильный ответ и перемешиваем

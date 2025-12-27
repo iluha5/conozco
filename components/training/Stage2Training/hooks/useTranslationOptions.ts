@@ -1,5 +1,8 @@
+'use client';
+
 import { useState, useEffect, useCallback } from 'react';
 import { generateOptions } from '../helpers/generateOptions';
+import { useI18n } from '@/lib/i18n';
 import type { Word } from '@/types/training.types';
 
 export function useTranslationOptions(
@@ -7,6 +10,7 @@ export function useTranslationOptions(
     currentIndex: number,
     allWords: Word[],
 ) {
+    const { language } = useI18n();
     const [options, setOptions] = useState<string[]>([]);
 
     const generateAndSetOptions = useCallback(() => {
@@ -15,10 +19,11 @@ export function useTranslationOptions(
                 currentWord,
                 currentIndex,
                 allWords,
+                language || 'en',
             );
             setOptions(newOptions);
         }
-    }, [currentWord, currentIndex, allWords]);
+    }, [currentWord, currentIndex, allWords, language]);
 
     useEffect(() => {
         generateAndSetOptions();

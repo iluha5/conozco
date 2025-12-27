@@ -1,5 +1,8 @@
+'use client';
+
 import { TrainingModeConfig } from '../types/typing';
 import { TrainingModeCard } from './TrainingModeCard';
+import { useTranslation } from '@/lib/i18n';
 
 interface TrainingModeCardsGridProps {
     modes: TrainingModeConfig[];
@@ -18,10 +21,12 @@ export function TrainingModeCardsGrid({
     showEmptyState = false,
     emptyStateMessage,
 }: TrainingModeCardsGridProps) {
+    const { t } = useTranslation();
+
     if (showEmptyState && modes.length === 0) {
         return (
             <div className="text-center py-8 text-gray-500">
-                {emptyStateMessage || 'Нет доступных режимов'}
+                {emptyStateMessage || t('No available modes')}
             </div>
         );
     }

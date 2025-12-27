@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Trash2, SkipForward } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { WatermarkCardSide } from './FlashCardBackgrounds';
+import { useI18n } from '@/lib/i18n';
 
 interface FlashCardProps {
     word: FlashCardWord;
@@ -25,6 +26,7 @@ export function FlashCard({
     learnLanguageCode,
     ownLanguageCode,
 }: FlashCardProps) {
+    const { language } = useI18n();
     const [isFlipped, setIsFlipped] = useState(false);
     const [isAnimating, setIsAnimating] = useState(false);
 
@@ -52,7 +54,7 @@ export function FlashCard({
     };
 
     const wordText = getWordText(word);
-    const translation = getWordTranslation(word);
+    const translation = getWordTranslation(word, language || 'en');
 
     // Получаем до 2 случайных примеров из базы данных
     const examples = useMemo(

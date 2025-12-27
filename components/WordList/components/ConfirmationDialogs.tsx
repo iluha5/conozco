@@ -1,3 +1,5 @@
+'use client';
+
 import {
     Dialog,
     DialogContent,
@@ -8,6 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n';
 
 interface ConfirmationDialogsProps {
     deleteDialogOpen: boolean;
@@ -34,6 +37,7 @@ export function ConfirmationDialogs({
     onConfirmDelete,
     onConfirmStatus,
 }: ConfirmationDialogsProps) {
+    const { t } = useTranslation();
     const handleCloseDeleteDialog = () => {
         if (!isDeleting) {
             onCloseDeleteDialog();
@@ -55,10 +59,12 @@ export function ConfirmationDialogs({
             >
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Подтверждение удаления</DialogTitle>
+                        <DialogTitle>{t('Delete confirmation')}</DialogTitle>
                         <DialogDescription>
-                            Вы уверены, что хотите удалить {selectedWordsCount}{' '}
-                            слов(а)? Это действие нельзя отменить.
+                            {t(
+                                'Are you sure you want to delete {{count}} word(s)? This action cannot be undone.',
+                                { count: selectedWordsCount },
+                            )}
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
@@ -67,7 +73,7 @@ export function ConfirmationDialogs({
                             onClick={handleCloseDeleteDialog}
                             disabled={isDeleting}
                         >
-                            Отмена
+                            {t('Cancel')}
                         </Button>
                         <Button
                             variant="destructive"
@@ -77,7 +83,7 @@ export function ConfirmationDialogs({
                             {isDeleting && (
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                             )}
-                            Удалить
+                            {t('Delete')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -91,15 +97,19 @@ export function ConfirmationDialogs({
                 <DialogContent className="sm:max-w-xl">
                     <DialogHeader>
                         <DialogTitle>
-                            Подтверждение изменения статуса
+                            {t('Status change confirmation')}
                         </DialogTitle>
                         <DialogDescription>
-                            Вы уверены, что хотите отметить {selectedWordsCount}{' '}
-                            слов(а) как{' '}
-                            {pendingStatusAction === 'LEARNED'
-                                ? 'выученные'
-                                : 'невыученные'}
-                            ?
+                            {t(
+                                'Are you sure you want to mark {{count}} word(s) as {{status}}?',
+                                {
+                                    count: selectedWordsCount,
+                                    status:
+                                        pendingStatusAction === 'LEARNED'
+                                            ? t('learned')
+                                            : t('not learned'),
+                                },
+                            )}
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter className="gap-4">
@@ -108,7 +118,7 @@ export function ConfirmationDialogs({
                             onClick={handleCloseStatusDialog}
                             disabled={isUpdatingStatus}
                         >
-                            Отмена
+                            {t('Cancel')}
                         </Button>
                         <Button
                             onClick={onConfirmStatus}
@@ -117,7 +127,7 @@ export function ConfirmationDialogs({
                             {isUpdatingStatus && (
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                             )}
-                            Подтвердить
+                            {t('Confirm')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

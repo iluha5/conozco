@@ -1,10 +1,11 @@
 import { Word } from '@/types/training.types';
+import { tServerSync } from '@/lib/i18n';
 
 /**
  * Получить перевод слова для проверки
  * Приоритет: customTranslations -> baseWord.translations
  */
-export function getWordTranslation(word: Word): string {
+export function getWordTranslation(word: Word, lang: string = 'en'): string {
     if (word.customTranslations && word.customTranslations.length > 0) {
         return word.customTranslations[0].translation;
     }
@@ -13,7 +14,7 @@ export function getWordTranslation(word: Word): string {
         return word.baseWord.translations[0].translation;
     }
 
-    return 'Нет перевода';
+    return tServerSync('No translation', lang);
 }
 
 /**

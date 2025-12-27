@@ -12,6 +12,7 @@ import {
 import { BookOpen, Home } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { TrainingModeGroupId } from '../types/typing';
+import { useTranslation } from '@/lib/i18n';
 
 interface NoWordsDialogProps {
     open: boolean;
@@ -24,6 +25,7 @@ export function NoWordsDialog({
     onOpenChange,
     mode = 'new',
 }: NoWordsDialogProps) {
+    const { t } = useTranslation();
     const router = useRouter();
 
     const handleGoHome = () => {
@@ -39,16 +41,20 @@ export function NoWordsDialog({
     const isLearnedMode = mode === 'learned' || mode === 'tests';
 
     const title = isLearnedMode
-        ? 'Нет изученных слов'
-        : 'Нет слов для тренировки';
+        ? t('No learned words')
+        : t('No words for training');
 
     const description = isLearnedMode
-        ? 'У вас пока нет изученных слов. Пройдите тренировку новых слов, чтобы пополнить список изученных.'
-        : 'У вас нет слов для изучения на текущем языке. Выберите один из вариантов:';
+        ? t(
+              'You do not have learned words yet. Complete new words training to add to learned list.',
+          )
+        : t(
+              'You have no words to learn in the current language. Choose one of the options:',
+          );
 
     const primaryButtonText = isLearnedMode
-        ? 'Перейти к новым словам'
-        : 'Пройти проверку по группам слов';
+        ? t('Go to new words')
+        : t('Take group words check');
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -75,7 +81,7 @@ export function NoWordsDialog({
                             variant="outline"
                         >
                             <BookOpen className="w-4 h-4 mr-2" />
-                            Добавить слова вручную
+                            {t('Add words manually')}
                         </Button>
                     )}
                 </DialogFooter>

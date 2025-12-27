@@ -96,7 +96,7 @@ export function GroupReviewSetupDialog({
             }),
             selectedGroupName:
                 selectedGroupId === 'all'
-                    ? 'Все группы'
+                    ? t('All groups')
                     : groups.find(g => g.id === parseInt(selectedGroupId))
                           ?.name,
         };
@@ -138,9 +138,9 @@ export function GroupReviewSetupDialog({
                 onOpenAutoFocus={e => e.preventDefault()}
             >
                 <DialogHeader>
-                    <DialogTitle>Настройка проверки по группам</DialogTitle>
+                    <DialogTitle>{t('Group review setup')}</DialogTitle>
                     <DialogDescription>
-                        Выберите группу слов и количество слов для проверки
+                        {t('Select a group and number of words for review.')}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -153,7 +153,7 @@ export function GroupReviewSetupDialog({
                             <div className="relative flex-1">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                 <Input
-                                    placeholder="Поиск групп..."
+                                    placeholder={t('Search groups...')}
                                     value={searchQuery}
                                     onChange={e =>
                                         setSearchQuery(e.target.value)
@@ -188,7 +188,7 @@ export function GroupReviewSetupDialog({
                                         <div className="flex items-center gap-3">
                                             <div className="flex-1 min-w-0">
                                                 <div className="font-medium truncate">
-                                                    Все группы
+                                                    {t('All groups')}
                                                 </div>
                                                 <div className="flex items-center gap-2 text-sm text-gray-600">
                                                     <Badge

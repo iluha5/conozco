@@ -18,6 +18,7 @@ import { useStage5Navigation } from './hooks/useStage5Navigation';
 import { useStage5AutoAdvance } from './hooks/useStage5AutoAdvance';
 import { useStage5Settings } from './hooks/useStage5Settings';
 import { getExtraWords } from './helpers/getExtraWords';
+import { useTranslation } from '@/lib/i18n';
 import type { Stage5Props, WordState, Phrase } from './typing';
 
 export function Stage5Training({
@@ -25,6 +26,7 @@ export function Stage5Training({
     onComplete,
     isLastStage = false,
 }: Stage5Props) {
+    const { t } = useTranslation();
     const storage = useTrainingStorage();
     const { settings, updateSettings } = useStage5SettingsHook();
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -353,8 +355,10 @@ export function Stage5Training({
                 <CardContent className="pt-6">
                     <p className="text-center text-gray-600">
                         {wordsWithPhrases.length === 0
-                            ? 'Нет слов с примерами для тренировки на этом этапе'
-                            : 'Загрузка...'}
+                            ? t(
+                                  'No words with examples for training at this stage',
+                              )
+                            : t('Loading...')}
                     </p>
                 </CardContent>
             </Card>

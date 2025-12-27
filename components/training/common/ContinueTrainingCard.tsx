@@ -5,7 +5,7 @@ import { Card, CardTitle } from '@/components/ui/card';
 import { PlayCircle, Clock, BookOpen } from 'lucide-react';
 import { SavedTrainingState } from '@/types/training.types';
 import { formatDate } from './helpers/formatDate';
-import { useTranslation } from '@/lib/i18n';
+import { useTranslation, useI18n } from '@/lib/i18n';
 
 interface ContinueTrainingCardProps {
     savedState: SavedTrainingState;
@@ -19,6 +19,7 @@ export function ContinueTrainingCard({
     loading = false,
 }: ContinueTrainingCardProps) {
     const { t } = useTranslation();
+    const { language } = useI18n();
     const completedStages = savedState.stagesProgress.filter(
         sp => sp.status === 'completed',
     ).length;
@@ -87,7 +88,10 @@ export function ContinueTrainingCard({
                             <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/70 backdrop-blur-sm rounded-full text-xs md:text-sm text-gray-700 border border-purple-200">
                                 <Clock className="w-3.5 h-3.5" />
                                 <span>
-                                    {formatDate(savedState.lastUpdatedAt)}
+                                    {formatDate(
+                                        savedState.lastUpdatedAt,
+                                        language || 'en',
+                                    )}
                                 </span>
                             </div>
                             <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/70 backdrop-blur-sm rounded-full text-xs md:text-sm text-gray-700 border border-purple-200">

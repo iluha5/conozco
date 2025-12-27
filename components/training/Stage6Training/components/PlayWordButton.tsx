@@ -1,5 +1,8 @@
+'use client';
+
 import { Button } from '@/components/ui/button';
 import { Volume2 } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n';
 
 type PlayWordButtonProps = {
     onPlay: () => void;
@@ -12,6 +15,7 @@ export function PlayWordButton({
     isPlaying,
     speechSupported,
 }: PlayWordButtonProps) {
+    const { t } = useTranslation();
     return (
         <div className="text-center mb-6">
             <Button
@@ -25,7 +29,7 @@ export function PlayWordButton({
                 <Volume2
                     className={`w-4 h-4 ${isPlaying ? 'animate-pulse' : ''}`}
                 />
-                {isPlaying ? 'Проигрывается...' : 'Прослушать слово'}
+                {isPlaying ? t('Playing...') : t('Listen to word')}
             </Button>
         </div>
     );
