@@ -8,6 +8,7 @@ import { TrainingWordsProvider } from '@/contexts/training-words-context';
 import { TranslationProvider } from '@/lib/i18n';
 import { getStaticResources } from '@/lib/i18n/utils/getStaticResources';
 import { getUserInterfaceLanguage } from '@/lib/i18n/utils/getUserInterfaceLanguage';
+import { tServerSync } from '@/lib/i18n';
 
 const inter = Inter({ subsets: ['latin', 'cyrillic'] });
 const ubuntu = Ubuntu({
@@ -16,10 +17,24 @@ const ubuntu = Ubuntu({
     variable: '--font-ubuntu',
 });
 
-export const metadata: Metadata = {
-    title: 'Conozco - Изучение иностранных слов',
-    description: 'Приложение для изучения английского и испанского языков',
-};
+export async function generateMetadata(): Promise<Metadata> {
+    const userLanguage = await getUserInterfaceLanguage();
+    const defaultLanguage = userLanguage || 'en';
+
+    const title = tServerSync(
+        'Conozco - Learning foreign words',
+        defaultLanguage,
+    );
+    const description = tServerSync(
+        'Application for learning English and Spanish',
+        defaultLanguage,
+    );
+
+    return {
+        title,
+        description,
+    };
+}
 
 export default async function RootLayout({
     children,

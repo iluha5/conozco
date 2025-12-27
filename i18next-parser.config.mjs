@@ -40,39 +40,39 @@ export default {
         mjs: [
             {
                 lexer: 'JavascriptLexer',
-                functions: ['t'],
+                functions: ['t', 'tServer', 'tServerSync'],
             },
         ],
         // if you're writing jsx inside .js files, change this to JsxLexer
         js: [
             {
                 lexer: 'JavascriptLexer',
-                functions: ['t'],
+                functions: ['t', 'tServer', 'tServerSync'],
             },
         ],
         ts: [
             {
                 lexer: 'JavascriptLexer',
-                functions: ['t'],
+                functions: ['t', 'tServer', 'tServerSync'],
             },
         ],
         jsx: [
             {
                 lexer: 'JsxLexer',
-                functions: ['t'],
+                functions: ['t', 'tServer', 'tServerSync'],
             },
         ],
         tsx: [
             {
                 lexer: 'JsxLexer',
-                functions: ['t'],
+                functions: ['t', 'tServer', 'tServerSync'],
             },
         ],
 
         default: [
             {
                 lexer: 'JavascriptLexer',
-                functions: ['t'],
+                functions: ['t', 'tServer', 'tServerSync'],
             },
         ],
     },
