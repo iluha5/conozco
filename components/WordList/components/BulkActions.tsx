@@ -1,3 +1,5 @@
+'use client';
+
 import { Button } from '@/components/ui/button';
 import {
     Trash2,
@@ -7,11 +9,9 @@ import {
     CheckSquare,
     MinusSquare,
 } from 'lucide-react';
-import {
-    getSelectionState,
-    getBulkSelectText,
-} from '../helpers/selectionHelpers';
+import { getSelectionState } from '../helpers/selectionHelpers';
 import type { Word } from '../typing';
+import { useTranslation } from '@/lib/i18n';
 
 interface BulkActionsProps {
     words: Word[];
@@ -34,7 +34,10 @@ export function BulkActions({
     readOnly = false,
     hideSelectAllButton = false,
 }: BulkActionsProps) {
+    const { t } = useTranslation();
     const selectionState = getSelectionState(selectedWords, words);
+    const bulkSelectText =
+        selectionState === 'all' ? t('Deselect all') : t('Select all');
 
     return (
         <div className="flex flex-wrap items-start justify-start gap-2 p-4 bg-white rounded-lg border">
@@ -54,7 +57,7 @@ export function BulkActions({
                             return <MinusSquare className="mr-2 h-4 w-4" />;
                         }
                     })()}
-                    {getBulkSelectText(selectionState)}
+                    {bulkSelectText}
                 </Button>
             )}
             <Button
@@ -64,7 +67,7 @@ export function BulkActions({
                 disabled={selectedWords.length === 0 || readOnly}
             >
                 <CheckCircle2 className="w-4 h-4 mr-2" />
-                Выучено
+                {t('Learned')}
             </Button>
             <Button
                 variant="secondary"
@@ -73,7 +76,7 @@ export function BulkActions({
                 disabled={selectedWords.length === 0 || readOnly}
             >
                 <X className="w-4 h-4 mr-2" />
-                Не выучено
+                {t('Not learned')}
             </Button>
             <Button
                 variant="destructive"
@@ -83,7 +86,7 @@ export function BulkActions({
                 className="justify-self-end ml-auto"
             >
                 <Trash2 className="w-4 h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Удалить</span>
+                <span className="hidden sm:inline">{t('Delete')}</span>
             </Button>
         </div>
     );

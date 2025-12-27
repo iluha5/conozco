@@ -1,5 +1,8 @@
+'use client';
+
 import { Button } from '@/components/ui/button';
 import { ChevronRight, Loader2 } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n';
 
 type NextButtonProps = {
     onNext: () => void;
@@ -12,6 +15,8 @@ export function NextButton({
     isLastWord,
     isLoading = false,
 }: NextButtonProps) {
+    const { t } = useTranslation();
+
     return (
         <div className="flex justify-center pt-4">
             <Button
@@ -21,7 +26,7 @@ export function NextButton({
                 disabled={isLoading}
                 data-testid="stage1-next-button"
             >
-                {isLastWord ? 'Завершить' : 'Следующее слово'}
+                {isLastWord ? t('Finish') : t('Next word')}
                 {isLoading ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
                 ) : (

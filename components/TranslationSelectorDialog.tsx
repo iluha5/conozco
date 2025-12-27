@@ -22,6 +22,7 @@ import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/shared';
 import { getPartOfSpeechDisplayName } from '@/lib/word-utils';
+import { useTranslation } from '@/lib/i18n';
 
 type Language = {
     id: string | number;
@@ -92,6 +93,7 @@ export function TranslationSelectorDialog({
     onSave,
     partsOfSpeech,
 }: TranslationSelectorDialogProps) {
+    const { t } = useTranslation();
     const [selectedTranslation, setSelectedTranslation] = useState<string>('');
     const [customTranslationText, setCustomTranslationText] =
         useState<string>('');
@@ -156,8 +158,8 @@ export function TranslationSelectorDialog({
 
                 if (!customText) {
                     toast({
-                        title: 'Ошибка',
-                        description: 'Введите текст перевода',
+                        title: t('Error'),
+                        description: t('Enter translation text'),
                         variant: 'destructive',
                     });
                     return;
@@ -182,8 +184,8 @@ export function TranslationSelectorDialog({
                     await onSave();
                     onOpenChange(false);
                     toast({
-                        title: 'Успешно',
-                        description: 'Перевод сохранен',
+                        title: t('Success'),
+                        description: t('Translation saved'),
                     });
                 } else {
                     throw new Error('Failed to save translation');
@@ -215,8 +217,8 @@ export function TranslationSelectorDialog({
                             await onSave();
                             onOpenChange(false);
                             toast({
-                                title: 'Успешно',
-                                description: 'Перевод сохранен',
+                                title: t('Success'),
+                                description: t('Translation saved'),
                             });
                         } else {
                             throw new Error('Failed to save translation');
@@ -242,8 +244,8 @@ export function TranslationSelectorDialog({
                             await onSave();
                             onOpenChange(false);
                             toast({
-                                title: 'Успешно',
-                                description: 'Перевод сохранен',
+                                title: t('Success'),
+                                description: t('Translation saved'),
                             });
                         } else {
                             throw new Error('Failed to save translation');
@@ -254,8 +256,8 @@ export function TranslationSelectorDialog({
         } catch (error) {
             console.error('Error updating translation:', error);
             toast({
-                title: 'Ошибка',
-                description: 'Не удалось сохранить перевод',
+                title: t('Error'),
+                description: t('Failed to save translation'),
                 variant: 'destructive',
             });
         } finally {
@@ -275,7 +277,7 @@ export function TranslationSelectorDialog({
                         {word.baseWord?.word || word.customWord}
                     </div>
                     <DialogDescription>
-                        Выберите вариант перевода
+                        {t('Select translation option')}
                     </DialogDescription>
                 </DialogHeader>
                 <div
@@ -372,7 +374,7 @@ export function TranslationSelectorDialog({
                                                     'custom',
                                                 );
                                             }}
-                                            placeholder="свой вариант"
+                                            placeholder={t('custom option')}
                                             disabled={
                                                 selectedTranslation !== 'custom'
                                             }
@@ -416,11 +418,17 @@ export function TranslationSelectorDialog({
                                         <SelectTrigger
                                             id={`part-of-speech-${word.id}`}
                                         >
-                                            <SelectValue placeholder="Выберите часть речи" />
+                                            <SelectValue
+                                                placeholder={t(
+                                                    'Select part of speech',
+                                                )}
+                                            />
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="none">
-                                                часть речи (не указана)
+                                                {t(
+                                                    'part of speech (not specified)',
+                                                )}
                                             </SelectItem>
                                             {partsOfSpeech.length > 0 ? (
                                                 partsOfSpeech.map(pos => (
@@ -438,7 +446,7 @@ export function TranslationSelectorDialog({
                                                     value="loading"
                                                     disabled
                                                 >
-                                                    Загрузка...
+                                                    {t('Loading...')}
                                                 </SelectItem>
                                             )}
                                         </SelectContent>
@@ -460,7 +468,7 @@ export function TranslationSelectorDialog({
                             onOpenChange(false);
                         }}
                     >
-                        Отмена
+                        {t('Cancel')}
                     </Button>
                     <Button
                         onClick={e => {
@@ -472,7 +480,7 @@ export function TranslationSelectorDialog({
                         {isSaving && (
                             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                         )}
-                        Сохранить
+                        {t('Save')}
                     </Button>
                 </DialogFooter>
             </DialogContent>

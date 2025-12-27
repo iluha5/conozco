@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { X } from 'lucide-react';
 import type { Stage1Settings } from '@/lib/training-settings';
+import { useTranslation } from '@/lib/i18n';
 
 type Stage1SettingsModalProps = {
     isOpen: boolean;
@@ -18,6 +19,7 @@ export function Stage1SettingsModal({
     settings,
     onChange,
 }: Stage1SettingsModalProps) {
+    const { t } = useTranslation();
     if (!isOpen) return null;
 
     return (
@@ -31,7 +33,7 @@ export function Stage1SettingsModal({
             >
                 <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold text-gray-900">
-                        Настройки этапа 1
+                        {t('Stage 1 settings')}
                     </h3>
                     <Button
                         variant="ghost"
@@ -56,18 +58,19 @@ export function Stage1SettingsModal({
                             htmlFor="show-examples"
                             className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                         >
-                            Показывать примеры использования слов
+                            {t('Show word usage examples')}
                         </label>
                     </div>
                     <p className="text-xs text-gray-500">
-                        При включении будут показаны примеры предложений с
-                        изучаемым словом
+                        {t(
+                            'When enabled, example sentences with the word being learned will be shown',
+                        )}
                     </p>
                 </div>
 
                 <div className="flex flex-row justify-end gap-2 mt-6">
                     <Button variant="outline" onClick={onClose}>
-                        Закрыть
+                        {t('Close')}
                     </Button>
                 </div>
             </div>

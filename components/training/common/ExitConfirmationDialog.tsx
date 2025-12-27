@@ -1,3 +1,5 @@
+'use client';
+
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -7,6 +9,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import { useTranslation } from '@/lib/i18n';
 
 interface ExitConfirmationDialogProps {
     open: boolean;
@@ -19,13 +22,15 @@ export function ExitConfirmationDialog({
     onOpenChange,
     onConfirm,
 }: ExitConfirmationDialogProps) {
+    const { t } = useTranslation();
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="!left-4 !right-4 !translate-x-0 !w-auto sm:!left-[50%] sm:!right-auto sm:!translate-x-[-50%] ">
                 <DialogHeader>
-                    <DialogTitle>Завершить тренировку?</DialogTitle>
+                    <DialogTitle>{t('Finish training?')}</DialogTitle>
                     <DialogDescription className="!mt-6 !mb-4">
-                        Результаты текущей тренировки будут сброшены.
+                        {t('Current training results will be reset.')}
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter className="gap-4">
@@ -33,10 +38,10 @@ export function ExitConfirmationDialog({
                         variant="outline"
                         onClick={() => onOpenChange(false)}
                     >
-                        Отмена
+                        {t('Cancel')}
                     </Button>
                     <Button variant="destructive" onClick={onConfirm}>
-                        Завершить
+                        {t('Finish')}
                     </Button>
                 </DialogFooter>
             </DialogContent>

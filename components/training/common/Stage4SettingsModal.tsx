@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
 import type { Stage4Settings } from '@/lib/training-settings';
+import { useTranslation } from '@/lib/i18n';
 
 type Stage4SettingsModalProps = {
     isOpen: boolean;
@@ -17,23 +18,24 @@ export function Stage4SettingsModal({
     settings,
     onChange,
 }: Stage4SettingsModalProps) {
+    const { t } = useTranslation();
     if (!isOpen) return null;
 
     const difficultyOptions = [
         {
             key: 'easy' as const,
-            label: 'Простой',
-            description: 'Только буквы из слова',
+            label: t('Easy'),
+            description: t('Only letters from the word'),
         },
         {
             key: 'medium' as const,
-            label: 'Средний',
-            description: '+ 3 дополнительные буквы',
+            label: t('Medium'),
+            description: t('+ 3 additional letters'),
         },
         {
             key: 'hard' as const,
-            label: 'Сложный',
-            description: '+ 6 дополнительных букв',
+            label: t('Hard'),
+            description: t('+ 6 additional letters'),
         },
     ];
 
@@ -48,7 +50,7 @@ export function Stage4SettingsModal({
             >
                 <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold text-gray-900">
-                        Настройки этапа 4
+                        {t('Stage 4 settings')}
                     </h3>
                     <Button
                         variant="ghost"
@@ -61,7 +63,9 @@ export function Stage4SettingsModal({
                 </div>
 
                 <div className="space-y-3">
-                    <p className="text-sm text-gray-600">Уровень сложности:</p>
+                    <p className="text-sm text-gray-600">
+                        {t('Difficulty level:')}
+                    </p>
 
                     <div className="space-y-2">
                         {difficultyOptions.map(option => (
@@ -92,7 +96,7 @@ export function Stage4SettingsModal({
 
                 <div className="flex flex-row justify-end gap-2 mt-6">
                     <Button variant="outline" onClick={onClose}>
-                        Закрыть
+                        {t('Close')}
                     </Button>
                 </div>
             </div>

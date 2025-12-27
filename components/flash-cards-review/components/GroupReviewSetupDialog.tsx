@@ -17,6 +17,7 @@ import { Plus, Minus, Loader2, Search, Crown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { FlashCardsReviewParams } from '../typing';
+import { useTranslation } from '@/lib/i18n';
 
 interface AccessibleWordGroup {
     id: number;
@@ -41,6 +42,7 @@ export function GroupReviewSetupDialog({
     onOpenChange,
     onStart,
 }: GroupReviewSetupDialogProps) {
+    const { t } = useTranslation();
     const [selectedGroupId, setSelectedGroupId] = useState<string>('all');
     const [wordCount, setWordCount] = useState(20);
     const [searchQuery, setSearchQuery] = useState('');
@@ -233,11 +235,11 @@ export function GroupReviewSetupDialog({
                                                         >
                                                             {group.visibility ===
                                                             'PUBLIC'
-                                                                ? 'Публичная'
+                                                                ? t('Public')
                                                                 : group.visibility ===
                                                                     'PRIVATE'
-                                                                  ? 'Личная'
-                                                                  : 'Общая'}
+                                                                  ? t('Private')
+                                                                  : t('Shared')}
                                                         </Badge>
                                                         {group.isOwner && (
                                                             <Crown className="w-3 h-3 text-amber-500" />

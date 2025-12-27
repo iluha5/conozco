@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -73,7 +73,7 @@ export default function WordGroupsManagementPage() {
     const deactivateMutation = useDeactivateWordGroup();
 
     // Синхронизируем оптимистичное состояние с реальными данными
-    useMemo(() => {
+    useEffect(() => {
         if (activeGroups) {
             setOptimisticActiveGroups(new Set(activeGroups.map(g => g.id)));
         }
@@ -119,7 +119,7 @@ export default function WordGroupsManagementPage() {
         }
 
         return groups.sort((a, b) => a.name.localeCompare(b.name));
-    }, [activeGroups, availableGroups]);
+    }, [activeGroups, availableGroups, t]);
 
     const handleToggleGroup = async (
         groupId: number,

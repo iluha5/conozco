@@ -1,8 +1,11 @@
+'use client';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardTitle } from '@/components/ui/card';
 import { PlayCircle, Clock, BookOpen } from 'lucide-react';
 import { SavedTrainingState } from '@/types/training.types';
 import { formatDate } from './helpers/formatDate';
+import { useTranslation } from '@/lib/i18n';
 
 interface ContinueTrainingCardProps {
     savedState: SavedTrainingState;
@@ -15,6 +18,7 @@ export function ContinueTrainingCard({
     onContinue,
     loading = false,
 }: ContinueTrainingCardProps) {
+    const { t } = useTranslation();
     const completedStages = savedState.stagesProgress.filter(
         sp => sp.status === 'completed',
     ).length;
@@ -77,7 +81,7 @@ export function ContinueTrainingCard({
                     <div>
                         <CardTitle className="flex items-center gap-2 text-purple-700 text-lg md:text-xl mb-2">
                             <PlayCircle className="w-5 h-5 flex-shrink-0" />
-                            <span>Незаконченная тренировка</span>
+                            <span>{t('Unfinished training')}</span>
                         </CardTitle>
                         <div className="flex flex-wrap gap-2">
                             <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/70 backdrop-blur-sm rounded-full text-xs md:text-sm text-gray-700 border border-purple-200">
@@ -88,11 +92,16 @@ export function ContinueTrainingCard({
                             </div>
                             <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/70 backdrop-blur-sm rounded-full text-xs md:text-sm text-gray-700 border border-purple-200">
                                 <BookOpen className="w-3.5 h-3.5" />
-                                <span>{savedState.totalWords} слов</span>
+                                <span>
+                                    {savedState.totalWords} {t('words')}
+                                </span>
                             </div>
                             <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/70 backdrop-blur-sm rounded-full text-xs md:text-sm text-purple-700 border border-purple-300 font-medium">
                                 <span>
-                                    {completedStages} из {totalStages} этапов
+                                    {t('{{completed}} of {{total}} stages', {
+                                        completed: completedStages,
+                                        total: totalStages,
+                                    })}
                                 </span>
                             </div>
                         </div>
@@ -105,7 +114,7 @@ export function ContinueTrainingCard({
                         size="lg"
                     >
                         {!loading && <PlayCircle className="w-4 h-4 mr-2" />}
-                        Продолжить тренировку
+                        {t('Continue training')}
                     </Button>
                 </div>
             </div>

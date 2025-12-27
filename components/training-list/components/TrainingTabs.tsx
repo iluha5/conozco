@@ -1,11 +1,13 @@
 'use client';
 
+import { useMemo } from 'react';
 import { Tabs, TabsList, TabsContent } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { TrainingModeGroupId } from '../types/typing';
-import { TABS_CONFIG } from '../constants/tabs-config';
+import { getTabsConfig } from '../constants/tabs-config';
 import { TabTriggerWithBadge } from './TabTriggerWithBadge';
 import { Word } from '@/types/training.types';
+import { useTranslation } from '@/lib/i18n';
 
 interface TrainingTabsProps {
     activeTab: TrainingModeGroupId;
@@ -28,6 +30,9 @@ export function TrainingTabs({
     words,
     children,
 }: TrainingTabsProps) {
+    const { t } = useTranslation();
+    const tabsConfig = useMemo(() => getTabsConfig(t), [t]);
+
     return (
         <Tabs value={activeTab} onValueChange={onTabChange} className="w-full">
             <TabsList
@@ -39,7 +44,7 @@ export function TrainingTabs({
                     'max-[480px]:flex max-[480px]:flex-nowrap max-[480px]:grid-cols-none',
                 )}
             >
-                {TABS_CONFIG.map(tabConfig => {
+                {tabsConfig.map(tabConfig => {
                     const badgeCount = tabConfig.getBadgeCount
                         ? tabConfig.getBadgeCount(words)
                         : undefined;
@@ -55,7 +60,7 @@ export function TrainingTabs({
                 })}
             </TabsList>
 
-            {TABS_CONFIG.map(tabConfig => (
+            {tabsConfig.map(tabConfig => (
                 <TabsContent
                     key={tabConfig.id}
                     value={tabConfig.id}

@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
 import type { Stage5Settings } from '@/lib/training-settings';
+import { useTranslation } from '@/lib/i18n';
 
 type Stage5SettingsModalProps = {
     isOpen: boolean;
@@ -17,6 +18,7 @@ export function Stage5SettingsModal({
     settings,
     onChange,
 }: Stage5SettingsModalProps) {
+    const { t } = useTranslation();
     if (!isOpen) return null;
 
     return (
@@ -30,7 +32,7 @@ export function Stage5SettingsModal({
             >
                 <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold text-gray-900">
-                        Настройки этапа 5
+                        {t('Stage 5 settings')}
                     </h3>
                     <Button
                         variant="ghost"
@@ -44,7 +46,7 @@ export function Stage5SettingsModal({
 
                 <div className="space-y-3">
                     <p className="text-sm text-gray-600">
-                        Количество предложений на слово:
+                        {t('Number of sentences per word:')}
                     </p>
 
                     <div className="grid grid-cols-5 gap-2">
@@ -68,14 +70,15 @@ export function Stage5SettingsModal({
                     </div>
 
                     <p className="text-xs text-gray-500 mt-2">
-                        Если в базе меньше предложений, будут использованы все
-                        доступные.
+                        {t(
+                            'If there are fewer sentences in the database, all available will be used.',
+                        )}
                     </p>
                 </div>
 
                 <div className="flex flex-row justify-end gap-2 mt-6">
                     <Button variant="outline" onClick={onClose}>
-                        Закрыть
+                        {t('Close')}
                     </Button>
                 </div>
             </div>

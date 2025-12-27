@@ -1,21 +1,24 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { NoWordsDialog } from './components/NoWordsDialog';
 import { NewTrainingConfirmationDialog } from '@/components/training/common/NewTrainingConfirmationDialog';
 import { FlashCardsReview } from '@/components/flash-cards-review/FlashCardsReview';
 import { GroupReviewSetupDialog } from '@/components/flash-cards-review/components/GroupReviewSetupDialog';
 import { useTrainingModes } from './hooks/useTrainingModes';
 import { Loader2 } from 'lucide-react';
-import { TRAINING_MODE_GROUPS } from './constants/training-modes-config';
+import { getTrainingModeGroups } from './constants/training-modes-config';
 import { TrainingTabs } from './components/TrainingTabs';
 import { TrainingModeCardsGrid } from './components/TrainingModeCardsGrid';
 import { TrainingListHeader } from './components/TrainingListHeader';
 import { EmptyState } from './components/EmptyState';
 import { getTabFromHash, updateUrlHash } from './helpers/tab-navigation';
 import { TrainingModeGroupId } from './types/typing';
+import { useTranslation } from '@/lib/i18n';
 
 export function TrainingList() {
+    const { t } = useTranslation();
+    const trainingModeGroups = useMemo(() => getTrainingModeGroups(t), [t]);
     const {
         startMode,
         isLoading,
@@ -89,8 +92,10 @@ export function TrainingList() {
     return (
         <div className="space-y-8">
             <TrainingListHeader
-                title="Режимы тренировок"
-                description="Выберите подходящий режим тренировки или настройте свой собственный"
+                title={t('Training modes')}
+                description={t(
+                    'Choose a suitable training mode or configure your own',
+                )}
             />
 
             <TrainingTabs
@@ -101,7 +106,7 @@ export function TrainingList() {
                 {{
                     new: (
                         <TrainingModeCardsGrid
-                            modes={TRAINING_MODE_GROUPS.new.modes}
+                            modes={trainingModeGroups.new.modes}
                             onModeClick={handleModeClick}
                             disabled={isStarting}
                         />
@@ -109,7 +114,7 @@ export function TrainingList() {
                     learned: (
                         <>
                             <TrainingModeCardsGrid
-                                modes={TRAINING_MODE_GROUPS.learned.modes}
+                                modes={trainingModeGroups.learned.modes}
                                 onModeClick={handleModeClick}
                                 disabled={
                                     isStarting || learnedWords.length === 0
@@ -117,13 +122,17 @@ export function TrainingList() {
                                 variant="learned"
                             />
                             {learnedWords.length === 0 && (
-                                <EmptyState message="Нет изученных слов для закрепления" />
+                                <EmptyState
+                                    message={t(
+                                        'No learned words for reinforcement',
+                                    )}
+                                />
                             )}
                         </>
                     ),
                     tests: (
                         <TrainingModeCardsGrid
-                            modes={TRAINING_MODE_GROUPS.tests.modes}
+                            modes={trainingModeGroups.tests.modes}
                             onModeClick={handleModeClick}
                             disabled={isStarting}
                             variant="learned"

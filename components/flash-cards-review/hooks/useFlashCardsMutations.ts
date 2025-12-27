@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Word } from '@/types/training.types';
 import { useToast } from '@/hooks/shared';
 import { FlashCardsReviewParams } from '../typing';
+import { useTranslation } from '@/lib/i18n';
 
 /**
  * Хук для мутаций с оптимистичными обновлениями для flash cards
@@ -9,6 +10,7 @@ import { FlashCardsReviewParams } from '../typing';
 export function useFlashCardsMutations(params: FlashCardsReviewParams) {
     const queryClient = useQueryClient();
     const { toast } = useToast();
+    const { t } = useTranslation();
 
     // Query key для кэша слов
     const queryKey = ['flash-cards-words', params];
@@ -94,11 +96,11 @@ export function useFlashCardsMutations(params: FlashCardsReviewParams) {
             }
 
             toast({
-                title: 'Ошибка',
+                title: t('Error'),
                 description:
                     error instanceof Error
                         ? error.message
-                        : 'Не удалось изменить статус слова',
+                        : t('Failed to change word status'),
                 variant: 'destructive',
             });
         },
@@ -146,11 +148,11 @@ export function useFlashCardsMutations(params: FlashCardsReviewParams) {
             }
 
             toast({
-                title: 'Ошибка',
+                title: t('Error'),
                 description:
                     error instanceof Error
                         ? error.message
-                        : 'Не удалось удалить слово',
+                        : t('Failed to delete word'),
                 variant: 'destructive',
             });
         },

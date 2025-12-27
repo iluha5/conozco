@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { Session } from 'next-auth';
 import Link from 'next/link';
+import { useTranslation } from '@/lib/i18n';
 
 interface MobileSidebarProps {
     isOpen: boolean;
@@ -26,6 +27,7 @@ export function MobileSidebar({
     onClose,
     session,
 }: MobileSidebarProps) {
+    const { t } = useTranslation();
     // Close sidebar when clicking outside or pressing Escape
     useEffect(() => {
         const handleEscape = (e: KeyboardEvent) => {
@@ -88,8 +90,7 @@ export function MobileSidebar({
                                     </div>
                                     <div>
                                         <div className="font-medium text-gray-900">
-                                            {session.user?.name ||
-                                                'Пользователь'}
+                                            {session.user?.name || t('User')}
                                         </div>
                                         <div className="text-sm text-gray-600">
                                             {session.user?.email}

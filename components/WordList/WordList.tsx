@@ -19,6 +19,7 @@ import { EmptyState } from './components/EmptyState';
 import { BulkActions } from './components/BulkActions';
 import { WordItem } from './components/WordItem';
 import { ConfirmationDialogs } from './components/ConfirmationDialogs';
+import { useTranslation } from '@/lib/i18n';
 
 export function WordsList({
     words,
@@ -27,10 +28,12 @@ export function WordsList({
     onWordRemove,
     showBulkActions = true,
     readOnly = false,
-    emptyMessage = 'Слова не найдены',
+    emptyMessage,
     externalSelection,
     hideSelectAllButton = false,
 }: WordsListProps) {
+    const { t } = useTranslation();
+    const defaultEmptyMessage = emptyMessage || t('No words found');
     // Состояния загрузки для bulk операций
     const [isDeleting, setIsDeleting] = useState(false);
     const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
@@ -64,8 +67,8 @@ export function WordsList({
     const handleBulkStatusChange = (newStatus: 'LEARNED' | 'NOT_LEARNED') => {
         if (selection.selectedWords.length === 0) {
             toast({
-                title: 'Ошибка',
-                description: 'Выберите слова для изменения статуса',
+                title: t('Error'),
+                description: t('Select words to change status'),
                 variant: 'destructive',
             });
             return;
@@ -88,7 +91,7 @@ export function WordsList({
             onWordsChange,
             errorMessage => {
                 toast({
-                    title: 'Ошибка',
+                    title: t('Error'),
                     description: errorMessage,
                     variant: 'destructive',
                 });
@@ -99,8 +102,14 @@ export function WordsList({
 
         if (success) {
             toast({
-                title: 'Успешно',
-                description: `${successCount} слов ${newStatus === 'LEARNED' ? 'отмечено как выученные' : 'отмечено как невыученные'}`,
+                title: t('Success'),
+                description: t('{{count}} words {{status}}', {
+                    count: successCount,
+                    status:
+                        newStatus === 'LEARNED'
+                            ? t('marked as learned')
+                            : t('marked as not learned'),
+                }),
                 variant: 'success',
             });
         }
@@ -112,8 +121,8 @@ export function WordsList({
     const handleBulkDelete = () => {
         if (selection.selectedWords.length === 0) {
             toast({
-                title: 'Ошибка',
-                description: 'Выберите слова для удаления',
+                title: t('Error'),
+                description: t('Select words to delete'),
                 variant: 'destructive',
             });
             return;
@@ -132,7 +141,7 @@ export function WordsList({
             onWordsChange,
             errorMessage => {
                 toast({
-                    title: 'Ошибка',
+                    title: t('Error'),
                     description: errorMessage,
                     variant: 'destructive',
                 });
@@ -143,8 +152,10 @@ export function WordsList({
 
         if (success) {
             toast({
-                title: 'Успешно',
-                description: `${successCount} слов удалено`,
+                title: t('Success'),
+                description: t('{{count}} words deleted', {
+                    count: successCount,
+                }),
                 variant: 'success',
             });
         }
@@ -154,7 +165,7 @@ export function WordsList({
     };
 
     if (words.length === 0) {
-        return <EmptyState message={emptyMessage} />;
+        return <EmptyState message={defaultEmptyMessage} />;
     }
 
     return (

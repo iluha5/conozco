@@ -23,3 +23,30 @@ export const TRAINING_MODE_GROUPS = {
         modes: TEST_TRAINING_MODES,
     },
 };
+
+import { getNewWordsTrainingModes } from './training-modes';
+import { getLearnedTrainingModes } from './learned-training-modes';
+import { getTestTrainingModes } from './test-training-modes';
+
+export const getTrainingModeGroups = (
+    t: (_key: string, _params?: Record<string, string | number>) => string,
+) => ({
+    new: {
+        id: 'new' as TrainingModeGroupId,
+        title: t('New words'),
+        description: t('Training unlearned words'),
+        modes: getNewWordsTrainingModes(t),
+    },
+    learned: {
+        id: 'learned' as TrainingModeGroupId,
+        title: t('Reinforcement'),
+        description: t('Repeating learned words'),
+        modes: getLearnedTrainingModes(t),
+    },
+    tests: {
+        id: 'tests' as TrainingModeGroupId,
+        title: t('Tests'),
+        description: t('Knowledge testing through tests'),
+        modes: getTestTrainingModes(t),
+    },
+});

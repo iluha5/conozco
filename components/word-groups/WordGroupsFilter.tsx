@@ -7,6 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { useActiveWordGroups } from '@/hooks/word-groups/use-active-word-groups';
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from '@/lib/i18n';
 
 interface WordGroupsFilterProps {
     selectedGroupIds: number[];
@@ -21,6 +22,7 @@ export function WordGroupsFilter({
     onToggleAll,
     className,
 }: WordGroupsFilterProps) {
+    const { t } = useTranslation();
     const [isOpen, setIsOpen] = useState(false);
     const [popupPosition, setPopupPosition] = useState({
         left: true,
@@ -100,7 +102,7 @@ export function WordGroupsFilter({
                 onClick={() => setIsOpen(!isOpen)}
             >
                 <Filter className="mr-2 h-4 w-4" />
-                <span>Группы</span>
+                <span>{t('Groups')}</span>
                 {hasSelection && (
                     <>
                         <Separator
@@ -164,7 +166,7 @@ export function WordGroupsFilter({
                                     );
                                 }
                             })()}
-                            {allSelected ? 'Снять все' : 'Выбрать все'}
+                            {allSelected ? t('Deselect all') : t('Select all')}
                         </Button>
                         <Separator className="my-2 flex-shrink-0" />
                         <div className="flex-1 overflow-y-auto overflow-x-hidden min-h-0">

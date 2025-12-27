@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n';
 
 interface NewTrainingConfirmationDialogProps {
     open: boolean;
@@ -28,6 +29,8 @@ export function NewTrainingConfirmationDialog({
     continueLoading = false,
     startNewLoading = false,
 }: NewTrainingConfirmationDialogProps) {
+    const { t } = useTranslation();
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="!left-4 !right-4 !translate-x-0 !w-auto sm:!left-[50%] sm:!right-auto sm:!translate-x-[-50%] sm:!w-full sm:!max-w-[500px]">
@@ -35,13 +38,13 @@ export function NewTrainingConfirmationDialog({
                     <div className="flex items-center gap-2">
                         <AlertTriangle className="w-5 h-5 text-yellow-600" />
                         <DialogTitle>
-                            У вас есть незавершенная тренировка
+                            {t('You have an unfinished training')}
                         </DialogTitle>
                     </div>
                     <DialogDescription>
-                        Вы можете продолжить существующую тренировку или начать
-                        новую. При начале новой тренировки текущий прогресс
-                        будет сброшен.
+                        {t(
+                            'You can continue the existing training or start a new one. When starting a new training, the current progress will be reset.',
+                        )}
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter className="gap-4 sm:gap-2 justify-end">
@@ -50,14 +53,14 @@ export function NewTrainingConfirmationDialog({
                         onClick={onContinue}
                         loading={continueLoading}
                     >
-                        Продолжить
+                        {t('Continue')}
                     </Button>
                     <Button
                         variant="default"
                         onClick={onStartNew}
                         loading={startNewLoading}
                     >
-                        Начать новую
+                        {t('Start new')}
                     </Button>
                 </DialogFooter>
             </DialogContent>

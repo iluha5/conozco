@@ -27,12 +27,14 @@ import { useWordGroupsFilter } from '@/hooks/word-groups/use-word-groups-filter'
 import { AddWordDialogFilters } from './AddWordDialogFilters';
 import { WordsList as AddWordDialogWordsList } from './WordsList';
 import type { BaseWord } from '@/types/add-word-dialog.types';
+import { useTranslation } from '@/lib/i18n';
 
 type AddWordDialogProps = {
     onWordAdded: () => void;
 };
 
 export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
+    const { t } = useTranslation();
     const { open, setOpen } = useHashDialog('add-word-dialog');
     const [needsScroll, setNeedsScroll] = useState(false);
     const [skipAutoSearch, setSkipAutoSearch] = useState(false);
@@ -290,10 +292,10 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
 
     const actionText =
         selectionState === 'all'
-            ? 'удалены из списка ваших слов'
-            : 'добавлено в список ваших слов';
+            ? t('removed from your word list')
+            : t('added to your word list');
     const actionTitle =
-        selectionState === 'all' ? 'Убрать слова?' : 'Добавить слова?';
+        selectionState === 'all' ? t('Remove words?') : t('Add words?');
 
     return (
         <>
@@ -364,7 +366,7 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                             variant="outline"
                             onClick={() => setOpen(false)}
                         >
-                            Закрыть
+                            {t('Close')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -381,16 +383,22 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                         <DialogDescription className="!mt-3">
                             {wordsToProcessCount > 0 ? (
                                 <>
-                                    {wordsToProcessCount} слов(а) будет{' '}
-                                    {actionText}.
+                                    {t('{{count}} word(s) will be {{action}}', {
+                                        count: wordsToProcessCount,
+                                        action: actionText,
+                                    })}
                                 </>
                             ) : (
                                 <>
-                                    Все видимые слова уже{' '}
-                                    {selectionState === 'all'
-                                        ? 'удалены'
-                                        : 'добавлены'}
-                                    .
+                                    {t(
+                                        'All visible words are already {{status}}',
+                                        {
+                                            status:
+                                                selectionState === 'all'
+                                                    ? t('removed')
+                                                    : t('added'),
+                                        },
+                                    )}
                                 </>
                             )}
                         </DialogDescription>
@@ -400,10 +408,10 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                             variant="outline"
                             onClick={handleCloseToggleAllDialog}
                         >
-                            Отмена
+                            {t('Cancel')}
                         </Button>
                         <Button onClick={handleConfirmToggleAll}>
-                            Подтвердить
+                            {t('Confirm')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
