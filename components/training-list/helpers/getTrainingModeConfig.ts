@@ -1,22 +1,21 @@
 import { TrainingModeId, TrainingModeConfig } from '../types/typing';
-import { NEW_WORDS_TRAINING_MODES } from '../constants/training-modes';
-import { LEARNED_TRAINING_MODES } from '../constants/learned-training-modes';
-import { TEST_TRAINING_MODES } from '../constants/test-training-modes';
-
-/**
- * Объединенный массив всех режимов тренировок
- */
-const ALL_TRAINING_MODES: TrainingModeConfig[] = [
-    ...NEW_WORDS_TRAINING_MODES,
-    ...LEARNED_TRAINING_MODES,
-    ...TEST_TRAINING_MODES,
-];
+import { getNewWordsTrainingModes } from '../constants/training-modes';
+import { getLearnedTrainingModes } from '../constants/learned-training-modes';
+import { getTestTrainingModes } from '../constants/test-training-modes';
+import { I18n } from '@/lib/i18n';
 
 /**
  * Найти конфигурацию режима тренировки по ID
  */
 export function getTrainingModeConfig(
     modeId: TrainingModeId,
+    t: I18n['t'],
 ): TrainingModeConfig | undefined {
-    return ALL_TRAINING_MODES.find(mode => mode.id === modeId);
+    const allTrainingModes: TrainingModeConfig[] = [
+        ...getNewWordsTrainingModes(t),
+        ...getLearnedTrainingModes(t),
+        ...getTestTrainingModes(t),
+    ];
+
+    return allTrainingModes.find(mode => mode.id === modeId);
 }

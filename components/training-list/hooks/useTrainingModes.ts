@@ -8,8 +8,8 @@ import { useTrainingStorage } from '@/hooks/training';
 import { trainingApi } from '@/lib/api/training.api';
 import { Word } from '@/types/training.types';
 import { TrainingModeId, TrainingModeGroupId } from '../types/typing';
-import { NEW_WORDS_TRAINING_MODES } from '../constants/training-modes';
-import { LEARNED_TRAINING_MODES } from '../constants/learned-training-modes';
+import { getNewWordsTrainingModes } from '../constants/training-modes';
+import { getLearnedTrainingModes } from '../constants/learned-training-modes';
 import { startTrainingMode } from '../helpers/startTrainingMode';
 import { FlashCardsReviewParams } from '@/components/flash-cards-review/typing';
 import { getTrainingModeConfig } from '../helpers/getTrainingModeConfig';
@@ -106,7 +106,7 @@ export function useTrainingModes() {
             return;
         }
 
-        const config = getTrainingModeConfig(modeId);
+        const config = getTrainingModeConfig(modeId, t);
 
         if (!config) {
             return;
@@ -171,7 +171,7 @@ export function useTrainingModes() {
         // Wait for dialog close animation and hash removal
         await new Promise(resolve => setTimeout(resolve, 100));
 
-        const config = getTrainingModeConfig(modeIdToStart);
+        const config = getTrainingModeConfig(modeIdToStart, t);
 
         if (!config) {
             return;
@@ -223,9 +223,12 @@ export function useTrainingModes() {
         }
     };
 
+    const modes = useMemo(() => getNewWordsTrainingModes(t), [t]);
+    const learnedModes = useMemo(() => getLearnedTrainingModes(t), [t]);
+
     return {
-        modes: NEW_WORDS_TRAINING_MODES,
-        learnedModes: LEARNED_TRAINING_MODES,
+        modes,
+        learnedModes,
         startMode: handleStartMode,
         isLoading,
         isStarting,

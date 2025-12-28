@@ -46,17 +46,17 @@ export function TrainingList() {
     // Инициализация таба на основе хеша при монтировании
     useEffect(() => {
         const hash = window.location.hash.slice(1);
-        const tabFromHash = getTabFromHash(hash);
+        const tabFromHash = getTabFromHash(hash, t);
         if (tabFromHash) {
             setActiveTab(tabFromHash);
         }
-    }, [setActiveTab]);
+    }, [setActiveTab, t]);
 
     // Обработка изменений хеша (кнопка "назад" в браузере)
     useEffect(() => {
         const handleHashChange = () => {
             const hash = window.location.hash.slice(1);
-            const tabFromHash = getTabFromHash(hash);
+            const tabFromHash = getTabFromHash(hash, t);
             if (tabFromHash) {
                 setActiveTab(tabFromHash);
             } else {
@@ -68,12 +68,12 @@ export function TrainingList() {
         return () => {
             window.removeEventListener('hashchange', handleHashChange);
         };
-    }, [setActiveTab]);
+    }, [setActiveTab, t]);
 
     // Обработчик переключения табов с управлением хешем
     const handleTabChange = (value: string) => {
         const newTab = value as TrainingModeGroupId;
-        updateUrlHash(newTab);
+        updateUrlHash(newTab, t);
         setActiveTab(newTab);
     };
 
