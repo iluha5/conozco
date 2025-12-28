@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
+import { tServer } from '@/lib/i18n/utils/tServer';
 
 // Admin password for registration - should be in env variable in production
 const ADMIN_REGISTRATION_PASSWORD =
@@ -13,7 +14,7 @@ export async function POST(request: NextRequest) {
         // Validate admin password
         if (adminPassword !== ADMIN_REGISTRATION_PASSWORD) {
             return NextResponse.json(
-                { error: 'Invalid admin password' },
+                { error: await tServer('Invalid admin password') },
                 { status: 403 },
             );
         }
@@ -21,14 +22,18 @@ export async function POST(request: NextRequest) {
         // Validate input
         if (!email || !password) {
             return NextResponse.json(
-                { error: 'Email and password are required' },
+                { error: await tServer('Email and password are required') },
                 { status: 400 },
             );
         }
 
         if (password.length < 6) {
             return NextResponse.json(
-                { error: 'Password must be at least 6 characters' },
+                {
+                    error: await tServer(
+                        'Password must be at least 6 characters',
+                    ),
+                },
                 { status: 400 },
             );
         }
@@ -40,7 +45,7 @@ export async function POST(request: NextRequest) {
 
         if (existingUser) {
             return NextResponse.json(
-                { error: 'User with this email already exists' },
+                { error: await tServer('User with this email already exists') },
                 { status: 409 },
             );
         }
@@ -54,7 +59,7 @@ export async function POST(request: NextRequest) {
 
         if (!defaultRole) {
             return NextResponse.json(
-                { error: 'Default user role is not configured' },
+                { error: await tServer('Default user role is not configured') },
                 { status: 500 },
             );
         }
@@ -84,14 +89,14 @@ export async function POST(request: NextRequest) {
                     ...rest,
                     role: role.code,
                 },
-                message: 'User created successfully',
+                message: await tServer('User created successfully'),
             },
             { status: 201 },
         );
     } catch (error) {
         console.error('Registration error:', error);
         return NextResponse.json(
-            { error: 'Internal server error' },
+            { error: await tServer('Internal server error') },
             { status: 500 },
         );
     }

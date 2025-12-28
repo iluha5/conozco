@@ -107,7 +107,7 @@ function WordCard({ word }: WordCardProps) {
                             className="h-8 w-8 shrink-0"
                             onClick={handlePlayWord}
                             disabled={isPlaying}
-                            title="Прослушать слово"
+                            title={t('Listen to word')}
                         >
                             <Volume2
                                 className={`h-4 w-4 ${
@@ -276,8 +276,8 @@ export function GroupWordsDialog({
                             }}
                         >
                             {searchQuery
-                                ? 'Слова не найдены'
-                                : 'В группе пока нет слов'}
+                                ? t('Words not found')
+                                : t('No words in group yet')}
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-1 p-2">

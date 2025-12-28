@@ -65,8 +65,8 @@ export function useWordManagement({
         } catch (error) {
             console.error('Error adding word:', error);
             toast({
-                title: 'Ошибка',
-                description: 'Не удалось добавить слово',
+                title: t('Error'),
+                description: t('Failed to add word'),
                 variant: 'destructive',
             });
             return false;

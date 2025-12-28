@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { tServer } from '@/lib/i18n/utils/tServer';
 
 /**
  * PATCH /api/words/bulk - Массовое обновление статуса слов
@@ -12,7 +13,7 @@ export async function PATCH(request: NextRequest) {
 
         if (!session?.user?.id) {
             return NextResponse.json(
-                { error: 'Unauthorized' },
+                { error: await tServer('Unauthorized') },
                 { status: 401 },
             );
         }
@@ -26,7 +27,11 @@ export async function PATCH(request: NextRequest) {
 
         if (!user) {
             return NextResponse.json(
-                { error: 'User session expired. Please sign in again.' },
+                {
+                    error: await tServer(
+                        'User session expired. Please sign in again.',
+                    ),
+                },
                 { status: 401 },
             );
         }
@@ -35,14 +40,18 @@ export async function PATCH(request: NextRequest) {
 
         if (!wordIds || !Array.isArray(wordIds) || wordIds.length === 0) {
             return NextResponse.json(
-                { error: 'wordIds array is required' },
+                { error: await tServer('wordIds array is required') },
                 { status: 400 },
             );
         }
 
         if (!status || !['LEARNED', 'NOT_LEARNED'].includes(status)) {
             return NextResponse.json(
-                { error: 'Valid status (LEARNED or NOT_LEARNED) is required' },
+                {
+                    error: await tServer(
+                        'Valid status (LEARNED or NOT_LEARNED) is required',
+                    ),
+                },
                 { status: 400 },
             );
         }
@@ -54,7 +63,7 @@ export async function PATCH(request: NextRequest) {
 
         if (!wordStatus) {
             return NextResponse.json(
-                { error: 'Invalid status' },
+                { error: await tServer('Invalid status') },
                 { status: 400 },
             );
         }
@@ -79,7 +88,7 @@ export async function PATCH(request: NextRequest) {
         console.error('Error bulk updating words:', error);
 
         return NextResponse.json(
-            { error: 'Internal server error' },
+            { error: await tServer('Internal server error') },
             { status: 500 },
         );
     }
@@ -94,7 +103,7 @@ export async function DELETE(request: NextRequest) {
 
         if (!session?.user?.id) {
             return NextResponse.json(
-                { error: 'Unauthorized' },
+                { error: await tServer('Unauthorized') },
                 { status: 401 },
             );
         }
@@ -108,7 +117,11 @@ export async function DELETE(request: NextRequest) {
 
         if (!user) {
             return NextResponse.json(
-                { error: 'User session expired. Please sign in again.' },
+                {
+                    error: await tServer(
+                        'User session expired. Please sign in again.',
+                    ),
+                },
                 { status: 401 },
             );
         }
@@ -117,7 +130,7 @@ export async function DELETE(request: NextRequest) {
 
         if (!wordIds || !Array.isArray(wordIds) || wordIds.length === 0) {
             return NextResponse.json(
-                { error: 'wordIds array is required' },
+                { error: await tServer('wordIds array is required') },
                 { status: 400 },
             );
         }
@@ -147,7 +160,7 @@ export async function DELETE(request: NextRequest) {
         console.error('Error bulk deleting words:', error);
 
         return NextResponse.json(
-            { error: 'Internal server error' },
+            { error: await tServer('Internal server error') },
             { status: 500 },
         );
     }

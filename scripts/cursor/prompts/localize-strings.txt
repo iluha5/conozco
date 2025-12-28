@@ -1,0 +1,179 @@
+You are a professional linguist specializing in web application translations. Your task is to localize all hardcoded interface strings in this project.
+
+## TASK OVERVIEW
+
+Find all hardcoded interface strings (in Russian or English) that are NOT wrapped in localization functions (`t()`, `tServer()`, or `tServerSync()`), wrap them appropriately, run the `process-locales` script to generate translation keys, and add proper translations for Russian and Spanish languages.
+
+## SEARCH PHASE
+
+1. **Scan directories**: Search through all files in:
+   - `app/**/*.{ts,tsx}`
+   - `components/**/*.{ts,tsx}`
+   - `hooks/**/*.{ts,tsx}`
+
+2. **Identify hardcoded strings**: Look for:
+   - String literals in JSX (e.g., `"Прослушать слово"`, `"Listen to word"`, `title="Some text"`)
+   - String literals in TypeScript code that appear to be UI text
+   - Text content in React components that users will see
+   - Button labels, titles, placeholders, error messages, etc.
+
+3. **Exclude**:
+   - Comments (both `//` and `/* */`)
+   - `console.log()` statements and debugging code
+   - Technical strings (API endpoints, file paths, variable names)
+   - Strings already wrapped in `t()`, `tServer()`, or `tServerSync()`
+   - Code identifiers, class names, CSS classes
+   - Test data and mock strings
+   - Strings in `lib/i18n/locales/` JSON files
+
+## DETECTION RULES
+
+### Component Type Detection
+
+1. **Server Components**: Files that contain:
+   - `'use server'` directive at the top
+   - Server actions (functions with `'use server'` directive)
+   - API route handlers (`app/api/**/*.ts`)
+
+2. **Client Components**: Files that contain:
+   - `'use client'` directive at the top
+   - React hooks (`useState`, `useEffect`, `useTranslation`, etc.)
+   - Event handlers (`onClick`, `onChange`, etc.)
+   - Browser APIs (`window`, `document`, etc.)
+
+3. **Default**: If neither directive is present and file uses React hooks, treat as client component.
+
+### Function Selection
+
+- **Server Components**: Use `tServer()` or `tServerSync()`
+  - Use `tServer()` for async contexts (server actions, API routes)
+  - Use `tServerSync()` for synchronous contexts when language is already known
+- **Client Components**: Use `t()` hook from `useTranslation()`
+  - Import: `import { useTranslation } from '@/lib/i18n/commonTranslation/hooks/useTranslation'`
+  - Call: `const { t } = useTranslation();` at the top of the component
+
+## WRAPPING PHASE
+
+### Rules for Wrapping Strings
+
+1. **Fallback Language**: The original string in code (fallback) MUST be in English
+   - If you find a Russian string like `"Прослушать слово"`, wrap it as `t('Listen to word')`
+   - The English fallback becomes the translation key
+
+2. **String Interpolation**: If the string contains variables, preserve them:
+   - Example: `"Group {{name}} removed"` → `t('Group {{name}} removed', { name })`
+   - Use double curly braces `{{variable}}` format
+
+3. **JSX Attributes**: Wrap strings in attributes:
+   - `title="Прослушать слово"` → `title={t('Listen to word')}`
+   - `placeholder="Enter text"` → `placeholder={t('Enter text')}`
+   - `aria-label="Close"` → `aria-label={t('Close')}`
+
+4. **Text Content**: Wrap text nodes:
+   - `<>Some text</>` → `<>t('Some text')</>`
+   - `{isLoading ? 'Loading...' : 'Ready'}` → `{isLoading ? t('Loading...') : t('Ready')}`
+
+5. **Import Statements**: Add necessary imports:
+   - Client components: `import { useTranslation } from '@/lib/i18n/commonTranslation/hooks/useTranslation';`
+   - Server components: `import { tServer } from '@/lib/i18n/utils/tServer';` or `import { tServerSync } from '@/lib/i18n/utils/tServer';`
+
+## TRANSLATION GENERATION PHASE
+
+1. **Run process-locales script**:
+   ```bash
+   npm run process-locales
+   ```
+   This will:
+   - Extract all `t()`, `tServer()`, and `tServerSync()` calls
+   - Generate/update translation keys in JSON files
+   - Files are located in `lib/i18n/locales/{lang}/glob.json`
+
+2. **Add Translations**: After running `process-locales`, manually add translations:
+   - **English** (`lib/i18n/locales/en/glob.json`): Ensure the key exists with English text
+   - **Russian** (`lib/i18n/locales/ru/glob.json`): Add appropriate Russian translation
+   - **Spanish** (`lib/i18n/locales/es/glob.json`): Add appropriate Spanish translation
+
+3. **Translation Quality**:
+   - Translations must be contextually appropriate
+   - Maintain consistency with existing translations
+   - Use proper grammar and natural phrasing
+   - Consider UI context (button labels, error messages, etc.)
+
+## QUALITY CHECKS
+
+After completing the task:
+
+1. **Verify all strings are wrapped**: No hardcoded Russian or English UI strings remain
+2. **Check imports**: All necessary imports are added
+3. **Test compilation**: Ensure TypeScript compiles without errors
+4. **Review translations**: Ensure translations are accurate and contextually appropriate
+5. **Check for duplicates**: Avoid duplicate translation keys with different meanings
+
+## EXECUTION STEPS
+
+1. Search and identify all hardcoded interface strings
+2. Determine component type (server vs client) for each file
+3. Wrap strings with appropriate localization function
+4. Add necessary imports
+5. Run `npm run process-locales`
+6. Review generated JSON files
+7. Add Russian translations to `lib/i18n/locales/ru/glob.json` and add Spanish translations to `lib/i18n/locales/es/glob.json`
+8. Ensure English translations exist in `lib/i18n/locales/en/glob.json`
+9. Verify no TypeScript errors
+10. Test that the application still works correctly
+
+## IMPORTANT NOTES
+
+- Always use English as the fallback language in code
+- Preserve string interpolation syntax (`{{variable}}`)
+- Maintain code formatting and style
+- Do not modify comments or technical strings
+- Be thorough - check all files in the specified directories
+- If a string appears multiple times, use the same translation key
+
+## EXAMPLE TRANSFORMATIONS
+
+### Example 1: Client Component
+```tsx
+// Before
+export function Button() {
+    return <button title="Прослушать слово">Play</button>;
+}
+
+// After
+import { useTranslation } from '@/lib/i18n/commonTranslation/hooks/useTranslation';
+
+export function Button() {
+    const { t } = useTranslation();
+    return <button title={t('Listen to word')}>{t('Play')}</button>;
+}
+```
+
+### Example 2: Server Component
+```tsx
+// Before
+'use server';
+export async function getMessage() {
+    return "Сообщение отправлено";
+}
+
+// After
+'use server';
+import { tServer } from '@/lib/i18n/utils/tServer';
+
+export async function getMessage() {
+    return await tServer('Message sent');
+}
+```
+
+### Example 3: String with Interpolation
+```tsx
+// Before
+<div>Group "{name}" removed</div>
+
+// After
+<div>{t('Group "{{name}}" removed', { name })}</div>
+```
+
+Begin the localization process now.
+
