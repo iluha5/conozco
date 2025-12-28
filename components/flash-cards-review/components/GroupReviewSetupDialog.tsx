@@ -264,7 +264,9 @@ export function GroupReviewSetupDialog({
 
                     {/* Количество слов */}
                     <div className="flex items-center justify-between">
-                        <Label className="mr-4">Количество слов (5 - 50)</Label>
+                        <Label className="mr-4">
+                            {t('Number of words (5 - 50)')}
+                        </Label>
                         <div className="flex items-center gap-4">
                             <Button
                                 type="button"

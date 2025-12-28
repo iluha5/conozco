@@ -1,36 +1,11 @@
-import { NEW_WORDS_TRAINING_MODES } from './training-modes';
-import { LEARNED_TRAINING_MODES } from './learned-training-modes';
-import { TEST_TRAINING_MODES } from './test-training-modes';
 import { TrainingModeGroupId } from '../types/typing';
-
-export const TRAINING_MODE_GROUPS = {
-    new: {
-        id: 'new' as TrainingModeGroupId,
-        title: 'Новые слова',
-        description: 'Тренировка неизученных слов',
-        modes: NEW_WORDS_TRAINING_MODES,
-    },
-    learned: {
-        id: 'learned' as TrainingModeGroupId,
-        title: 'Закрепление',
-        description: 'Повторение изученных слов',
-        modes: LEARNED_TRAINING_MODES,
-    },
-    tests: {
-        id: 'tests' as TrainingModeGroupId,
-        title: 'Тесты',
-        description: 'Проверка знаний через тесты',
-        modes: TEST_TRAINING_MODES,
-    },
-};
 
 import { getNewWordsTrainingModes } from './training-modes';
 import { getLearnedTrainingModes } from './learned-training-modes';
 import { getTestTrainingModes } from './test-training-modes';
+import { I18n } from '@/lib/i18n';
 
-export const getTrainingModeGroups = (
-    t: (_key: string, _params?: Record<string, string | number>) => string,
-) => ({
+export const getTrainingModeGroups = (t: I18n['t']) => ({
     new: {
         id: 'new' as TrainingModeGroupId,
         title: t('New words'),

@@ -1,13 +1,14 @@
 import { ListChecks, GraduationCap } from 'lucide-react';
 import { TrainingModeConfig } from '../types/typing';
 import { A1_GROUP_ID, A1_GROUP_NAME } from '@/config/training-modes';
+import { I18n } from '@/lib/i18n';
 
 export const TEST_TRAINING_MODES: TrainingModeConfig[] = [
     {
         id: 'learned-group-check',
-        title: 'Проверка по группам',
-        shortDescription: 'Выберите группу для проверки',
-        detailedDescription: 'Проверка слов из выбранной группы через карточки',
+        title: 'Group check',
+        shortDescription: 'Choose a group to check',
+        detailedDescription: 'Check words from selected group through cards',
         icon: ListChecks,
         gradient: 'from-blue-400 to-cyan-500',
         enabledStages: [],
@@ -18,8 +19,8 @@ export const TEST_TRAINING_MODES: TrainingModeConfig[] = [
     },
     {
         id: 'learned-test-a1-easy',
-        title: 'Тест A1 (лёгкий)',
-        shortDescription: '10 случайных слов из A1',
+        title: 'Test A1 (easy)',
+        shortDescription: '10 random words from A1',
         detailedDescription: `Проверка 10 случайных слов из группы "${A1_GROUP_NAME}"`,
         icon: GraduationCap,
         gradient: 'from-orange-400 to-red-500',
@@ -33,8 +34,8 @@ export const TEST_TRAINING_MODES: TrainingModeConfig[] = [
     },
     {
         id: 'learned-test-a1-medium',
-        title: 'Тест A1 (средний)',
-        shortDescription: '20 случайных слов из A1',
+        title: 'Test A1 (medium)',
+        shortDescription: '20 random words from A1',
         detailedDescription: `Проверка 20 случайных слов из группы "${A1_GROUP_NAME}"`,
         icon: GraduationCap,
         gradient: 'from-red-400 to-rose-500',
@@ -48,9 +49,7 @@ export const TEST_TRAINING_MODES: TrainingModeConfig[] = [
     },
 ];
 
-export const getTestTrainingModes = (
-    t: (_key: string, _params?: Record<string, string | number>) => string,
-): TrainingModeConfig[] => [
+export const getTestTrainingModes = (t: I18n['t']): TrainingModeConfig[] => [
     {
         id: 'learned-group-check',
         title: t('Group check'),

@@ -303,9 +303,9 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                 <DialogTrigger asChild>
                     <Button size="lg" className="w-full min-w-0">
                         <PlusCircle className="w-4 h-4 mr-2 flex-shrink-0" />
-                        <span className="md:hidden truncate">Добавить</span>
+                        <span className="md:hidden truncate">{t('Add')}</span>
                         <span className="hidden md:inline truncate">
-                            Добавить слово
+                            {t('Add words')}
                         </span>
                     </Button>
                 </DialogTrigger>
@@ -313,7 +313,9 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                     className={`${needsScroll ? 'max-h-[90vh] overflow-y-auto' : ''}`}
                 >
                     <DialogHeader>
-                        <DialogTitle>Добавить слово из словаря</DialogTitle>
+                        <DialogTitle>
+                            {t('Add word from dictionary')}
+                        </DialogTitle>
                     </DialogHeader>
 
                     <div className="space-y-4 py-4">

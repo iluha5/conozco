@@ -187,7 +187,9 @@ export function AddWordDialogFilters({
                         disabled={searching || words.length === 0}
                     />
                     <div className="flex items-center gap-2 ml-auto">
-                        <span className="text-sm text-gray-600">Показано:</span>
+                        <span className="text-sm text-gray-600">
+                            {t('Shown:')}
+                        </span>
                         <Badge
                             variant="outline"
                             className="gap-1.5 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 shadow-sm text-sm"

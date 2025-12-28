@@ -59,7 +59,9 @@ export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
                     <Card className="p-8">
                         <div className="flex flex-col items-center gap-4">
                             <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
-                            <p className="text-gray-600">Загрузка слов...</p>
+                            <p className="text-gray-600">
+                                {t('Loading words...')}
+                            </p>
                         </div>
                     </Card>
                 </div>
@@ -72,9 +74,9 @@ export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
                     <Card className="p-8 max-w-md">
                         <div className="flex flex-col items-center gap-4">
                             <p className="text-red-600">
-                                Ошибка загрузки слов. Попробуйте еще раз.
+                                {t('Error loading words. Try again.')}
                             </p>
-                            <Button onClick={handleClose}>Закрыть</Button>
+                            <Button onClick={handleClose}>{t('Close')}</Button>
                         </div>
                     </Card>
                 </div>
@@ -87,9 +89,9 @@ export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
                     <Card className="p-8 max-w-md">
                         <div className="flex flex-col items-center gap-4">
                             <p className="text-gray-600">
-                                Нет слов для проверки
+                                {t('No words to check')}
                             </p>
-                            <Button onClick={handleClose}>Закрыть</Button>
+                            <Button onClick={handleClose}>{t('Close')}</Button>
                         </div>
                     </Card>
                 </div>
@@ -102,12 +104,12 @@ export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
                     <Card className="p-8 max-w-md">
                         <div className="flex flex-col items-center gap-6">
                             <h2 className="text-2xl font-bold text-gray-900">
-                                Тренировка завершена!
+                                {t('Training completed!')}
                             </h2>
                             <div className="w-full space-y-2">
                                 <div className="flex justify-between">
                                     <span className="text-gray-600">
-                                        Всего:
+                                        {t('Total:')}
                                     </span>
                                     <span className="font-semibold">
                                         {stats.total}
@@ -115,7 +117,7 @@ export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-green-600">
-                                        Знаю:
+                                        {t('Know:')}
                                     </span>
                                     <span className="font-semibold text-green-600">
                                         {stats.known}
@@ -123,7 +125,7 @@ export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-red-600">
-                                        Не знаю:
+                                        {t("Don't know:")}
                                     </span>
                                     <span className="font-semibold text-red-600">
                                         {stats.dontKnow}
@@ -131,7 +133,7 @@ export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-orange-600">
-                                        Удалено/Пропущено:
+                                        {t('Removed/Skipped:')}
                                     </span>
                                     <span className="font-semibold text-orange-600">
                                         {stats.deleted}
@@ -143,7 +145,7 @@ export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
                                 size="lg"
                                 className="w-full"
                             >
-                                Закрыть
+                                {t('Close')}
                             </Button>
                         </div>
                     </Card>
@@ -166,8 +168,17 @@ export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
                             </h1>
                             <p className="text-sm text-gray-600 mt-1">
                                 {currentWord
-                                    ? `Карточка ${currentIndex + 1} из ${totalWords}`
-                                    : `Завершено: ${totalWords} из ${totalWords}`}
+                                    ? t('Card {{current}} of {{total}}', {
+                                          current: currentIndex + 1,
+                                          total: totalWords,
+                                      })
+                                    : t(
+                                          'Completed: {{completed}} of {{total}}',
+                                          {
+                                              completed: totalWords,
+                                              total: totalWords,
+                                          },
+                                      )}
                             </p>
                         </div>
                         <Button

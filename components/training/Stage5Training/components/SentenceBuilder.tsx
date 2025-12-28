@@ -1,4 +1,5 @@
 import { CheckCircle, XCircle } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n/commonTranslation/hooks/useTranslation';
 
 type SentenceBuilderProps = {
     userSentence: string[];
@@ -15,6 +16,7 @@ export function SentenceBuilder({
     isCorrect,
     onRemoveWord,
 }: SentenceBuilderProps) {
+    const { t } = useTranslation();
     return (
         <div
             className="relative min-h-[132px] p-3 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300"
@@ -22,7 +24,7 @@ export function SentenceBuilder({
         >
             <div className="flex flex-wrap gap-2 justify-center">
                 {userSentence.length === 0 ? (
-                    <p className="text-gray-400">Выберите слова ниже</p>
+                    <p className="text-gray-400">{t('Select words below')}</p>
                 ) : (
                     userSentence.map((word, index) => (
                         <button

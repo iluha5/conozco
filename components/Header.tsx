@@ -104,7 +104,7 @@ export function Header() {
                                         href="/settings"
                                         icon={Settings}
                                     >
-                                        Настройки
+                                        {t('Settings')}
                                     </NavigationLink>
                                 </div>
 
@@ -116,7 +116,7 @@ export function Header() {
                                         </span>
                                         {session.user?.role === 'ADMIN' && (
                                             <span className="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs font-medium rounded">
-                                                Admin
+                                                {t('Admin')}
                                             </span>
                                         )}
                                     </div>
@@ -131,7 +131,7 @@ export function Header() {
                                         }
                                     >
                                         <LogOut className="w-4 h-4 mr-2" />
-                                        Выйти
+                                        {t('Logout')}
                                     </Button>
                                 </div>
                             </>
@@ -140,11 +140,11 @@ export function Header() {
                                 <Link href="/auth/login">
                                     <Button variant="ghost" size="sm">
                                         <LogIn className="w-4 h-4 mr-2" />
-                                        Войти
+                                        {t('Login')}
                                     </Button>
                                 </Link>
                                 <Link href="/auth/register">
-                                    <Button size="sm">Регистрация</Button>
+                                    <Button size="sm">{t('Register')}</Button>
                                 </Link>
                             </div>
                         )}
@@ -164,11 +164,11 @@ export function Header() {
                             <div className="flex items-center gap-2">
                                 <Link href="/auth/login">
                                     <Button variant="ghost" size="sm">
-                                        Войти
+                                        {t('Login')}
                                     </Button>
                                 </Link>
                                 <Link href="/auth/register">
-                                    <Button size="sm">Регистрация</Button>
+                                    <Button size="sm">{t('Register')}</Button>
                                 </Link>
                             </div>
                         )}

@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Trash2, SkipForward } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { WatermarkCardSide } from './FlashCardBackgrounds';
-import { useI18n } from '@/lib/i18n';
+import { useTranslation, useI18n } from '@/lib/i18n';
 
 interface FlashCardProps {
     word: FlashCardWord;
@@ -27,6 +27,7 @@ export function FlashCard({
     ownLanguageCode,
 }: FlashCardProps) {
     const { language } = useI18n();
+    const { t } = useTranslation();
     const [isFlipped, setIsFlipped] = useState(false);
     const [isAnimating, setIsAnimating] = useState(false);
 
@@ -125,7 +126,7 @@ export function FlashCard({
                                 {wordText}
                             </div>
                             <div className="text-sm text-gray-400 mt-4">
-                                Нажмите, чтобы перевернуть
+                                {t('Press to flip')}
                             </div>
                         </div>
                     </WatermarkCardSide>
@@ -169,7 +170,7 @@ export function FlashCard({
                             )}
 
                             <div className="text-sm text-gray-400 mt-4">
-                                Свайпните влево/вправо или используйте кнопки
+                                {t('Swipe left/right or use buttons')}
                             </div>
                         </div>
                     </WatermarkCardSide>
@@ -181,12 +182,12 @@ export function FlashCard({
                 <div className="absolute inset-x-0 bottom-8 flex items-center justify-center pointer-events-none z-10">
                     {swipeOffset.x < -20 && (
                         <Badge className="bg-red-500 text-white text-lg px-4 py-2">
-                            ← Не знаю
+                            ← {t("Don't know")}
                         </Badge>
                     )}
                     {swipeOffset.x > 20 && (
                         <Badge className="bg-green-500 text-white text-lg px-4 py-2">
-                            Знаю →
+                            {t('Know')} →
                         </Badge>
                     )}
                 </div>
@@ -206,6 +207,8 @@ export function FlashCardDeleteButton({
     disabled = false,
     belongsToUser = true,
 }: FlashCardDeleteButtonProps) {
+    const { t } = useTranslation();
+
     return (
         <div className="flex justify-center mt-4 md:hidden">
             <Button
@@ -222,12 +225,12 @@ export function FlashCardDeleteButton({
                 {belongsToUser ? (
                     <>
                         <Trash2 className="w-5 h-5" />
-                        Удалить
+                        {t('Delete')}
                     </>
                 ) : (
                     <>
                         <SkipForward className="w-5 h-5" />
-                        Пропустить
+                        {t('Skip')}
                     </>
                 )}
             </Button>

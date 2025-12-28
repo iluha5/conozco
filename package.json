@@ -32,7 +32,7 @@
         "db:migrate:safe": "./scripts/safe-migrate.sh \"npm run prisma:migrate\"",
         "prepare": "husky",
         "process-locales": "i18next && npm run format",
-        "localize-strings": "node scripts/localize-strings/localize-strings.mjs"
+        "localize-strings": "node scripts/localize-strings/localize-strings.mjs --log"
     },
     "prisma": {
         "seed": "tsx prisma/seed.ts"

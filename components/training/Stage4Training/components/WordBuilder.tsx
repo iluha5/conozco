@@ -1,4 +1,5 @@
 import { CheckCircle, XCircle } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n';
 
 type WordBuilderProps = {
     userWord: string[];
@@ -15,6 +16,7 @@ export function WordBuilder({
     isCorrect,
     onRemoveLetter,
 }: WordBuilderProps) {
+    const { t } = useTranslation();
     return (
         <div
             className="relative min-h-[132px] p-3 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300"
@@ -22,7 +24,7 @@ export function WordBuilder({
         >
             <div className="flex flex-wrap gap-2 justify-center">
                 {userWord.length === 0 ? (
-                    <p className="text-gray-400">Выберите буквы ниже</p>
+                    <p className="text-gray-400">{t('Select letters below')}</p>
                 ) : (
                     userWord.map((letter, index) => (
                         <button

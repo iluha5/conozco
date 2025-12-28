@@ -12,10 +12,15 @@ Find all hardcoded interface strings (in Russian or English) that are NOT wrappe
    - `hooks/**/*.{ts,tsx}`
 
 2. **Identify hardcoded strings**: Look for:
-   - String literals in JSX (e.g., `"Прослушать слово"`, `"Listen to word"`, `title="Some text"`)
+   - String literals in JSX attributes (e.g., `title="Прослушать слово"`, `placeholder="Enter text"`, `aria-label="Close"`)
+   - **Text content between JSX tags** - CRITICAL: Pay special attention to text directly between opening and closing tags:
+     - `<span>Добавить</span>` → text "Добавить" must be wrapped
+     - `<DialogTitle>Добавить слово из словаря</DialogTitle>` → text "Добавить слово из словаря" must be wrapped
+     - `<Button>Добавить слова</Button>` → text "Добавить слова" must be wrapped
+     - Text in nested elements: `<div><span>Some text</span></div>` → "Some text" must be wrapped
    - String literals in TypeScript code that appear to be UI text
    - Text content in React components that users will see
-   - Button labels, titles, placeholders, error messages, etc.
+   - Button labels, titles, placeholders, error messages, dialog titles, etc.
 
 3. **Exclude**:
    - Comments (both `//` and `/* */`)
@@ -69,9 +74,20 @@ Find all hardcoded interface strings (in Russian or English) that are NOT wrappe
    - `placeholder="Enter text"` → `placeholder={t('Enter text')}`
    - `aria-label="Close"` → `aria-label={t('Close')}`
 
-4. **Text Content**: Wrap text nodes:
-   - `<>Some text</>` → `<>t('Some text')</>`
-   - `{isLoading ? 'Loading...' : 'Ready'}` → `{isLoading ? t('Loading...') : t('Ready')}`
+4. **Text Content Between JSX Tags** - CRITICAL: This is the most common missed case:
+   - **Direct text between tags**: 
+     - `<span>Добавить</span>` → `<span>{t('Add')}</span>`
+     - `<DialogTitle>Добавить слово из словаря</DialogTitle>` → `<DialogTitle>{t('Add word from dictionary')}</DialogTitle>`
+     - `<Button>Добавить слова</Button>` → `<Button>{t('Add words')}</Button>`
+   - **Text with className or other props**:
+     - `<span className="md:hidden truncate">Добавить</span>` → `<span className="md:hidden truncate">{t('Add')}</span>`
+   - **Text in fragments**:
+     - `<>Some text</>` → `<>t('Some text')</>`
+   - **Conditional text rendering**:
+     - `{isLoading ? 'Loading...' : 'Ready'}` → `{isLoading ? t('Loading...') : t('Ready')}`
+   - **Text with whitespace**: Preserve whitespace structure but wrap the actual text:
+     - `<span>  Some text  </span>` → `<span>  {t('Some text')}  </span>` (if whitespace is intentional)
+   - **Multi-line text between tags**: Wrap each logical text segment
 
 5. **Import Statements**: Add necessary imports:
    - Client components: `import { useTranslation } from '@/lib/i18n/commonTranslation/hooks/useTranslation';`
@@ -124,12 +140,17 @@ After completing the task:
 
 ## IMPORTANT NOTES
 
+- **CRITICAL**: Pay special attention to text between JSX tags - this is the most commonly missed case
+  - Scan for patterns like: `<Tag>Text here</Tag>`, `<Tag className="...">Text</Tag>`
+  - Look for Russian or English text directly between opening and closing tags
+  - Even if text is on separate lines or has whitespace, it must be wrapped
 - Always use English as the fallback language in code
 - Preserve string interpolation syntax (`{{variable}}`)
 - Maintain code formatting and style
 - Do not modify comments or technical strings
 - Be thorough - check all files in the specified directories
 - If a string appears multiple times, use the same translation key
+- When wrapping text between tags, use curly braces: `{t('Text')}` not just `t('Text')`
 
 ## EXAMPLE TRANSFORMATIONS
 
@@ -173,6 +194,60 @@ export async function getMessage() {
 
 // After
 <div>{t('Group "{{name}}" removed', { name })}</div>
+```
+
+### Example 4: Text Between JSX Tags (CRITICAL - Most Common Case)
+```tsx
+// Before
+export function AddWordDialog() {
+    return (
+        <>
+            <DialogTrigger asChild>
+                <Button>
+                    <span className="md:hidden truncate">Добавить</span>
+                    <span className="hidden md:inline truncate">
+                        Добавить слова
+                    </span>
+                </Button>
+            </DialogTrigger>
+            <DialogTitle>Добавить слово из словаря</DialogTitle>
+        </>
+    );
+}
+
+// After
+import { useTranslation } from '@/lib/i18n/commonTranslation/hooks/useTranslation';
+
+export function AddWordDialog() {
+    const { t } = useTranslation();
+    return (
+        <>
+            <DialogTrigger asChild>
+                <Button>
+                    <span className="md:hidden truncate">{t('Add')}</span>
+                    <span className="hidden md:inline truncate">
+                        {t('Add words')}
+                    </span>
+                </Button>
+            </DialogTrigger>
+            <DialogTitle>{t('Add word from dictionary')}</DialogTitle>
+        </>
+    );
+}
+```
+
+### Example 5: Conditional Text Between Tags
+```tsx
+// Before
+<Button>
+    {isLoading ? 'Загрузка...' : 'Отправить'}
+</Button>
+
+// After
+const { t } = useTranslation();
+<Button>
+    {isLoading ? t('Loading...') : t('Submit')}
+</Button>
 ```
 
 Begin the localization process now.

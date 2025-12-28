@@ -40,7 +40,7 @@ export interface TabConfig {
 export const TABS_CONFIG: TabConfig[] = [
     {
         id: 'new',
-        title: 'Новые слова',
+        title: 'New words',
         hash: 'new',
         showBadge: true,
         colorScheme: {
@@ -69,12 +69,12 @@ export const TABS_CONFIG: TabConfig[] = [
                 },
             },
         },
-        getBadgeCount: (_words: Word[]) =>
-            _words.filter(w => w.status === 'NOT_LEARNED').length,
+        getBadgeCount: (words: Word[]) =>
+            words.filter(w => w.status === 'NOT_LEARNED').length,
     },
     {
         id: 'learned',
-        title: 'Закрепление',
+        title: 'Reinforcement',
         hash: 'learned',
         showBadge: true,
         colorScheme: {
@@ -108,7 +108,7 @@ export const TABS_CONFIG: TabConfig[] = [
     },
     {
         id: 'tests',
-        title: 'Тесты',
+        title: 'Tests',
         hash: 'tests',
         showBadge: false,
         colorScheme: {

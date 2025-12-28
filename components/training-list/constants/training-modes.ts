@@ -12,12 +12,12 @@ const getPatternUrl = (pattern: any): string => {
 export const NEW_WORDS_TRAINING_MODES: TrainingModeConfig[] = [
     {
         id: 'quick',
-        title: 'Быстрый',
-        shortDescription: 'Быстрое повторение последних 10 слов',
-        detailedDescription: `Режим для быстрого повторения недавно добавленных слов:
-• 4 основных этапа
-• Слов: 10 последних добавленных
-• Настройки на минимуме для быстрого прохождения`,
+        title: 'Quick',
+        shortDescription: 'Quick review of last 10 words',
+        detailedDescription: `Mode for quick review of recently added words:
+• 4 main stages
+• Words: 10 last added
+• Settings at minimum for quick completion`,
         icon: Zap,
         gradient: 'from-green-400 to-emerald-500',
         enabledStages: [1, 2, 3, 4],
@@ -31,12 +31,12 @@ export const NEW_WORDS_TRAINING_MODES: TrainingModeConfig[] = [
     },
     {
         id: 'medium',
-        title: 'Средний',
-        shortDescription: 'Полный набор этапов с базовыми настройками',
-        detailedDescription: `Сбалансированная тренировка с полным набором этапов:
-• Все доступные этапе
-• Слов: 10 последних добавленных
-• Минимальные настройки сложности`,
+        title: 'Medium',
+        shortDescription: 'Full set of stages with basic settings',
+        detailedDescription: `Balanced training with full set of stages:
+• All available stages
+• Words: 10 last added
+• Minimum difficulty settings`,
         icon: Target,
         gradient: 'from-blue-400 to-cyan-500',
         enabledStages: [1, 2, 3, 4, 5, 6],
@@ -51,11 +51,11 @@ export const NEW_WORDS_TRAINING_MODES: TrainingModeConfig[] = [
     },
     {
         id: 'hard',
-        title: 'Сложный',
-        shortDescription: 'Интенсивная тренировка с повышенной сложностью',
-        detailedDescription: `Интенсивная тренировка для глубокого усвоения:
-• Этапы: Все доступные этапе с повышенной сложностью
-• Слов: 10 последних добавленных`,
+        title: 'Hard',
+        shortDescription: 'Intensive training with increased difficulty',
+        detailedDescription: `Intensive training for deep learning:
+• Stages: All available stages with increased difficulty
+• Words: 10 last added`,
         icon: Flame,
         gradient: 'from-red-400 to-orange-500',
         enabledStages: [1, 2, 3, 4, 5, 6],
@@ -70,11 +70,11 @@ export const NEW_WORDS_TRAINING_MODES: TrainingModeConfig[] = [
     },
     {
         id: 'sentences',
-        title: 'Предложения',
-        shortDescription: 'Фокус на практике создания предложений',
-        detailedDescription: `Фокус на практике создания предложений:
-• Обзор слов и составление простых предложений в основных временах
-• Слов: 5 последних добавленных`,
+        title: 'Sentences',
+        shortDescription: 'Focus on sentence creation practice',
+        detailedDescription: `Focus on sentence creation practice:
+• Word review and creating simple sentences in basic tenses
+• Words: 5 last added`,
         icon: FileText,
         gradient: 'from-purple-400 to-pink-500',
         enabledStages: [1, 5],
@@ -88,13 +88,13 @@ export const NEW_WORDS_TRAINING_MODES: TrainingModeConfig[] = [
     },
     {
         id: 'custom',
-        title: 'Кастомный',
-        shortDescription: 'Полная настройка под ваши нужды',
-        detailedDescription: `Полная настройка под ваши нужды:
-• Выбор любых этапов
-• Любое количество слов
-• Гибкая настройка каждого этапа
-• Сохранение настроек на будущее`,
+        title: 'Custom',
+        shortDescription: 'Complete customization to your needs',
+        detailedDescription: `Complete customization to your needs:
+• Choose any stages
+• Any number of words
+• Flexible settings for each stage
+• Save settings for future`,
         icon: Settings,
         gradient: 'from-gray-400 to-slate-500',
         backgroundPattern: getPatternUrl(floatingCogsPattern),

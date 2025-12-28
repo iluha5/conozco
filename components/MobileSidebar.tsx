@@ -73,7 +73,7 @@ export function MobileSidebar({
                 <div className="flex flex-col h-full">
                     {/* Header */}
                     <div className="flex items-center justify-between p-4 border-b">
-                        <h2 className="text-lg font-semibold">Меню</h2>
+                        <h2 className="text-lg font-semibold">{t('Menu')}</h2>
                         <Button variant="ghost" size="icon" onClick={onClose}>
                             <X className="w-6 h-6" />
                         </Button>
@@ -113,7 +113,7 @@ export function MobileSidebar({
                                     className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 hover:text-gray-900 relative pb-1.5 group"
                                 >
                                     <Activity className="w-4 h-4" />
-                                    Тренировка
+                                    {t('Training')}
                                     <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-gray-900 transition-all duration-200 group-hover:w-full" />
                                 </Link>
 
@@ -123,7 +123,7 @@ export function MobileSidebar({
                                     className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 hover:text-gray-900 relative pb-1.5 group"
                                 >
                                     <BookOpen className="w-4 h-4" />
-                                    Слова
+                                    {t('Words')}
                                     <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-gray-900 transition-all duration-200 group-hover:w-full" />
                                 </Link>
 
@@ -133,7 +133,7 @@ export function MobileSidebar({
                                     className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 hover:text-gray-900 relative pb-1.5 group"
                                 >
                                     <Layers className="w-4 h-4" />
-                                    Группы слов
+                                    {t('Word groups')}
                                     <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-gray-900 transition-all duration-200 group-hover:w-full" />
                                 </Link>
 
@@ -143,7 +143,7 @@ export function MobileSidebar({
                                     className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 hover:text-gray-900 relative pb-1.5 group"
                                 >
                                     <Settings className="w-4 h-4" />
-                                    Настройки
+                                    {t('Settings')}
                                     <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-gray-900 transition-all duration-200 group-hover:w-full" />
                                 </Link>
                             </div>
