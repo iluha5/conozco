@@ -1,5 +1,6 @@
 import { useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/shared';
+import { useTranslation } from '@/lib/i18n';
 import { trainingApi } from '@/lib/api/training.api';
 import { Word } from '@/types/training.types';
 import { STORAGE_KEYS } from '@/config/storage-keys';
@@ -15,6 +16,7 @@ export function useTrainingData(
     onLoadingChange: (_loading: boolean) => void,
 ) {
     const { toast } = useToast();
+    const { t } = useTranslation();
 
     const fetchWords = useCallback(async () => {
         onLoadingChange(true);
@@ -31,14 +33,14 @@ export function useTrainingData(
         } catch (error) {
             console.error('Error fetching words:', error);
             toast({
-                title: 'Ошибка',
-                description: 'Не удалось загрузить слова',
+                title: t('Error'),
+                description: t('Failed to load words'),
                 variant: 'destructive',
             });
         } finally {
             onLoadingChange(false);
         }
-    }, [toast, onWordsLoaded, onLoadingChange]);
+    }, [onLoadingChange, onWordsLoaded, toast, t]);
 
     useEffect(() => {
         if (settingsLoaded && selectionLoaded) {

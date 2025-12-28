@@ -1,4 +1,5 @@
 import type { Word } from '../typing';
+import { I18n } from '@/lib/i18n';
 
 export type SelectionState = 'none' | 'partial' | 'all';
 
@@ -14,6 +15,9 @@ export const getSelectionState = (
     return 'partial';
 };
 
-export const getBulkSelectText = (selectionState: SelectionState) => {
-    return selectionState === 'all' ? 'Снять все' : 'Выбрать все';
+export const getBulkSelectText = (
+    selectionState: SelectionState,
+    t: I18n['t'],
+) => {
+    return selectionState === t('all') ? t('Deselect all') : t('Select all');
 };

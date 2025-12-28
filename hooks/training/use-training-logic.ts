@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/shared';
+import { useTranslation } from '@/lib/i18n';
 import { trainingApi } from '@/lib/api/training.api';
 import {
     Word,
@@ -14,6 +15,7 @@ import {
  */
 export function useTrainingLogic() {
     const { toast } = useToast();
+    const { t } = useTranslation();
     const queryClient = useQueryClient();
 
     const handleStageComplete = useCallback(
@@ -74,8 +76,8 @@ export function useTrainingLogic() {
                 } catch (error) {
                     console.error('Error marking words as learned:', error);
                     toast({
-                        title: 'Ошибка',
-                        description: 'Не удалось отметить слова как выученные',
+                        title: t('Error'),
+                        description: t('Failed to mark words as learned'),
                         variant: 'destructive',
                     });
                     throw error;
@@ -106,7 +108,7 @@ export function useTrainingLogic() {
                 completed: false,
             };
         },
-        [toast, queryClient],
+        [queryClient, toast, t],
     );
 
     return { handleStageComplete };

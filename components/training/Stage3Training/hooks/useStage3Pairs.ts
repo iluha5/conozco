@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createMatchPairs } from '../helpers/createMatchPairs';
+import { useI18n } from '@/lib/i18n';
 import type { Word } from '@/types/training.types';
 import type { MatchPair } from '../typing';
 
@@ -20,6 +21,7 @@ export function useStage3Pairs({
     isRetryMode,
     refreshKey,
 }: UseStage3PairsParams) {
+    const i18n = useI18n();
     const [pairs, setPairs] = useState<MatchPair[]>([]);
     const [shuffledTranslations, setShuffledTranslations] = useState<string[]>(
         [],
@@ -35,6 +37,7 @@ export function useStage3Pairs({
             currentBatchWords,
             exerciseResults,
             isRetryMode,
+            i18n.language || 'en',
         );
 
         setPairs(prevPairs => {
@@ -71,7 +74,14 @@ export function useStage3Pairs({
             }
             return prevTranslations;
         });
-    }, [words, currentBatch, wordsPerBatch, exerciseResults, isRetryMode]);
+    }, [
+        words,
+        currentBatch,
+        wordsPerBatch,
+        exerciseResults,
+        isRetryMode,
+        i18n.language,
+    ]);
 
     useEffect(() => {
         initializePairs();

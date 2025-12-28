@@ -11,6 +11,7 @@ import { FlashCardActions } from './components/FlashCardActions';
 import { useFlashCardsReview } from './hooks/useFlashCardsReview';
 import { FlashCardsReviewParams } from './typing';
 import { useUserSettings } from '@/hooks/settings/use-user-settings';
+import { useTranslation } from '@/lib/i18n';
 
 interface FlashCardsReviewProps {
     params: FlashCardsReviewParams;
@@ -19,6 +20,7 @@ interface FlashCardsReviewProps {
 
 export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
     const router = useRouter();
+    const { t } = useTranslation();
     const { settings: userSettings } = useUserSettings();
     const {
         currentWord,
@@ -157,8 +159,10 @@ export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
                         <div>
                             <h1 className="text-2xl font-bold text-gray-900">
                                 {params.selectedGroupName
-                                    ? `Проверка: ${params.selectedGroupName}`
-                                    : 'Проверка изученных слов'}
+                                    ? t('Review: {{name}}', {
+                                          name: params.selectedGroupName,
+                                      })
+                                    : t('Review learned words')}
                             </h1>
                             <p className="text-sm text-gray-600 mt-1">
                                 {currentWord

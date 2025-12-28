@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { CheckCircle, XCircle } from 'lucide-react';
 import { getWordTranslation } from '@/lib/training-utils';
+import { useI18n } from '@/lib/i18n';
 import { getButtonStyles } from '../helpers/getButtonStyles';
 import type { Word } from '@/types/training.types';
 
@@ -19,7 +20,11 @@ export function TranslationOptions({
     isCorrect,
     onSelectOption,
 }: TranslationOptionsProps) {
-    const correctTranslation = getWordTranslation(currentWord);
+    const i18n = useI18n();
+    const correctTranslation = getWordTranslation(
+        currentWord,
+        i18n.language || 'en',
+    );
 
     return (
         <div

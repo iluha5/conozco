@@ -4,6 +4,7 @@
 
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/shared';
+import { useTranslation } from '@/lib/i18n';
 import type { BaseWord, SelectedWord } from '@/types/add-word-dialog.types';
 
 type UseWordManagementProps = {
@@ -19,6 +20,7 @@ export function useWordManagement({
 }: UseWordManagementProps) {
     const [selectedWords, setSelectedWords] = useState<SelectedWord[]>([]);
     const { toast } = useToast();
+    const { t } = useTranslation();
 
     // Автоматически выбираем слова, уже добавленные пользователем
     useEffect(() => {
@@ -54,8 +56,8 @@ export function useWordManagement({
                 return true;
             } else {
                 toast({
-                    title: 'Ошибка',
-                    description: 'Не удалось добавить слово',
+                    title: t('Error'),
+                    description: t('Failed to add word'),
                     variant: 'destructive',
                 });
                 return false;
@@ -103,16 +105,16 @@ export function useWordManagement({
             }
 
             toast({
-                title: 'Ошибка',
-                description: 'Не удалось удалить слово',
+                title: t('Error'),
+                description: t('Failed to delete word'),
                 variant: 'destructive',
             });
             return false;
         } catch (error) {
             console.error('Error removing word:', error);
             toast({
-                title: 'Ошибка',
-                description: 'Не удалось удалить слово',
+                title: t('Error'),
+                description: t('Failed to delete word'),
                 variant: 'destructive',
             });
             return false;
@@ -142,8 +144,8 @@ export function useWordManagement({
 
         if (addedCount > 0) {
             toast({
-                title: 'Успешно',
-                description: `Добавлено слов: ${addedCount}`,
+                title: t('Success'),
+                description: t('{{count}} words added', { count: addedCount }),
             });
         }
     };
@@ -160,8 +162,10 @@ export function useWordManagement({
 
         if (removedCount > 0) {
             toast({
-                title: 'Успешно',
-                description: `Удалено слов: ${removedCount}`,
+                title: t('Success'),
+                description: t('{{count}} words removed', {
+                    count: removedCount,
+                }),
             });
         }
     };

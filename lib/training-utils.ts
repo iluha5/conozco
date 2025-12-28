@@ -4,18 +4,21 @@
 
 import { Word } from '@/types/training.types';
 import { shuffle } from 'lodash-es';
+import { tServerSync } from '@/lib/i18n';
 
 /**
  * Получить перевод слова (приоритет: customTranslations -> baseWord.translations)
+ * @param word - слово
+ * @param lang - язык интерфейса (по умолчанию 'en')
  */
-export function getWordTranslation(word: Word): string {
+export function getWordTranslation(word: Word, lang: string = 'en'): string {
     if (word.customTranslations && word.customTranslations.length > 0) {
         return word.customTranslations[0].translation;
     }
     if (word.baseWord?.translations && word.baseWord.translations.length > 0) {
         return word.baseWord.translations[0].translation;
     }
-    return 'Нет перевода';
+    return tServerSync('No translation', lang);
 }
 
 /**

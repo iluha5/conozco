@@ -59,7 +59,9 @@ export function getCurrentTranslation(
     if (baseTranslations && baseTranslations.length > 0) {
         return baseTranslations[0].translation;
     }
-    return 'Нет перевода';
+    // This function is used in various contexts, so we return English fallback
+    // Components should use useTranslation hook for proper localization
+    return 'No translation';
 }
 
 /**

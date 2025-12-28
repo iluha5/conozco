@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
+import { I18n, useTranslation } from '@/lib/i18n';
 import { Word } from '@/types/words.types';
 import { useTrainingWords } from '@/contexts/training-words-context';
 
@@ -20,11 +21,12 @@ const getSelectionState = (
     return 'partial';
 };
 
-const getBulkSelectText = (selectionState: SelectionState) => {
-    return selectionState === 'all' ? 'Снять все' : 'Выбрать все';
+const getBulkSelectText = (selectionState: SelectionState, t: I18n['t']) => {
+    return selectionState === 'all' ? t('Deselect all') : t('Select all');
 };
 
 export const useWordsSelection = (filteredWords: Word[]) => {
+    const { t } = useTranslation();
     const { selectedWords, setSelectedWords } = useTrainingWords();
     const [visibleWordsCount, setVisibleWordsCount] = useState(10);
 
@@ -109,7 +111,7 @@ export const useWordsSelection = (filteredWords: Word[]) => {
         toggleAllWordsSelection,
         isWordSelected,
         selectionState,
-        getBulkSelectText: () => getBulkSelectText(selectionState),
+        getBulkSelectText: () => getBulkSelectText(selectionState, t),
         visibleWords,
         visibleWordsCount,
         loadMoreWords,

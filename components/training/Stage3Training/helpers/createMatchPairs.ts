@@ -6,6 +6,7 @@ export function createMatchPairs(
     words: Word[],
     exerciseResults: (boolean | null)[],
     isRetryMode: boolean,
+    lang: string = 'en',
 ): MatchPair[] {
     return words.map(word => {
         const globalIndex = words.findIndex(w => w.id === word.id);
@@ -14,7 +15,7 @@ export function createMatchPairs(
         return {
             id: word.id,
             foreign: getWordText(word),
-            translation: getWordTranslation(word),
+            translation: getWordTranslation(word, lang),
             matched: false,
             errorCount: hasError && isRetryMode ? 0 : 0, // Сбрасываем счетчик ошибок при повторении
         };

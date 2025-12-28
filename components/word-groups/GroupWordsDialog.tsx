@@ -15,6 +15,7 @@ import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useSpeech } from '@/hooks/training';
+import { useTranslation } from '@/lib/i18n';
 
 interface BaseWord {
     id: number;
@@ -53,6 +54,7 @@ interface WordCardProps {
 }
 
 function WordCard({ word }: WordCardProps) {
+    const { t } = useTranslation();
     const {
         speak,
         isPlaying,
@@ -66,7 +68,7 @@ function WordCard({ word }: WordCardProps) {
             ? word.customTranslations[0].translation
             : word.translations && word.translations.length > 0
               ? word.translations[0].translation
-              : 'Нет перевода';
+              : t('No translation');
     const partOfSpeech =
         word.customTranslations?.[0]?.partOfSpeech?.name ||
         word.translations[0]?.partOfSpeech?.name;
@@ -127,6 +129,7 @@ export function GroupWordsDialog({
     groupName,
     wordsCount,
 }: GroupWordsDialogProps) {
+    const { t } = useTranslation();
     const [searchQuery, setSearchQuery] = useState('');
     const [displayedCount, setDisplayedCount] = useState(WORDS_PER_PAGE);
     const searchInputRef = useRef<HTMLInputElement>(null);
@@ -229,7 +232,7 @@ export function GroupWordsDialog({
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                         ref={searchInputRef}
-                        placeholder="Поиск по словам..."
+                        placeholder={t('Search words...')}
                         value={searchQuery}
                         onChange={e => {
                             setSearchQuery(e.target.value);

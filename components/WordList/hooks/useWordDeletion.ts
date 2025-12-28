@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from '@/lib/i18n';
 import type { Word, WordRemoveCallback } from '../typing';
 
 interface UseWordDeletionProps {
@@ -12,6 +13,7 @@ export function useWordDeletion({
     onWordsChange,
     readOnly = false,
 }: UseWordDeletionProps) {
+    const { t } = useTranslation();
     const [deletedWords, setDeletedWords] = useState<
         Map<string | number, Word>
     >(new Map());
@@ -116,7 +118,7 @@ export function useWordDeletion({
                 // Ошибка - перезагружаем данные для отката
                 console.error('Bulk delete failed');
                 await onWordsChange?.();
-                onError?.('Не удалось удалить слова');
+                onError?.(t('Failed to delete words'));
                 return false;
             }
 
@@ -125,7 +127,7 @@ export function useWordDeletion({
             console.error('Error deleting words:', error);
             // При ошибке перезагружаем данные
             await onWordsChange?.();
-            onError?.('Произошла ошибка при удалении слов');
+            onError?.(t('An error occurred while deleting words'));
             return false;
         }
     };

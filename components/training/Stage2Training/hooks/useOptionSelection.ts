@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { getWordTranslation } from '@/lib/training-utils';
+import { useI18n } from '@/lib/i18n';
 import type { Word } from '@/types/training.types';
 import type { UseRecordResultReturn } from '@/hooks/training';
 import type { UseExerciseResultsReturn } from '@/hooks/training';
@@ -17,6 +18,7 @@ export function useOptionSelection({
     updateResult,
     recordResult,
 }: UseOptionSelectionParams) {
+    const i18n = useI18n();
     const [selectedOption, setSelectedOption] = useState<string | null>(null);
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
 
@@ -25,7 +27,10 @@ export function useOptionSelection({
             if (selectedOption !== null) return; // Уже выбрано
 
             setSelectedOption(option);
-            const correctTranslation = getWordTranslation(currentWord);
+            const correctTranslation = getWordTranslation(
+                currentWord,
+                i18n.language || 'en',
+            );
             const correct = option === correctTranslation;
             setIsCorrect(correct);
 
@@ -35,7 +40,14 @@ export function useOptionSelection({
             // Записываем результат (API + localStorage)
             await recordResult(2, currentWord.id, correct);
         },
-        [selectedOption, currentWord, currentIndex, updateResult, recordResult],
+        [
+            selectedOption,
+            currentWord,
+            i18n.language,
+            updateResult,
+            currentIndex,
+            recordResult,
+        ],
     );
 
     const resetSelection = useCallback(() => {

@@ -4,6 +4,7 @@
 
 import { useState } from 'react';
 import { useToast } from '@/hooks/shared';
+import { useTranslation } from '@/lib/i18n';
 import type { BaseWord } from '@/types/add-word-dialog.types';
 
 type UseAiSearchProps = {
@@ -12,7 +13,7 @@ type UseAiSearchProps = {
     setAvailableWords: React.Dispatch<React.SetStateAction<BaseWord[]>>;
     setOffset: React.Dispatch<React.SetStateAction<number>>;
     setHasMore: React.Dispatch<React.SetStateAction<boolean>>;
-    addWord: (baseWordId: string) => Promise<boolean>;
+    addWord: (_baseWordId: string) => Promise<boolean>;
 };
 
 export function useAiSearch({
@@ -25,12 +26,13 @@ export function useAiSearch({
 }: UseAiSearchProps) {
     const [aiSearching, setAiSearching] = useState(false);
     const { toast } = useToast();
+    const { t } = useTranslation();
 
     const handleAiSearch = async () => {
         if (!searchTerm.trim()) {
             toast({
-                title: 'Ошибка',
-                description: 'Введите слово для поиска',
+                title: t('Error'),
+                description: t('Enter a word to search'),
                 variant: 'destructive',
             });
             return;
@@ -55,11 +57,26 @@ export function useAiSearch({
             if (response.ok) {
                 const addedWord = searchTerm.trim();
                 const message = data.alreadyExists
-                    ? `Слово "${addedWord}" уже есть в базе${data.foundExamples > 0 ? ` (${data.foundExamples} примеров)` : ''}`
-                    : `Слово "${addedWord}" добавлено в базу${data.foundExamples > 0 ? ` с ${data.foundExamples} примерами` : ''}`;
+                    ? t(
+                          'Word "{{word}}" already exists in database{{examples}}',
+                          {
+                              word: addedWord,
+                              examples:
+                                  data.foundExamples > 0
+                                      ? ` (${data.foundExamples} ${t('examples')})`
+                                      : '',
+                          },
+                      )
+                    : t('Word "{{word}}" added to database{{examples}}', {
+                          word: addedWord,
+                          examples:
+                              data.foundExamples > 0
+                                  ? ` ${t('with')} ${data.foundExamples} ${t('examples')}`
+                                  : '',
+                      });
 
                 toast({
-                    title: 'Успешно',
+                    title: t('Success'),
                     description: message,
                 });
 
@@ -98,17 +115,16 @@ export function useAiSearch({
                 }, 300);
             } else {
                 toast({
-                    title: 'Ошибка',
-                    description:
-                        data.error || 'Не удалось найти или добавить слово',
+                    title: t('Error'),
+                    description: data.error || t('Failed to find or add word'),
                     variant: 'destructive',
                 });
             }
         } catch (error) {
             console.error('Error in AI search:', error);
             toast({
-                title: 'Ошибка',
-                description: 'Произошла ошибка при поиске слова',
+                title: t('Error'),
+                description: t('An error occurred while searching for word'),
                 variant: 'destructive',
             });
         } finally {

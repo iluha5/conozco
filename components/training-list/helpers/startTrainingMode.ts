@@ -9,6 +9,7 @@ import {
 } from '@/lib/training-settings';
 import { STORAGE_KEYS } from '@/config/storage-keys';
 import { FlashCardsReviewParams } from '@/components/flash-cards-review/typing';
+import { tServerSync } from '@/lib/i18n';
 
 /**
  * ВАЖНО: Эта функция отвечает за правильное сохранение конфигурации в localStorage
@@ -26,6 +27,7 @@ export async function startTrainingMode(
     // Новые параметры для режимов закрепления
     onFlashCardsOpen?: (_params: FlashCardsReviewParams) => void,
     onGroupSetupOpen?: () => void,
+    lang: string = 'en',
 ): Promise<{ success: boolean; noWords?: boolean }> {
     // Режим custom → /training/setup
     if (modeId === 'custom') {
@@ -48,8 +50,12 @@ export async function startTrainingMode(
 
             if (!isAvailable) {
                 toast({
-                    title: 'Группа недоступна',
-                    description: `Группа "${config.groupName || 'A1'}" недоступна. Добавьте её в разделе "Группы слов".`,
+                    title: tServerSync('Group unavailable', lang),
+                    description: tServerSync(
+                        'Group "{{name}}" is unavailable. Add it in "Word groups" section.',
+                        lang,
+                        { name: config.groupName || 'A1' },
+                    ),
                     variant: 'destructive',
                 });
                 return { success: false };
@@ -102,8 +108,15 @@ export async function startTrainingMode(
 
     if (selectedWordsList.length < config.wordCount) {
         toast({
-            title: 'Недостаточно слов',
-            description: `Требуется ${config.wordCount} слов, доступно только ${selectedWordsList.length}. Тренировка будет запущена с доступными словами.`,
+            title: tServerSync('Not enough words', lang),
+            description: tServerSync(
+                'Required {{required}} words, only {{available}} available. Training will start with available words.',
+                lang,
+                {
+                    required: config.wordCount,
+                    available: selectedWordsList.length,
+                },
+            ),
             variant: 'default',
         });
     }

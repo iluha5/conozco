@@ -5,6 +5,7 @@
 import { useState, useEffect } from 'react';
 import { useDebounce } from 'react-use';
 import { useToast } from '@/hooks/shared';
+import { useTranslation } from '@/lib/i18n';
 import type { BaseWord } from '@/types/add-word-dialog.types';
 
 type UseWordSearchProps = {
@@ -24,6 +25,7 @@ export function useWordSearch({
     setSkipAutoSearch,
     selectedGroupIds = [],
 }: UseWordSearchProps) {
+    const { t } = useTranslation();
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
     const [availableWords, setAvailableWords] = useState<BaseWord[]>([]);
@@ -131,16 +133,16 @@ export function useWordSearch({
                 setOffset(currentOffset + words.length);
             } else {
                 toast({
-                    title: 'Ошибка',
-                    description: 'Не удалось загрузить слова',
+                    title: t('Error'),
+                    description: t('Failed to load words'),
                     variant: 'destructive',
                 });
             }
         } catch (error) {
             console.error('Error searching words:', error);
             toast({
-                title: 'Ошибка',
-                description: 'Не удалось загрузить слова',
+                title: t('Error'),
+                description: t('Failed to load words'),
                 variant: 'destructive',
             });
         } finally {

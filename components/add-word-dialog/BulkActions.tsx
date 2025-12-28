@@ -6,7 +6,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Square, CheckSquare, MinusSquare } from 'lucide-react';
-import { getAddWordDialogBulkSelectText } from './helpers/selectionHelpers';
+import { useTranslation } from '@/lib/i18n';
 
 type BulkActionsProps = {
     words: Array<{ id: string }>;
@@ -21,6 +21,7 @@ export function BulkActions({
     onToggleAllSelection,
     disabled,
 }: BulkActionsProps) {
+    const { t } = useTranslation();
     // Определяем состояние выбора на основе количества выбранных слов
     const allSelected =
         words.length > 0 && selectedWords.length === words.length;
@@ -47,7 +48,7 @@ export function BulkActions({
                     return <MinusSquare className="mr-2 h-4 w-4" />;
                 }
             })()}
-            {getAddWordDialogBulkSelectText(selectionState)}
+            {selectionState === 'all' ? t('Remove all') : t('Add all')}
         </Button>
     );
 }

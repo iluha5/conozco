@@ -13,10 +13,11 @@ import { LEARNED_TRAINING_MODES } from '../constants/learned-training-modes';
 import { startTrainingMode } from '../helpers/startTrainingMode';
 import { FlashCardsReviewParams } from '@/components/flash-cards-review/typing';
 import { getTrainingModeConfig } from '../helpers/getTrainingModeConfig';
-import { useTranslation } from '@/lib/i18n';
+import { useTranslation, useI18n } from '@/lib/i18n';
 
 export function useTrainingModes() {
     const { t } = useTranslation();
+    const i18n = useI18n();
     const router = useRouter();
     const { data: session } = useSession();
     const { settings: userSettings } = useUserSettings();
@@ -125,6 +126,7 @@ export function useTrainingModes() {
                 toast,
                 handleFlashCardsOpen,
                 handleGroupSetupOpen,
+                i18n.language || 'en',
             );
 
             if (!result.success && result.noWords) {
@@ -189,6 +191,7 @@ export function useTrainingModes() {
                 toast,
                 handleFlashCardsOpen,
                 handleGroupSetupOpen,
+                i18n.language || 'en',
             );
 
             if (!result.success && result.noWords) {

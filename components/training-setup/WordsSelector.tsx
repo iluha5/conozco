@@ -5,6 +5,7 @@ import { WordGroupsFilter } from '@/components/word-groups/WordGroupsFilter';
 import { Square, CheckSquare, MinusSquare } from 'lucide-react';
 import { Word } from '@/types/words.types';
 import { SelectionState } from '@/hooks/training-setup/use-words-selection';
+import { useTranslation } from '@/lib/i18n';
 
 interface WordsSelectorProps {
     filteredWords: Word[];
@@ -41,10 +42,12 @@ export const WordsSelector = ({
     loadMoreWords,
     hasMoreWords,
 }: WordsSelectorProps) => {
+    const { t } = useTranslation();
     return (
         <div>
             <h3 className="text-lg font-semibold mb-2">
-                Выберите слова для тренировки ({selectedWords.size} выбрано)
+                {t('Select words for training')} ({selectedWords.size}{' '}
+                {t('selected')})
             </h3>
             <div className="flex flex-wrap gap-2 mb-4">
                 <Button
@@ -76,23 +79,24 @@ export const WordsSelector = ({
                         <div className="flex flex-col items-center gap-3">
                             <div className="w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div>
                             <p className="text-sm text-gray-600">
-                                Загрузка слов...
+                                {t('Loading words...')}
                             </p>
                         </div>
                     </div>
                 ) : filteredWords.length === 0 ? (
                     <div className="flex items-center justify-center h-full">
                         <p className="text-gray-500 text-center">
-                            Нет слов для тренировки.
+                            {t('No words for training.')}
                             <br />
                             <span className="text-sm">
-                                Добавьте слова на странице{' '}
+                                {t('Add words on the')}{' '}
                                 <Link
                                     href="/words"
                                     className="text-blue-600 hover:text-blue-800 underline"
                                 >
-                                    Мои слова
-                                </Link>
+                                    {t('My words')}
+                                </Link>{' '}
+                                {t('page')}
                             </span>
                         </p>
                     </div>
@@ -124,7 +128,7 @@ export const WordsSelector = ({
                                                 0
                                                 ? word.baseWord.translations[0]
                                                       .translation
-                                                : 'Нет перевода'}
+                                                : t('No translation')}
                                         </span>
                                     </div>
                                 </div>
@@ -143,15 +147,26 @@ export const WordsSelector = ({
                         className="text-sm"
                     >
                         {hasMoreWords
-                            ? `Показать еще (${Math.min(visibleWordsCount + 12, filteredWords.length) - visibleWordsCount} слов)`
-                            : 'Все слова показаны'}
+                            ? t('Show more ({{count}} words)', {
+                                  count:
+                                      Math.min(
+                                          visibleWordsCount + 12,
+                                          filteredWords.length,
+                                      ) - visibleWordsCount,
+                              })
+                            : t('All words shown')}
                     </Button>
                 </div>
             )}
             {!isLoading && (
                 <p className="text-xs text-gray-500 mt-2">
-                    Показано {Math.min(visibleWordsCount, filteredWords.length)}{' '}
-                    из {filteredWords.length} слов
+                    {t('Shown {{shown}} of {{total}} words', {
+                        shown: Math.min(
+                            visibleWordsCount,
+                            filteredWords.length,
+                        ),
+                        total: filteredWords.length,
+                    })}
                 </p>
             )}
         </div>

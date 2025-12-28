@@ -122,7 +122,7 @@ export default function WordsPage() {
             refetch,
             errorMessage => {
                 toast({
-                    title: 'Ошибка',
+                    title: t('Error'),
                     description: errorMessage,
                     variant: 'destructive',
                 });
@@ -170,7 +170,7 @@ export default function WordsPage() {
             refetch,
             errorMessage => {
                 toast({
-                    title: 'Ошибка',
+                    title: t('Error'),
                     description: errorMessage,
                     variant: 'destructive',
                 });
@@ -332,7 +332,7 @@ export default function WordsPage() {
                                     );
                                 }
                             })()}
-                            {getBulkSelectText(selectionState)}
+                            {getBulkSelectText(selectionState, t)}
                         </Button>
                         <WordGroupsFilter
                             selectedGroupIds={selectedGroupIds}

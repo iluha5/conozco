@@ -13,6 +13,7 @@ import { Loader2, Search, X } from 'lucide-react';
 import { WordGroupsFilter } from '@/components/word-groups/WordGroupsFilter';
 import { BulkActions } from './BulkActions';
 import { Badge } from '@/components/ui/badge';
+import { useTranslation } from '@/lib/i18n';
 
 type AddWordDialogFiltersProps = {
     selectedPartsOfSpeech: string[];
@@ -66,6 +67,7 @@ export function AddWordDialogFilters({
     searching,
     filteredWordsCount,
 }: AddWordDialogFiltersProps) {
+    const { t } = useTranslation();
     const searchInputRef = useRef<HTMLInputElement>(null);
 
     return (
@@ -76,7 +78,7 @@ export function AddWordDialogFilters({
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <Input
                         ref={searchInputRef}
-                        placeholder="Поиск..."
+                        placeholder={t('Search...')}
                         value={searchTerm}
                         onChange={e => onSearchChange(e.target.value)}
                         className="pl-10 pr-10"
@@ -100,7 +102,7 @@ export function AddWordDialogFilters({
                             }}
                             className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                             type="button"
-                            aria-label="Очистить поиск"
+                            aria-label={t('Clear search')}
                         >
                             <X className="w-4 h-4" />
                         </button>
@@ -115,15 +117,15 @@ export function AddWordDialogFilters({
                     }
                     title={
                         hasExactMatch
-                            ? 'Слово найдено в базе'
-                            : 'Добавить слово через AI (LibreTranslate + Tatoeba)'
+                            ? t('Word found in database')
+                            : t('Add word via AI (LibreTranslate + Tatoeba)')
                     }
                     className="min-w-[120px]"
                 >
                     {aiSearching && (
                         <Loader2 className="w-4 h-4 animate-spin mr-2" />
                     )}
-                    Добавить
+                    {t('Add')}
                 </Button>
             </div>
 
@@ -140,7 +142,7 @@ export function AddWordDialogFilters({
                             <SelectTrigger className="h-9">
                                 <span className="text-sm truncate">
                                     {selectedPartsOfSpeech.length === 0
-                                        ? 'Части речи'
+                                        ? t('Parts of speech')
                                         : `${selectedPartsOfSpeech.length} шт.`}
                                 </span>
                             </SelectTrigger>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from '@/lib/i18n';
 import type { Word, WordUpdateCallback } from '../typing';
 
 interface UseWordStatusProps {
@@ -12,6 +13,7 @@ export function useWordStatus({
     onWordsChange,
     readOnly = false,
 }: UseWordStatusProps) {
+    const { t } = useTranslation();
     const [optimisticWords, setOptimisticWords] = useState<
         Map<string | number, Word>
     >(new Map());
@@ -118,7 +120,7 @@ export function useWordStatus({
                 // Ошибка - перезагружаем данные для отката
                 console.error('Bulk status update failed');
                 await onWordsChange?.();
-                onError?.('Не удалось изменить статус слов');
+                onError?.(t('Failed to change word status'));
                 return false;
             }
 
@@ -127,7 +129,7 @@ export function useWordStatus({
             console.error('Error updating words status:', error);
             // При ошибке перезагружаем данные
             await onWordsChange?.();
-            onError?.('Произошла ошибка при изменении статуса слов');
+            onError?.(t('An error occurred while changing word status'));
             return false;
         }
     };
