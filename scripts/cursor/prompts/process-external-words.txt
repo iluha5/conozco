@@ -89,22 +89,31 @@ BAD TRANSLATION EXAMPLES TO AVOID:
 - "[Я/Ты/Он] читаю/ешь/ет книгу" (inconsistent grammar)
 
 GOOD TRANSLATION EXAMPLES:
-- "У меня есть собака" (single, concrete sentence)
-- "Я читаю книгу" (one specific form)
-- "Ты ешь яблоко" (natural and complete)
+- Russian: "У меня есть собака" (single, concrete sentence)
+- Russian: "Я читаю книгу" (one specific form)
+- Russian: "Ты ешь яблоко" (natural and complete)
+- Spanish: "Tengo un perro" (single, concrete sentence)
+- Spanish: "Leo un libro" (one specific form)
+- Spanish: "Comes una manzana" (natural and complete)
+- English: "I have a dog" (single, concrete sentence)
+- English: "I read a book" (one specific form)
+- English: "You eat an apple" (natural and complete)
 
 IMPORTANT: Sentences must form complete, meaningful thoughts and be grammatically correct in context. Avoid nonsensical combinations like "él tiene cuando" or "ella tiene dónde".
 
 SENTENCE CONSTRUCTION GUIDELINES:
-- For QUESTION WORDS (cuando, dónde, qué, cómo, cuál, quién, etc.):
-  * Use them in complete questions: "¿Dónde vives?" (Where do you live?), "¿Cuándo vienes?" (When are you coming?)
+- For QUESTION WORDS:
+  * Spanish (cuando, dónde, qué, cómo, cuál, quién, etc.): Use them in complete questions: "¿Dónde vives?" (Где ты живешь? / Where do you live?), "¿Cuándo vienes?" (Когда ты приходишь? / When are you coming?)
+  * English (when, where, what, how, which, who, etc.): Use them in complete questions: "Where do you live?" (Где ты живешь? / ¿Dónde vives?), "When are you coming?" (Когда ты приходишь? / ¿Cuándo vienes?)
   * Show natural usage in everyday contexts
 
-- For CONJUNCTIONS (y, o, pero, porque, que, etc.):
-  * Connect meaningful clauses: "Trabajo y estudio" (I work and study), "Como porque tengo hambre" (I eat because I'm hungry)
+- For CONJUNCTIONS:
+  * Spanish (y, o, pero, porque, que, etc.): Connect meaningful clauses: "Trabajo y estudio" (Я работаю и учусь / I work and study), "Como porque tengo hambre" (Я ем, потому что голоден / I eat because I'm hungry)
+  * English (and, or, but, because, that, etc.): Connect meaningful clauses: "I work and study" (Я работаю и учусь / Trabajo y estudio), "I eat because I'm hungry" (Я ем, потому что голоден / Como porque tengo hambre)
 
-- For PREPOSITIONS (en, a, de, con, por, para, etc.):
-  * Use in realistic contexts: "Estoy en casa" (I'm at home), "Voy a la tienda" (I'm going to the store)
+- For PREPOSITIONS:
+  * Spanish (en, a, de, con, por, para, etc.): Use in realistic contexts: "Estoy en casa" (Я дома / I'm at home), "Voy a la tienda" (Я иду в магазин / I'm going to the store)
+  * English (in, at, on, to, from, with, etc.): Use in realistic contexts: "I'm at home" (Я дома / Estoy en casa), "I'm going to the store" (Я иду в магазин / Voy a la tienda)
 
 - For OTHER WORDS:
   * Choose context words that naturally combine with the target word
@@ -112,15 +121,16 @@ SENTENCE CONSTRUCTION GUIDELINES:
   * Use high-frequency word combinations that native speakers actually use
 
 BAD EXAMPLES TO AVOID:
-- "él tiene cuando" (nonsensical)
-- "ella tiene dónde" (nonsensical)
-- "yo como pero" (incomplete thought)
+- Spanish: "él tiene cuando" (nonsensical), "ella tiene dónde" (nonsensical), "yo como pero" (incomplete thought)
+- English: "he has when" (nonsensical), "she has where" (nonsensical), "I eat but" (incomplete thought)
 
 GOOD EXAMPLES:
-- For "cuando": "¿Cuándo comes?" (Когда ты ешь?), "Vengo cuando puedo" (Я прихожу, когда могу)
-- For "dónde": "¿Dónde trabajas?" (Где ты работаешь?), "Vivo donde quiero" (Я живу, где хочу)
-- For verbs: "Yo leo libros" (Я читаю книги), "¿Lees rápido?" (Ты быстро читаешь?)
-- For nouns: "Tengo un perro" (У меня есть собака), "Como manzanas" (Я ем яблоки), "No como carne" (Я не ем мясо)
+- For Spanish "cuando": "¿Cuándo comes?" (Когда ты ешь?), "Vengo cuando puedo" (Я прихожу, когда могу)
+- For Spanish "dónde": "¿Dónde trabajas?" (Где ты работаешь?), "Vivo donde quiero" (Я живу, где хочу)
+- For Spanish verbs: "Yo leo libros" (Я читаю книги), "¿Lees rápido?" (Ты быстро читаешь?)
+- For Spanish nouns: "Tengo un perro" (У меня есть собака), "Como manzanas" (Я ем яблоки), "No como carne" (Я не ем мясо)
+- For English verbs: "I read books" (Я читаю книги / Leo libros), "Do you read fast?" (Ты быстро читаешь? / ¿Lees rápido?)
+- For English nouns: "I have a dog" (У меня есть собака / Tengo un perro), "I eat apples" (Я ем яблоки / Como manzanas), "I don't eat meat" (Я не ем мясо / No como carne)
 
 GRAMMATICAL EXAMPLES (only for verbs):
 - Check if word is a verb (partOfSpeech = VERB)
@@ -246,6 +256,84 @@ export const GENERATED_WORD_DATA: Map<string, WordData> = new Map([
       { pronoun: 'él', example: 'Su perro ladró ayer', translations: [{ languageCode: 'ru', translation: 'Его собака лаяла вчера' }, { languageCode: 'en', translation: 'His dog barked yesterday' }], isNegative: false, isQuestion: false },
       { pronoun: 'nosotros', example: 'Compraremos un perro pequeño', translations: [{ languageCode: 'ru', translation: 'Мы купим маленькую собаку' }, { languageCode: 'en', translation: 'We will buy a small dog' }], isNegative: false, isQuestion: false },
       { pronoun: 'tú', example: '¿Tienes un perro en casa?', translations: [{ languageCode: 'ru', translation: 'У тебя есть собака дома?' }, { languageCode: 'en', translation: 'Do you have a dog at home?' }], isNegative: false, isQuestion: true }
+    ],
+    grammaticalExamples: [] // Not a verb, so empty array
+  }],
+  ['read', {
+    word: 'read',
+    partOfSpeech: PartOfSpeech.VERB,
+    languageCode: 'en',
+    translations: [{
+      languageCode: 'ru',
+      translations: ['читать', 'прочитать', 'прочесть']
+    }, {
+      languageCode: 'es',
+      translations: ['leer', 'leerse', 'revisar']
+    }],
+    examples: [
+      { pronoun: 'I', example: 'I read books daily', translations: [{ languageCode: 'ru', translation: 'Я читаю книги каждый день' }, { languageCode: 'es', translation: 'Leo libros todos los días' }], isNegative: false, isQuestion: false },
+      { pronoun: 'you', example: 'You read very fast', translations: [{ languageCode: 'ru', translation: 'Ты читаешь очень быстро' }, { languageCode: 'es', translation: 'Lees muy rápido' }], isNegative: false, isQuestion: false },
+      { pronoun: 'he', example: 'He read yesterday', translations: [{ languageCode: 'ru', translation: 'Он читал вчера' }, { languageCode: 'es', translation: 'Él leyó ayer' }], isNegative: false, isQuestion: false },
+      { pronoun: 'we', example: 'We will read tomorrow', translations: [{ languageCode: 'ru', translation: 'Мы будем читать завтра' }, { languageCode: 'es', translation: 'Leeremos mañana' }], isNegative: false, isQuestion: false },
+      { pronoun: 'you', example: 'Do you read well?', translations: [{ languageCode: 'ru', translation: 'Ты хорошо читаешь?' }, { languageCode: 'es', translation: '¿Lees bien?' }], isNegative: false, isQuestion: true },
+      { pronoun: 'they', example: 'They don\'t read much', translations: [{ languageCode: 'ru', translation: 'Они мало читают' }, { languageCode: 'es', translation: 'No leen mucho' }], isNegative: true, isQuestion: false }
+    ],
+    grammaticalExamples: [
+      {
+        tenseName: 'Present Simple',
+        examples: [
+          { pronoun: 'I', example: 'I read', translations: [{ languageCode: 'ru', translation: 'Я читаю' }, { languageCode: 'es', translation: 'Leo' }], isNegative: false, isQuestion: false },
+          { pronoun: 'you', example: 'You read', translations: [{ languageCode: 'ru', translation: 'Ты читаешь' }, { languageCode: 'es', translation: 'Lees' }], isNegative: false, isQuestion: false },
+          { pronoun: 'we', example: 'We read', translations: [{ languageCode: 'ru', translation: 'Мы читаем' }, { languageCode: 'es', translation: 'Leemos' }], isNegative: false, isQuestion: false },
+          { pronoun: 'they', example: 'They read', translations: [{ languageCode: 'ru', translation: 'Они читают' }, { languageCode: 'es', translation: 'Leen' }], isNegative: false, isQuestion: false },
+          { pronoun: 'he', example: 'He reads', translations: [{ languageCode: 'ru', translation: 'Он читает' }, { languageCode: 'es', translation: 'Él lee' }], isNegative: false, isQuestion: false },
+          { pronoun: 'she', example: 'She doesn\'t read', translations: [{ languageCode: 'ru', translation: 'Она не читает' }, { languageCode: 'es', translation: 'Ella no lee' }], isNegative: true, isQuestion: false },
+          { pronoun: 'it', example: 'Does it read?', translations: [{ languageCode: 'ru', translation: 'Оно читает?' }, { languageCode: 'es', translation: '¿Lee?' }], isNegative: false, isQuestion: true }
+        ]
+      },
+      {
+        tenseName: 'Past Simple',
+        examples: [
+          { pronoun: 'I', example: 'I read', translations: [{ languageCode: 'ru', translation: 'Я читал' }, { languageCode: 'es', translation: 'Leí' }], isNegative: false, isQuestion: false },
+          { pronoun: 'you', example: 'You read', translations: [{ languageCode: 'ru', translation: 'Ты читал' }, { languageCode: 'es', translation: 'Leíste' }], isNegative: false, isQuestion: false },
+          { pronoun: 'we', example: 'We read', translations: [{ languageCode: 'ru', translation: 'Мы читали' }, { languageCode: 'es', translation: 'Leímos' }], isNegative: false, isQuestion: false },
+          { pronoun: 'they', example: 'They didn\'t read', translations: [{ languageCode: 'ru', translation: 'Они не читали' }, { languageCode: 'es', translation: 'No leyeron' }], isNegative: true, isQuestion: false },
+          { pronoun: 'he', example: 'He read', translations: [{ languageCode: 'ru', translation: 'Он читал' }, { languageCode: 'es', translation: 'Él leyó' }], isNegative: false, isQuestion: false },
+          { pronoun: 'she', example: 'Did she read?', translations: [{ languageCode: 'ru', translation: 'Она читала?' }, { languageCode: 'es', translation: '¿Ella leyó?' }], isNegative: false, isQuestion: true },
+          { pronoun: 'it', example: 'It read', translations: [{ languageCode: 'ru', translation: 'Оно читало' }, { languageCode: 'es', translation: 'Leyó' }], isNegative: false, isQuestion: false }
+        ]
+      },
+      {
+        tenseName: 'Future Simple',
+        examples: [
+          { pronoun: 'I', example: 'I will read', translations: [{ languageCode: 'ru', translation: 'Я буду читать' }, { languageCode: 'es', translation: 'Leeré' }], isNegative: false, isQuestion: false },
+          { pronoun: 'you', example: 'You will read', translations: [{ languageCode: 'ru', translation: 'Ты будешь читать' }, { languageCode: 'es', translation: 'Leerás' }], isNegative: false, isQuestion: false },
+          { pronoun: 'we', example: 'Will we read?', translations: [{ languageCode: 'ru', translation: 'Мы будем читать?' }, { languageCode: 'es', translation: '¿Leeremos?' }], isNegative: false, isQuestion: true },
+          { pronoun: 'they', example: 'They will read', translations: [{ languageCode: 'ru', translation: 'Они будут читать' }, { languageCode: 'es', translation: 'Leerán' }], isNegative: false, isQuestion: false },
+          { pronoun: 'he', example: 'He will read', translations: [{ languageCode: 'ru', translation: 'Он будет читать' }, { languageCode: 'es', translation: 'Él leerá' }], isNegative: false, isQuestion: false },
+          { pronoun: 'she', example: 'She won\'t read', translations: [{ languageCode: 'ru', translation: 'Она не будет читать' }, { languageCode: 'es', translation: 'Ella no leerá' }], isNegative: true, isQuestion: false },
+          { pronoun: 'it', example: 'It will read', translations: [{ languageCode: 'ru', translation: 'Оно будет читать' }, { languageCode: 'es', translation: 'Leerá' }], isNegative: false, isQuestion: false }
+        ]
+      }
+    ]
+  }],
+  ['dog', {
+    word: 'dog',
+    partOfSpeech: PartOfSpeech.NOUN,
+    languageCode: 'en',
+    translations: [{
+      languageCode: 'ru',
+      translations: ['собака', 'пес', 'щенок']
+    }, {
+      languageCode: 'es',
+      translations: ['perro', 'cachorro', 'can']
+    }],
+    examples: [
+      { pronoun: 'I', example: 'I have a black dog', translations: [{ languageCode: 'ru', translation: 'У меня есть черная собака' }, { languageCode: 'es', translation: 'Tengo un perro negro' }], isNegative: false, isQuestion: false },
+      { pronoun: 'you', example: 'Your dog is big', translations: [{ languageCode: 'ru', translation: 'Твоя собака большая' }, { languageCode: 'es', translation: 'Tu perro es grande' }], isNegative: false, isQuestion: false },
+      { pronoun: 'he', example: 'His dog barked yesterday', translations: [{ languageCode: 'ru', translation: 'Его собака лаяла вчера' }, { languageCode: 'es', translation: 'Su perro ladró ayer' }], isNegative: false, isQuestion: false },
+      { pronoun: 'we', example: 'We will buy a small dog', translations: [{ languageCode: 'ru', translation: 'Мы купим маленькую собаку' }, { languageCode: 'es', translation: 'Compraremos un perro pequeño' }], isNegative: false, isQuestion: false },
+      { pronoun: 'you', example: 'Do you have a dog?', translations: [{ languageCode: 'ru', translation: 'У тебя есть собака?' }, { languageCode: 'es', translation: '¿Tienes un perro?' }], isNegative: false, isQuestion: true }
     ],
     grammaticalExamples: [] // Not a verb, so empty array
   }],
