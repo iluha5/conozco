@@ -86,9 +86,7 @@ export class TrainingPage extends BasePage {
      * Проверка текущего этапа тренировки
      */
     async expectStage(stage: number) {
-        const stageIndicator = this.page.locator(
-            `text=/Stage ${stage}/i`,
-        );
+        const stageIndicator = this.page.locator(`text=/Stage ${stage}/i`);
         await expect(stageIndicator.first()).toBeVisible();
     }
 

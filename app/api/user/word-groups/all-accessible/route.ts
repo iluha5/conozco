@@ -66,10 +66,3 @@ export async function GET() {
         })),
     );
 }
-
-
-
-
-
-
-

@@ -7,11 +7,11 @@ import { BasePage } from './BasePage';
 export class HomePage extends BasePage {
     // Селекторы
     private readonly pageTitle = 'h1:has-text("Flash Cards")';
-    private readonly startTrainingButton =
-        'button:has-text("Start training")';
+    private readonly startTrainingButton = 'button:has-text("Start training")';
     private readonly goToWordsButton = 'button:has-text("Go to words")';
     private readonly continueTrainingCard = '[data-testid="continue-training"]';
-    private readonly trainingModeButton = 'button:has-text("Choose a suitable training mode or configure your own")';
+    private readonly trainingModeButton =
+        'button:has-text("Choose a suitable training mode or configure your own")';
 
     constructor(page: Page) {
         super(page);

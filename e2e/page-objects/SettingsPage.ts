@@ -11,7 +11,8 @@ export class SettingsPage extends BasePage {
     private readonly saveButton = 'button:has-text("Save")';
     private readonly nameInput = 'input[id="name"]';
     private readonly ownLanguageSelect = 'button:has-text("Native language")';
-    private readonly learnLanguageSelect = 'button:has-text("Language to learn")';
+    private readonly learnLanguageSelect =
+        'button:has-text("Language to learn")';
     private readonly interfaceLanguageSelect =
         'button:has-text("Interface language")';
 

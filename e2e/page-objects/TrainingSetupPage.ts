@@ -8,8 +8,7 @@ export class TrainingSetupPage extends BasePage {
     // Селекторы
     private readonly pageTitle = 'text=Training setup';
     private readonly backButton = 'button:has-text("Back")';
-    private readonly startTrainingButton =
-        'button:has-text("Start training")';
+    private readonly startTrainingButton = 'button:has-text("Start training")';
     private readonly stageCheckbox = (stage: number) =>
         `input[type="checkbox"][value="${stage}"]`;
     private readonly wordCheckbox = (wordId: string) =>
@@ -85,9 +84,7 @@ export class TrainingSetupPage extends BasePage {
             await stageCard.click();
         } else {
             // Fallback: ищем по тексту этапа
-            const stageText = this.page.locator(
-                `text=/Stage ${stage}/i`,
-            );
+            const stageText = this.page.locator(`text=/Stage ${stage}/i`);
             await stageText.first().click();
         }
         await this.waitForLoading();

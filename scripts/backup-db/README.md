@@ -10,8 +10,6 @@ This directory contains scripts for backing up the PostgreSQL database used by t
 - `setup-schedule.sh` - Script to manage automated backup schedule
 - `com.flashcards.db-backup.plist` - launchd configuration for scheduled backups
 - `README.md` - This documentation file
-- `QUICK_START.md` - Quick reference guide
-- `MIGRATION_WORKFLOW.md` - Database migration workflow with backup procedure
 
 ## Usage
 

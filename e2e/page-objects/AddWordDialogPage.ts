@@ -151,9 +151,7 @@ export class AddWordDialogPage extends BasePage {
         // Ищем кнопку "Добавить все" или "Добавить выбранные" в диалоге
         const dialog = this.page.locator('[role="dialog"]');
         const addSelectedButton = dialog
-            .locator(
-                'button:has-text("Add all"), button:has-text("Add words")',
-            )
+            .locator('button:has-text("Add all"), button:has-text("Add words")')
             .first();
         await addSelectedButton.click();
         await this.waitForLoading();
