@@ -43,7 +43,7 @@ export function ActiveTrainingCard({
         >
             <div className="relative z-10 flex items-center justify-between mb-4">
                 <div className="flex items-center justify-center transition-all duration-300 group-hover:scale-105 origin-center">
-                    <PlayCircle className="w-5 h-5 md:w-8 md:h-8 text-purple-600" />
+                    <PlayCircle className="w-5 h-5 md:w-8 md:h-8 text-purple-600 animate-pulse-scale" />
                 </div>
                 <div className="text-lg md:text-xl font-bold text-purple-700">
                     {progress}%
