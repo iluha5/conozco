@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { useTranslation } from '@/lib/i18n';
 
 type ShowTranslationButtonProps = {
     onShowTranslation: () => void;
@@ -9,6 +10,8 @@ export function ShowTranslationButton({
     onShowTranslation,
     showTranslation,
 }: ShowTranslationButtonProps) {
+    const { t } = useTranslation();
+
     return (
         <div className="flex justify-center pt-4">
             <Button
@@ -21,7 +24,7 @@ export function ShowTranslationButton({
                 }`}
                 data-testid="stage1-show-translation-button"
             >
-                Показать перевод
+                {t('Show translation')}
             </Button>
         </div>
     );

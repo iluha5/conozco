@@ -1,5 +1,8 @@
+'use client';
+
 import { CardHeader, CardTitle } from '@/components/ui/card';
 import { ProgressDots } from '../../common/ProgressDots';
+import { useTranslation } from '@/lib/i18n';
 
 type StageHeaderProps = {
     currentBatch: number;
@@ -18,13 +21,17 @@ export function StageHeader({
     exerciseResults,
     currentIndex,
 }: StageHeaderProps) {
+    const { t } = useTranslation();
     return (
         <CardHeader>
             <CardTitle className="text-center text-gray-600">
-                Сопоставление слов
+                {t('Match words')}
             </CardTitle>
             <p className="text-center text-sm text-gray-500">
-                Группа {currentBatch + 1} из {totalBatches}
+                {t('Batch {{current}} of {{total}}', {
+                    current: currentBatch + 1,
+                    total: totalBatches,
+                })}
             </p>
             <div className="!mt-3">
                 <ProgressDots

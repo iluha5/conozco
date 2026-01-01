@@ -7,19 +7,19 @@ import { TIMEOUTS } from '../utils/constants';
  */
 export class AddWordDialogPage extends BasePage {
     // Селекторы
-    private readonly dialogTitle = 'text=Добавить слово из словаря';
+    private readonly dialogTitle = 'text=Add word from dictionary';
     private readonly searchInput =
-        'input[placeholder*="Поиск"], input[type="text"]';
+        'input[placeholder*="Search"], input[type="text"]';
     private readonly wordCard = '[role="dialog"] [class*="Card"]'; // Card компонент в диалоге
-    private readonly addButton = 'button:has-text("Добавить")';
-    private readonly cancelButton = 'button:has-text("Отмена")';
+    private readonly addButton = 'button:has-text("Add")';
+    private readonly cancelButton = 'button:has-text("Cancel")';
     private readonly closeButton =
         'button[aria-label="Close"], button:has([aria-label*="close" i])';
     private readonly translationDialog =
-        '[role="dialog"]:has-text("Выберите перевод")';
+        '[role="dialog"]:has-text("Select translation option")';
     private readonly customTranslationInput =
-        'input[placeholder*="Введите перевод"], input[type="text"]';
-    private readonly saveTranslationButton = 'button:has-text("Сохранить")';
+        'input[placeholder*="Enter translation text"], input[type="text"]';
+    private readonly saveTranslationButton = 'button:has-text("Save")';
 
     constructor(page: Page) {
         super(page);
@@ -152,7 +152,7 @@ export class AddWordDialogPage extends BasePage {
         const dialog = this.page.locator('[role="dialog"]');
         const addSelectedButton = dialog
             .locator(
-                'button:has-text("Добавить все"), button:has-text("Добавить выбранные")',
+                'button:has-text("Add all"), button:has-text("Add words")',
             )
             .first();
         await addSelectedButton.click();
@@ -178,7 +178,7 @@ export class AddWordDialogPage extends BasePage {
      */
     async expectSelectedWordsCount(count: number) {
         const selectedBadge = this.page.locator(
-            `text=/Выбрано.*${count}|${count}.*выбрано/i`,
+            `text=/selected.*${count}|${count}.*selected/i`,
         );
         await expect(selectedBadge.first()).toBeVisible({
             timeout: TIMEOUTS.ELEMENT,

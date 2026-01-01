@@ -11,7 +11,7 @@ export class LoginPage extends BasePage {
     private readonly passwordInput = 'input[type="password"]';
     private readonly submitButton = 'button[type="submit"]';
     private readonly registerLink = 'a[href="/auth/register"]';
-    private readonly cardTitle = 'h3:has-text("Вход")'; // Используем более специфичный селектор
+    private readonly cardTitle = 'h3:has-text("Login")'; // Используем более специфичный селектор
 
     constructor(page: Page) {
         super(page);

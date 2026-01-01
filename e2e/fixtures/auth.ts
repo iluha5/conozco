@@ -131,7 +131,7 @@ export async function createAndLoginUser(
     const user = await createTestUser(email, password, name, {
         learnLanguageId: enLanguageId,
         ownLanguageId: ruLanguageId,
-        interfaceLanguageId: ruLanguageId,
+        interfaceLanguageId: enLanguageId, // Используем английский для интерфейса в тестах
     });
 
     // Обновляем флаг hasConfigured для пользователя (если пользователь существует)

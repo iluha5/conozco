@@ -6,15 +6,15 @@ import { BasePage } from './BasePage';
  */
 export class TrainingSetupPage extends BasePage {
     // Селекторы
-    private readonly pageTitle = 'text=Настройка тренировки';
-    private readonly backButton = 'button:has-text("Назад")';
+    private readonly pageTitle = 'text=Training setup';
+    private readonly backButton = 'button:has-text("Back")';
     private readonly startTrainingButton =
-        'button:has-text("Начать тренировку")';
+        'button:has-text("Start training")';
     private readonly stageCheckbox = (stage: number) =>
         `input[type="checkbox"][value="${stage}"]`;
     private readonly wordCheckbox = (wordId: string) =>
         `input[type="checkbox"][value="${wordId}"]`;
-    private readonly selectAllWordsButton = 'button:has-text("Выбрать все")';
+    private readonly selectAllWordsButton = 'button:has-text("Select all")';
 
     constructor(page: Page) {
         super(page);
@@ -48,7 +48,7 @@ export class TrainingSetupPage extends BasePage {
      */
     async openStagesSettings() {
         const toggleButton = this.page.locator(
-            'button:has-text("Настройки этапов тренировки")',
+            'button:has-text("Stage settings")',
         );
         const isExpanded = await toggleButton
             .locator('svg')
@@ -86,7 +86,7 @@ export class TrainingSetupPage extends BasePage {
         } else {
             // Fallback: ищем по тексту этапа
             const stageText = this.page.locator(
-                `text=/Этап ${stage}|Stage ${stage}/i`,
+                `text=/Stage ${stage}/i`,
             );
             await stageText.first().click();
         }

@@ -37,7 +37,7 @@ export const DEFAULT_TEST_VALUES = {
  */
 export const SELECTORS = {
     /** Селектор для toast сообщений */
-    TOAST_ERROR: 'text=/Ошибка|Неверный|ошибка/i',
+    TOAST_ERROR: 'text=/Error|Invalid|error/i',
     /** Селектор для loading индикаторов */
     LOADING: '[data-testid="loading"], .loading, [aria-busy="true"]',
     /** Селектор для header */

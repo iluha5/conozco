@@ -6,14 +6,14 @@ import { BasePage } from './BasePage';
  */
 export class SettingsPage extends BasePage {
     // Селекторы
-    private readonly pageTitle = 'h1:has-text("Настройки")';
-    private readonly backButton = 'button:has-text("Назад")';
-    private readonly saveButton = 'button:has-text("Сохранить")';
+    private readonly pageTitle = 'h1:has-text("Settings")';
+    private readonly backButton = 'button:has-text("Back")';
+    private readonly saveButton = 'button:has-text("Save")';
     private readonly nameInput = 'input[id="name"]';
-    private readonly ownLanguageSelect = 'button:has-text("родной язык")';
-    private readonly learnLanguageSelect = 'button:has-text("изучаемый язык")';
+    private readonly ownLanguageSelect = 'button:has-text("Native language")';
+    private readonly learnLanguageSelect = 'button:has-text("Language to learn")';
     private readonly interfaceLanguageSelect =
-        'button:has-text("язык интерфейса")';
+        'button:has-text("Interface language")';
 
     constructor(page: Page) {
         super(page);
@@ -86,7 +86,7 @@ export class SettingsPage extends BasePage {
      */
     async expectSettingsSaved() {
         const successMessage = this.page.locator(
-            'text=/Настройки сохранены|успешно обновлены/i',
+            'text=/Settings saved|successfully updated/i',
         );
         await expect(successMessage.first()).toBeVisible();
     }

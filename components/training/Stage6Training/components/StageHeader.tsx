@@ -1,5 +1,8 @@
+'use client';
+
 import { CardHeader, CardTitle } from '@/components/ui/card';
 import { ProgressDots } from '../../common/ProgressDots';
+import { useTranslation } from '@/lib/i18n';
 
 type StageHeaderProps = {
     totalExercises: number;
@@ -14,10 +17,11 @@ export function StageHeader({
     exerciseResults,
     currentIndex,
 }: StageHeaderProps) {
+    const { t } = useTranslation();
     return (
         <CardHeader>
             <CardTitle className="text-center text-gray-600">
-                Составление слова по голосу
+                {t('Build word from voice')}
             </CardTitle>
             <div className="!mt-3">
                 <ProgressDots

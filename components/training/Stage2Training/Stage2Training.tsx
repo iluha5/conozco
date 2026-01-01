@@ -16,6 +16,7 @@ import { useTranslationOptions } from './hooks/useTranslationOptions';
 import { useOptionSelection } from './hooks/useOptionSelection';
 import { useStage2Navigation } from './hooks/useStage2Navigation';
 import { useAutoAdvance } from './hooks/useAutoAdvance';
+import { useTranslation } from '@/lib/i18n';
 import type { Stage2Props } from './typing';
 
 export function Stage2Training({
@@ -23,6 +24,7 @@ export function Stage2Training({
     onComplete,
     isLastStage = false,
 }: Stage2Props) {
+    const { t } = useTranslation();
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isCompleting, setIsCompleting] = useState(false);
     const currentWord = words[currentIndex];
@@ -112,7 +114,7 @@ export function Stage2Training({
             >
                 <CardHeader>
                     <CardTitle className="text-center text-gray-600">
-                        Выбор правильного перевода
+                        {t('Select correct translation')}
                     </CardTitle>
                     <div className="!mt-3">
                         <ProgressDots

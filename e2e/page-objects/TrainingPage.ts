@@ -8,11 +8,11 @@ import { BasePage } from './BasePage';
 export class TrainingPage extends BasePage {
     // Селекторы
     private readonly trainingContainer = '[data-testid="training-container"]';
-    private readonly trainingHeader = 'text=Тренировка'; // Заголовок тренировки
+    private readonly trainingHeader = 'text=Training'; // Заголовок тренировки
     private readonly stageSelector = '[class*="StageSelector"]'; // Селектор этапов
-    private readonly nextButton = 'button:has-text("Далее")';
-    private readonly exitButton = 'button:has-text("Выход")';
-    private readonly pauseButton = 'button:has-text("Пауза")';
+    private readonly nextButton = 'button:has-text("Next word")';
+    private readonly exitButton = 'button:has-text("Home")';
+    private readonly pauseButton = 'button:has-text("Pause")';
 
     constructor(page: Page) {
         super(page);
@@ -49,7 +49,7 @@ export class TrainingPage extends BasePage {
 
         if (!hasContainer && !hasHeader && !hasStageSelector) {
             // Fallback: проверяем, что мы не на странице настройки
-            const setupPage = this.page.locator('text=Настройка тренировки');
+            const setupPage = this.page.locator('text=Training setup');
             const isOnSetup = await setupPage
                 .isVisible({ timeout: 1000 })
                 .catch(() => false);
@@ -87,7 +87,7 @@ export class TrainingPage extends BasePage {
      */
     async expectStage(stage: number) {
         const stageIndicator = this.page.locator(
-            `text=/Этап ${stage}|Stage ${stage}/i`,
+            `text=/Stage ${stage}/i`,
         );
         await expect(stageIndicator.first()).toBeVisible();
     }
@@ -97,10 +97,10 @@ export class TrainingPage extends BasePage {
      * @param stage - номер этапа (1-6)
      */
     async clickStage(stage: number) {
-        // Ищем карточку этапа по тексту "Этап {stage}" (десктоп) или просто "{stage}" (мобильный)
+        // Ищем карточку этапа по тексту "Stage {stage}" (десктоп) или просто "{stage}" (мобильный)
         // Используем селектор, который находит видимый текст
         const stageTextDesktop = this.page
-            .locator(`text=/^Этап ${stage}$/i`)
+            .locator(`text=/^Stage ${stage}$/i`)
             .filter({ hasNotText: 'md:hidden' }); // Исключаем скрытые элементы
 
         const stageTextMobile = this.page
@@ -133,7 +133,7 @@ export class TrainingPage extends BasePage {
             // Fallback: находим все карточки этапов и кликаем по индексу
             // Ищем контейнер с карточками этапов (обычно это div с flex классом)
             const cardsContainer = this.page
-                .locator('div:has-text("Этап 1"), div:has-text("1")')
+                .locator('div:has-text("Stage 1"), div:has-text("1")')
                 .locator('..')
                 .locator('..');
             const cards = cardsContainer.locator('div[class*="Card"]');
@@ -529,7 +529,7 @@ export class TrainingPage extends BasePage {
         } else {
             // Если нет TranslationDisplay, проверяем наличие сообщения о загрузке или отсутствии примеров
             const loadingMessage = this.page.locator(
-                'text=/Загрузка|Нет слов с примерами/i',
+                'text=/Loading|No words with examples/i',
             );
             await loadingMessage.isVisible({ timeout: 3000 }).catch(() => {
                 // Если сообщения нет, это нормально - этап может быть в процессе загрузки

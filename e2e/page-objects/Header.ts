@@ -9,15 +9,15 @@ import { TIMEOUTS, SELECTORS } from '../utils/constants';
 export class HeaderPage extends BasePage {
     // Селекторы
     private readonly logo = 'a:has-text("Flash Cards")';
-    private readonly logoutButton = 'button:has-text("Выйти")';
+    private readonly logoutButton = 'button:has-text("Logout")';
     private readonly userEmail =
         '[data-test="header-wrapper"] span:has-text("@")';
     private readonly trainingLink =
-        'a[href="/training/setup"]:has-text("Тренировка")';
-    private readonly wordsLink = 'a[href="/words"]:has-text("Слова")';
+        'a[href="/training/setup"]:has-text("Training")';
+    private readonly wordsLink = 'a[href="/words"]:has-text("Words")';
     private readonly wordGroupsLink =
-        'a[href="/word-groups"]:has-text("Группы слов")';
-    private readonly settingsLink = 'a[href="/settings"]:has-text("Настройки")';
+        'a[href="/word-groups"]:has-text("Word groups")';
+    private readonly settingsLink = 'a[href="/settings"]:has-text("Settings")';
     private readonly mobileMenuButton = 'button[aria-label="menu"]';
 
     constructor(page: Page) {
@@ -55,7 +55,7 @@ export class HeaderPage extends BasePage {
         } else {
             // Если desktop не виден, открываем mobile меню
             await this.openMobileMenu();
-            const mobileLogout = this.page.locator('button:has-text("Выйти")');
+            const mobileLogout = this.page.locator('button:has-text("Logout")');
             // Кликаем по кнопке выхода и ждем редирект
             await mobileLogout.click();
             // Ждем редирект на страницу логина после выхода (signOut использует callbackUrl)

@@ -12,7 +12,7 @@ export class RegisterPage extends BasePage {
     private readonly passwordInputs = 'input[type="password"]';
     private readonly submitButton = 'button[type="submit"]';
     private readonly loginLink = 'a[href="/auth/login"]';
-    private readonly cardTitle = 'h3:has-text("Регистрация")'; // Используем более специфичный селектор
+    private readonly cardTitle = 'h3:has-text("Registration")'; // Используем более специфичный селектор
 
     constructor(page: Page) {
         super(page);

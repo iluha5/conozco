@@ -7,28 +7,28 @@ import { TIMEOUTS } from '../utils/constants';
  */
 export class WordsPage extends BasePage {
     // Селекторы
-    private readonly pageTitle = 'h1:has-text("Мои слова")';
+    private readonly pageTitle = 'h1:has-text("My words")';
     private readonly addWordButton =
-        'button:has-text("Добавить слово"), button:has-text("Добавить")';
-    private readonly backButton = 'button:has-text("Назад")';
-    private readonly statusFilterAll = 'text=Всего слов';
-    private readonly statusFilterNotLearned = 'text=Не выучено';
-    private readonly statusFilterLearned = 'text=Выучено';
+        'button:has-text("Add word"), button:has-text("Add")';
+    private readonly backButton = 'button:has-text("Back")';
+    private readonly statusFilterAll = 'text=Total words';
+    private readonly statusFilterNotLearned = 'text=Not learned';
+    private readonly statusFilterLearned = 'text=Learned';
     private readonly wordsList = '[data-testid="words-list"]';
     private readonly wordItem = '[data-testid="word-item"]';
     private readonly wordCard = '[data-testid="word-item"]';
-    private readonly selectAllButton = 'button:has-text("Выбрать все")';
-    private readonly deleteButton = 'button:has-text("Удалить")';
-    private readonly markLearnedButton = 'button:has-text("Выучено")';
-    private readonly markNotLearnedButton = 'button:has-text("Не выучено")';
+    private readonly selectAllButton = 'button:has-text("Select all")';
+    private readonly deleteButton = 'button:has-text("Delete")';
+    private readonly markLearnedButton = 'button:has-text("Learned")';
+    private readonly markNotLearnedButton = 'button:has-text("Not learned")';
     private readonly confirmDeleteButton =
-        'button:has-text("Удалить"):not(:has-text("слов"))';
-    private readonly confirmStatusButton = 'button:has-text("Изменить")';
+        'button:has-text("Delete"):not(:has-text("word"))';
+    private readonly confirmStatusButton = 'button:has-text("Confirm")';
     private readonly translationDialog =
-        '[role="dialog"]:has-text("Выберите перевод")';
+        '[role="dialog"]:has-text("Select translation option")';
     private readonly customTranslationInput =
-        'input[placeholder*="Введите перевод"]';
-    private readonly saveTranslationButton = 'button:has-text("Сохранить")';
+        'input[placeholder*="Enter translation text"]';
+    private readonly saveTranslationButton = 'button:has-text("Save")';
 
     constructor(page: Page) {
         super(page);
@@ -115,7 +115,7 @@ export class WordsPage extends BasePage {
      */
     async expectEmptyState() {
         const emptyMessage = this.page.locator(
-            'text=/Слова не найдены|Добавьте новое слово/i',
+            'text=/Words not found|Add a new word/i',
         );
         await expect(emptyMessage).toBeVisible();
     }
@@ -137,7 +137,7 @@ export class WordsPage extends BasePage {
         const wordCard = this.page.locator(
             `${this.wordCard}:has-text("${wordText}")`,
         );
-        const translationLink = wordCard.locator('text=/перевод|translation/i');
+        const translationLink = wordCard.locator('text=/translation/i');
         await translationLink.click();
         await this.waitForElement(this.translationDialog, TIMEOUTS.ELEMENT);
     }
@@ -175,7 +175,7 @@ export class WordsPage extends BasePage {
             `${this.wordCard}:has-text("${wordText}")`,
         );
         const deleteButton = wordCard.locator(
-            'button[aria-label*="удалить"], button:has-text("Удалить")',
+            'button[aria-label*="delete"], button:has-text("Delete")',
         );
         await deleteButton.click();
         await this.waitForLoading();
@@ -189,7 +189,7 @@ export class WordsPage extends BasePage {
             `${this.wordCard}:has-text("${wordText}")`,
         );
         const statusButton = wordCard.locator(
-            'button[aria-label*="статус"], button:has([data-testid*="status"])',
+            'button[aria-label*="status"], button:has([data-testid*="status"])',
         );
         await statusButton.click();
         await this.waitForLoading();
