@@ -23,7 +23,7 @@ test.describe('Примеры использования фикстур', () => 
         await expect(page).toHaveURL(/\/auth\/login/);
 
         // Проверяем заголовок страницы логина
-        await expect(page).toHaveTitle(/Flash Cards/i);
+        await expect(page).toHaveTitle(/conozco/i);
     });
 
     test('пример использования фикстур авторизации', async ({ page }) => {

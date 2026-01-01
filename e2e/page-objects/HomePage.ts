@@ -6,7 +6,7 @@ import { BasePage } from './BasePage';
  */
 export class HomePage extends BasePage {
     // Селекторы
-    private readonly pageTitle = 'h1:has-text("Flash Cards")';
+    private readonly pageTitle = 'h1:has-text("conozco")';
     private readonly startTrainingButton = 'button:has-text("Start training")';
     private readonly goToWordsButton = 'button:has-text("Go to words")';
     private readonly continueTrainingCard = '[data-testid="continue-training"]';
