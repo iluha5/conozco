@@ -8,7 +8,7 @@ export default function HomePage() {
     return (
         <>
             <Header />
-            <LandingContent variant="variant2" />
+            <LandingContent />
             <ScrollToTop />
         </>
     );
