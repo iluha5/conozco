@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { X, Check, Trash2, SkipForward } from 'lucide-react';
 import { CardAction } from '../typing';
+import { useTranslation } from '@/lib/i18n';
 
 interface FlashCardActionsProps {
     onAction: (_action: CardAction) => void;
@@ -15,6 +16,7 @@ export function FlashCardActions({
     disabled = false,
     belongsToUser = true,
 }: FlashCardActionsProps) {
+    const { t } = useTranslation();
     const handleDontKnow = () => {
         if (!disabled) {
             onAction('dont-know');
@@ -45,12 +47,12 @@ export function FlashCardActions({
                 {belongsToUser ? (
                     <>
                         <Trash2 className="w-5 h-5" />
-                        Удалить
+                        {t('Delete')}
                     </>
                 ) : (
                     <>
                         <SkipForward className="w-5 h-5" />
-                        Пропустить
+                        {t('Skip')}
                     </>
                 )}
             </Button>

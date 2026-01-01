@@ -13,8 +13,10 @@ import { FlashCardsReview } from '../FlashCardsReview';
 import { useHashDialog } from '@/hooks/shared';
 import { useUserSettings } from '@/hooks/settings/use-user-settings';
 import { FlashCardsReviewParams } from '../typing';
+import { useTranslation } from '@/lib/i18n';
 
 export function FlashCardsWidget() {
+    const { t } = useTranslation();
     const { settings: userSettings } = useUserSettings();
     const { open, setOpen } = useHashDialog('flash-cards-review');
     const [shouldLoadExercise, setShouldLoadExercise] = useState(false);
@@ -79,7 +81,7 @@ export function FlashCardsWidget() {
                         variant="secondary"
                         onClick={handleStartReview}
                     >
-                        Начать проверку
+                        {t('Start review')}
                     </Button>
                 </CardContent>
             </Card>

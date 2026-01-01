@@ -10,6 +10,7 @@ import { WordsListEmpty } from './WordsListEmpty';
 import { WordsListSearchPrompt } from './WordsListSearchPrompt';
 import type { BaseWord } from '@/types/add-word-dialog.types';
 import type { PartOfSpeech } from '@/hooks/shared';
+import { useTranslation } from '@/lib/i18n';
 
 type WordsListProps = {
     words: BaseWord[];
@@ -50,6 +51,7 @@ export function WordsList({
     isClient,
     searchTerm,
 }: WordsListProps) {
+    const { t } = useTranslation();
     const isSearchEmpty = searchTerm.trim().length === 0;
 
     const renderListContent = () => {
@@ -108,7 +110,7 @@ export function WordsList({
                         }
                         className={`text-sm text-black underline decoration-dotted decoration-1 underline-offset-2 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed ${(!hasMore && words.length > 0) || isSearchEmpty ? 'invisible' : ''}`}
                     >
-                        Показать еще
+                        {t('Show more')}
                     </button>
                 </div>
             </div>

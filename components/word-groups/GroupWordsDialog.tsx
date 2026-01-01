@@ -295,7 +295,7 @@ export function GroupWordsDialog({
                             onClick={handleLoadMore}
                             className="text-sm text-blue-600 underline decoration-dotted decoration-1 underline-offset-2 hover:text-blue-700"
                         >
-                            Показать еще{' '}
+                            {t('Show more')}{' '}
                             {Math.min(
                                 WORDS_PER_PAGE,
                                 filteredWords.length - displayedCount,

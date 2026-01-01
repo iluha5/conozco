@@ -100,7 +100,7 @@ export function MobileSidebar({
 
                                 {session.user?.role === 'ADMIN' && (
                                     <div className="inline-flex items-center px-2 py-1 bg-purple-100 text-purple-700 text-xs font-medium rounded">
-                                        Admin
+                                        {t('Admin')}
                                     </div>
                                 )}
                             </div>
@@ -158,7 +158,7 @@ export function MobileSidebar({
                                     }
                                 >
                                     <LogOut className="w-4 h-4 mr-3" />
-                                    Выйти
+                                    {t('Sign out')}
                                 </Button>
                             </div>
                         </div>

@@ -298,10 +298,10 @@ export function GroupReviewSetupDialog({
                         variant="outline"
                         onClick={() => onOpenChange(false)}
                     >
-                        Отмена
+                        {t('Cancel')}
                     </Button>
                     <Button onClick={handleStart} disabled={isLoading}>
-                        Начать проверку
+                        {t('Start review')}
                     </Button>
                 </div>
             </DialogContent>
