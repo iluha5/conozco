@@ -1,6 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { STAGE_NAMES, TrainingStage } from '@/types/training.types';
+import { useTranslation } from '@/lib/i18n';
+import { TrainingStage } from '@/types/training.types';
+import { getStageNames } from './helpers/getStageNames';
 
 interface StageCardProps {
     stage: TrainingStage;
@@ -19,6 +21,9 @@ export function StageCard({
     onClick,
     disabled = false,
 }: StageCardProps) {
+    const { t } = useTranslation();
+    const stageNames = getStageNames(t);
+
     const getCardStyles = () => {
         if (disabled) {
             return 'ring-2 ring-green-500 bg-green-50 cursor-not-allowed opacity-75';
@@ -54,7 +59,7 @@ export function StageCard({
                         {index + 1}
                     </span>
                     <span className="hidden md:inline text-sm">
-                        Этап {index + 1}
+                        {t('Stage {{number}}', { number: index + 1 })}
                     </span>
                 </CardTitle>
             </CardHeader>
@@ -67,7 +72,7 @@ export function StageCard({
                             : 'text-gray-600',
                     )}
                 >
-                    {STAGE_NAMES[stage]}
+                    {stageNames[stage]}
                 </p>
             </CardContent>
         </Card>

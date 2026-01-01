@@ -310,5 +310,12 @@
     "{{count}} words removed_one": "{{count}} palabra eliminada",
     "{{count}} words removed_many": "{{count}} palabras eliminadas",
     "{{count}} words removed_other": "{{count}} palabras eliminadas",
-    "Failed to mark words as learned": "No se pudieron marcar las palabras como aprendidas"
+    "Failed to mark words as learned": "No se pudieron marcar las palabras como aprendidas",
+    "Stage {{number}}": "Etapa {{number}}",
+    "View and memorize": "Ver y memorizar",
+    "Select correct translation": "Seleccionar traducción correcta",
+    "Match words": "Emparejar palabras",
+    "Word building from letters": "Construcción de palabras con letras",
+    "Build a sentence from words": "Construir una oración con palabras",
+    "Build word from voice": "Construir palabra desde voz"
 }

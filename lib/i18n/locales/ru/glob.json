@@ -318,5 +318,12 @@
     "{{count}} words removed_few": "{{count}} слова удалено",
     "{{count}} words removed_many": "{{count}} слов удалено",
     "{{count}} words removed_other": "{{count}} слов удалено",
-    "Failed to mark words as learned": "Не удалось отметить слова как выученные"
+    "Failed to mark words as learned": "Не удалось отметить слова как выученные",
+    "Stage {{number}}": "Этап {{number}}",
+    "View and memorize": "Просмотр + озвучка",
+    "Select correct translation": "Выбор перевода",
+    "Match words": "Сопоставление",
+    "Word building from letters": "Составление слова",
+    "Build a sentence from words": "Составление предложения",
+    "Build word from voice": "Составление по голосу"
 }

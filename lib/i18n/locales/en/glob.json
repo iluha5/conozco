@@ -306,5 +306,12 @@
     "{{count}} words added_other": "{{count}} words added",
     "{{count}} words removed_one": "{{count}} words removed",
     "{{count}} words removed_other": "{{count}} words removed",
-    "Failed to mark words as learned": "Failed to mark words as learned"
+    "Failed to mark words as learned": "Failed to mark words as learned",
+    "Stage {{number}}": "Stage {{number}}",
+    "View and memorize": "View and memorize",
+    "Select correct translation": "Select correct translation",
+    "Match words": "Match words",
+    "Word building from letters": "Word building from letters",
+    "Build a sentence from words": "Build a sentence from words",
+    "Build word from voice": "Build word from voice"
 }

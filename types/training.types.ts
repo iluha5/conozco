@@ -102,15 +102,6 @@ export interface StageCompletionResult {
     learnedWords?: Word[];
 }
 
-export const STAGE_NAMES: Record<TrainingStage, string> = {
-    1: 'Просмотр + озвучка',
-    2: 'Выбор перевода',
-    3: 'Сопоставление',
-    4: 'Составление слова',
-    5: 'Составление предложения',
-    6: 'Составление по голосу',
-};
-
 // ===== Расширенные типы для сохранения прогресса =====
 
 /**
