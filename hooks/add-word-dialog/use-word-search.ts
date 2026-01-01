@@ -7,9 +7,10 @@ import { useDebounce } from 'react-use';
 import { useToast } from '@/hooks/shared';
 import { useTranslation } from '@/lib/i18n';
 import type { BaseWord } from '@/types/add-word-dialog.types';
+import type { LearnLanguageCode } from '@/config/learn-languages';
 
 type UseWordSearchProps = {
-    languageCode: 'en' | 'es';
+    languageCode: LearnLanguageCode;
     ownLanguageCode?: string;
     open: boolean;
     skipAutoSearch: boolean;

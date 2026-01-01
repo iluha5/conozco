@@ -6,10 +6,11 @@ import { useState } from 'react';
 import { useToast } from '@/hooks/shared';
 import { useTranslation } from '@/lib/i18n';
 import type { BaseWord } from '@/types/add-word-dialog.types';
+import type { LearnLanguageCode } from '@/config/learn-languages';
 
 type UseAiSearchProps = {
     searchTerm: string;
-    languageCode: 'en' | 'es';
+    languageCode: LearnLanguageCode;
     setAvailableWords: React.Dispatch<React.SetStateAction<BaseWord[]>>;
     setOffset: React.Dispatch<React.SetStateAction<number>>;
     setHasMore: React.Dispatch<React.SetStateAction<boolean>>;

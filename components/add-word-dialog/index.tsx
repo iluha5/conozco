@@ -28,6 +28,11 @@ import { AddWordDialogFilters } from './AddWordDialogFilters';
 import { WordsList as AddWordDialogWordsList } from './WordsList';
 import type { BaseWord } from '@/types/add-word-dialog.types';
 import { useTranslation } from '@/lib/i18n';
+import {
+    LearnLanguageCode,
+    AVAILABLE_LEARN_LANGUAGES,
+    isLearnLanguageAvailable,
+} from '@/config/learn-languages';
 
 type AddWordDialogProps = {
     onWordAdded: () => void;
@@ -59,9 +64,11 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
     const { partsOfSpeech } = usePartsOfSpeech('ru');
 
     // Используем learnLanguage из настроек пользователя
-    const languageCode: 'en' | 'es' = useMemo(() => {
-        const code = userSettings?.learnLanguage?.code;
-        return code === 'en' || code === 'es' ? code : 'es';
+    const languageCode: LearnLanguageCode = useMemo(() => {
+        const code = userSettings?.learnLanguage?.code ?? 'en';
+        return isLearnLanguageAvailable(code)
+            ? code
+            : AVAILABLE_LEARN_LANGUAGES[0]; // fallback на первый доступный язык
     }, [userSettings?.learnLanguage?.code]);
 
     // Фильтр по группам

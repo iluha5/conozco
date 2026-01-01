@@ -19,6 +19,7 @@ import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import { useUserSettings, useLanguages } from '@/hooks/settings';
 import { useToast } from '@/hooks/shared';
 import { useI18n, useTranslation } from '@/lib/i18n';
+import { isLearnLanguageAvailable } from '@/config/learn-languages';
 
 export default function SettingsPage() {
     const { data: session } = useSession();
@@ -283,21 +284,27 @@ export default function SettingsPage() {
                                         />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {languages.map(language => (
-                                            <SelectItem
-                                                key={language.id}
-                                                value={language.id.toString()}
-                                            >
-                                                <span className="flex items-center gap-2">
-                                                    <span>
-                                                        {getLanguageFlag(
-                                                            language.code,
-                                                        )}
+                                        {languages
+                                            .filter(language =>
+                                                isLearnLanguageAvailable(
+                                                    language.code,
+                                                ),
+                                            )
+                                            .map(language => (
+                                                <SelectItem
+                                                    key={language.id}
+                                                    value={language.id.toString()}
+                                                >
+                                                    <span className="flex items-center gap-2">
+                                                        <span>
+                                                            {getLanguageFlag(
+                                                                language.code,
+                                                            )}
+                                                        </span>
+                                                        {language.name}
                                                     </span>
-                                                    {language.name}
-                                                </span>
-                                            </SelectItem>
-                                        ))}
+                                                </SelectItem>
+                                            ))}
                                     </SelectContent>
                                 </Select>
                             </div>
