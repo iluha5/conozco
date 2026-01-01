@@ -88,6 +88,8 @@
     "Inactive": "Inactive",
     "Shown:": "Shown:",
     "words": "words",
+    "{{count}} words_one": "{{count}} word",
+    "{{count}} words_other": "{{count}} words",
     "View words": "View words",
     "Groups not found": "Groups not found",
     "No available groups": "No available groups",

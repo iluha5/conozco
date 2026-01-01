@@ -15,10 +15,14 @@ import { EmptyState } from './components/EmptyState';
 import { getTabFromHash, updateUrlHash } from './helpers/tab-navigation';
 import { TrainingModeGroupId } from './types/typing';
 import { useTranslation } from '@/lib/i18n';
+import { useTrainingStorage } from '@/hooks/training';
+import { useRouter } from 'next/navigation';
 
 export function TrainingList() {
     const { t } = useTranslation();
+    const router = useRouter();
     const trainingModeGroups = useMemo(() => getTrainingModeGroups(t), [t]);
+    const { savedState, hasUnfinishedTraining } = useTrainingStorage();
     const {
         startMode,
         isLoading,
@@ -81,6 +85,10 @@ export function TrainingList() {
         startMode(modeId as any);
     };
 
+    const handleContinueTraining = () => {
+        router.push('/training');
+    };
+
     if (isLoading) {
         return (
             <div className="flex items-center justify-center py-12">
@@ -109,6 +117,12 @@ export function TrainingList() {
                             modes={trainingModeGroups.new.modes}
                             onModeClick={handleModeClick}
                             disabled={isStarting}
+                            activeTraining={
+                                hasUnfinishedTraining && savedState
+                                    ? savedState
+                                    : null
+                            }
+                            onContinueTraining={handleContinueTraining}
                         />
                     ),
                     learned: (
