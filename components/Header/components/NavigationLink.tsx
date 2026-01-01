@@ -9,6 +9,7 @@ interface NavigationLinkProps {
     icon: LucideIcon;
     children: ReactNode;
     className?: string;
+    showActiveIndicator?: boolean;
 }
 
 export function NavigationLink({
@@ -16,6 +17,7 @@ export function NavigationLink({
     icon: Icon,
     children,
     className,
+    showActiveIndicator = false,
 }: NavigationLinkProps) {
     return (
         <Link
@@ -26,8 +28,11 @@ export function NavigationLink({
             )}
         >
             <Icon className="w-4 h-4 relative z-10 transition-transform duration-200 group-hover:scale-105" />
-            <span className="relative z-10 transition-transform duration-200">
+            <span className="relative z-10 transition-transform duration-200 flex items-center gap-1.5">
                 {children}
+                {showActiveIndicator && (
+                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                )}
             </span>
             <span className="absolute inset-0 rounded-lg border border-gray-900 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none" />
         </Link>

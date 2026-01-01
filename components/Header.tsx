@@ -18,6 +18,7 @@ import {
 import { MobileSidebar } from './MobileSidebar';
 import { NavigationLink } from './Header/components/NavigationLink';
 import { useTranslation } from '@/lib/i18n';
+import { useTrainingStorage } from '@/hooks/training';
 
 function HeaderSkeleton() {
     return (
@@ -50,6 +51,7 @@ export function Header() {
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
     const isHomePage = pathname === '/';
     const { t } = useTranslation();
+    const { hasUnfinishedTraining } = useTrainingStorage();
 
     if (status === 'loading') {
         return <HeaderSkeleton />;
@@ -83,6 +85,9 @@ export function Header() {
                                         href="/training/list"
                                         icon={Activity}
                                         className="mr-6"
+                                        showActiveIndicator={
+                                            hasUnfinishedTraining
+                                        }
                                     >
                                         {t('Training')}
                                     </NavigationLink>
