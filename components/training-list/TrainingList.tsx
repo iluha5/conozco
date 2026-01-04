@@ -17,11 +17,25 @@ import { TrainingModeGroupId } from './types/typing';
 import { useTranslation } from '@/lib/i18n';
 import { useTrainingStorage } from '@/hooks/training';
 import { useRouter } from 'next/navigation';
+import { useUserSettings } from '@/hooks/settings';
+import { useTestModes } from './hooks/useTestModes';
 
 export function TrainingList() {
     const { t } = useTranslation();
     const router = useRouter();
-    const trainingModeGroups = useMemo(() => getTrainingModeGroups(t), [t]);
+    const { settings: userSettings } = useUserSettings();
+    const languageCode = userSettings?.learnLanguage?.code || null;
+
+    // Загружаем тесты с названиями групп из БД
+    const { testModes, isLoading: isLoadingTests } = useTestModes(
+        languageCode,
+        t,
+    );
+
+    const trainingModeGroups = useMemo(
+        () => getTrainingModeGroups(t, testModes),
+        [t, testModes],
+    );
     const { savedState, hasUnfinishedTraining } = useTrainingStorage();
     const {
         startMode,
@@ -89,7 +103,7 @@ export function TrainingList() {
         router.push('/training');
     };
 
-    if (isLoading) {
+    if (isLoading || isLoadingTests) {
         return (
             <div className="flex items-center justify-center py-12">
                 <Loader2 className="w-8 h-8 animate-spin text-purple-600" />

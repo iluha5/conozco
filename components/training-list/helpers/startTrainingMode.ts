@@ -45,20 +45,41 @@ export async function startTrainingMode(
 
         // Режимы с группой (A1 тесты)
         if (config.groupId) {
-            // Проверяем доступность группы через API
-            const isAvailable = await checkGroupAvailability(config.groupId);
+            // Проверяем доступность и активацию группы через API
+            const groupInfo = await checkGroupAvailability(config.groupId);
 
-            if (!isAvailable) {
-                toast({
-                    title: tServerSync('Group unavailable', lang),
-                    description: tServerSync(
-                        'Group "{{name}}" is unavailable. Add it in "Word groups" section.',
-                        lang,
-                        { name: config.groupName || 'A1' },
-                    ),
-                    variant: 'destructive',
-                });
-                return { success: false };
+            // Если группа найдена, но не активирована, или не найдена вообще
+            if (!groupInfo.found || !groupInfo.isActive) {
+                // Пытаемся автоматически активировать группу
+                const activated = await activateGroup(config.groupId);
+
+                if (!activated) {
+                    // Если активация не удалась, показываем ошибку
+                    toast({
+                        title: tServerSync('Group unavailable', lang),
+                        description: tServerSync(
+                            'Group "{{name}}" is unavailable. Add it in "Word groups" section.',
+                            lang,
+                            { name: config.groupName || 'A1' },
+                        ),
+                        variant: 'destructive',
+                    });
+                    return { success: false };
+                }
+
+                // Показываем уведомление об автоматическом добавлении группы только если группа не была активирована
+                if (!groupInfo.isActive) {
+                    toast({
+                        title: tServerSync(
+                            'Group "{{name}}" has been automatically added to your word groups',
+                            lang,
+                            { name: config.groupName || 'A1' },
+                        ),
+                        description: '',
+                        variant: 'default',
+                        duration: 3000,
+                    });
+                }
             }
 
             const params: FlashCardsReviewParams = {
@@ -148,19 +169,60 @@ export async function startTrainingMode(
 }
 
 /**
- * Хелпер для проверки доступности группы
+ * Хелпер для проверки доступности и активации группы
+ * Возвращает объект с информацией о группе
  */
-async function checkGroupAvailability(groupId: number): Promise<boolean> {
+async function checkGroupAvailability(groupId: number): Promise<{
+    found: boolean;
+    isActive: boolean;
+}> {
     try {
         const response = await fetch('/api/user/word-groups/all-accessible');
-        if (!response.ok) return false;
+        if (!response.ok) {
+            return { found: false, isActive: false };
+        }
 
         const groups = await response.json();
         const group = groups.find((g: any) => g.id === groupId);
 
-        return !!group;
+        if (!group) {
+            return { found: false, isActive: false };
+        }
+
+        return {
+            found: true,
+            isActive: group.isActive || false,
+        };
     } catch (error) {
         console.error('Error checking group availability:', error);
+        return { found: false, isActive: false };
+    }
+}
+
+/**
+ * Хелпер для активации группы через API
+ */
+async function activateGroup(groupId: number): Promise<boolean> {
+    try {
+        const response = await fetch(
+            `/api/user/word-groups/${groupId}/activate`,
+            {
+                method: 'POST',
+            },
+        );
+
+        // Если группа уже активирована (400), считаем это успехом
+        if (response.status === 400) {
+            return true;
+        }
+
+        if (!response.ok) {
+            return false;
+        }
+
+        return true;
+    } catch (error) {
+        console.error('Error activating group:', error);
         return false;
     }
 }

@@ -132,6 +132,8 @@ export function useTrainingModes() {
             if (!result.success && result.noWords) {
                 setShowNoWordsDialog(true);
                 setIsStarting(false);
+            } else if (!result.success && !result.noWords) {
+                setIsStarting(false);
             }
         } catch (error) {
             console.error('Failed to start training mode:', error);
@@ -196,6 +198,8 @@ export function useTrainingModes() {
 
             if (!result.success && result.noWords) {
                 setShowNoWordsDialog(true);
+                setIsStarting(false);
+            } else if (!result.success && !result.noWords) {
                 setIsStarting(false);
             }
         } catch (error) {

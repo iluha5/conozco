@@ -10,8 +10,15 @@ export type TrainingModeId =
     | 'learned-quick-check'
     | 'learned-group-check'
     | 'learned-sentences'
+    // Тесты по языкам (старые ID для обратной совместимости)
     | 'learned-test-a1-easy'
-    | 'learned-test-a1-medium';
+    | 'learned-test-a1-medium'
+    // Тесты для испанского языка
+    | 'learned-test-es-a1-easy'
+    | 'learned-test-es-a1-medium'
+    // Тесты для английского языка
+    | 'learned-test-en-a1-easy'
+    | 'learned-test-en-a1-medium';
 
 export type TrainingModeGroupId = 'new' | 'learned' | 'tests';
 

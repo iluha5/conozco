@@ -2,10 +2,13 @@ import { TrainingModeGroupId } from '../types/typing';
 
 import { getNewWordsTrainingModes } from './training-modes';
 import { getLearnedTrainingModes } from './learned-training-modes';
-import { getTestTrainingModes } from './test-training-modes';
 import { I18n } from '@/lib/i18n';
+import { TrainingModeConfig } from '../types/typing';
 
-export const getTrainingModeGroups = (t: I18n['t']) => ({
+export const getTrainingModeGroups = (
+    t: I18n['t'],
+    testModes?: TrainingModeConfig[],
+) => ({
     new: {
         id: 'new' as TrainingModeGroupId,
         title: t('New words'),
@@ -22,6 +25,6 @@ export const getTrainingModeGroups = (t: I18n['t']) => ({
         id: 'tests' as TrainingModeGroupId,
         title: t('Tests'),
         description: t('Knowledge testing through tests'),
-        modes: getTestTrainingModes(t),
+        modes: testModes || [],
     },
 });
