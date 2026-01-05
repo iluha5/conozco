@@ -5,16 +5,18 @@ import { formatDate } from '@/components/training/common/helpers/formatDate';
 import { useTranslation, useI18n } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import { PlayCircle, Clock, BookOpen, ArrowRight } from 'lucide-react';
+import { PlayCircle, Clock, BookOpen, ArrowRight, Trash2 } from 'lucide-react';
 
 interface ActiveTrainingCardProps {
     savedState: SavedTrainingState;
     onClick: () => void;
+    onDelete?: () => void;
 }
 
 export function ActiveTrainingCard({
     savedState,
     onClick,
+    onDelete,
 }: ActiveTrainingCardProps) {
     const { t } = useTranslation();
     const { language } = useI18n();
@@ -27,6 +29,11 @@ export function ActiveTrainingCard({
 
     const handleClick = () => {
         onClick();
+    };
+
+    const handleDelete = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        onDelete?.();
     };
 
     return (
@@ -78,9 +85,20 @@ export function ActiveTrainingCard({
                         </span>
                     </Badge>
                 </div>
-                <div className="hidden md:flex items-center justify-center gap-1.5 text-sm font-medium text-purple-700 !mt-4">
-                    <span>{t('Continue')}</span>
-                    <ArrowRight className="w-4 h-4" />
+                <div className="hidden md:flex items-center justify-between gap-1.5 text-sm font-medium text-purple-700 !mt-4">
+                    {onDelete && (
+                        <button
+                            onClick={handleDelete}
+                            className="p-1.5 hover:bg-red-50 rounded-full transition-colors"
+                            aria-label={t('Delete training')}
+                        >
+                            <Trash2 className="w-4 h-4 text-red-500" />
+                        </button>
+                    )}
+                    <div className="flex items-center gap-1.5 ml-auto">
+                        <span>{t('Continue')}</span>
+                        <ArrowRight className="w-4 h-4" />
+                    </div>
                 </div>
             </div>
         </div>

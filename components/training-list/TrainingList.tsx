@@ -38,7 +38,8 @@ export function TrainingList() {
         () => getTrainingModeGroups(t, testModes),
         [t, testModes],
     );
-    const { savedState, hasUnfinishedTraining } = useTrainingStorage();
+    const { savedState, hasUnfinishedTraining, clearProgress } =
+        useTrainingStorage();
     const {
         startMode,
         isLoading,
@@ -112,6 +113,10 @@ export function TrainingList() {
         router.push('/training');
     };
 
+    const handleDeleteTraining = () => {
+        clearProgress();
+    };
+
     // Показываем лоадер только для тестов, слова загружаются в фоне
     if (isLoadingTests) {
         return (
@@ -148,6 +153,7 @@ export function TrainingList() {
                                     : null
                             }
                             onContinueTraining={handleContinueTraining}
+                            onDeleteTraining={handleDeleteTraining}
                         />
                     ),
                     learned: (

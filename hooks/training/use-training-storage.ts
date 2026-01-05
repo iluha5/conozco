@@ -8,6 +8,7 @@ import {
 import { STORAGE_KEYS } from '@/config/storage-keys';
 
 const STORAGE_KEY = STORAGE_KEYS.TRAINING_PROGRESS;
+const STORAGE_CHANGE_EVENT = STORAGE_KEYS.TRAINING_STORAGE_CHANGE_EVENT;
 
 /**
  * Хук для работы с сохранением прогресса тренировки в localStorage
@@ -17,38 +18,80 @@ export function useTrainingStorage() {
         null,
     );
 
+    // Функция для загрузки состояния из localStorage
+    const loadSavedState = useCallback(() => {
+        try {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                const parsed = JSON.parse(saved) as SavedTrainingState;
+                setSavedState(parsed);
+            } else {
+                setSavedState(null);
+            }
+        } catch (error) {
+            console.error('Error loading saved training state:', error);
+            setSavedState(null);
+        }
+    }, []);
+
     // Загрузка сохраненного состояния при монтировании
     useEffect(() => {
-        const loadSavedState = () => {
-            try {
-                const saved = localStorage.getItem(STORAGE_KEY);
-                if (saved) {
-                    const parsed = JSON.parse(saved) as SavedTrainingState;
-                    setSavedState(parsed);
-                }
-            } catch (error) {
-                console.error('Error loading saved training state:', error);
+        loadSavedState();
+    }, [loadSavedState]);
+
+    // Синхронизация состояния между компонентами через события storage
+    useEffect(() => {
+        // Обработчик события storage (для синхронизации между вкладками)
+        const handleStorageChange = (e: StorageEvent) => {
+            if (e.key === STORAGE_KEY) {
+                loadSavedState();
             }
         };
 
-        loadSavedState();
+        // Обработчик кастомного события (для синхронизации в том же окне)
+        const handleCustomStorageChange = () => {
+            loadSavedState();
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+        window.addEventListener(
+            STORAGE_CHANGE_EVENT,
+            handleCustomStorageChange,
+        );
+
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+            window.removeEventListener(
+                STORAGE_CHANGE_EVENT,
+                handleCustomStorageChange,
+            );
+        };
+    }, [loadSavedState]);
+
+    // Функция для отправки кастомного события при изменении localStorage
+    const notifyStorageChange = useCallback(() => {
+        window.dispatchEvent(new CustomEvent(STORAGE_CHANGE_EVENT));
     }, []);
 
     /**
      * Сохранить состояние тренировки
      */
-    const saveProgress = useCallback((state: SavedTrainingState) => {
-        try {
-            const stateToSave = {
-                ...state,
-                lastUpdatedAt: new Date().toISOString(),
-            };
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
-            setSavedState(stateToSave);
-        } catch (error) {
-            console.error('Error saving training state:', error);
-        }
-    }, []);
+    const saveProgress = useCallback(
+        (state: SavedTrainingState) => {
+            try {
+                const stateToSave = {
+                    ...state,
+                    lastUpdatedAt: new Date().toISOString(),
+                };
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
+                setSavedState(stateToSave);
+                notifyStorageChange();
+            } catch (error) {
+                console.error('Error saving training state:', error);
+            }
+        },
+        [notifyStorageChange],
+    );
 
     /**
      * Очистить сохраненное состояние
@@ -57,10 +100,11 @@ export function useTrainingStorage() {
         try {
             localStorage.removeItem(STORAGE_KEY);
             setSavedState(null);
+            notifyStorageChange();
         } catch (error) {
             console.error('Error clearing training state:', error);
         }
-    }, []);
+    }, [notifyStorageChange]);
 
     /**
      * Проверить, есть ли незавершенная тренировка
@@ -177,78 +221,87 @@ export function useTrainingStorage() {
 
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedState));
                 setSavedState(updatedState);
+                notifyStorageChange();
             } catch (error) {
                 console.error('Error updating word progress:', error);
             }
         },
-        [],
+        [notifyStorageChange],
     );
 
     /**
      * Отметить этап как завершенный
      */
-    const completeStage = useCallback((stage: TrainingStage) => {
-        try {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            if (!saved) return;
+    const completeStage = useCallback(
+        (stage: TrainingStage) => {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (!saved) return;
 
-            const currentState = JSON.parse(saved) as SavedTrainingState;
-            const updatedStagesProgress = currentState.stagesProgress.map(
-                sp => {
-                    if (sp.stage !== stage) return sp;
-                    return {
-                        ...sp,
-                        status: 'completed' as const,
-                        completedAt: new Date().toISOString(),
-                    };
-                },
-            );
+                const currentState = JSON.parse(saved) as SavedTrainingState;
+                const updatedStagesProgress = currentState.stagesProgress.map(
+                    sp => {
+                        if (sp.stage !== stage) return sp;
+                        return {
+                            ...sp,
+                            status: 'completed' as const,
+                            completedAt: new Date().toISOString(),
+                        };
+                    },
+                );
 
-            const updatedState = {
-                ...currentState,
-                stagesProgress: updatedStagesProgress,
-                lastUpdatedAt: new Date().toISOString(),
-            };
+                const updatedState = {
+                    ...currentState,
+                    stagesProgress: updatedStagesProgress,
+                    lastUpdatedAt: new Date().toISOString(),
+                };
 
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedState));
-            setSavedState(updatedState);
-        } catch (error) {
-            console.error('Error completing stage:', error);
-        }
-    }, []);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedState));
+                setSavedState(updatedState);
+                notifyStorageChange();
+            } catch (error) {
+                console.error('Error completing stage:', error);
+            }
+        },
+        [notifyStorageChange],
+    );
 
     /**
      * Переключить текущий этап
      */
-    const setCurrentStage = useCallback((stage: TrainingStage) => {
-        try {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            if (!saved) return;
+    const setCurrentStage = useCallback(
+        (stage: TrainingStage) => {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (!saved) return;
 
-            const currentState = JSON.parse(saved) as SavedTrainingState;
-            // Обновляем статус этапов
-            const updatedStagesProgress = currentState.stagesProgress.map(
-                sp => {
-                    if (sp.stage === stage && sp.status === 'pending') {
-                        return { ...sp, status: 'in_progress' as const };
-                    }
-                    return sp;
-                },
-            );
+                const currentState = JSON.parse(saved) as SavedTrainingState;
+                // Обновляем статус этапов
+                const updatedStagesProgress = currentState.stagesProgress.map(
+                    sp => {
+                        if (sp.stage === stage && sp.status === 'pending') {
+                            return { ...sp, status: 'in_progress' as const };
+                        }
+                        return sp;
+                    },
+                );
 
-            const updatedState = {
-                ...currentState,
-                currentStage: stage,
-                stagesProgress: updatedStagesProgress,
-                lastUpdatedAt: new Date().toISOString(),
-            };
+                const updatedState = {
+                    ...currentState,
+                    currentStage: stage,
+                    stagesProgress: updatedStagesProgress,
+                    lastUpdatedAt: new Date().toISOString(),
+                };
 
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedState));
-            setSavedState(updatedState);
-        } catch (error) {
-            console.error('Error setting current stage:', error);
-        }
-    }, []);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedState));
+                setSavedState(updatedState);
+                notifyStorageChange();
+            } catch (error) {
+                console.error('Error setting current stage:', error);
+            }
+        },
+        [notifyStorageChange],
+    );
 
     /**
      * Записать попытку для слова (вызывается при ответе пользователя)
@@ -307,11 +360,12 @@ export function useTrainingStorage() {
 
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedState));
                 setSavedState(updatedState);
+                notifyStorageChange();
             } catch (error) {
                 console.error('Error recording attempt:', error);
             }
         },
-        [],
+        [notifyStorageChange],
     );
 
     /**

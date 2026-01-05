@@ -15,6 +15,7 @@ interface TrainingModeCardsGridProps {
     emptyStateMessage?: string;
     activeTraining?: SavedTrainingState | null;
     onContinueTraining?: () => void;
+    onDeleteTraining?: () => void;
 }
 
 export function TrainingModeCardsGrid({
@@ -26,6 +27,7 @@ export function TrainingModeCardsGrid({
     emptyStateMessage,
     activeTraining,
     onContinueTraining,
+    onDeleteTraining,
 }: TrainingModeCardsGridProps) {
     const { t } = useTranslation();
 
@@ -44,6 +46,7 @@ export function TrainingModeCardsGrid({
                     <ActiveTrainingCard
                         savedState={activeTraining}
                         onClick={onContinueTraining}
+                        onDelete={onDeleteTraining}
                     />
                 </div>
             )}
