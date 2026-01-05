@@ -114,8 +114,8 @@ export default function TrainingPage() {
     const handleExit = () => setIsExitDialogOpen(true);
 
     const handlePause = () => {
-        // Прогресс уже сохранен в localStorage, просто переходим на главную
-        router.push('/');
+        // Прогресс уже сохранен в localStorage, переходим на страницу списка тренировок
+        router.push('/training/list#new');
     };
 
     const handleConfirmExit = () => {
