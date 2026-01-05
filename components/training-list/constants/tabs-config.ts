@@ -76,7 +76,7 @@ export const getTabsConfig = (
     },
     {
         id: 'learned',
-        title: t('Reinforcement'),
+        title: t('Repeating'),
         hash: 'learned',
         showBadge: true,
         colorScheme: {
