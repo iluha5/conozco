@@ -12,7 +12,8 @@ import { useTranslation } from '@/lib/i18n';
 interface TrainingTabsProps {
     activeTab: TrainingModeGroupId;
     onTabChange: (_value: string) => void;
-    words: Word[];
+    words?: Word[];
+    isLoading?: boolean;
     children: Record<TrainingModeGroupId, React.ReactNode>;
 }
 
@@ -28,6 +29,7 @@ export function TrainingTabs({
     activeTab,
     onTabChange,
     words,
+    isLoading,
     children,
 }: TrainingTabsProps) {
     const { t } = useTranslation();
@@ -45,9 +47,10 @@ export function TrainingTabs({
                 )}
             >
                 {tabsConfig.map(tabConfig => {
-                    const badgeCount = tabConfig.getBadgeCount
-                        ? tabConfig.getBadgeCount(words)
-                        : undefined;
+                    const badgeCount =
+                        tabConfig.getBadgeCount && words
+                            ? tabConfig.getBadgeCount(words)
+                            : undefined;
 
                     return (
                         <TabTriggerWithBadge
@@ -55,6 +58,7 @@ export function TrainingTabs({
                             config={tabConfig}
                             isActive={activeTab === tabConfig.id}
                             badgeCount={badgeCount}
+                            isLoading={isLoading}
                         />
                     );
                 })}

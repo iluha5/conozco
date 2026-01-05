@@ -4,9 +4,21 @@ export const trainingApi = {
     /**
      * Получить список слов
      * @param status - Опциональный статус слов для фильтрации
+     * @param languageCode - Опциональный код языка для фильтрации
      */
-    fetchWords: async (status?: string): Promise<Word[]> => {
-        const url = status ? `/api/words?status=${status}` : '/api/words';
+    fetchWords: async (
+        status?: string,
+        languageCode?: string,
+    ): Promise<Word[]> => {
+        const params = new URLSearchParams();
+        if (status) {
+            params.set('status', status);
+        }
+        if (languageCode) {
+            params.set('languageCode', languageCode);
+        }
+        const queryString = params.toString();
+        const url = queryString ? `/api/words?${queryString}` : '/api/words';
         const response = await fetch(url);
 
         if (!response.ok) {

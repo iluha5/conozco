@@ -1,12 +1,10 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useUserSettings } from '@/hooks/settings';
 import { useTrainingWords } from '@/contexts/training-words-context';
 import { useToast, useHashDialog } from '@/hooks/shared';
 import { useTrainingStorage } from '@/hooks/training';
-import { trainingApi } from '@/lib/api/training.api';
-import { Word } from '@/types/training.types';
 import { TrainingModeId, TrainingModeGroupId } from '../types/typing';
 import { getNewWordsTrainingModes } from '../constants/training-modes';
 import { getLearnedTrainingModes } from '../constants/learned-training-modes';
@@ -14,6 +12,7 @@ import { startTrainingMode } from '../helpers/startTrainingMode';
 import { FlashCardsReviewParams } from '@/components/flash-cards-review/typing';
 import { getTrainingModeConfig } from '../helpers/getTrainingModeConfig';
 import { useTranslation, useI18n } from '@/lib/i18n';
+import { useTrainingListWords } from '@/hooks/training-list/use-training-list-words';
 
 export function useTrainingModes() {
     const { t } = useTranslation();
@@ -27,8 +26,10 @@ export function useTrainingModes() {
     const { open: showConfirmDialog, setOpen: setShowConfirmDialog } =
         useHashDialog('new-training-confirm');
 
-    const [allWords, setAllWords] = useState<Word[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    // Загружаем слова через React Query с фильтрацией по языку
+    const languageCode = userSettings?.learnLanguage?.code || null;
+    const { words: allWords, isLoading } = useTrainingListWords(languageCode);
+
     const [isStarting, setIsStarting] = useState(false);
     const [showNoWordsDialog, setShowNoWordsDialog] = useState(false);
     const [pendingModeId, setPendingModeId] = useState<TrainingModeId | null>(
@@ -49,27 +50,6 @@ export function useTrainingModes() {
         const notLearned = allWords.filter(w => w.status !== 'LEARNED');
         return { learnedWords: learned, notLearnedWords: notLearned };
     }, [allWords]);
-
-    useEffect(() => {
-        const loadWords = async () => {
-            try {
-                setIsLoading(true);
-                const words = await trainingApi.fetchWords();
-                setAllWords(words);
-            } catch (error) {
-                console.error('Failed to load words:', error);
-                toast({
-                    title: t('Error'),
-                    description: t('Failed to load words'),
-                    variant: 'destructive',
-                });
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        loadWords();
-    }, [toast, t]);
 
     // Обработчик открытия FlashCards
     const handleFlashCardsOpen = (params: FlashCardsReviewParams) => {

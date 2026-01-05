@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { NoWordsDialog } from './components/NoWordsDialog';
 import { NewTrainingConfirmationDialog } from '@/components/training/common/NewTrainingConfirmationDialog';
 import { FlashCardsReview } from '@/components/flash-cards-review/FlashCardsReview';
@@ -23,6 +24,7 @@ import { useTestModes } from './hooks/useTestModes';
 export function TrainingList() {
     const { t } = useTranslation();
     const router = useRouter();
+    const queryClient = useQueryClient();
     const { settings: userSettings } = useUserSettings();
     const languageCode = userSettings?.learnLanguage?.code || null;
 
@@ -60,6 +62,13 @@ export function TrainingList() {
         handleFlashCardsClose,
         handleGroupSetupClose,
     } = useTrainingModes();
+
+    // Инвалидация кэша при монтировании компонента
+    useEffect(() => {
+        queryClient.invalidateQueries({
+            queryKey: ['training-list-words', languageCode],
+        });
+    }, [queryClient, languageCode]);
 
     // Инициализация таба на основе хеша при монтировании
     useEffect(() => {
@@ -103,7 +112,8 @@ export function TrainingList() {
         router.push('/training');
     };
 
-    if (isLoading || isLoadingTests) {
+    // Показываем лоадер только для тестов, слова загружаются в фоне
+    if (isLoadingTests) {
         return (
             <div className="flex items-center justify-center py-12">
                 <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
@@ -124,6 +134,7 @@ export function TrainingList() {
                 activeTab={activeTab}
                 onTabChange={handleTabChange}
                 words={allWords}
+                isLoading={isLoading}
             >
                 {{
                     new: (

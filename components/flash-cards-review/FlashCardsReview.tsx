@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { X, Loader2 } from 'lucide-react';
@@ -21,6 +22,7 @@ interface FlashCardsReviewProps {
 export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
     const router = useRouter();
     const { t } = useTranslation();
+    const queryClient = useQueryClient();
     const { settings: userSettings } = useUserSettings();
     const {
         currentWord,
@@ -37,12 +39,31 @@ export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
     const learnLanguageCode = userSettings?.learnLanguage?.code || 'en';
     const ownLanguageCode = userSettings?.ownLanguage?.code || 'ru';
 
+    // Инвалидация счетчиков слов при завершении или закрытии теста
+    const invalidateWordCounters = useCallback(() => {
+        const languageCode = userSettings?.learnLanguage?.code || null;
+        if (languageCode) {
+            queryClient.invalidateQueries({
+                queryKey: ['training-list-words', languageCode],
+            });
+        }
+    }, [queryClient, userSettings?.learnLanguage?.code]);
+
     const handleClose = () => {
+        // Инвалидируем счетчики при закрытии
+        invalidateWordCounters();
         if (params.returnUrl) {
             router.push(params.returnUrl);
         }
         onClose();
     };
+
+    // Инвалидируем счетчики при завершении теста
+    useEffect(() => {
+        if (isCompleted) {
+            invalidateWordCounters();
+        }
+    }, [invalidateWordCounters, isCompleted]);
 
     // Блокируем прокрутку body при открытии модального окна
     useEffect(() => {
