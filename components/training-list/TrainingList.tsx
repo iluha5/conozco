@@ -20,6 +20,8 @@ import { useTrainingStorage } from '@/hooks/training';
 import { useRouter } from 'next/navigation';
 import { useUserSettings } from '@/hooks/settings';
 import { useTestModes } from './hooks/useTestModes';
+import { useHashDialog } from '@/hooks/shared';
+import { DeleteTrainingConfirmationDialog } from './components/DeleteTrainingConfirmationDialog';
 
 export function TrainingList() {
     const { t } = useTranslation();
@@ -40,6 +42,8 @@ export function TrainingList() {
     );
     const { savedState, hasUnfinishedTraining, clearProgress } =
         useTrainingStorage();
+    const { open: deleteDialogOpen, setOpen: setDeleteDialogOpen } =
+        useHashDialog('delete-training-confirmation');
     const {
         startMode,
         isLoading,
@@ -114,6 +118,10 @@ export function TrainingList() {
     };
 
     const handleDeleteTraining = () => {
+        setDeleteDialogOpen(true);
+    };
+
+    const handleConfirmDeleteTraining = () => {
         clearProgress();
     };
 
@@ -220,6 +228,13 @@ export function TrainingList() {
                     // Закрываем диалог настроек
                     handleGroupSetupClose(false);
                 }}
+            />
+
+            {/* Delete Training Confirmation Dialog */}
+            <DeleteTrainingConfirmationDialog
+                open={deleteDialogOpen}
+                onOpenChange={setDeleteDialogOpen}
+                onConfirm={handleConfirmDeleteTraining}
             />
         </div>
     );
