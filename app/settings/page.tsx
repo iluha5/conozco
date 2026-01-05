@@ -17,9 +17,11 @@ import {
 import { Header } from '@/components/Header';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import { useUserSettings, useLanguages } from '@/hooks/settings';
-import { useToast } from '@/hooks/shared';
+import { useToast, useHashDialog } from '@/hooks/shared';
 import { useI18n, useTranslation } from '@/lib/i18n';
 import { isLearnLanguageAvailable } from '@/config/learn-languages';
+import { useTrainingStorage } from '@/hooks/training/use-training-storage';
+import { LanguageChangeConfirmationDialog } from '@/components/settings/LanguageChangeConfirmationDialog';
 
 export default function SettingsPage() {
     const { data: session } = useSession();
@@ -33,6 +35,9 @@ export default function SettingsPage() {
     const { toast } = useToast();
     const i18n = useI18n();
     const { t } = useTranslation();
+    const { hasUnfinishedTraining, clearProgress } = useTrainingStorage();
+    const { open: isConfirmDialogOpen, setOpen: setConfirmDialogOpen } =
+        useHashDialog('settings-language-change-confirm');
 
     const [formData, setFormData] = useState({
         name: '',
@@ -61,7 +66,7 @@ export default function SettingsPage() {
         }
     }, [settings, isInitialized]);
 
-    const handleSave = async () => {
+    const performSave = async () => {
         try {
             const updates = {
                 name: formData.name.trim() || null,
@@ -105,6 +110,28 @@ export default function SettingsPage() {
                 variant: 'destructive',
             });
         }
+    };
+
+    const handleSave = async () => {
+        // Проверяем, изменился ли язык обучения
+        const isLearnLanguageChanged =
+            formData.learnLanguageId !== settings?.learnLanguageId?.toString();
+
+        // Если есть активная тренировка и язык обучения изменяется, показываем подтверждение
+        if (hasUnfinishedTraining && isLearnLanguageChanged) {
+            setConfirmDialogOpen(true);
+            return;
+        }
+
+        // Иначе сохраняем сразу
+        await performSave();
+    };
+
+    const handleConfirmSave = async () => {
+        setConfirmDialogOpen(false);
+        // Очищаем прогресс тренировки перед сохранением
+        clearProgress();
+        await performSave();
     };
 
     const getLanguageFlag = (code: string) => {
@@ -381,6 +408,13 @@ export default function SettingsPage() {
                         </Button>
                     </div>
                 </div>
+
+                <LanguageChangeConfirmationDialog
+                    open={isConfirmDialogOpen}
+                    onOpenChange={setConfirmDialogOpen}
+                    onConfirm={handleConfirmSave}
+                    saving={saving}
+                />
             </div>
         </div>
     );

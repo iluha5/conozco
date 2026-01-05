@@ -238,6 +238,8 @@
     "Continue training": "Продолжить тренировку",
     "Finish training?": "Завершить тренировку?",
     "Current training results will be reset.": "Результаты текущей тренировки будут сброшены.",
+    "Change learning language?": "Изменить язык обучения?",
+    "You have an active training session. Changing the learning language will reset your training progress. Do you want to continue?": "У вас есть активная тренировка. Изменение языка обучения приведет к сбросу прогресса тренировки. Продолжить?",
     "Finish": "Завершить",
     "Just now": "только что",
     "{{count}} min ago": "{{count}} мин. назад",

@@ -232,6 +232,8 @@
     "Continue training": "Continue training",
     "Finish training?": "Finish training?",
     "Current training results will be reset.": "Current training results will be reset.",
+    "Change learning language?": "Change learning language?",
+    "You have an active training session. Changing the learning language will reset your training progress. Do you want to continue?": "You have an active training session. Changing the learning language will reset your training progress. Do you want to continue?",
     "Finish": "Finish",
     "Just now": "Just now",
     "{{count}} min ago": "{{count}} min ago",

@@ -235,6 +235,8 @@
     "Continue training": "Continuar entrenamiento",
     "Finish training?": "¿Finalizar entrenamiento?",
     "Current training results will be reset.": "Los resultados del entrenamiento actual se restablecerán.",
+    "Change learning language?": "¿Cambiar idioma de aprendizaje?",
+    "You have an active training session. Changing the learning language will reset your training progress. Do you want to continue?": "Tienes una sesión de entrenamiento activa. Cambiar el idioma de aprendizaje restablecerá tu progreso de entrenamiento. ¿Quieres continuar?",
     "Finish": "Finalizar",
     "Just now": "Ahora mismo",
     "{{count}} min ago": "Hace {{count}} min",
