@@ -17,6 +17,8 @@ export type TrainingModeId =
     | 'learned-test-es-a1-easy'
     | 'learned-test-es-a1-medium'
     | 'learned-test-es-a2-easy'
+    | 'learned-test-es-b1-easy'
+    | 'learned-test-es-b2-easy'
     // Тесты для английского языка
     | 'learned-test-en-a1-easy'
     | 'learned-test-en-a1-medium'

@@ -48,6 +48,26 @@ export const TEST_CONFIGS: TestConfig[] = [
         gradient: 'from-orange-400 to-red-500',
         icon: GraduationCap,
     },
+    // Испанский язык - B1
+    {
+        id: 'learned-test-es-b1-easy',
+        languageCode: 'es',
+        groupId: 43, // B1: Todas las Palabras (испанский)
+        difficulty: 'easy',
+        wordCount: 20,
+        gradient: 'from-orange-400 to-red-500',
+        icon: GraduationCap,
+    },
+    // Испанский язык - B2
+    {
+        id: 'learned-test-es-b2-easy',
+        languageCode: 'es',
+        groupId: 66, // B2: Todas las Palabras (испанский)
+        difficulty: 'easy',
+        wordCount: 20,
+        gradient: 'from-orange-400 to-red-500',
+        icon: GraduationCap,
+    },
     // Английский язык - A1
     {
         id: 'learned-test-en-a1-easy',

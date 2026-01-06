@@ -117,18 +117,45 @@ export function useTestModes(
 
         // Добавляем тесты с названиями групп из БД
         configs.forEach(config => {
-            const groupName = allGroupNames.get(config.groupId) || `A1`; // Fallback название
-
-            // Определяем уровень теста (A1 или A2) из ID
+            // Определяем уровень теста из ID
             const isA2 = config.id.includes('-a2-');
-            const level = isA2 ? 'A2' : 'A1';
-            const fallbackName = isA2 ? 'A2' : 'A1';
+            const isB1 = config.id.includes('-b1-');
+            const isB2 = config.id.includes('-b2-');
+            
+            let level: string;
+            let fallbackName: string;
+            if (isB2) {
+                level = 'B2';
+                fallbackName = 'B2';
+            } else if (isB1) {
+                level = 'B1';
+                fallbackName = 'B1';
+            } else if (isA2) {
+                level = 'A2';
+                fallbackName = 'A2';
+            } else {
+                level = 'A1';
+                fallbackName = 'A1';
+            }
 
-            const title = isA2 ? t('Test A2') : t('Test A1');
+            const groupName = allGroupNames.get(config.groupId) || fallbackName;
 
-            const shortDescription = isA2
-                ? t('20 random words from A2')
-                : t('20 random words from A1');
+            let title: string;
+            let shortDescription: string;
+            
+            if (isB2) {
+                title = t('Test B2');
+                shortDescription = t('20 random words from B2');
+            } else if (isB1) {
+                title = t('Test B1');
+                shortDescription = t('20 random words from B1');
+            } else if (isA2) {
+                title = t('Test A2');
+                shortDescription = t('20 random words from A2');
+            } else {
+                title = t('Test A1');
+                shortDescription = t('20 random words from A1');
+            }
 
             modes.push({
                 id: config.id as TrainingModeConfig['id'],

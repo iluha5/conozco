@@ -32,17 +32,38 @@ export function getTrainingModeConfig(
     ) {
         const testConfig = getTestConfigById(modeId);
         if (testConfig) {
-            // Определяем уровень теста (A1 или A2) из ID
+            // Определяем уровень теста из ID
             const isA2 = modeId.includes('-a2-');
-            const level = isA2 ? 'A2' : 'A1';
+            const isB1 = modeId.includes('-b1-');
+            const isB2 = modeId.includes('-b2-');
+            
+            let level: string;
+            let title: string;
+            let shortDescription: string;
+            
+            if (isB2) {
+                level = 'B2';
+                title = t('Test B2');
+                shortDescription = t('20 random words from B2');
+            } else if (isB1) {
+                level = 'B1';
+                title = t('Test B1');
+                shortDescription = t('20 random words from B1');
+            } else if (isA2) {
+                level = 'A2';
+                title = t('Test A2');
+                shortDescription = t('20 random words from A2');
+            } else {
+                level = 'A1';
+                title = t('Test A1');
+                shortDescription = t('20 random words from A1');
+            }
 
             // Создаем базовую конфигурацию (название группы будет загружено позже)
             found = {
                 id: modeId as TrainingModeId,
-                title: isA2 ? t('Test A2') : t('Test A1'),
-                shortDescription: isA2
-                    ? t('20 random words from A2')
-                    : t('20 random words from A1'),
+                title,
+                shortDescription,
                 detailedDescription: t(
                     'Check {{count}} random words from group "{{name}}" and add unknown words to your collection',
                     {
