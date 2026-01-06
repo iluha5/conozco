@@ -1,14 +1,31 @@
 'use client';
 
+import { useState } from 'react';
 import { Header } from '@/components/Header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslation } from '@/lib/i18n';
+import { useCookieConsent } from '@/hooks/shared/useCookieConsent';
 
 export default function PrivacyPolicyPage() {
     const { t } = useTranslation();
+    const { consent, withdrawing, withdrawConsent } = useCookieConsent();
+    const [showWithdrawDialog, setShowWithdrawDialog] = useState(false);
+
+    const handleWithdraw = async () => {
+        await withdrawConsent();
+        setShowWithdrawDialog(false);
+    };
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -89,7 +106,9 @@ export default function PrivacyPolicyPage() {
                     <Card className="mb-6">
                         <CardHeader>
                             <CardTitle>
-                                {t('3. Legal Basis for Processing (GDPR Art. 6)')}
+                                {t(
+                                    '3. Legal Basis for Processing (GDPR Art. 6)',
+                                )}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
@@ -100,14 +119,18 @@ export default function PrivacyPolicyPage() {
                             </p>
                             <ul className="list-disc list-inside space-y-2 text-gray-700">
                                 <li>
-                                    <strong>{t('Consent (Art. 6(1)(a)):')}</strong>{' '}
+                                    <strong>
+                                        {t('Consent (Art. 6(1)(a)):')}
+                                    </strong>{' '}
                                     {t(
                                         'For cookies and similar technologies (with your explicit consent)',
                                     )}
                                 </li>
                                 <li>
                                     <strong>
-                                        {t('Contract Performance (Art. 6(1)(b)):')}
+                                        {t(
+                                            'Contract Performance (Art. 6(1)(b)):',
+                                        )}
                                     </strong>{' '}
                                     {t(
                                         'To provide you with our language learning services',
@@ -115,7 +138,9 @@ export default function PrivacyPolicyPage() {
                                 </li>
                                 <li>
                                     <strong>
-                                        {t('Legitimate Interests (Art. 6(1)(f)):')}
+                                        {t(
+                                            'Legitimate Interests (Art. 6(1)(f)):',
+                                        )}
                                     </strong>{' '}
                                     {t(
                                         'To improve our services, ensure security, and prevent fraud',
@@ -183,9 +208,7 @@ export default function PrivacyPolicyPage() {
                                     Analytics
                                 </p>
                                 <p className="text-sm text-gray-600">
-                                    <strong>
-                                        {t('Privacy Policy:')}
-                                    </strong>{' '}
+                                    <strong>{t('Privacy Policy:')}</strong>{' '}
                                     <a
                                         href="https://policies.google.com/privacy"
                                         target="_blank"
@@ -236,7 +259,9 @@ export default function PrivacyPolicyPage() {
                             </p>
                             <ul className="list-disc list-inside space-y-2 text-gray-700">
                                 <li>
-                                    <strong>{t('Right of Access (Art. 15):')}</strong>{' '}
+                                    <strong>
+                                        {t('Right of Access (Art. 15):')}
+                                    </strong>{' '}
                                     {t(
                                         'You have the right to request copies of your personal data.',
                                     )}
@@ -397,12 +422,74 @@ export default function PrivacyPolicyPage() {
                         </CardContent>
                     </Card>
 
-                    <div className="text-sm text-gray-500 mb-8">
-                        {t('Last Updated:')} {new Date().toLocaleDateString()}
-                    </div>
+                    {/* Кнопка отзыва согласия */}
+                    {consent?.given && (
+                        <div className="mt-8 pt-8 border-t">
+                            <div className="text-center">
+                                <p className="text-sm text-gray-700 mb-2">
+                                    {t(
+                                        'You can withdraw your cookie consent at any time. ',
+                                    )}
+                                    <span
+                                        onClick={() =>
+                                            setShowWithdrawDialog(true)
+                                        }
+                                        className="underline hover:text-gray-800 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+                                    >
+                                        {t('Withdraw consent')}.
+                                    </span>
+                                </p>
+                                {/* <button
+                                    onClick={() => setShowWithdrawDialog(true)}
+                                    disabled={withdrawing}
+                                    className="text-gray-600 underline hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {withdrawing
+                                        ? t('Withdrawing...')
+                                        : t('Withdraw Consent')}
+                                </button> */}
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
+
+            {/* Диалог подтверждения отзыва согласия */}
+            <Dialog
+                open={showWithdrawDialog}
+                onOpenChange={setShowWithdrawDialog}
+            >
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>
+                            {t('Withdraw Cookie Consent')}
+                        </DialogTitle>
+                        <DialogDescription>
+                            {t(
+                                'Are you sure you want to withdraw your consent for cookies? This will disable functional and analytics cookies. Necessary cookies will remain enabled as they are required for the website to function.',
+                            )}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="flex-row justify-end gap-2">
+                        <Button
+                            variant="outline"
+                            onClick={() => setShowWithdrawDialog(false)}
+                            disabled={withdrawing}
+                        >
+                            {t('Cancel')}
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={handleWithdraw}
+                            disabled={withdrawing}
+                        >
+                            {withdrawing
+                                ? t('Withdrawing...')
+                                : t('Withdraw Consent')}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
-
