@@ -119,9 +119,16 @@ export function useTestModes(
         configs.forEach(config => {
             const groupName = allGroupNames.get(config.groupId) || `A1`; // Fallback название
 
-            const title = t('Test A1');
+            // Определяем уровень теста (A1 или A2) из ID
+            const isA2 = config.id.includes('-a2-');
+            const level = isA2 ? 'A2' : 'A1';
+            const fallbackName = isA2 ? 'A2' : 'A1';
 
-            const shortDescription = t('20 random words from A1');
+            const title = isA2 ? t('Test A2') : t('Test A1');
+
+            const shortDescription = isA2
+                ? t('20 random words from A2')
+                : t('20 random words from A1');
 
             modes.push({
                 id: config.id as TrainingModeConfig['id'],

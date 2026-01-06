@@ -28,7 +28,7 @@ export interface TestConfig {
  * Названия групп будут загружаться динамически из БД
  */
 export const TEST_CONFIGS: TestConfig[] = [
-    // Испанский язык
+    // Испанский язык - A1
     {
         id: 'learned-test-es-a1-easy',
         languageCode: 'es',
@@ -38,11 +38,31 @@ export const TEST_CONFIGS: TestConfig[] = [
         gradient: 'from-orange-400 to-red-500',
         icon: GraduationCap,
     },
-    // Английский язык
+    // Испанский язык - A2
+    {
+        id: 'learned-test-es-a2-easy',
+        languageCode: 'es',
+        groupId: 28, // A2: Todas las Palabras (испанский)
+        difficulty: 'easy',
+        wordCount: 20,
+        gradient: 'from-orange-400 to-red-500',
+        icon: GraduationCap,
+    },
+    // Английский язык - A1
     {
         id: 'learned-test-en-a1-easy',
         languageCode: 'en',
         groupId: 27, // A1: All Word (английский)
+        difficulty: 'easy',
+        wordCount: 20,
+        gradient: 'from-orange-400 to-red-500',
+        icon: GraduationCap,
+    },
+    // Английский язык - A2
+    {
+        id: 'learned-test-en-a2-easy',
+        languageCode: 'en',
+        groupId: 108, // A2: All Words (английский)
         difficulty: 'easy',
         wordCount: 20,
         gradient: 'from-orange-400 to-red-500',

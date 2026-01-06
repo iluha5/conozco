@@ -32,16 +32,22 @@ export function getTrainingModeConfig(
     ) {
         const testConfig = getTestConfigById(modeId);
         if (testConfig) {
+            // Определяем уровень теста (A1 или A2) из ID
+            const isA2 = modeId.includes('-a2-');
+            const level = isA2 ? 'A2' : 'A1';
+
             // Создаем базовую конфигурацию (название группы будет загружено позже)
             found = {
                 id: modeId as TrainingModeId,
-                title: t('Test A1'),
-                shortDescription: t('20 random words from A1'),
+                title: isA2 ? t('Test A2') : t('Test A1'),
+                shortDescription: isA2
+                    ? t('20 random words from A2')
+                    : t('20 random words from A1'),
                 detailedDescription: t(
                     'Check {{count}} random words from group "{{name}}" and add unknown words to your collection',
                     {
                         count: testConfig.wordCount,
-                        name: 'A1',
+                        name: level,
                     },
                 ),
                 icon: testConfig.icon,
@@ -52,7 +58,7 @@ export function getTrainingModeConfig(
                 wordSource: 'group',
                 modeType: 'flashCards',
                 groupId: testConfig.groupId,
-                groupName: 'A1', // Fallback, будет заменено при загрузке из БД
+                groupName: level, // Fallback, будет заменено при загрузке из БД
             };
         }
     }

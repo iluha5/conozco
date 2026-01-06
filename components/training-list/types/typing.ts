@@ -16,9 +16,11 @@ export type TrainingModeId =
     // Тесты для испанского языка
     | 'learned-test-es-a1-easy'
     | 'learned-test-es-a1-medium'
+    | 'learned-test-es-a2-easy'
     // Тесты для английского языка
     | 'learned-test-en-a1-easy'
-    | 'learned-test-en-a1-medium';
+    | 'learned-test-en-a1-medium'
+    | 'learned-test-en-a2-easy';
 
 export type TrainingModeGroupId = 'new' | 'learned' | 'tests';
 
