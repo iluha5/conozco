@@ -75,7 +75,9 @@ export function useTestModes(
                     return res.json();
                 });
                 const results = await Promise.all(promises);
-                return results.filter((group): group is WordGroup => group !== null);
+                return results.filter(
+                    (group): group is WordGroup => group !== null,
+                );
             },
             enabled: missingGroupIds.length > 0,
         });
@@ -115,28 +117,23 @@ export function useTestModes(
 
         // Добавляем тесты с названиями групп из БД
         configs.forEach(config => {
-            const groupName =
-                allGroupNames.get(config.groupId) ||
-                `A1 (${config.difficulty})`; // Fallback название
+            const groupName = allGroupNames.get(config.groupId) || `A1`; // Fallback название
 
-            const title =
-                config.difficulty === 'easy'
-                    ? t('Test A1 (easy)')
-                    : t('Test A1 (medium)');
+            const title = t('Test A1');
 
-            const shortDescription =
-                config.difficulty === 'easy'
-                    ? t('10 random words from A1')
-                    : t('20 random words from A1');
+            const shortDescription = t('20 random words from A1');
 
             modes.push({
                 id: config.id as TrainingModeConfig['id'],
                 title,
                 shortDescription,
-                detailedDescription: t('Check {{count}} random words from group "{{name}}"', {
-                    count: config.wordCount,
-                    name: groupName,
-                }),
+                detailedDescription: t(
+                    'Check {{count}} random words from group "{{name}}" and add unknown words to your collection',
+                    {
+                        count: config.wordCount,
+                        name: groupName,
+                    },
+                ),
                 icon: config.icon,
                 gradient: config.gradient,
                 enabledStages: [],
@@ -158,4 +155,3 @@ export function useTestModes(
         error: null,
     };
 }
-

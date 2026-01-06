@@ -34,17 +34,8 @@ export const TEST_CONFIGS: TestConfig[] = [
         languageCode: 'es',
         groupId: 4, // A1: All words (испанский)
         difficulty: 'easy',
-        wordCount: 10,
-        gradient: 'from-orange-400 to-red-500',
-        icon: GraduationCap,
-    },
-    {
-        id: 'learned-test-es-a1-medium',
-        languageCode: 'es',
-        groupId: 4, // A1: All words (испанский)
-        difficulty: 'medium',
         wordCount: 20,
-        gradient: 'from-red-400 to-rose-500',
+        gradient: 'from-orange-400 to-red-500',
         icon: GraduationCap,
     },
     // Английский язык
@@ -53,17 +44,8 @@ export const TEST_CONFIGS: TestConfig[] = [
         languageCode: 'en',
         groupId: 27, // A1: All Word (английский)
         difficulty: 'easy',
-        wordCount: 10,
-        gradient: 'from-orange-400 to-red-500',
-        icon: GraduationCap,
-    },
-    {
-        id: 'learned-test-en-a1-medium',
-        languageCode: 'en',
-        groupId: 27, // A1: All Word (английский)
-        difficulty: 'medium',
         wordCount: 20,
-        gradient: 'from-red-400 to-rose-500',
+        gradient: 'from-orange-400 to-red-500',
         icon: GraduationCap,
     },
 ];
