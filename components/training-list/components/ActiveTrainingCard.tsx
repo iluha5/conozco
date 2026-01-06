@@ -52,9 +52,18 @@ export function ActiveTrainingCard({
                 <div className="flex items-center justify-center transition-all duration-300 group-hover:scale-105 origin-center">
                     <PlayCircle className="w-5 h-5 md:w-8 md:h-8 text-purple-600 animate-pulse-scale" />
                 </div>
-                <div className="text-lg md:text-xl font-bold text-purple-700">
+                <div className="absolute left-1/2 -translate-x-1/2 md:relative md:left-auto md:translate-x-0 text-lg md:text-xl font-bold text-purple-700">
                     {progress}%
                 </div>
+                {onDelete && (
+                    <button
+                        onClick={handleDelete}
+                        className="md:hidden p-1.5 hover:bg-red-50 rounded-full transition-colors"
+                        aria-label={t('Delete training')}
+                    >
+                        <Trash2 className="w-4 h-4 text-red-500" />
+                    </button>
+                )}
             </div>
 
             <div className="relative z-10 flex-1 flex flex-col justify-start space-y-2">
