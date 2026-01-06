@@ -9,6 +9,8 @@ import { TranslationProvider } from '@/lib/i18n';
 import { getStaticResources } from '@/lib/i18n/utils/getStaticResources';
 import { getUserInterfaceLanguage } from '@/lib/i18n/utils/getUserInterfaceLanguage';
 import { tServerSync } from '@/lib/i18n';
+import { CookieConsent } from '@/components/cookie-consent/CookieConsent';
+import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics';
 
 const inter = Inter({ subsets: ['latin', 'cyrillic'] });
 const ubuntu = Ubuntu({
@@ -59,6 +61,8 @@ export default async function RootLayout({
                             <TrainingWordsProvider>
                                 {children}
                                 <Toaster />
+                                <CookieConsent />
+                                <GoogleAnalytics />
                             </TrainingWordsProvider>
                         </QueryProvider>
                     </TranslationProvider>

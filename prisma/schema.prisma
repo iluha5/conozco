@@ -79,6 +79,7 @@ model User {
   apiRequestLogs      ApiRequestLog[]
   customTranslations  CustomTranslation[]
   sessions            Session[]
+  cookieConsent       UserCookieConsent?
   interfaceLanguage   Language?           @relation("UserInterfaceLanguage", fields: [interfaceLanguageId], references: [id])
   learnLanguage       Language?           @relation("UserLearnLanguage", fields: [learnLanguageId], references: [id])
   ownLanguage         Language?           @relation("UserOwnLanguage", fields: [ownLanguageId], references: [id])
@@ -415,6 +416,23 @@ model ApiRequestLog {
   @@index([sourceLanguageId])
   @@index([targetLanguageId])
   @@index([createdAt])
+}
+
+model UserCookieConsent {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @unique
+  version     String   // Версия политики куки (например, "1.0")
+  given       Boolean  @default(false) // Дано ли согласие
+  givenAt     DateTime? // Дата и время согласия
+  withdrawnAt DateTime? // Дата отзыва согласия
+  preferences Json     // Детальные предпочтения (necessary, functional, analytics, marketing)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([version])
+  @@index([given])
 }
 
 enum WordGroupVisibility {

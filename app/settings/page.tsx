@@ -22,6 +22,7 @@ import { useI18n, useTranslation } from '@/lib/i18n';
 import { isLearnLanguageAvailable } from '@/config/learn-languages';
 import { useTrainingStorage } from '@/hooks/training/use-training-storage';
 import { LanguageChangeConfirmationDialog } from '@/components/settings/LanguageChangeConfirmationDialog';
+import { CookieConsentSection } from '@/components/settings/CookieConsentSection';
 
 export default function SettingsPage() {
     const { data: session } = useSession();
@@ -386,6 +387,9 @@ export default function SettingsPage() {
                             </div>
                         </CardContent>
                     </Card>
+
+                    {/* Privacy & Cookies */}
+                    <CookieConsentSection />
 
                     {/* Кнопка сохранения */}
                     <div className="flex justify-end pt-4">
