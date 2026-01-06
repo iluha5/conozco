@@ -61,6 +61,35 @@ const GRADIENT_TO_COLOR_MAP: Record<
         bgLight: 'bg-red-400/10',
         bgLightMedium: 'bg-red-400/10',
     },
+    // Зеленая гамма для тестов уровней A1, A2, B1, B2
+    'from-green-300 to-green-400': {
+        border: 'border-green-300',
+        text: 'text-green-600',
+        bg: 'bg-green-300',
+        bgLight: 'bg-green-300/10',
+        bgLightMedium: 'bg-green-300/10',
+    },
+    'from-green-400 to-green-500': {
+        border: 'border-green-400',
+        text: 'text-green-600',
+        bg: 'bg-green-400',
+        bgLight: 'bg-green-400/10',
+        bgLightMedium: 'bg-green-400/10',
+    },
+    'from-green-500 to-green-600': {
+        border: 'border-green-500',
+        text: 'text-green-600',
+        bg: 'bg-green-500',
+        bgLight: 'bg-green-500/10',
+        bgLightMedium: 'bg-green-500/10',
+    },
+    'from-green-600 to-green-700': {
+        border: 'border-green-600',
+        text: 'text-green-700',
+        bg: 'bg-green-600',
+        bgLight: 'bg-green-600/10',
+        bgLightMedium: 'bg-green-600/10',
+    },
 };
 
 /**
