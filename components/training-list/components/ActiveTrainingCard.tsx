@@ -49,9 +49,9 @@ export function ActiveTrainingCard({
             onClick={handleClick}
             className={cn(
                 'relative aspect-square rounded-2xl p-6',
-                'bg-white border-2 border-purple-400',
+                'bg-white border-2 border-green-400',
                 'shadow-md hover:shadow-xl',
-                'hover:border-purple-500',
+                'hover:border-green-500',
                 'transition-all duration-300',
                 'cursor-pointer flex flex-col overflow-hidden group',
             )}
@@ -61,14 +61,16 @@ export function ActiveTrainingCard({
                     className={cn(
                         'p-2 sm:p-3 rounded-xl transition-all duration-300',
                         'group-hover:scale-105 origin-center',
-                        'bg-purple-400/10',
+                        'bg-green-400/10',
                     )}
                 >
                     <PlayCircle
-                        className={cn('w-5 h-5 md:w-8 md:h-8 text-purple-600')}
+                        className={cn(
+                            'w-5 h-5 md:w-8 md:h-8 text-green-600 animate-pulse-scale',
+                        )}
                     />
                 </div>
-                <div className="text-lg md:text-xl font-bold text-purple-700">
+                <div className="text-lg md:text-xl font-bold text-green-700">
                     {progress}%
                 </div>
                 {onDelete && (
@@ -77,7 +79,7 @@ export function ActiveTrainingCard({
                         className="p-1.5 hover:bg-red-50 rounded-full transition-colors"
                         aria-label={t('Delete training')}
                     >
-                        <Trash2 className="w-4 h-4 text-red-500" />
+                        <Trash2 className="w-4 h-4 md:w-5 md:h-5 text-red-500" />
                     </button>
                 )}
             </div>
