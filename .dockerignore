@@ -9,3 +9,22 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Большие папки с данными, не нужные в образе
+dumps/
+backups/
+test-results/
+playwright-report/
+cursor_output/
+temp/
+
+# Документация и скрипты разработки
+docs/
+scripts/
+e2e/
+*.md
+!package.json
+
+# Временные файлы
+*.log
+*.tsbuildinfo
+

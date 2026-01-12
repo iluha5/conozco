@@ -294,6 +294,39 @@ async function generateWordData(
                     }
 
                     const wordData: WordData = JSON.parse(cleanJson);
+
+                    // Валидация: проверяем соответствие слова
+                    const generatedWord = wordData.word?.toLowerCase().trim();
+                    const requestedWord = word.toLowerCase().trim();
+
+                    if (!generatedWord) {
+                        reject(
+                            new Error(
+                                `Generated data has no word field. Generated data: ${JSON.stringify(wordData).substring(0, 200)}`,
+                            ),
+                        );
+                        return;
+                    }
+
+                    if (generatedWord !== requestedWord) {
+                        reject(
+                            new Error(
+                                `Word mismatch: requested "${requestedWord}" but got "${generatedWord}". The AI returned data for a different word.`,
+                            ),
+                        );
+                        return;
+                    }
+
+                    // Проверяем соответствие языка
+                    if (wordData.languageCode !== languageCode) {
+                        reject(
+                            new Error(
+                                `Language mismatch: requested "${languageCode}" but got "${wordData.languageCode}"`,
+                            ),
+                        );
+                        return;
+                    }
+
                     console.log(`✅ Successfully generated data for "${word}"`);
                     resolve(wordData);
                 } else {
