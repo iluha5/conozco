@@ -37,9 +37,7 @@ export function LanguageChangeConfirmationDialog({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="!left-4 !right-4 !translate-x-0 !w-auto max-w-[500px] sm:!left-[50%] sm:!right-auto sm:!translate-x-[-50%]">
                 <DialogHeader>
-                    <DialogTitle>
-                        {t('Change learning language?')}
-                    </DialogTitle>
+                    <DialogTitle>{t('Change learning language?')}</DialogTitle>
                     <DialogDescription className="!mt-6 !mb-4">
                         {t(
                             'You have an active training session. Changing the learning language will reset your training progress. Do you want to continue?',
@@ -73,4 +71,3 @@ export function LanguageChangeConfirmationDialog({
         </Dialog>
     );
 }
-

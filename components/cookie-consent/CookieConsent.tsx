@@ -12,16 +12,12 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { useCookieConsent } from '@/hooks/shared/useCookieConsent';
-import {
-    CookiePreferences,
-    COOKIE_CONSENT_VERSION,
-} from '@/types/cookie-consent.types';
+import { CookiePreferences } from '@/types/cookie-consent.types';
 import { useTranslation } from '@/lib/i18n';
 import Link from 'next/link';
 
 export function CookieConsent() {
-    const { consent, loading, saving, needsConsent, saveConsent } =
-        useCookieConsent();
+    const { consent, saving, needsConsent, saveConsent } = useCookieConsent();
     const { t } = useTranslation();
     const [showBanner, setShowBanner] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
@@ -178,7 +174,7 @@ export function CookieConsent() {
                                 <Checkbox
                                     id="functional"
                                     checked={preferences.functional}
-                                    onCheckedChange={(checked) =>
+                                    onCheckedChange={checked =>
                                         setPreferences({
                                             ...preferences,
                                             functional: checked === true,
@@ -206,7 +202,7 @@ export function CookieConsent() {
                                 <Checkbox
                                     id="analytics"
                                     checked={preferences.analytics}
-                                    onCheckedChange={(checked) =>
+                                    onCheckedChange={checked =>
                                         setPreferences({
                                             ...preferences,
                                             analytics: checked === true,
@@ -264,4 +260,3 @@ export function CookieConsent() {
         </>
     );
 }
-

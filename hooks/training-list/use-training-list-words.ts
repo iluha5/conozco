@@ -11,12 +11,7 @@ const EMPTY_WORDS: Word[] = [];
  * Поддерживает фоновую загрузку с stale-while-revalidate
  */
 export function useTrainingListWords(languageCode: string | null) {
-    const {
-        data,
-        isLoading,
-        isFetching,
-        error,
-    } = useQuery({
+    const { data, isLoading, isFetching, error } = useQuery({
         queryKey: ['training-list-words', languageCode],
         queryFn: async () => {
             if (!languageCode) {
@@ -44,4 +39,3 @@ export function useTrainingListWords(languageCode: string | null) {
         isFetching, // Для отслеживания фоновой загрузки
     };
 }
-

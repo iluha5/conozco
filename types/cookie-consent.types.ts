@@ -49,4 +49,3 @@ export interface CookieConsentRequest {
 
 export const COOKIE_CONSENT_VERSION = '1.0';
 export const COOKIE_CONSENT_STORAGE_KEY = 'cookie_consent';
-

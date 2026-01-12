@@ -6,7 +6,6 @@ import {
     CookieConsentRequest,
     CookieConsentResponse,
     CookiePreferences,
-    COOKIE_CONSENT_VERSION,
 } from '@/types/cookie-consent.types';
 
 /**
@@ -196,4 +195,3 @@ export async function DELETE() {
         );
     }
 }
-

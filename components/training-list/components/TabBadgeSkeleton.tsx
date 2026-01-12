@@ -20,4 +20,3 @@ export function TabBadgeSkeleton({ className }: TabBadgeSkeletonProps) {
         />
     );
 }
-

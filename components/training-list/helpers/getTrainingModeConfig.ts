@@ -1,7 +1,6 @@
 import { TrainingModeId, TrainingModeConfig } from '../types/typing';
 import { getNewWordsTrainingModes } from '../constants/training-modes';
 import { getLearnedTrainingModes } from '../constants/learned-training-modes';
-import { getTestTrainingModes } from '../constants/test-training-modes';
 import { getTestConfigById } from '../constants/test-config';
 import { I18n } from '@/lib/i18n';
 
@@ -19,7 +18,7 @@ export function getTrainingModeConfig(
     const allTrainingModes: TrainingModeConfig[] = [
         ...getNewWordsTrainingModes(t),
         ...getLearnedTrainingModes(t),
-        ...(testModes || getTestTrainingModes(t)),
+        ...(testModes || []),
     ];
 
     // Если режим не найден и это новый ID теста с префиксом языка, пытаемся найти через test-config
@@ -36,11 +35,11 @@ export function getTrainingModeConfig(
             const isA2 = modeId.includes('-a2-');
             const isB1 = modeId.includes('-b1-');
             const isB2 = modeId.includes('-b2-');
-            
+
             let level: string;
             let title: string;
             let shortDescription: string;
-            
+
             if (isB2) {
                 level = 'B2';
                 title = t('Test B2');

@@ -55,7 +55,7 @@ function saveToLocalStorage(consent: LocalStorageConsent): void {
 /**
  * Удалить согласие из localStorage
  */
-function removeFromLocalStorage(): void {
+function _removeFromLocalStorage(): void {
     if (typeof window === 'undefined') {
         return;
     }
@@ -170,9 +170,7 @@ async function withdrawCookieConsent(): Promise<CookieConsentResponse> {
 
     if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(
-            errorData.error || 'Failed to withdraw cookie consent',
-        );
+        throw new Error(errorData.error || 'Failed to withdraw cookie consent');
     }
 
     return response.json();
@@ -203,7 +201,7 @@ export function useCookieConsent() {
     // Мутация для сохранения согласия
     const saveMutation = useMutation({
         mutationFn: saveCookieConsent,
-        onSuccess: (updatedConsent) => {
+        onSuccess: updatedConsent => {
             queryClient.setQueryData(['cookie-consent'], updatedConsent);
             // Сохраняем в localStorage только для кэширования (БД - источник правды для зарегистрированных)
             const localStorageConsent: LocalStorageConsent = {
@@ -220,14 +218,15 @@ export function useCookieConsent() {
     // Мутация для отзыва согласия
     const withdrawMutation = useMutation({
         mutationFn: withdrawCookieConsent,
-        onSuccess: (updatedConsent) => {
+        onSuccess: updatedConsent => {
             queryClient.setQueryData(['cookie-consent'], updatedConsent);
             // Сохраняем в localStorage для быстрого доступа (но БД - источник правды)
             const localStorageConsent: LocalStorageConsent = {
                 version: updatedConsent.version,
                 given: false,
                 givenAt: updatedConsent.givenAt || new Date().toISOString(),
-                withdrawnAt: updatedConsent.withdrawnAt || new Date().toISOString(),
+                withdrawnAt:
+                    updatedConsent.withdrawnAt || new Date().toISOString(),
                 preferences: updatedConsent.preferences,
             };
             saveToLocalStorage(localStorageConsent);
@@ -337,17 +336,23 @@ export function useCookieConsent() {
     // Проверка типов согласия
     const canUseFunctional = useCallback((): boolean => {
         const consent = getConsent();
-        return consent?.given === true && consent.preferences.functional === true;
+        return (
+            consent?.given === true && consent.preferences.functional === true
+        );
     }, [getConsent]);
 
     const canUseAnalytics = useCallback((): boolean => {
         const consent = getConsent();
-        return consent?.given === true && consent.preferences.analytics === true;
+        return (
+            consent?.given === true && consent.preferences.analytics === true
+        );
     }, [getConsent]);
 
     const canUseMarketing = useCallback((): boolean => {
         const consent = getConsent();
-        return consent?.given === true && consent.preferences.marketing === true;
+        return (
+            consent?.given === true && consent.preferences.marketing === true
+        );
     }, [getConsent]);
 
     const hasConsent = useCallback((): boolean => {
@@ -363,22 +368,22 @@ export function useCookieConsent() {
 
         // Для незарегистрированных пользователей - данные из localStorage доступны сразу
         const consent = getConsent();
-        
+
         // Если согласия нет - показываем баннер
         if (!consent) {
             return true;
         }
-        
+
         // Проверяем версию политики
         if (consent.version !== COOKIE_CONSENT_VERSION) {
             return true;
         }
-        
+
         // Если согласие дано - не показываем попап
         if (consent.given) {
             return false;
         }
-        
+
         // Если согласие не дано (отказ), проверяем время по withdrawnAt
         // Если прошло менее 24 часов с момента отказа - не показываем попап
         if (!consent.given && consent.withdrawnAt) {
@@ -390,7 +395,7 @@ export function useCookieConsent() {
             // Прошло 24 часа или более - показываем попап снова
             return true;
         }
-        
+
         // Если нет информации о времени отказа, но given: false - показываем попап
         return !consent.given;
     }, [getConsent, isAuthenticated, loadingDb]);
@@ -451,4 +456,3 @@ export function useCookieConsent() {
         needsConsent,
     };
 }
-

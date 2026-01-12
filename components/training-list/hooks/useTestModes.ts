@@ -2,10 +2,7 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { TrainingModeConfig } from '../types/typing';
 import { I18n } from '@/lib/i18n';
-import {
-    getTestConfigsForLanguage,
-    TestConfig,
-} from '../constants/test-config';
+import { getTestConfigsForLanguage } from '../constants/test-config';
 import { ListChecks } from 'lucide-react';
 
 interface WordGroup {
@@ -121,20 +118,15 @@ export function useTestModes(
             const isA2 = config.id.includes('-a2-');
             const isB1 = config.id.includes('-b1-');
             const isB2 = config.id.includes('-b2-');
-            
-            let level: string;
+
             let fallbackName: string;
             if (isB2) {
-                level = 'B2';
                 fallbackName = 'B2';
             } else if (isB1) {
-                level = 'B1';
                 fallbackName = 'B1';
             } else if (isA2) {
-                level = 'A2';
                 fallbackName = 'A2';
             } else {
-                level = 'A1';
                 fallbackName = 'A1';
             }
 
@@ -142,7 +134,7 @@ export function useTestModes(
 
             let title: string;
             let shortDescription: string;
-            
+
             if (isB2) {
                 title = t('Test B2');
                 shortDescription = t('20 random words from B2');
@@ -181,7 +173,7 @@ export function useTestModes(
         });
 
         return modes;
-    }, [languageCode, testConfigs, allGroupNames, t]);
+    }, [languageCode, allGroupNames, t]);
 
     return {
         testModes,

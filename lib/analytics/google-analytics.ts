@@ -4,10 +4,14 @@
  */
 
 declare global {
+    // eslint-disable-next-line no-unused-vars
     interface Window {
         gtag?: (
+            // eslint-disable-next-line no-unused-vars
             command: string,
+            // eslint-disable-next-line no-unused-vars
             targetId: string,
+            // eslint-disable-next-line no-unused-vars
             config?: Record<string, any>,
         ) => void;
         dataLayer?: any[];
@@ -89,7 +93,7 @@ export function disableGoogleAnalytics(): void {
     const scripts = document.querySelectorAll(
         'script[src*="googletagmanager.com/gtag/js"]',
     );
-    scripts.forEach((script) => script.remove());
+    scripts.forEach(script => script.remove());
 
     // Очищаем dataLayer
     if (window.dataLayer) {
@@ -101,9 +105,10 @@ export function disableGoogleAnalytics(): void {
 
     // Удаляем куки Google Analytics
     const cookies = document.cookie.split(';');
-    cookies.forEach((cookie) => {
+    cookies.forEach(cookie => {
         const eqPos = cookie.indexOf('=');
-        const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+        const name =
+            eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
         if (name.startsWith('_ga') || name.startsWith('_gid')) {
             document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
             document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=.${window.location.hostname}`;
@@ -120,4 +125,3 @@ export function disableGoogleAnalytics(): void {
 export function isGoogleAnalyticsEnabled(): boolean {
     return isInitialized && measurementId !== null;
 }
-

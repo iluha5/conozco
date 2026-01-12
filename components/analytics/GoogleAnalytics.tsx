@@ -9,8 +9,7 @@ import {
     disableGoogleAnalytics,
 } from '@/lib/analytics/google-analytics';
 
-const GA_MEASUREMENT_ID =
-    process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || '';
+const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || '';
 
 /**
  * Компонент для условной загрузки Google Analytics
@@ -45,4 +44,3 @@ export function GoogleAnalytics() {
     // Компонент не рендерит ничего видимого
     return null;
 }
-

@@ -61,12 +61,15 @@ export function TabTriggerWithBadge({
                                             ? [
                                                   colorScheme.badge.active.bg,
                                                   colorScheme.badge.active.text,
-                                                  colorScheme.badge.active.border,
+                                                  colorScheme.badge.active
+                                                      .border,
                                               ]
                                             : [
                                                   colorScheme.badge.inactive.bg,
-                                                  colorScheme.badge.inactive.text,
-                                                  colorScheme.badge.inactive.border,
+                                                  colorScheme.badge.inactive
+                                                      .text,
+                                                  colorScheme.badge.inactive
+                                                      .border,
                                               ],
                                     )}
                                 >
