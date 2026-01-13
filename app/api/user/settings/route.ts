@@ -3,7 +3,6 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
-// GET - получение настроек пользователя
 export async function GET() {
     try {
         const session = await getServerSession(authOptions);
@@ -55,7 +54,6 @@ export async function GET() {
     }
 }
 
-// PATCH - обновление настроек пользователя
 export async function PATCH(request: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
@@ -77,7 +75,7 @@ export async function PATCH(request: NextRequest) {
             hasConfigured,
         } = body;
 
-        // Валидация данных
+        // Data validation
         const updates: any = {};
 
         if (name !== undefined) {

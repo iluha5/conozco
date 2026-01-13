@@ -1,115 +1,115 @@
-# E2E тесты с Playwright
+# E2E Tests with Playwright
 
-## Установка
+## Installation
 
-1. Установите зависимости:
+1. Install dependencies:
 
 ```bash
 npm install
 ```
 
-2. Установите только Chromium браузер:
+2. Install Chromium browser only:
 
 ```bash
 npx playwright install chromium
 ```
 
-**Важно:** Устанавливается только Chromium, Firefox и WebKit не используются.
+**Important:** Only Chromium is installed, Firefox and WebKit are not used.
 
-3. Убедитесь, что Docker запущен (для тестовой БД):
+3. Ensure Docker is running (for test database):
 
 ```bash
 docker --version
 ```
 
-## Тестовая база данных
+## Test Database
 
-E2E тесты используют изолированную тестовую БД, которая автоматически запускается перед тестами.
+E2E tests use an isolated test database that automatically launches before tests.
 
-### Автоматический запуск
+### Automatic Launch
 
-Тестовая БД автоматически запускается через `global-setup.ts` при запуске тестов. Не нужно запускать её вручную.
+Test database automatically launches via `global-setup.ts` when running tests. No need to launch it manually.
 
-### Ручное управление (опционально)
+### Manual Control (optional)
 
 ```bash
-# Запустить тестовую БД
+# Launch test database
 docker compose -f docker-compose.test.yml up -d
 
-# Остановить тестовую БД
+# Stop test database
 docker compose -f docker-compose.test.yml down
 
-# Просмотреть логи
+# View logs
 docker compose -f docker-compose.test.yml logs -f
 
-# Очистить данные тестовой БД (удалить volume)
+# Clear test database data (remove volume)
 docker compose -f docker-compose.test.yml down -v
 ```
 
-**Параметры тестовой БД:**
+**Test database parameters:**
 
-- Порт: `5434` (не конфликтует с основной БД на порту 5433)
-- Пользователь: `flashcards_test`
-- Пароль: `flashcards_test_password`
-- База данных: `flashcards_test`
+- Port: `5434` (doesn't conflict with main DB on port 5433)
+- User: `flashcards_test`
+- Password: `flashcards_test_password`
+- Database: `flashcards_test`
 
-## Запуск тестов
+## Running Tests
 
-### Локальная разработка
+### Local Development
 
 ```bash
-# Запустить все тесты
+# Run all tests
 npm run test:e2e
 
-# Запустить тесты с UI режимом (интерактивный)
+# Run tests with UI mode (interactive)
 npm run test:e2e:ui
 
-# Запустить тесты в headed режиме (с видимым браузером)
+# Run tests in headed mode (visible browser)
 npm run test:e2e:headed
 
-# Запустить тесты в debug режиме
+# Run tests in debug mode
 npm run test:e2e:debug
 
-# Показать HTML отчет
+# Show HTML report
 npm run test:e2e:report
 ```
 
-### Переменные окружения
+### Environment Variables
 
-**Базовый URL приложения:**
-По умолчанию тесты используют `http://localhost:8001` как базовый URL (отдельный порт для изоляции от основного приложения на 8000). Вы можете изменить это через переменную окружения:
+**Application Base URL:**
+By default, tests use `http://localhost:8001` as base URL (separate port for isolation from main application on 8000). You can change this via environment variable:
 
 ```bash
 PLAYWRIGHT_BASE_URL=http://localhost:3000 npm run test:e2e
 ```
 
-**Важно:** Приложение для тестов автоматически запускается на порту 8001 с подключением к тестовой БД. Это изолирует тесты от основного приложения на порту 8000.
+**Important:** Application for tests automatically launches on port 8001 with test database connection. This isolates tests from main application on port 8000.
 
-**Тестовая БД:**
-По умолчанию используется `postgresql://flashcards_test:flashcards_test_password@localhost:5434/flashcards_test`. Можно переопределить:
+**Test Database:**
+By default uses `postgresql://flashcards_test:flashcards_test_password@localhost:5434/flashcards_test`. Can be overridden:
 
 ```bash
 TEST_DATABASE_URL="postgresql://..." npm run test:e2e
 ```
 
-**Очистка БД после тестов:**
-По умолчанию тестовая БД остается запущенной для ускорения последующих тестов. Чтобы остановить её после тестов:
+**Database cleanup after tests:**
+By default, test database stays running to speed up subsequent tests. To stop it after tests:
 
 ```bash
 CLEANUP_TEST_DB=true npm run test:e2e
 ```
 
-## Структура тестов
+## Test Structure
 
 ```
 e2e/
-├── fixtures/              # Тестовые фикстуры и утилиты
-│   ├── auth.ts           # Хелперы для авторизации
-│   ├── db.ts             # Утилиты для работы с БД
-│   ├── test-data.ts      # Генераторы тестовых данных
-│   └── api-helpers.ts    # Хелперы для API запросов
+├── fixtures/              # Test fixtures and utilities
+│   ├── auth.ts           # Authentication helpers
+│   ├── db.ts             # Database utilities
+│   ├── test-data.ts      # Test data generators
+│   └── api-helpers.ts    # API helpers
 ├── page-objects/          # Page Object Model
-│   ├── BasePage.ts        # Базовый класс
+│   ├── BasePage.ts        # Base class
 │   ├── LoginPage.ts
 │   ├── RegisterPage.ts
 │   ├── HomePage.ts
@@ -117,64 +117,64 @@ e2e/
 │   ├── TrainingSetupPage.ts
 │   ├── TrainingPage.ts
 │   ├── SettingsPage.ts
-│   ├── Header.ts          # Компонент Header
-│   └── index.ts           # Экспорт всех Page Objects
-└── tests/                 # Тесты
+│   ├── Header.ts          # Header component
+│   └── index.ts           # Export all Page Objects
+└── tests/                 # Tests
     ├── auth/
     ├── words/
     ├── training/
     └── settings/
 ```
 
-## Написание тестов
+## Writing Tests
 
-### Использование Page Object Model
+### Using Page Object Model
 
-Все Page Objects находятся в `e2e/page-objects/` и наследуются от `BasePage`.
+All Page Objects are located in `e2e/page-objects/` and inherit from `BasePage`.
 
-**Доступные Page Objects:**
+**Available Page Objects:**
 
-- `BasePage` - базовый класс с общими методами
-- `LoginPage` - страница входа
-- `RegisterPage` - страница регистрации
-- `HomePage` - главная страница
-- `WordsPage` - страница управления словами
-- `TrainingSetupPage` - страница настройки тренировки
-- `TrainingPage` - страница тренировки
-- `SettingsPage` - страница настроек
-- `HeaderPage` - компонент Header (используется на всех страницах)
+- `BasePage` - base class with common methods
+- `LoginPage` - login page
+- `RegisterPage` - registration page
+- `HomePage` - home page
+- `WordsPage` - word management page
+- `TrainingSetupPage` - training setup page
+- `TrainingPage` - training page
+- `SettingsPage` - settings page
+- `HeaderPage` - Header component (used on all pages)
 
-### Использование фикстур
+### Using Fixtures
 
-Все фикстуры экспортируются из `e2e/fixtures/index.ts` для удобного импорта.
+All fixtures are exported from `e2e/fixtures/index.ts` for convenient import.
 
-**Доступные фикстуры:**
+**Available fixtures:**
 
 - **Database utilities** (`db.ts`):
-    - `createTestPrismaClient()` - создание Prisma Client для тестовой БД
-    - `cleanupTestDatabase()` - очистка тестовой БД
-    - `withTransaction()` - выполнение операций в транзакции
+    - `createTestPrismaClient()` - create Prisma Client for test DB
+    - `cleanupTestDatabase()` - clean test database
+    - `withTransaction()` - execute operations in transaction
 
 - **Test data generators** (`test-data.ts`):
-    - `createTestUser()` - создание тестового пользователя в БД
-    - `createTestWord()` - создание тестового слова
-    - `createTestWords()` - создание нескольких слов
-    - `createTestWordGroup()` - создание группы слов
-    - `createTestBaseWord()` - создание базового слова с переводом
-    - `getRoleId()`, `getWordStatusId()`, `getLanguageId()` - получение ID справочных данных
+    - `createTestUser()` - create test user in DB
+    - `createTestWord()` - create test word
+    - `createTestWords()` - create multiple words
+    - `createTestWordGroup()` - create word group
+    - `createTestBaseWord()` - create base word with translation
+    - `getRoleId()`, `getWordStatusId()`, `getLanguageId()` - get reference data IDs
 
 - **Authentication helpers** (`auth.ts`):
-    - `createAndLoginUser()` - создание пользователя в БД и авторизация через UI
-    - `registerAndLoginUser()` - регистрация через API и авторизация через UI
-    - `loginViaUI()` - авторизация через UI
-    - `logoutViaUI()` - выход из системы через UI
+    - `createAndLoginUser()` - create user in DB and login via UI
+    - `registerAndLoginUser()` - register via API and login via UI
+    - `loginViaUI()` - login via UI
+    - `logoutViaUI()` - logout via UI
 
 - **API helpers** (`api-helpers.ts`):
-    - `apiGet()`, `apiPost()`, `apiPut()`, `apiDelete()` - базовые HTTP методы
-    - `getWordsViaAPI()`, `createWordViaAPI()`, `updateWordViaAPI()`, `deleteWordViaAPI()` - работа со словами
-    - `getWordGroupsViaAPI()`, `createWordGroupViaAPI()` - работа с группами слов
+    - `apiGet()`, `apiPost()`, `apiPut()`, `apiDelete()` - basic HTTP methods
+    - `getWordsViaAPI()`, `createWordViaAPI()`, `updateWordViaAPI()`, `deleteWordViaAPI()` - work with words
+    - `getWordGroupsViaAPI()`, `createWordGroupViaAPI()` - work with word groups
 
-### Пример базового теста
+### Basic Test Example
 
 ```typescript
 import { test, expect } from '@playwright/test';
@@ -182,27 +182,27 @@ import { LoginPage, HomePage } from '../page-objects';
 import { createAndLoginUser, cleanupTestDatabase } from '../fixtures';
 
 test.beforeEach(async () => {
-    // Очистка БД перед каждым тестом (опционально)
+    // Clean DB before each test (optional)
     await cleanupTestDatabase();
 });
 
-test('успешный вход', async ({ page }) => {
-    // Создание пользователя и авторизация через UI (удобная функция)
+test('successful login', async ({ page }) => {
+    // Create user and login via UI (convenient function)
     const user = await createAndLoginUser(page, {
         email: 'test@example.com',
         password: 'password123',
     });
 
-    // Проверка успешного входа
+    // Check successful login
     const homePage = new HomePage(page);
     await homePage.expectPageLoaded();
 
-    // Используем user.id для дальнейших операций
+    // Use user.id for further operations
     expect(user.id).toBeGreaterThan(0);
 });
 ```
 
-### Пример теста с использованием API helpers
+### Test Example Using API Helpers
 
 ```typescript
 import { test, expect } from '@playwright/test';
@@ -210,58 +210,58 @@ import { WordsPage } from '../page-objects';
 import { createAndLoginUser } from '../fixtures';
 import { createWordViaAPI, getWordsViaAPI } from '../fixtures';
 
-test('создание слова через API и проверка в UI', async ({ page, request }) => {
-    // Создаем пользователя и авторизуем
+test('create word via API and check in UI', async ({ page, request }) => {
+    // Create user and authorize
     const user = await createAndLoginUser(page);
 
-    // Создаем слово через API
+    // Create word via API
     const word = await createWordViaAPI(request, {
         customWord: 'hello',
         languageId: 1, // English
         statusId: 1, // NOT_LEARNED
     });
 
-    // Проверяем через API
+    // Check via API
     const words = await getWordsViaAPI(request, user.id);
     expect(words.length).toBeGreaterThan(0);
 
-    // Проверяем в UI
+    // Check in UI
     const wordsPage = new WordsPage(page);
     await wordsPage.goto();
     await wordsPage.expectWordVisible('hello');
 });
 ```
 
-### Пример теста с несколькими страницами
+### Test Example with Multiple Pages
 
 ```typescript
 import { test } from '@playwright/test';
 import { LoginPage, WordsPage, HeaderPage } from '../page-objects';
 import { createTestUser, createTestWord } from '../fixtures';
 
-test('переход к словам после входа', async ({ page }) => {
-    // Создание пользователя и слова
+test('navigate to words after login', async ({ page }) => {
+    // Create user and word
     const user = await createTestUser();
     await createTestWord(user.id, { customWord: 'hello' });
 
-    // Вход в систему через UI
+    // Login via UI
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.login(user.email, 'testpassword123');
 
-    // Использование Header для навигации
+    // Use Header for navigation
     const header = new HeaderPage(page);
     await header.expectHeaderVisible();
     await header.goToWords();
 
-    // Работа со страницей слов
+    // Work with words page
     const wordsPage = new WordsPage(page);
     await wordsPage.expectPageLoaded();
     await wordsPage.expectWordInList('hello');
 });
 ```
 
-### Работа с тестовой БД
+### Working with Test Database
 
 ```typescript
 import {
@@ -271,17 +271,17 @@ import {
     createTestWord,
 } from '../fixtures';
 
-test('пример работы с БД', async ({ page }) => {
-    // Создание пользователя
+test('database work example', async ({ page }) => {
+    // Create user
     const user = await createTestUser();
 
-    // Создание слова для пользователя
+    // Create word for user
     const word = await createTestWord(user.id, {
         customWord: 'hello',
         languageId: 1, // English
     });
 
-    // Работа с Prisma напрямую
+    // Work with Prisma directly
     const prisma = createTestPrismaClient();
     const words = await prisma.word.findMany({
         where: { userId: user.id },
@@ -290,14 +290,14 @@ test('пример работы с БД', async ({ page }) => {
 });
 ```
 
-## Конфигурация
+## Configuration
 
-Конфигурация находится в `playwright.config.ts` в корне проекта.
+Configuration is located in `playwright.config.ts` in project root.
 
-Основные настройки:
+Main settings:
 
-- Браузер: только Chromium
-- Timeout: 30s для тестов, 5s для assertions
-- Retry: 2 попытки в CI, 0 локально
-- Workers: 4 параллельных воркера
-- Скриншоты и видео: только при падении тестов
+- Browser: Chromium only
+- Timeout: 30s for tests, 5s for assertions
+- Retry: 2 attempts in CI, 0 locally
+- Workers: 4 parallel workers
+- Screenshots and video: only on test failures

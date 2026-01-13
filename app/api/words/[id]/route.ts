@@ -61,7 +61,6 @@ const serializeWord = (word: any) => {
     };
 };
 
-// GET - получить одно слово
 export async function GET(
     request: NextRequest,
     { params }: { params: { id: string } },
@@ -76,7 +75,6 @@ export async function GET(
             );
         }
 
-        // Проверить, существует ли пользователь в базе данных
         const user = await prisma.user.findUnique({
             where: { id: parseInt(session.user.id) },
             include: {
@@ -91,7 +89,7 @@ export async function GET(
             );
         }
 
-        // Определяем язык для переводов (ownLanguage пользователя)
+        // Determine translation language (user ownLanguage)
         const translationLanguageCode = user.ownLanguage?.code || 'ru';
 
         const wordId = parseInt(params.id);
@@ -185,7 +183,6 @@ export async function GET(
     }
 }
 
-// PATCH - обновить слово
 export async function PATCH(
     request: NextRequest,
     { params }: { params: { id: string } },
@@ -200,7 +197,6 @@ export async function PATCH(
             );
         }
 
-        // Проверить, существует ли пользователь в базе данных
         const user = await prisma.user.findUnique({
             where: { id: parseInt(session.user.id) },
             include: {
@@ -215,7 +211,7 @@ export async function PATCH(
             );
         }
 
-        // Определяем язык для переводов (ownLanguage пользователя)
+        // Determine translation language (user ownLanguage)
         const translationLanguageCode = user.ownLanguage?.code || 'ru';
 
         const wordId = parseInt(params.id);
@@ -228,7 +224,7 @@ export async function PATCH(
 
         const body = await request.json();
 
-        // Проверяем, что слово принадлежит пользователю
+        // Check that word belongs to user
         const existingWord = await prisma.word.findFirst({
             where: {
                 id: wordId,
@@ -246,7 +242,7 @@ export async function PATCH(
             );
         }
 
-        // Если передан languageCode, получаем ID языка
+        // If languageCode is passed, get language ID
         const data: any = { ...body };
         if (body.languageCode) {
             const language = await prisma.language.findUnique({
@@ -280,9 +276,9 @@ export async function PATCH(
             delete data.status;
         }
 
-        // Обработка кастомного перевода
+        // Custom translation processing
         if (body.customTranslation !== undefined) {
-            // Если customTranslation === null, удаляем кастомный перевод
+            // If customTranslation === null, delete custom translation
             if (body.customTranslation === null) {
                 await prisma.customTranslation.deleteMany({
                     where: {
@@ -294,10 +290,10 @@ export async function PATCH(
                 typeof body.customTranslation === 'object' &&
                 body.customTranslation.translation
             ) {
-                // Создаем или обновляем кастомный перевод
+                // Create or update custom translation
                 const translationData = body.customTranslation;
 
-                // Получаем языки
+                // Get languages
                 const originalLanguage = await prisma.language.findUnique({
                     where: {
                         code:
@@ -318,7 +314,7 @@ export async function PATCH(
                     );
                 }
 
-                // Проверяем partOfSpeechId если передан
+                // Check partOfSpeechId if provided
                 let partOfSpeechId = null;
                 if (translationData.partOfSpeechId) {
                     const partOfSpeech = await prisma.partOfSpeech.findUnique({
@@ -353,7 +349,7 @@ export async function PATCH(
                 });
             }
 
-            // Удаляем customTranslation из data, чтобы не пытаться обновить Word
+            // Remove customTranslation from data to avoid trying to update Word
             delete data.customTranslation;
         }
 
@@ -426,7 +422,6 @@ export async function PATCH(
     }
 }
 
-// DELETE - удалить слово
 export async function DELETE(
     request: NextRequest,
     { params }: { params: { id: string } },
@@ -441,7 +436,6 @@ export async function DELETE(
             );
         }
 
-        // Проверить, существует ли пользователь в базе данных
         const user = await prisma.user.findUnique({
             where: { id: parseInt(session.user.id) },
         });
@@ -461,7 +455,7 @@ export async function DELETE(
             );
         }
 
-        // Проверяем, что слово принадлежит пользователю
+        // Check that word belongs to user
         const existingWord = await prisma.word.findFirst({
             where: {
                 id: wordId,

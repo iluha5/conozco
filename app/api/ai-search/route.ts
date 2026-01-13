@@ -6,7 +6,7 @@ import { getWordData } from '@/lib/translation-api';
 
 /**
  * POST /api/ai-search
- * Ищет слово через LibreTranslate и Tatoeba, затем добавляет его в базу данных
+ * Searches for word via LibreTranslate and Tatoeba, then adds it to database
  */
 export async function POST(request: NextRequest) {
     try {
@@ -21,7 +21,6 @@ export async function POST(request: NextRequest) {
 
         const userId = parseInt(session.user.id);
 
-        // Проверить, существует ли пользователь в базе данных
         const user = await prisma.user.findUnique({
             where: { id: userId },
             include: {
@@ -36,7 +35,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Определяем язык для переводов (ownLanguage пользователя)
+        // Determine translation language (user's ownLanguage)
         const translationLanguageCode = user.ownLanguage?.code || 'ru';
 
         const { word, languageCode } = await request.json();
@@ -57,7 +56,6 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Проверяем, что язык поддерживается
         const language = await prisma.language.findUnique({
             where: { code: languageCode },
         });
@@ -69,7 +67,6 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Проверяем, не существует ли уже это слово в базе
         const existingBaseWord = await prisma.baseWord.findUnique({
             where: {
                 word_languageId: {
@@ -109,7 +106,7 @@ export async function POST(request: NextRequest) {
             },
         });
 
-        // Если слово уже существует в базе, просто возвращаем его
+        // If word already exists in database, just return it
         if (existingBaseWord) {
             return NextResponse.json(
                 {
@@ -122,15 +119,14 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Ищем слово через внешние API
+        // Search for word via external APIs
         const wordData = await getWordData(
             trimmedWord,
             languageCode,
-            translationLanguageCode, // Целевой язык - родной язык пользователя
+            translationLanguageCode, // Target language - user native language
             userId,
         );
 
-        // Проверяем на ошибки
         if ('error' in wordData) {
             return NextResponse.json(
                 { error: wordData.error },
@@ -138,7 +134,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Получаем источники для AI-поиска
+        // Get sources for AI search
         const deeplSource = await prisma.wordSource.findUnique({
             where: { code: 'DEEPL' },
         });
@@ -158,13 +154,12 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Определяем какой источник использовать для BaseWord (DeepL или MyMemory)
+        // Determine which source to use for BaseWord (DeepL or MyMemory)
         const wordSourceId =
             wordData.source === 'DEEPL' ? deeplSource.id : myMemorySource.id;
 
-        // Создаем базовое слово в транзакции
+        // Create base word in transaction
         const result = await prisma.$transaction(async tx => {
-            // Создаем базовое слово
             const baseWord = await tx.baseWord.create({
                 data: {
                     word: trimmedWord,
@@ -177,7 +172,7 @@ export async function POST(request: NextRequest) {
                 },
             });
 
-            // Получаем язык для переводов (родной язык пользователя)
+            // Get language for translations (user's native language)
             const targetLanguage = await tx.language.findUnique({
                 where: { code: translationLanguageCode },
             });
@@ -188,7 +183,7 @@ export async function POST(request: NextRequest) {
                 );
             }
 
-            // Добавляем переводы (если их еще нет)
+            // Add translations (if they don't exist yet)
             const existingTranslations = await tx.wordTranslation.findMany({
                 where: {
                     baseWordId: baseWord.id,
@@ -197,20 +192,20 @@ export async function POST(request: NextRequest) {
             });
 
             if (existingTranslations.length === 0) {
-                // Добавляем главный перевод
-                // Примечание: partOfSpeechId не добавляется, т.к. AI search API не возвращает эту информацию
-                // Часть речи может быть добавлена вручную пользователем или через другие источники
+                // Add main translation
+                // Note: partOfSpeechId is not added because AI search API doesn't return this information
+                // Part of speech can be added manually by user or through other sources
                 await tx.wordTranslation.create({
                     data: {
                         baseWordId: baseWord.id,
                         languageId: targetLanguage.id,
                         translation: wordData.mainTranslation,
                         priority: 1,
-                        // partOfSpeechId: null - по умолчанию
+                        // partOfSpeechId: null - default
                     },
                 });
 
-                // Добавляем альтернативные переводы
+                // Add alternative translations
                 for (
                     let i = 0;
                     i < wordData.alternativeTranslations.length && i < 2;
@@ -224,21 +219,21 @@ export async function POST(request: NextRequest) {
                                 languageId: targetLanguage.id,
                                 translation: alt,
                                 priority: i + 2,
-                                // partOfSpeechId: null - по умолчанию
+                                // partOfSpeechId: null - default
                             },
                         });
                     }
                 }
             }
 
-            // Добавляем примеры предложений (если их еще нет и они были найдены)
+            // Add sentence examples (if they don't exist yet and were found)
             if (wordData.examples.length > 0) {
                 const existingExamples = await tx.wordExample.findMany({
                     where: { baseWordId: baseWord.id },
                 });
 
                 if (existingExamples.length === 0) {
-                    // Получаем дефолтное местоимение и тип предложения
+                    // Get default pronoun and sentence type
                     const defaultPronoun = await tx.pronoun.findFirst({
                         where: { languageId: language.id },
                     });
@@ -253,7 +248,7 @@ export async function POST(request: NextRequest) {
                     );
 
                     if (defaultPronoun && defaultSentenceType) {
-                        // Добавляем до 5 примеров из Tatoeba
+                        // Add up to 5 examples from Tatoeba
                         for (
                             let i = 0;
                             i < Math.min(5, wordData.examples.length);
@@ -276,7 +271,7 @@ export async function POST(request: NextRequest) {
                 }
             }
 
-            // Возвращаем базовое слово с дополнительными данными
+            // Return base word with additional data
             const completeBaseWord = await tx.baseWord.findUnique({
                 where: { id: baseWord.id },
                 include: {
@@ -318,7 +313,7 @@ export async function POST(request: NextRequest) {
             return completeBaseWord;
         });
 
-        // Возвращаем результат
+        // Return result
         return NextResponse.json(
             {
                 success: true,

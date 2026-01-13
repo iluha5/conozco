@@ -1,260 +1,260 @@
-# Flash Cards - Приложение для изучения иностранных слов
+# Flash Cards - Foreign Language Learning App
 
-Приложение для изучения английского и испанского языков с использованием флеш-карточек и интерактивных тренировок.
+Application for learning English and Spanish using flash cards and interactive training sessions.
 
-## 📚 Документация
+## 📚 Documentation
 
-- **[⚡ Быстрый старт](QUICKSTART.md)** - Запуск за 3 минуты
-- **[📖 Руководство пользователя](USAGE.md)** - Подробная инструкция
-- **[🏗 Архитектура](ARCHITECTURE.md)** - Техническая документация
-- **[🤝 Как внести вклад](CONTRIBUTING.md)** - Руководство для разработчиков
-- **[📝 Changelog](CHANGELOG.md)** - История изменений
+- **[⚡ Quick Start](QUICKSTART.md)** - Launch in 3 minutes
+- **[📖 User Guide](USAGE.md)** - Detailed instructions
+- **[🏗 Architecture](ARCHITECTURE.md)** - Technical documentation
+- **[🤝 How to Contribute](CONTRIBUTING.md)** - Developer guide
+- **[📝 Changelog](CHANGELOG.md)** - Change history
 
-## Технологический стек
+## Technology Stack
 
 - **Frontend**: Next.js 14 (React) + TypeScript
-- **UI Kit**: shadcn/ui (на базе Radix UI + Tailwind CSS)
+- **UI Kit**: shadcn/ui (based on Radix UI + Tailwind CSS)
 - **Backend**: Next.js API Routes
-- **База данных**: PostgreSQL + Prisma ORM
-- **Контейнеризация**: Docker + Docker Compose
+- **Database**: PostgreSQL + Prisma ORM
+- **Containerization**: Docker + Docker Compose
 
-## Функционал
+## Features
 
-### Управление словами
+### Word Management
 
-- Добавление новых слов с автоматическим поиском переводов
-- Предпросмотр до 5 вариантов перевода с примерами использования
-- Возможность ввода собственного перевода
-- Два списка: выученные и невыученные слова
-- Фильтрация по языку (английский/испанский)
+- Adding new words with automatic translation search
+- Preview up to 5 translation options with usage examples
+- Ability to enter custom translation
+- Two lists: learned and unlearned words
+- Language filtering (English/Spanish)
 
-### 4 этапа тренировки
+### 4 Training Stages
 
-1. **Этап 1: Просмотр и запоминание**
-    - Показ слова на иностранном языке
-    - Автоматическая озвучка (Web Speech API)
-    - Показ перевода по клику
+1. **Stage 1: Viewing and Memorization**
+    - Display word in foreign language
+    - Automatic pronunciation (Web Speech API)
+    - Show translation on click
 
-2. **Этап 2: Выбор правильного перевода**
-    - Показ иностранного слова
-    - Выбор правильного перевода из 4 вариантов
+2. **Stage 2: Choosing Correct Translation**
+    - Display foreign word
+    - Select correct translation from 4 options
 
-3. **Этап 3: Сопоставление слов**
-    - Сопоставление иностранных слов с их переводами
-    - Групповая тренировка по 4 слова
+3. **Stage 3: Word Matching**
+    - Match foreign words with their translations
+    - Group training with 4 words
 
-4. **Этап 4: Составление слова**
-    - Показ русского перевода
-    - Составление иностранного слова из перемешанных букв
+4. **Stage 4: Word Building**
+    - Show Russian translation
+    - Build foreign word from scrambled letters
 
-### Кеширование переводов
+### Translation Caching
 
-- Автоматическое кеширование запросов к API переводов
-- Использование кеша перед запросом к внешнему сервису
-- Моки для Google Cloud Translate API (реальный API подключается позже)
+- Automatic caching of translation API requests
+- Cache usage before external service requests
+- Mocks for Google Cloud Translate API (real API connects later)
 
-## Запуск проекта
+## Project Launch
 
-### Предварительные требования
+### Prerequisites
 
-- Docker и Docker Compose
+- Docker and Docker Compose
 - Git
 
-### Инструкция по запуску
+### Launch Instructions
 
-1. **Клонируйте репозиторий**
+1. **Clone the repository**
 
 ```bash
-git clone <url-репозитория>
+git clone <repository-url>
 cd flash-cards
 ```
 
-2. **Запустите приложение через Docker Compose**
+2. **Launch the application via Docker Compose**
 
 ```bash
 docker compose up --build
 ```
 
-Эта команда:
+This command:
 
-- Запустит PostgreSQL на порту 5433
-- Запустит Next.js приложение на порту 8000
-- Автоматически выполнит миграции базы данных
+- Launches PostgreSQL on port 5433
+- Launches Next.js application on port 8000
+- Automatically runs database migrations
 
-3. **Откройте приложение в браузере**
+3. **Open the application in browser**
 
 ```
 http://localhost:8000
 ```
 
-### Разработка без Docker
+### Development without Docker
 
-Если вы хотите запустить приложение локально без Docker:
+If you want to run the application locally without Docker:
 
-1. **Установите зависимости**
+1. **Install dependencies**
 
 ```bash
 npm install
 ```
 
-2. **Настройте переменные окружения**
+2. **Configure environment variables**
 
-Создайте файл `.env.local`:
+Create `.env.local` file:
 
 ```env
 DATABASE_URL="postgresql://flashcards:flashcards_password@localhost:5433/flashcards"
 ```
 
-3. **Запустите PostgreSQL локально** (или используйте Docker только для БД)
+3. **Launch PostgreSQL locally** (or use Docker only for DB)
 
 ```bash
 docker compose up postgres
 ```
 
-4. **Выполните миграции**
+4. **Run migrations**
 
 ```bash
 npx prisma migrate dev
 ```
 
-5. **Сгенерируйте Prisma Client**
+5. **Generate Prisma Client**
 
 ```bash
 npx prisma generate
 ```
 
-6. **Запустите приложение**
+6. **Launch the application**
 
 ```bash
 npm run dev
 ```
 
-## Полезные команды
+## Useful Commands
 
 ### Prisma
 
 ```bash
-# Создать новую миграцию
+# Create new migration
 npm run prisma:migrate
 
-# Открыть Prisma Studio (UI для базы данных)
+# Open Prisma Studio (database UI)
 npm run prisma:studio
 
-# Сгенерировать Prisma Client
+# Generate Prisma Client
 npm run prisma:generate
 ```
 
-### Резервное копирование базы данных
+### Database Backup
 
 ```bash
-# Создать резервную копию базы данных
+# Create database backup
 npm run db:backup
 
-# Или через shell скрипт
+# Or via shell script
 ./scripts/backup-db.sh
 
-# Файлы резервных копий сохраняются в папку backups/
-# вместе с файлами метаданных (.info)
+# Backup files are saved to backups/ folder
+# along with metadata files (.info)
 ```
 
-**Требования:** Docker и запущенный контейнер с БД
+**Requirements:** Docker and running database container
 
 ```bash
-# Убедиться, что контейнер запущен
+# Ensure container is running
 docker compose up -d postgres
 docker ps | grep flashcards-db
 
-# Запустить бэкап
+# Run backup
 npm run db:backup
 ```
 
 ### Docker
 
 ```bash
-# Запустить все сервисы
+# Launch all services
 docker compose up
 
-# Запустить с пересборкой
+# Launch with rebuild
 docker compose up --build
 
-# Остановить все сервисы
+# Stop all services
 docker compose down
 
-# Остановить и удалить volumes (очистка БД)
+# Stop and remove volumes (DB cleanup)
 docker compose down -v
 
-# Посмотреть логи
+# View logs
 docker compose logs -f app
 ```
 
-## Структура проекта
+## Project Structure
 
 ```
 flash-cards/
 ├── app/                      # Next.js App Router
 │   ├── api/                  # API Routes
-│   │   ├── translations/     # Эндпоинты для переводов
-│   │   ├── words/            # CRUD для слов
-│   │   └── training/         # API для тренировок
-│   ├── words/                # Страница управления словами
-│   ├── training/             # Страница тренировок
-│   ├── layout.tsx            # Корневой layout
-│   ├── page.tsx              # Главная страница
-│   └── globals.css           # Глобальные стили
-├── components/               # React компоненты
-│   ├── ui/                   # shadcn/ui компоненты
-│   ├── training/             # Компоненты этапов тренировки
-│   └── add-word-dialog.tsx   # Диалог добавления слова
-├── lib/                      # Утилиты и библиотеки
-│   ├── prisma.ts             # Prisma клиент
-│   ├── auth.ts               # NextAuth конфигурация
-│   ├── word-data.ts          # Утилиты для работы со словами
-│   └── utils.ts              # Вспомогательные функции
-├── hooks/                    # React хуки
-│   └── use-toast.ts          # Хук для toast уведомлений
-├── prisma/                   # Prisma схема и миграции
-│   └── schema.prisma         # Схема базы данных
-├── docker-compose.yml        # Docker Compose конфигурация
-├── Dockerfile                # Dockerfile для приложения
-├── package.json              # Зависимости
-└── tsconfig.json             # TypeScript конфигурация
+│   │   ├── translations/     # Translation endpoints
+│   │   ├── words/            # Words CRUD
+│   │   └── training/         # Training API
+│   ├── words/                # Word management page
+│   ├── training/             # Training page
+│   ├── layout.tsx            # Root layout
+│   ├── page.tsx              # Home page
+│   └── globals.css           # Global styles
+├── components/               # React components
+│   ├── ui/                   # shadcn/ui components
+│   ├── training/             # Training stage components
+│   └── add-word-dialog.tsx   # Add word dialog
+├── lib/                      # Utilities and libraries
+│   ├── prisma.ts             # Prisma client
+│   ├── auth.ts               # NextAuth configuration
+│   ├── word-data.ts          # Word utilities
+│   └── utils.ts              # Helper functions
+├── hooks/                    # React hooks
+│   └── use-toast.ts          # Toast hook
+├── prisma/                   # Prisma schema and migrations
+│   └── schema.prisma         # Database schema
+├── docker-compose.yml        # Docker Compose configuration
+├── Dockerfile                # Application Dockerfile
+├── package.json              # Dependencies
+└── tsconfig.json             # TypeScript configuration
 ```
 
-## База данных
+## Database
 
-### Таблицы
+### Tables
 
-- **User** - Пользователи системы
-- **Word** - Слова пользователей для изучения
-- **BaseWord** - Справочник базовых слов
-- **WordTranslation** - Переводы слов
-- **TrainingSession** - История тренировок
-- **Language**, **PartOfSpeech**, **Tense**, **Pronoun** - Справочники
+- **User** - System users
+- **Word** - User words for learning
+- **BaseWord** - Base words dictionary
+- **WordTranslation** - Word translations
+- **TrainingSession** - Training history
+- **Language**, **PartOfSpeech**, **Tense**, **Pronoun** - Reference tables
 
-### Схема БД
+### Database Schema
 
-См. `prisma/schema.prisma` для подробной схемы.
+See `prisma/schema.prisma` for detailed schema.
 
-## Справочник слов
+## Word Dictionary
 
-Система использует справочник базовых слов, хранящийся в базе данных:
+The system uses a base words dictionary stored in the database:
 
-- Таблица `BaseWord` - иностранные слова с частями речи
-- Таблица `WordTranslation` - переводы слов (до 3 на каждый язык)
-- Seed-скрипт загружает начальный набор слов при инициализации
+- `BaseWord` table - foreign words with parts of speech
+- `WordTranslation` table - word translations (up to 3 per language)
+- Seed script loads initial word set during initialization
 
-Для добавления новых слов используйте seed-скрипт или добавляйте через API.
+To add new words, use seed script or add via API.
 
-## Будущие улучшения
+## Future Improvements
 
-- [x] Система пользователей и аутентификация
-- [x] Справочник базовых слов в БД
-- [ ] Статистика обучения и прогресс
-- [ ] Дополнительные языки
-- [ ] Экспорт/импорт словарей
-- [ ] Мобильное приложение
-- [ ] Режим оффлайн
+- [x] User system and authentication
+- [x] Base words dictionary in DB
+- [ ] Learning statistics and progress
+- [ ] Additional languages
+- [ ] Dictionary export/import
+- [ ] Mobile application
+- [ ] Offline mode
 
-## Лицензия
+## License
 
-Проект разработан для личного использования.
+Project developed for personal use.

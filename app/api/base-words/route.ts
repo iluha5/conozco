@@ -3,7 +3,6 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
-// GET - получить все доступные слова из базы данных
 export async function GET(request: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
@@ -14,8 +13,6 @@ export async function GET(request: NextRequest) {
                 { status: 401 },
             );
         }
-
-        // Проверить, существует ли пользователь в базе данных
         const user = await prisma.user.findUnique({
             where: { id: parseInt(session.user.id) },
             include: {
@@ -37,7 +34,7 @@ export async function GET(request: NextRequest) {
         const translationLanguageCodeParam = searchParams.get(
             'translationLanguageCode',
         );
-        // Определяем язык для переводов (приоритет параметру, затем ownLanguage пользователя)
+        // Determine translation language (priority to param, then user ownLanguage)
         const translationLanguageCode =
             translationLanguageCodeParam || user.ownLanguage?.code || 'ru';
         const limit = parseInt(searchParams.get('limit') || '50');
@@ -47,7 +44,6 @@ export async function GET(request: NextRequest) {
         const where: any = {};
 
         if (languageCode) {
-            // Получаем ID языка по коду
             const language = await prisma.language.findUnique({
                 where: { code: languageCode },
             });
@@ -61,13 +57,13 @@ export async function GET(request: NextRequest) {
             where.partOfSpeech = partOfSpeech;
         }
 
-        // Поиск по слову на изучаемом языке и/или по переводу на родном языке
+        // Search by word in learning language and/or translation in native language
         if (search) {
             const searchConditions: any[] = [
                 { word: { contains: search, mode: 'insensitive' } },
             ];
 
-            // Добавляем поиск по переводам на родном языке пользователя
+            // Add search by translations in user native language
             if (translationLanguageCode) {
                 searchConditions.push({
                     translations: {
@@ -85,7 +81,7 @@ export async function GET(request: NextRequest) {
             where.OR = searchConditions;
         }
 
-        // Фильтр по группам слов
+        // Filter by word groups
         if (wordGroupIdsParam) {
             const wordGroupIds = wordGroupIdsParam.split(',').map(Number);
             if (wordGroupIds.length > 0) {
@@ -99,7 +95,7 @@ export async function GET(request: NextRequest) {
             }
         }
 
-        // Получить базовые слова
+        // Get base words
         const baseWords = await prisma.baseWord.findMany({
             where,
             skip: offset,
@@ -125,7 +121,7 @@ export async function GET(request: NextRequest) {
                         sentenceType: true,
                         translationLanguage: true,
                     },
-                    take: 3, // Ограничим количество примеров
+                    take: 3, // Limit examples quantity
                 },
                 grammaticalExamples: {
                     where: {
@@ -141,7 +137,7 @@ export async function GET(request: NextRequest) {
                         pronoun: true,
                         sentenceType: true,
                     },
-                    take: 5, // Ограничим количество грамматических примеров
+                    take: 5, // Limit grammatical examples quantity
                 },
                 wordGroups: {
                     select: {
@@ -151,7 +147,7 @@ export async function GET(request: NextRequest) {
             },
         });
 
-        // Проверить, какие слова уже добавлены пользователем
+        // Check which words are already added by user
         const userWords = await prisma.word.findMany({
             where: {
                 userId: parseInt(session.user.id),
@@ -177,7 +173,7 @@ export async function GET(request: NextRequest) {
 
         const userWordMap = new Map(userWords.map(uw => [uw.baseWordId, uw]));
 
-        // Добавить информацию о том, добавлено ли слово пользователем
+        // Add information about whether word is added by user
         const wordsWithStatus = baseWords.map(baseWord => {
             const userWord = userWordMap.get(baseWord.id);
             return {

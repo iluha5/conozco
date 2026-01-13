@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-// POST - записать результат тренировки
 export async function POST(request: NextRequest) {
     try {
         const { wordId, stage, isCorrect } = await request.json();
@@ -31,7 +30,6 @@ export async function POST(request: NextRequest) {
     }
 }
 
-// GET - получить статистику по тренировкам
 export async function GET(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url);
@@ -51,7 +49,7 @@ export async function GET(request: NextRequest) {
             },
         });
 
-        // Подсчет статистики по этапам
+        // Calculate statistics by stages
         const stats = {
             stage1: { total: 0, correct: 0 },
             stage2: { total: 0, correct: 0 },

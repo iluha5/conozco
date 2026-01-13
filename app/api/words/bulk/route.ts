@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { tServer } from '@/lib/i18n/utils/tServer';
 
 /**
- * PATCH /api/words/bulk - Массовое обновление статуса слов
+ * PATCH /api/words/bulk - Bulk update word status
  */
 export async function PATCH(request: NextRequest) {
     try {
@@ -20,7 +20,6 @@ export async function PATCH(request: NextRequest) {
 
         const userId = parseInt(session.user.id);
 
-        // Проверить, существует ли пользователь в базе данных
         const user = await prisma.user.findUnique({
             where: { id: userId },
         });
@@ -56,7 +55,6 @@ export async function PATCH(request: NextRequest) {
             );
         }
 
-        // Получаем ID статуса
         const wordStatus = await prisma.wordStatus.findUnique({
             where: { code: status },
         });
@@ -68,7 +66,7 @@ export async function PATCH(request: NextRequest) {
             );
         }
 
-        // Массовое обновление - только слова текущего пользователя
+        // Bulk update - only current user's words
         const result = await prisma.word.updateMany({
             where: {
                 id: { in: wordIds.map((id: string | number) => Number(id)) },
@@ -95,7 +93,7 @@ export async function PATCH(request: NextRequest) {
 }
 
 /**
- * DELETE /api/words/bulk - Массовое удаление слов
+ * DELETE /api/words/bulk - Bulk delete words
  */
 export async function DELETE(request: NextRequest) {
     try {
@@ -110,7 +108,6 @@ export async function DELETE(request: NextRequest) {
 
         const userId = parseInt(session.user.id);
 
-        // Проверить, существует ли пользователь в базе данных
         const user = await prisma.user.findUnique({
             where: { id: userId },
         });
@@ -135,7 +132,7 @@ export async function DELETE(request: NextRequest) {
             );
         }
 
-        // Сначала удаляем связанные customTranslations
+        // First delete related customTranslations
         await prisma.customTranslation.deleteMany({
             where: {
                 wordId: {
@@ -145,7 +142,7 @@ export async function DELETE(request: NextRequest) {
             },
         });
 
-        // Массовое удаление - только слова текущего пользователя
+        // Bulk delete - only current user's words
         const result = await prisma.word.deleteMany({
             where: {
                 id: { in: wordIds.map((id: string | number) => Number(id)) },

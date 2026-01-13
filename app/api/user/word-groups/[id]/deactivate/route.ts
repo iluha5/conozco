@@ -15,7 +15,7 @@ export async function DELETE(
     const groupId = parseInt(params.id);
     const userId = parseInt(session.user.id);
 
-    // Проверить, что пользователь не создатель
+    // Check that user is not the creator
     const group = await prisma.wordGroup.findUnique({
         where: { id: groupId },
     });
@@ -24,7 +24,7 @@ export async function DELETE(
         return NextResponse.json({ error: 'Group not found' }, { status: 404 });
     }
 
-    // Удалить из активных
+    // Remove from active
     await prisma.userWordGroup.delete({
         where: {
             userId_wordGroupId: { userId, wordGroupId: groupId },

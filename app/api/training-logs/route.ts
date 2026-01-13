@@ -6,7 +6,7 @@ import { SavedTrainingState } from '@/types/training.types';
 
 /**
  * POST /api/training-logs
- * Сохранить лог завершенной тренировки
+ * Save completed training log
  */
 export async function POST(request: NextRequest) {
     try {
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Вычисляем статистику
+        // Calculate statistics
         const totalAttempts = savedState.stagesProgress.reduce(
             (sum, sp) =>
                 sum + sp.wordsProgress.reduce((s, wp) => s + wp.attempts, 0),
@@ -57,14 +57,14 @@ export async function POST(request: NextRequest) {
         const accuracy =
             totalAttempts > 0 ? (correctAttempts / totalAttempts) * 100 : 0;
 
-        // Вычисляем длительность в секундах
+        // Calculate duration in seconds
         const startedAt = new Date(savedState.startedAt);
         const completedAt = new Date();
         const duration = Math.floor(
             (completedAt.getTime() - startedAt.getTime()) / 1000,
         );
 
-        // Сохраняем в БД
+        // Save to database
         const trainingLog = await prisma.trainingLog.create({
             data: {
                 userId: user.id,
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
 
 /**
  * GET /api/training-logs
- * Получить историю тренировок пользователя
+ * Get user's training history
  */
 export async function GET(request: NextRequest) {
     try {

@@ -11,7 +11,7 @@ export async function GET() {
 
     const userId = parseInt(session.user.id);
 
-    // Получаем язык обучения пользователя
+    // Get user's learning language
     const user = await prisma.user.findUnique({
         where: { id: userId },
         select: { learnLanguageId: true },
@@ -30,7 +30,7 @@ export async function GET() {
         },
     };
 
-    // Фильтруем по языку обучения пользователя, если он установлен
+    // Filter by user's learning language if set
     if (user?.learnLanguageId) {
         whereClause.languageId = user.learnLanguageId;
     }

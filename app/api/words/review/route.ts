@@ -4,16 +4,16 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
 /**
- * GET /api/words/review - Универсальный endpoint для получения слов по различным критериям
+ * GET /api/words/review - Universal endpoint for getting words by various criteria
  *
- * Query параметры:
- * - status: LEARNED | NOT_LEARNED (опционально)
- * - limit: количество слов (по умолчанию 10, максимум 50)
- * - random: true | false (по умолчанию true)
- * - groupIds: массив ID групп через запятую (опционально)
- * - languageCode: код языка для фильтрации (опционально, по умолчанию learnLanguage пользователя)
- * - source: user | base (по умолчанию 'user') - источник слов: 'user' - из словаря пользователя, 'base' - из BaseWord по группам
- * - includeAllGroups: true | false (по умолчанию false) - включить все доступные группы (работает только с source='base')
+ * Query parameters:
+ * - status: LEARNED | NOT_LEARNED (optional)
+ * - limit: number of words (default 10, maximum 50)
+ * - random: true | false (default true)
+ * - groupIds: array of group IDs separated by comma (optional)
+ * - languageCode: language code for filtering (optional, defaults to user's learnLanguage)
+ * - source: user | base (default 'user') - word source: 'user' - from user's vocabulary, 'base' - from BaseWord by groups
+ * - includeAllGroups: true | false (default false) - include all available groups (works only with source='base')
  */
 export async function GET(request: NextRequest) {
     try {
@@ -28,7 +28,6 @@ export async function GET(request: NextRequest) {
 
         const userId = parseInt(session.user.id);
 
-        // Проверить, существует ли пользователь в базе данных
         const user = await prisma.user.findUnique({
             where: { id: userId },
             include: {
@@ -53,14 +52,14 @@ export async function GET(request: NextRequest) {
         const sourceParam = searchParams.get('source') || 'user';
         const includeAllGroupsParam = searchParams.get('includeAllGroups');
 
-        // Определяем язык для фильтрации
+        // Determine language for filtering
         const languageCode =
             languageCodeParam || user.learnLanguage?.code || null;
 
-        // Определяем язык для переводов (ownLanguage пользователя)
+        // Determine translation language (user's ownLanguage)
         const translationLanguageCode = user.ownLanguage?.code || 'ru';
 
-        // Парсим параметры
+        // Parse parameters
         const limit = Math.min(
             Math.max(parseInt(limitParam || '10') || 10, 1),
             50,
@@ -75,12 +74,12 @@ export async function GET(request: NextRequest) {
                   .filter(id => !isNaN(id))
             : null;
 
-        // Строим условие WHERE
+        // Build WHERE condition
         const where: any = {
             userId,
         };
 
-        // Фильтр по статусу
+        // Filter by status
         if (statusParam && ['LEARNED', 'NOT_LEARNED'].includes(statusParam)) {
             const wordStatus = await prisma.wordStatus.findUnique({
                 where: { code: statusParam },
@@ -90,7 +89,7 @@ export async function GET(request: NextRequest) {
             }
         }
 
-        // Фильтр по языку
+        // Filter by language
         if (languageCode) {
             const language = await prisma.language.findUnique({
                 where: { code: languageCode },
@@ -100,13 +99,13 @@ export async function GET(request: NextRequest) {
             }
         }
 
-        // Если source='base', получаем слова из BaseWord по группам
+        // If source='base', get words from BaseWord by groups
         if (source === 'base') {
-            // Определяем группы для запроса
+            // Determine groups for query
             let targetGroupIds: number[] = [];
 
             if (includeAllGroups) {
-                // Получаем все доступные группы пользователя
+                // Get all user available groups
                 const availableGroups = await prisma.wordGroup.findMany({
                     where: {
                         OR: [
@@ -127,7 +126,7 @@ export async function GET(request: NextRequest) {
                 });
                 targetGroupIds = availableGroups.map(g => g.id);
             } else if (groupIds && groupIds.length > 0) {
-                // Проверяем доступ к указанным группам
+                // Check access to specified groups
                 const accessibleGroups = await prisma.wordGroup.findMany({
                     where: {
                         id: { in: groupIds },
@@ -149,7 +148,7 @@ export async function GET(request: NextRequest) {
                 return NextResponse.json([]);
             }
 
-            // Получаем BaseWord из выбранных групп
+            // Get BaseWord from selected groups
             const baseWordsInGroups = await prisma.baseWordOnWordGroup.findMany(
                 {
                     where: {
@@ -169,7 +168,7 @@ export async function GET(request: NextRequest) {
                 return NextResponse.json([]);
             }
 
-            // Получаем BaseWord с переводами и примерами
+            // Get BaseWord with translations and examples
             const baseWords = await prisma.baseWord.findMany({
                 where: {
                     id: { in: baseWordIds },
@@ -231,7 +230,7 @@ export async function GET(request: NextRequest) {
                 },
             });
 
-            // Получаем существующие слова пользователя для проверки belongsToUser
+            // Get existing user words for belongsToUser check
             const userWordsMap = new Map(
                 (
                     await prisma.word.findMany({
@@ -249,7 +248,7 @@ export async function GET(request: NextRequest) {
                 ).map(w => [w.baseWordId, w]),
             );
 
-            // Преобразуем BaseWord в формат Word для совместимости
+            // Transform BaseWord to Word format for compatibility
             const wordStatusNotLearned = await prisma.wordStatus.findFirst({
                 where: { code: 'NOT_LEARNED' },
             });
@@ -309,7 +308,7 @@ export async function GET(request: NextRequest) {
                 };
             });
 
-            // Применяем случайный порядок если нужно
+            // Apply random order if needed
             if (random && words.length > 0) {
                 // Fisher-Yates shuffle
                 for (let index = words.length - 1; index > 0; index--) {
@@ -321,10 +320,10 @@ export async function GET(request: NextRequest) {
                 }
             }
 
-            // Ограничиваем количество
+            // Limit quantity
             words = words.slice(0, limit);
 
-            // Сериализуем слова
+            // Serialize words
             const serializedWords = words.map((word: any) => {
                 const {
                     status,
@@ -374,10 +373,10 @@ export async function GET(request: NextRequest) {
             return NextResponse.json(serializedWords);
         }
 
-        // Оригинальная логика для source='user'
-        // Фильтр по группам слов
+        // Original logic for source='user'
+        // Filter by word groups
         if (groupIds && groupIds.length > 0) {
-            // Получаем baseWordId из групп
+            // Get baseWordId from groups
             const baseWordsInGroups = await prisma.baseWordOnWordGroup.findMany(
                 {
                     where: {
@@ -394,12 +393,12 @@ export async function GET(request: NextRequest) {
             if (baseWordIds.length > 0) {
                 where.baseWordId = { in: baseWordIds };
             } else {
-                // Если нет слов в группах, возвращаем пустой массив
+                // If no words in groups, return empty array
                 return NextResponse.json([]);
             }
         }
 
-        // Получаем слова
+        // Get words
         let words = await prisma.word.findMany({
             where,
             include: {
@@ -470,7 +469,7 @@ export async function GET(request: NextRequest) {
             },
         });
 
-        // Применяем случайный порядок если нужно
+        // Apply random order if needed
         if (random && words.length > 0) {
             // Fisher-Yates shuffle
             for (let index = words.length - 1; index > 0; index--) {
@@ -482,14 +481,14 @@ export async function GET(request: NextRequest) {
             }
         }
 
-        // Ограничиваем количество
+        // Limit quantity
         words = words.slice(0, limit);
 
-        // Сериализуем слова
+        // Serialize words
         const serializedWords = words.map((word: any) => {
             const { status, baseWord, customTranslations, ...restWord } = word;
 
-            // Определяем, принадлежит ли слово пользователю (вычисляем перед запуском упражнения)
+            // Determine if word belongs to user (calculate before starting exercise)
             const belongsToUser = word.userId === userId;
 
             return {

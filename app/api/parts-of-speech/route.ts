@@ -3,7 +3,6 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
-// GET - получить все части речи для языка
 export async function GET(request: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
@@ -15,7 +14,6 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        // Проверить, существует ли пользователь в базе данных
         const user = await prisma.user.findUnique({
             where: { id: parseInt(session.user.id) },
         });
@@ -37,7 +35,7 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        // Части речи теперь глобальные, не зависят от языка
+        // Parts of speech are now global, not language-dependent
         const partsOfSpeech = await prisma.partOfSpeech.findMany({
             orderBy: { name: 'asc' },
         });

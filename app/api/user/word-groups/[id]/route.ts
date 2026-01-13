@@ -5,8 +5,8 @@ import { prisma } from '@/lib/prisma';
 
 /**
  * GET /api/user/word-groups/[id]
- * Получить информацию о группе слов по ID
- * Используется для получения названий групп тестов, даже если они еще не активированы
+ * Get word group information by ID
+ * Used to get test group names even if not yet activated
  */
 export async function GET(
     request: Request,
@@ -27,7 +27,7 @@ export async function GET(
 
     const userId = parseInt(session.user.id);
 
-    // Получаем группу (публичные группы доступны всем, даже если не активированы)
+    // Get group (public groups are accessible to everyone, even if not activated)
     const group = await prisma.wordGroup.findFirst({
         where: {
             id: groupId,

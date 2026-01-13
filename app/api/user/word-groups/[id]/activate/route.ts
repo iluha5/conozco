@@ -15,7 +15,7 @@ export async function POST(
     const groupId = parseInt(params.id);
     const userId = parseInt(session.user.id);
 
-    // Проверить, что группа доступна пользователю
+    // Check that group is available to user
     const group = await prisma.wordGroup.findFirst({
         where: {
             id: groupId,
@@ -33,7 +33,7 @@ export async function POST(
         );
     }
 
-    // Проверить, что еще не активирована
+    // Check that not already activated
     const existing = await prisma.userWordGroup.findUnique({
         where: {
             userId_wordGroupId: { userId, wordGroupId: groupId },
@@ -47,7 +47,7 @@ export async function POST(
         );
     }
 
-    // Активировать
+    // Activate
     await prisma.userWordGroup.create({
         data: { userId, wordGroupId: groupId },
     });

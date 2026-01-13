@@ -10,7 +10,7 @@ import {
 
 /**
  * GET /api/user/cookie-consent
- * Получить текущее согласие пользователя
+ * Get user's current consent
  */
 export async function GET() {
     try {
@@ -57,7 +57,7 @@ export async function GET() {
 
 /**
  * POST /api/user/cookie-consent
- * Создать или обновить согласие пользователя
+ * Create or update user's consent
  */
 export async function POST(request: NextRequest) {
     try {
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
         const userId = parseInt(session.user.id);
         const body: CookieConsentRequest = await request.json();
 
-        // Валидация
+        // Validation
         if (!body.version || typeof body.given !== 'boolean') {
             return NextResponse.json(
                 { error: 'Invalid request body' },
@@ -88,13 +88,13 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // necessary всегда должен быть true
+        // necessary must always be true
         const preferences = {
             ...body.preferences,
             necessary: true,
         };
 
-        // Upsert согласия
+        // Upsert consent
         const consent = await prisma.userCookieConsent.upsert({
             where: { userId },
             update: {
@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
                 version: body.version,
                 given: body.given,
                 givenAt: body.given ? new Date() : null,
-                withdrawnAt: body.given ? null : new Date(), // При отказе сохраняем текущую дату
+                withdrawnAt: body.given ? null : new Date(), // When declining, save current date
                 preferences,
             },
         });
@@ -139,7 +139,7 @@ export async function POST(request: NextRequest) {
 
 /**
  * DELETE /api/user/cookie-consent
- * Отозвать согласие пользователя
+ * Withdraw user's consent
  */
 export async function DELETE() {
     try {

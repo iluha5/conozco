@@ -1,16 +1,16 @@
 # Add Word Script
 
-Скрипт для добавления слов в базу данных flashcards с использованием Cursor CLI.
+Script for adding words to flashcards database using Cursor CLI.
 
-## Использование
+## Usage
 
-### Добавление одного слова
+### Adding a Single Word
 
 ```bash
-./scripts/add-word.sh <слово> <код_языка>
+./scripts/add-word.sh <word> <language_code>
 ```
 
-Примеры:
+Examples:
 
 ```bash
 ./scripts/add-word.sh hola es
@@ -18,23 +18,23 @@
 ./scripts/add-word.sh привет ru
 ```
 
-### Добавление списка слов из файла
+### Adding a List of Words from File
 
 ```bash
-./scripts/add-word.sh <имя_файла>.<код_языка>.txt
+./scripts/add-word.sh <filename>.<language_code>.txt
 ```
 
-Пример:
+Example:
 
 ```bash
 ./scripts/add-word.sh my-words.es.txt
 ```
 
-## Формат файла
+## File Format
 
-Файл должен иметь формат: `имя_файла.<код_языка>.txt`
+File must have format: `filename.<language_code>.txt`
 
-Пример содержимого `words.es.txt`:
+Example content for `words.es.txt`:
 
 ```
 hola
@@ -43,62 +43,62 @@ comer
 hablar
 ```
 
-В папке скрипта есть пример файла `example.es.txt` с несколькими испанскими словами.
+There's an example file `example.es.txt` in the script folder with several Spanish words.
 
-## Поддерживаемые языки
+## Supported Languages
 
 - `en` - English
 - `es` - Spanish
 - `ru` - Russian
 
-## Как это работает
+## How It Works
 
-1. **Генерация данных**: Скрипт использует Cursor CLI с промптом `process-external-words-simple.txt` для генерации полной информации о слове (переводы, примеры, грамматические формы). Поддерживает парсинг ответов в формате JSON и markdown блоков.
+1. **Data Generation**: Script uses Cursor CLI with `process-external-words-simple.txt` prompt to generate complete word information (translations, examples, grammatical forms). Supports parsing responses in JSON and markdown block formats.
 
-2. **Импорт в базу данных**: Сгенерированные данные импортируются в базу данных. Если слово не существует, оно будет создано; если существует - обновлено.
+2. **Database Import**: Generated data is imported into the database. If word doesn't exist, it will be created; if it exists - updated.
 
-3. **Обработка ошибок**: Если обработка одного слова не удалась, скрипт продолжает с остальными словами. Включает таймаут 60 секунд для предотвращения зависаний.
+3. **Error Handling**: If processing one word fails, script continues with remaining words. Includes 60-second timeout to prevent hanging.
 
-## Требования
+## Requirements
 
-- Node.js и npm
-- tsx (устанавливается автоматически с зависимостями проекта)
-- Cursor CLI (`cursor-agent` должен быть в PATH)
-- Запущенная база данных PostgreSQL
+- Node.js and npm
+- tsx (installed automatically with project dependencies)
+- Cursor CLI (`cursor-agent` must be in PATH)
+- Running PostgreSQL database
 
-## Структура файлов
+## File Structure
 
-- `scripts/add-word.sh` - shell wrapper для удобного запуска
-- `scripts/add-word/add-word.ts` - основной скрипт на TypeScript
-- `scripts/add-word/README-add-word.md` - документация
-- `scripts/add-word/example.es.txt` - пример файла со списком слов
-- `scripts/cursor/prompts/process-external-words-simple.txt` - промпт для Cursor CLI
-- `scripts/process-external-words/import-word-data.ts` - скрипт импорта в базу данных
+- `scripts/add-word.sh` - shell wrapper for convenient launch
+- `scripts/add-word/add-word.ts` - main TypeScript script
+- `scripts/add-word/README-add-word.md` - documentation
+- `scripts/add-word/example.es.txt` - example file with word list
+- `scripts/cursor/prompts/process-external-words-simple.txt` - prompt for Cursor CLI
+- `scripts/process-external-words/import-word-data.ts` - database import script
 
-## Логирование
+## Logging
 
-Скрипт создает временные файлы в `scripts/temp/`:
+Script creates temporary files in `scripts/temp/`:
 
-- Промпт файлы для Cursor CLI
-- JSON файлы для импорта
+- Prompt files for Cursor CLI
+- JSON files for import
 
-Все временные файлы автоматически удаляются после выполнения.
+All temporary files are automatically deleted after execution.
 
-## Примеры использования
+## Usage Examples
 
-### Добавление испанского слова
+### Adding a Spanish Word
 
 ```bash
 ./scripts/add-word.sh libro es
 ```
 
-### Добавление нескольких слов из файла
+### Adding Multiple Words from File
 
 ```bash
-# Использование примера из папки скрипта
+# Using example from script folder
 ./scripts/add-word.sh scripts/add-word/example.es.txt
 
-# Или создание своего файла
+# Or creating your own file
 echo -e "gato\nperro\ncasa" > my-words.es.txt
 ./scripts/add-word.sh my-words.es.txt
 ```
