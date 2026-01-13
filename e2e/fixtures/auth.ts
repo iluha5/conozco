@@ -65,11 +65,11 @@ export async function loginViaUI(
     await loginPage.goto();
     await loginPage.login(credentials.email, credentials.password);
 
-    // Ждем успешного входа - редирект на главную страницу
-    // Может потребоваться время на установку сессии NextAuth
+    // Wait for successful login - redirect to home page
+    // May take time to establish NextAuth session
     await page.waitForURL('/', { timeout: TIMEOUTS.SESSION_SETUP });
 
-    // Дополнительно ждем, пока страница полностью загрузится
+    // Additionally wait until page is fully loaded
     await page.waitForLoadState('networkidle');
 
     await loginPage.expectSuccessfulLogin();
@@ -85,8 +85,8 @@ export async function loginViaAPI(
     apiContext: APIRequestContext,
     credentials: TestUserCredentials,
 ): Promise<string[]> {
-    // NextAuth использует CSRF токен, поэтому проще авторизоваться через UI
-    // Но можно использовать прямой запрос к NextAuth endpoint
+    // NextAuth uses CSRF token, so easier to authenticate through UI
+    // But can use direct request to NextAuth endpoint
     const response = await apiContext.post('/api/auth/callback/credentials', {
         data: {
             email: credentials.email,
@@ -102,7 +102,7 @@ export async function loginViaAPI(
         );
     }
 
-    // Возвращаем cookies из ответа
+    // Return cookies from response
     const cookies = response.headers()['set-cookie'] || [];
     return Array.isArray(cookies) ? cookies : [cookies];
 }
@@ -122,19 +122,19 @@ export async function createAndLoginUser(
     const password = credentials?.password || DEFAULT_TEST_VALUES.PASSWORD;
     const name = credentials?.name || generateUniqueName();
 
-    // Получаем ID языков для настройки пользователя по умолчанию
+    // Get language IDs for default user setup
     const { getLanguageId } = await import('./test-data');
     const enLanguageId = await getLanguageId('en');
     const ruLanguageId = await getLanguageId('ru');
 
-    // Создаем пользователя в БД с настройками языков
+    // Create user in DB with language settings
     const user = await createTestUser(email, password, name, {
         learnLanguageId: enLanguageId,
         ownLanguageId: ruLanguageId,
-        interfaceLanguageId: enLanguageId, // Используем английский для интерфейса в тестах
+        interfaceLanguageId: enLanguageId, // Use English for interface in tests
     });
 
-    // Обновляем флаг hasConfigured для пользователя (если пользователь существует)
+    // Update hasConfigured flag for user (if user exists)
     try {
         const { createTestPrismaClient } = await import('./db');
         const prisma = createTestPrismaClient();
@@ -149,10 +149,10 @@ export async function createAndLoginUser(
         }
         await prisma.$disconnect();
     } catch (error) {
-        // Игнорируем ошибки обновления - пользователь может быть уже настроен
+        // Ignore update errors - user may already be configured
     }
 
-    // Авторизуем через UI
+    // Authenticate through UI
     await loginViaUI(page, { email, password, name });
 
     return {
@@ -180,14 +180,14 @@ export async function registerAndLoginUser(
     const password = credentials?.password || DEFAULT_TEST_VALUES.PASSWORD;
     const name = credentials?.name || generateUniqueName();
 
-    // Регистрируем через API
+    // Register through API
     const result = await registerUserViaAPI(apiContext, {
         email,
         password,
         name,
     });
 
-    // Авторизуем через UI
+    // Authenticate through UI
     await loginViaUI(page, { email, password, name });
 
     return {

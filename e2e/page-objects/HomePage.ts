@@ -5,7 +5,7 @@ import { BasePage } from './BasePage';
  * Page Object для главной страницы
  */
 export class HomePage extends BasePage {
-    // Селекторы
+    // Selectors
     private readonly pageTitle = 'h1:has-text("conozco")';
     private readonly startTrainingButton = 'button:has-text("Start training")';
     private readonly goToWordsButton = 'button:has-text("Go to words")';
@@ -86,7 +86,7 @@ export class HomePage extends BasePage {
         await expect(card)
             .not.toBeVisible()
             .catch(() => {
-                // Если элемент не найден, это тоже нормально
+                // If element not found, this is also normal
             });
     }
 }

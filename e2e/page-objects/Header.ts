@@ -7,7 +7,7 @@ import { TIMEOUTS, SELECTORS } from '../utils/constants';
  * Используется на всех страницах после авторизации
  */
 export class HeaderPage extends BasePage {
-    // Селекторы
+    // Selectors
     private readonly logo = 'a:has-text("Flash Cards")';
     private readonly logoutButton = 'button:has-text("Logout")';
     private readonly userEmail =
@@ -43,22 +43,22 @@ export class HeaderPage extends BasePage {
      * Выход из системы
      */
     async logout() {
-        // Пробуем сначала desktop версию
+        // Try desktop version first
         const desktopLogout = this.page.locator(this.logoutButton);
         if (await desktopLogout.isVisible()) {
-            // Кликаем по кнопке выхода и ждем редирект
+            // Click logout button and wait for redirect
             await desktopLogout.click();
-            // Ждем редирект на страницу логина после выхода (signOut использует callbackUrl)
+            // Wait for redirect to login page after logout (signOut uses callbackUrl)
             await this.page.waitForURL(/\/auth\/login/, {
                 timeout: TIMEOUTS.NAVIGATION,
             });
         } else {
-            // Если desktop не виден, открываем mobile меню
+            // If desktop not visible, open mobile menu
             await this.openMobileMenu();
             const mobileLogout = this.page.locator('button:has-text("Logout")');
-            // Кликаем по кнопке выхода и ждем редирект
+            // Click logout button and wait for redirect
             await mobileLogout.click();
-            // Ждем редирект на страницу логина после выхода (signOut использует callbackUrl)
+            // Wait for redirect to login page after logout (signOut uses callbackUrl)
             await this.page.waitForURL(/\/auth\/login/, {
                 timeout: TIMEOUTS.NAVIGATION,
             });

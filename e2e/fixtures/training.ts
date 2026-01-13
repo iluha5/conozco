@@ -112,7 +112,7 @@ async function createBaseWordWithExamples(
             translationLanguageCode,
         );
 
-        // Получаем источник 'native'
+        // Get source 'native'
         const source = await prisma.wordSource.findUnique({
             where: { code: 'native' },
         });
@@ -121,10 +121,10 @@ async function createBaseWordWithExamples(
             throw new Error('Word source "native" not found');
         }
 
-        // Получаем тип предложения
+        // Get sentence type
         const sentenceTypeId = await getSentenceTypeId('AFFIRMATIVE');
 
-        // Проверяем, существует ли уже базовое слово
+        // Check if base word already exists
         let baseWord = await prisma.baseWord.findUnique({
             where: {
                 word_languageId: {
@@ -140,7 +140,7 @@ async function createBaseWordWithExamples(
         });
 
         if (!baseWord) {
-            // Создаем новое базовое слово
+            // Create new base word
             baseWord = await prisma.baseWord.create({
                 data: {
                     word,
@@ -161,7 +161,7 @@ async function createBaseWordWithExamples(
                 },
             });
         } else {
-            // Проверяем, существует ли уже перевод
+            // Check if translation already exists
             const existingTranslation = await prisma.wordTranslation.findFirst({
                 where: {
                     baseWordId: baseWord.id,
@@ -170,7 +170,7 @@ async function createBaseWordWithExamples(
             });
 
             if (!existingTranslation) {
-                // Добавляем перевод к существующему слову
+                // Add translation to existing word
                 await prisma.wordTranslation.create({
                     data: {
                         baseWordId: baseWord.id,
@@ -182,12 +182,12 @@ async function createBaseWordWithExamples(
             }
         }
 
-        // Добавляем примеры предложений
+        // Add example sentences
         for (const exampleData of examples) {
             const pronounText = exampleData.pronoun || 'I';
             const pronounId = await getOrCreatePronoun(languageId, pronounText);
 
-            // Проверяем, существует ли уже такой пример
+            // Check if such example already exists
             const existingExample = await prisma.wordExample.findFirst({
                 where: {
                     baseWordId: baseWord.id,
@@ -211,7 +211,7 @@ async function createBaseWordWithExamples(
             }
         }
 
-        // Обновляем объект baseWord с примерами
+        // Update baseWord object with examples
         baseWord = await prisma.baseWord.findUnique({
             where: { id: baseWord.id },
             include: {
@@ -255,11 +255,11 @@ export async function createTrainingWordPair(
         pronoun?: string;
     }>,
 ): Promise<TrainingWordPair> {
-    // Создаем базовое слово
+    // Create base word
     let baseWord: Awaited<ReturnType<typeof createTestBaseWord>>;
 
     if (examples && examples.length > 0) {
-        // Создаем слово с примерами
+        // Create word with examples
         baseWord = await createBaseWordWithExamples(
             word,
             wordLang,
@@ -268,7 +268,7 @@ export async function createTrainingWordPair(
             examples,
         );
     } else {
-        // Создаем обычное слово без примеров
+        // Create regular word without examples
         baseWord = await createTestBaseWord(
             word,
             wordLang,
@@ -281,7 +281,7 @@ export async function createTrainingWordPair(
         throw new Error('Failed to create base word');
     }
 
-    // Создаем слово для пользователя
+    // Create word for user
     const userWord = await createTestWord(userId, {
         baseWordId: baseWord.id,
         languageCode: wordLang,
@@ -311,10 +311,10 @@ export async function setupTrainingWithWords(
         }>;
     }> = [{ word: 'hello', translation: 'привет' }],
 ): Promise<TrainingSetupResult> {
-    // 1. Создание пользователя
+    // 1. User creation
     const user = await createAndLoginUser(page);
 
-    // 2. Создание слов
+    // 2. Word creation
     const wordPairs = await Promise.all(
         words.map(w =>
             createTrainingWordPair(
@@ -328,21 +328,21 @@ export async function setupTrainingWithWords(
         ),
     );
 
-    // 3. Настройка тренировки
+    // 3. Training setup
     const trainingSetupPage = new TrainingSetupPage(page);
     await trainingSetupPage.goto();
     await trainingSetupPage.expectPageLoaded();
 
-    // 4. Запуск тренировки
+    // 4. Training start
     const started = await trainingSetupPage.waitAndStartTraining();
     if (!started) {
         throw new Error('Failed to start training - start button not enabled');
     }
 
-    // 5. Ожидание запуска
+    // 5. Wait for start
     await page.waitForURL(/\/training/, { timeout: 5000 });
 
-    // 6. Создание TrainingPage
+    // 6. Create TrainingPage
     const trainingPage = new TrainingPage(page);
     await trainingPage.waitForTrainingStart();
 
@@ -375,13 +375,13 @@ export async function openTrainingStage(
 ): Promise<TrainingPage> {
     const tp = trainingPage || new TrainingPage(page);
 
-    // Проверяем, что страница тренировки загружена
+    // Check that training page is loaded
     await tp.expectPageLoaded();
 
-    // Кликаем на этап
+    // Click on stage
     await tp.clickStage(stage);
 
-    // Ждем появления заголовка этапа вместо фиксированного таймаута
+    // Wait for stage title to appear instead of fixed timeout
     const expectedTitle = STAGE_TITLES[stage];
     await tp.expectStageTitle(expectedTitle);
 

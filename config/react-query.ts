@@ -2,8 +2,8 @@
  * Глобальные настройки для React Query
  */
 
-// Время, в течение которого данные считаются свежими (не будут перезапрашиваться)
-export const QUERY_STALE_TIME = 5 * 60 * 1000; // 5 минут
+// Time during which data is considered fresh (will not be refetched)
+export const QUERY_STALE_TIME = 5 * 60 * 1000; // 5 minutes
 
-// Время хранения данных в кэше после того, как они стали неиспользуемыми
-export const QUERY_GC_TIME = 30 * 60 * 1000; // 30 минут
+// Time to keep data in cache after it becomes unused
+export const QUERY_GC_TIME = 30 * 60 * 1000; // 30 minutes

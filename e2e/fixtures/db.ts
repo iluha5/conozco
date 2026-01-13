@@ -28,7 +28,7 @@ export async function cleanupTestDatabase(): Promise<void> {
     const prisma = createTestPrismaClient();
 
     try {
-        // Удаляем данные в правильном порядке (с учетом foreign keys)
+        // Delete data in correct order (considering foreign keys)
         await prisma.trainingLog.deleteMany();
         await prisma.trainingSession.deleteMany();
         await prisma.apiRequestLog.deleteMany();

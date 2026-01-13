@@ -102,7 +102,7 @@ export interface StageCompletionResult {
     learnedWords?: Word[];
 }
 
-// ===== Расширенные типы для сохранения прогресса =====
+// ===== Extended types for saving progress =====
 
 /**
  * Прогресс по одному слову в этапе
@@ -110,8 +110,8 @@ export interface StageCompletionResult {
 export interface WordProgress {
     wordId: string;
     isCompleted: boolean;
-    attempts: number; // общее количество попыток
-    correctAttempts: number; // количество правильных попыток
+    attempts: number; // total number of attempts
+    correctAttempts: number; // number of correct attempts
     lastAttemptAt?: string;
 }
 
@@ -146,21 +146,21 @@ export interface StageSettings {
  * Сохраненное состояние тренировки в localStorage
  */
 export interface SavedTrainingState {
-    sessionId: string; // Уникальный ID сессии тренировки
+    sessionId: string; // Unique training session ID
     startedAt: string;
     lastUpdatedAt: string;
 
-    // Настройки тренировки
+    // Training settings
     enabledStages: TrainingStage[];
     stageSettings: StageSettings;
     selectedLanguage: string;
     selectedWordIds: string[];
 
-    // Текущий прогресс
+    // Current progress
     currentStage: TrainingStage;
     stagesProgress: StageProgress[];
 
-    // Метаданные
+    // Metadata
     totalWords: number;
     completedWords: number;
 }
@@ -174,19 +174,19 @@ export interface TrainingLog {
     sessionId: string;
     startedAt: Date;
     completedAt: Date;
-    duration: number; // в секундах
+    duration: number; // in seconds
 
-    // Настройки
+    // Settings
     enabledStages: number[];
     selectedLanguage: string;
     totalWords: number;
 
-    // Результаты
+    // Results
     completedWords: number;
     stagesProgress: StageProgress[];
 
-    // Статистика
+    // Statistics
     totalAttempts: number;
     correctAttempts: number;
-    accuracy: number; // процент правильных ответов
+    accuracy: number; // percentage of correct answers
 }

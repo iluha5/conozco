@@ -119,13 +119,13 @@ export class BasePage {
      */
     async waitForLoading(timeout: number = TIMEOUTS.ELEMENT) {
         try {
-            // Ожидаем исчезновение любых loading индикаторов
+            // Wait for any loading indicators to disappear
             await this.page.waitForSelector(SELECTORS.LOADING, {
                 state: 'hidden',
                 timeout,
             });
         } catch {
-            // Если нет loading индикаторов, просто ждем немного
+            // If no loading indicators, just wait a bit
             await this.page.waitForTimeout(500);
         }
     }

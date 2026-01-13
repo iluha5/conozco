@@ -6,11 +6,11 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { DEFAULT_AI_MODEL } from '../cursor/config.mjs';
 
-// Получаем директорию текущего файла
+// Get current file directory
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Пути к файлам
+// File paths
 const promptTemplatePath = path.join(
     __dirname,
     '..',
@@ -213,7 +213,7 @@ async function generateWordData(
         let stdout = '';
         let stderr = '';
 
-        // Таймаут на случай, если Cursor зависнет
+        // Timeout in case Cursor hangs
         const timeout = setTimeout(() => {
             cursorProcess.kill('SIGTERM');
             reject(
@@ -221,13 +221,13 @@ async function generateWordData(
                     `Cursor CLI timeout after 60 seconds for word "${word}"`,
                 ),
             );
-        }, 60000); // 60 секунд
+        }, 60000); // 60 seconds
 
-        // Отправляем промпт в stdin
+        // Send prompt to stdin
         cursorProcess.stdin.write(prompt);
         cursorProcess.stdin.end();
 
-        // Собираем вывод
+        // Collect output
         cursorProcess.stdout.on('data', data => {
             stdout += data.toString();
         });
@@ -255,23 +255,23 @@ async function generateWordData(
             }
 
             try {
-                // Парсим результат от Cursor agent (улучшенная версия как в execute-cursor-prompt.ts)
+                // Parse result from Cursor agent (improved version like in execute-cursor-prompt.ts)
                 const parsedResponse = JSON.parse(stdout);
 
                 if (parsedResponse.result) {
-                    // Извлекаем JSON из поля result
+                    // Extract JSON from result field
                     const resultText = parsedResponse.result;
 
                     let cleanJson = '';
 
-                    // Сначала попробуем найти блок ```json
+                    // First try to find ```json block
                     const jsonBlockMatch = resultText.match(
                         /```json\s*(\{[\s\S]*?\})\s*```/,
                     );
                     if (jsonBlockMatch) {
                         cleanJson = jsonBlockMatch[1];
                     } else {
-                        // Если не нашли JSON блок, попробуем найти сам JSON
+                        // If JSON block not found, try to find JSON itself
                         const jsonStart = resultText.indexOf('{');
                         const jsonEnd = resultText.lastIndexOf('}');
                         if (
@@ -295,7 +295,7 @@ async function generateWordData(
 
                     const wordData: WordData = JSON.parse(cleanJson);
 
-                    // Валидация: проверяем соответствие слова
+                    // Validation: check word match
                     const generatedWord = wordData.word?.toLowerCase().trim();
                     const requestedWord = word.toLowerCase().trim();
 
@@ -317,7 +317,7 @@ async function generateWordData(
                         return;
                     }
 
-                    // Проверяем соответствие языка
+                    // Check language match
                     if (wordData.languageCode !== languageCode) {
                         reject(
                             new Error(

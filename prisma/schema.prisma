@@ -421,11 +421,11 @@ model ApiRequestLog {
 model UserCookieConsent {
   id          Int      @id @default(autoincrement())
   userId      Int      @unique
-  version     String   // Версия политики куки (например, "1.0")
-  given       Boolean  @default(false) // Дано ли согласие
-  givenAt     DateTime? // Дата и время согласия
-  withdrawnAt DateTime? // Дата отзыва согласия
-  preferences Json     // Детальные предпочтения (necessary, functional, analytics, marketing)
+  version     String   // Cookie policy version (e.g., "1.0")
+  given       Boolean  @default(false) // Whether consent was given
+  givenAt     DateTime? // Consent date and time
+  withdrawnAt DateTime? // Withdrawal date and time
+  preferences Json     // Detailed preferences (necessary, functional, analytics, marketing)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)

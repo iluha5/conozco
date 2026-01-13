@@ -6,10 +6,10 @@ import { BasePage } from './BasePage';
  * Базовая реализация для всех этапов тренировки
  */
 export class TrainingPage extends BasePage {
-    // Селекторы
+    // Selectors
     private readonly trainingContainer = '[data-testid="training-container"]';
-    private readonly trainingHeader = 'text=Training'; // Заголовок тренировки
-    private readonly stageSelector = '[class*="StageSelector"]'; // Селектор этапов
+    private readonly trainingHeader = 'text=Training'; // Training header
+    private readonly stageSelector = '[class*="StageSelector"]'; // Stage selector
     private readonly nextButton = 'button:has-text("Next word")';
     private readonly exitButton = 'button:has-text("Home")';
     private readonly pauseButton = 'button:has-text("Pause")';
@@ -30,13 +30,13 @@ export class TrainingPage extends BasePage {
      * Проверка, что страница загружена
      */
     async expectPageLoaded() {
-        // Проверяем наличие элементов тренировки
-        // Используем несколько вариантов для надежности
+        // Check presence of training elements
+        // Use several variants for reliability
         const container = this.page.locator(this.trainingContainer);
         const header = this.page.locator(this.trainingHeader);
         const stageSelector = this.page.locator(this.stageSelector);
 
-        // Проверяем наличие хотя бы одного из элементов
+        // Check presence of at least one element
         const hasContainer = await container
             .isVisible({ timeout: 2000 })
             .catch(() => false);
@@ -48,7 +48,7 @@ export class TrainingPage extends BasePage {
             .catch(() => false);
 
         if (!hasContainer && !hasHeader && !hasStageSelector) {
-            // Fallback: проверяем, что мы не на странице настройки
+            // Fallback: check that we are not on setup page
             const setupPage = this.page.locator('text=Training setup');
             const isOnSetup = await setupPage
                 .isVisible({ timeout: 1000 })
@@ -56,7 +56,7 @@ export class TrainingPage extends BasePage {
             if (isOnSetup) {
                 throw new Error('Still on setup page, training did not start');
             }
-            // Если мы не на странице настройки, считаем что тренировка загрузилась
+            // If we are not on setup page, consider training loaded
         }
     }
 
@@ -95,17 +95,17 @@ export class TrainingPage extends BasePage {
      * @param stage - номер этапа (1-6)
      */
     async clickStage(stage: number) {
-        // Ищем карточку этапа по тексту "Stage {stage}" (десктоп) или просто "{stage}" (мобильный)
-        // Используем селектор, который находит видимый текст
+        // Find stage card by text "Stage {stage}" (desktop) or just "{stage}" (mobile)
+        // Use selector that finds visible text
         const stageTextDesktop = this.page
             .locator(`text=/^Stage ${stage}$/i`)
-            .filter({ hasNotText: 'md:hidden' }); // Исключаем скрытые элементы
+            .filter({ hasNotText: 'md:hidden' }); // Exclude hidden elements
 
         const stageTextMobile = this.page
             .locator(`text=/^${stage}$/i`)
-            .filter({ hasNotText: 'hidden' }); // Исключаем скрытые элементы
+            .filter({ hasNotText: 'hidden' }); // Exclude hidden elements
 
-        // Пробуем найти видимый текст этапа
+        // Try to find visible stage text
         let stageText = null;
         const desktopCount = await stageTextDesktop.count();
         if (desktopCount > 0) {
@@ -118,8 +118,8 @@ export class TrainingPage extends BasePage {
         }
 
         if (stageText) {
-            // Находим родительский Card компонент (карточку этапа)
-            // Card компонент содержит этот текст и имеет onClick обработчик
+            // Find parent Card component (stage card)
+            // Card component contains this text and has onClick handler
             const stageCard = stageText
                 .locator('..')
                 .locator('..')
@@ -128,8 +128,8 @@ export class TrainingPage extends BasePage {
             await stageCard.waitFor({ state: 'visible', timeout: 3000 });
             await stageCard.click();
         } else {
-            // Fallback: находим все карточки этапов и кликаем по индексу
-            // Ищем контейнер с карточками этапов (обычно это div с flex классом)
+            // Fallback: find all stage cards and click by index
+            // Find container with stage cards (usually div with flex class)
             const cardsContainer = this.page
                 .locator('div:has-text("Stage 1"), div:has-text("1")')
                 .locator('..')
@@ -166,11 +166,11 @@ export class TrainingPage extends BasePage {
      * Ждет запуска тренировки и загрузки страницы
      */
     async waitForTrainingStart() {
-        // Ждем перехода на URL /training
+        // Wait for navigation to /training URL
         await this.page.waitForURL(/\/training/, { timeout: 5000 });
-        // Ждем загрузки страницы
+        // Wait for page load
         await this.page.waitForTimeout(2000);
-        // Проверяем, что страница тренировки загружена
+        // Check that training page is loaded
         await this.expectPageLoaded();
     }
 
@@ -180,12 +180,12 @@ export class TrainingPage extends BasePage {
      * @param expectedTitle - ожидаемый заголовок этапа
      */
     async expectStageLoaded(stage: number, expectedTitle: string) {
-        // Проверяем номер этапа
+        // Check stage number
         await this.expectStage(stage);
-        // Проверяем заголовок этапа
+        // Check stage title
         await this.expectStageTitle(expectedTitle);
 
-        // Проверяем специфичные элементы для каждого этапа
+        // Check stage-specific elements
         switch (stage) {
             case 1:
                 await this.expectStage1Content();
@@ -212,25 +212,25 @@ export class TrainingPage extends BasePage {
      * Проверяет наличие специфичных элементов этапа 1 (просмотр и запоминание)
      */
     async expectStage1Content() {
-        // Проверяем наличие отображения слова с кнопкой воспроизведения
+        // Check presence of word display with play button
         const wordDisplay = this.page.locator(
             '[data-testid="stage1-word-display"]',
         );
         await expect(wordDisplay).toBeVisible({ timeout: 5000 });
 
-        // Проверяем наличие кнопки воспроизведения
+        // Check presence of play button
         const playButton = this.page.locator(
             '[data-testid="stage1-play-button"]',
         );
         await expect(playButton).toBeVisible({ timeout: 5000 });
 
-        // Проверяем наличие кнопки "Показать перевод" (может быть скрыта, если перевод уже показан)
-        // Кнопка может быть скрыта через opacity - это нормально для этапа 1
-        // Проверяем только, что она существует в DOM (не обязательно видима)
+        // Check presence of "Show translation" button (may be hidden if translation already shown)
+        // Button may be hidden via opacity - this is normal for stage 1
+        // Check only that it exists in DOM (not necessarily visible)
         const showTranslationButton = this.page.locator(
             '[data-testid="stage1-show-translation-button"]',
         );
-        await showTranslationButton.count(); // Проверяем наличие элемента в DOM
+        await showTranslationButton.count(); // Check element presence in DOM
     }
 
     /**
@@ -245,7 +245,7 @@ export class TrainingPage extends BasePage {
             .catch(() => false);
         if (isVisible) {
             await showTranslationButton.click();
-            // Ждем появления кнопки "Следующее слово" или "Завершить"
+            // Wait for "Next word" or "Finish" button to appear
             await this.page
                 .locator('[data-testid="stage1-next-button"]')
                 .waitFor({ timeout: 3000 });
@@ -261,7 +261,7 @@ export class TrainingPage extends BasePage {
         );
         await expect(nextButton).toBeVisible({ timeout: 5000 });
         await nextButton.click();
-        // Ждем завершения действия (переход к следующему слову или завершение этапа)
+        // Wait for action completion (move to next word or stage completion)
         await this.page.waitForTimeout(500);
     }
 
@@ -275,14 +275,14 @@ export class TrainingPage extends BasePage {
         );
         await expect(translationOptions).toBeVisible({ timeout: 5000 });
 
-        // Находим кнопку с правильным переводом
+        // Find button with correct translation
         const correctButton = translationOptions.locator(
             `button:has-text("${correctTranslation}")`,
         );
         await expect(correctButton).toBeVisible({ timeout: 5000 });
         await correctButton.click();
 
-        // Ждем завершения действия (автоматический переход или завершение этапа)
+        // Wait for action completion (auto-advance or stage completion)
         await this.page.waitForTimeout(2000);
     }
 
@@ -301,7 +301,7 @@ export class TrainingPage extends BasePage {
         await expect(foreignWordsColumn).toBeVisible({ timeout: 5000 });
         await expect(translationsColumn).toBeVisible({ timeout: 5000 });
 
-        // Получаем все пары слов
+        // Get all word pairs
         const foreignWords = foreignWordsColumn.locator(
             'button:not([disabled])',
         );
@@ -312,7 +312,7 @@ export class TrainingPage extends BasePage {
         const foreignWordsCount = await foreignWords.count();
         const translationsCount = await translations.count();
 
-        // Сопоставляем все пары
+        // Match all pairs
         for (
             let i = 0;
             i < Math.min(foreignWordsCount, translationsCount);
@@ -324,10 +324,10 @@ export class TrainingPage extends BasePage {
             await foreignWord.click();
             await this.page.waitForTimeout(300);
             await translation.click();
-            await this.page.waitForTimeout(1500); // Ждем завершения сопоставления
+            await this.page.waitForTimeout(1500); // Wait for matching completion
         }
 
-        // Ждем завершения этапа (автоматический переход)
+        // Wait for stage completion (auto-advance)
         await this.page.waitForTimeout(2000);
     }
 
@@ -343,7 +343,7 @@ export class TrainingPage extends BasePage {
 
         const letters = word.toLowerCase().split('');
 
-        // Кликаем на буквы в правильном порядке
+        // Click letters in correct order
         for (const letter of letters) {
             const letterButton = lettersGrid
                 .locator(`button:not([disabled]):has-text("${letter}")`)
@@ -353,7 +353,7 @@ export class TrainingPage extends BasePage {
             await this.page.waitForTimeout(300);
         }
 
-        // Ждем завершения действия (автоматический переход или завершение этапа)
+        // Wait for action completion (auto-advance or stage completion)
         await this.page.waitForTimeout(2000);
     }
 
@@ -367,7 +367,7 @@ export class TrainingPage extends BasePage {
         );
         await expect(wordsGrid).toBeVisible({ timeout: 5000 });
 
-        // Кликаем на слова в правильном порядке
+        // Click words in correct order
         for (const word of sentenceWords) {
             const wordButton = wordsGrid
                 .locator(`button:not([disabled]):has-text("${word}")`)
@@ -377,7 +377,7 @@ export class TrainingPage extends BasePage {
             await this.page.waitForTimeout(300);
         }
 
-        // Ждем завершения действия (автоматический переход или завершение этапа)
+        // Wait for action completion (auto-advance or stage completion)
         await this.page.waitForTimeout(2000);
     }
 
@@ -386,7 +386,7 @@ export class TrainingPage extends BasePage {
      * @param word Текст слова для составления
      */
     async buildWordStage6(word: string) {
-        // Проигрываем слово (если нужно)
+        // Play word (if needed)
         const playButton = this.page.locator(
             '[data-testid="stage6-play-button"]',
         );
@@ -395,7 +395,7 @@ export class TrainingPage extends BasePage {
             .catch(() => false);
         if (isPlayButtonVisible && !(await playButton.isDisabled())) {
             await playButton.click();
-            await this.page.waitForTimeout(1000); // Ждем проигрывания
+            await this.page.waitForTimeout(1000); // Wait for playback
         }
 
         const lettersGrid = this.page.locator(
@@ -405,7 +405,7 @@ export class TrainingPage extends BasePage {
 
         const letters = word.toLowerCase().split('');
 
-        // Кликаем на буквы в правильном порядке
+        // Click letters in correct order
         for (const letter of letters) {
             const letterButton = lettersGrid
                 .locator(`button:not([disabled]):has-text("${letter}")`)
@@ -415,7 +415,7 @@ export class TrainingPage extends BasePage {
             await this.page.waitForTimeout(300);
         }
 
-        // Ждем завершения действия (автоматический переход или завершение этапа)
+        // Wait for action completion (auto-advance or stage completion)
         await this.page.waitForTimeout(2000);
     }
 
@@ -423,19 +423,19 @@ export class TrainingPage extends BasePage {
      * Проверяет наличие специфичных элементов этапа 2 (выбор правильного перевода)
      */
     async expectStage2Content() {
-        // Проверяем наличие отображения слова
+        // Check presence of word display
         const wordDisplay = this.page.locator(
             '[data-testid="stage2-word-display"]',
         );
         await expect(wordDisplay).toBeVisible({ timeout: 5000 });
 
-        // Проверяем наличие вариантов перевода
+        // Check presence of translation options
         const translationOptions = this.page.locator(
             '[data-testid="stage2-translation-options"]',
         );
         await expect(translationOptions).toBeVisible({ timeout: 5000 });
 
-        // Проверяем, что есть хотя бы один вариант перевода
+        // Check that there is at least one translation option
         const options = translationOptions.locator('button');
         const optionsCount = await options.count();
         expect(optionsCount).toBeGreaterThan(0);
@@ -445,19 +445,19 @@ export class TrainingPage extends BasePage {
      * Проверяет наличие специфичных элементов этапа 3 (сопоставление слов)
      */
     async expectStage3Content() {
-        // Проверяем наличие колонки с иностранными словами
+        // Check presence of foreign words column
         const foreignWordsColumn = this.page.locator(
             '[data-testid="stage3-foreign-words-column"]',
         );
         await expect(foreignWordsColumn).toBeVisible({ timeout: 5000 });
 
-        // Проверяем наличие колонки с переводами
+        // Check presence of translations column
         const translationsColumn = this.page.locator(
             '[data-testid="stage3-translations-column"]',
         );
         await expect(translationsColumn).toBeVisible({ timeout: 5000 });
 
-        // Проверяем, что есть хотя бы одно слово в каждой колонке
+        // Check that there is at least one word in each column
         const foreignWords = foreignWordsColumn.locator('button');
         const translations = translationsColumn.locator('button');
         const foreignWordsCount = await foreignWords.count();
@@ -470,25 +470,25 @@ export class TrainingPage extends BasePage {
      * Проверяет наличие специфичных элементов этапа 4 (составление слова по буквам)
      */
     async expectStage4Content() {
-        // Проверяем наличие отображения перевода
+        // Check presence of translation display
         const translationDisplay = this.page.locator(
             '[data-testid="stage4-translation-display"]',
         );
         await expect(translationDisplay).toBeVisible({ timeout: 5000 });
 
-        // Проверяем наличие области для составления слова
+        // Check presence of word building area
         const wordBuilder = this.page.locator(
             '[data-testid="stage4-word-builder"]',
         );
         await expect(wordBuilder).toBeVisible({ timeout: 5000 });
 
-        // Проверяем наличие сетки с буквами
+        // Check presence of letter grid
         const lettersGrid = this.page.locator(
             '[data-testid="stage4-letters-grid"]',
         );
         await expect(lettersGrid).toBeVisible({ timeout: 5000 });
 
-        // Проверяем, что есть хотя бы одна буква в сетке
+        // Check that there is at least one letter in grid
         const letters = lettersGrid.locator('button, div');
         const lettersCount = await letters.count();
         expect(lettersCount).toBeGreaterThan(0);
@@ -498,7 +498,7 @@ export class TrainingPage extends BasePage {
      * Проверяет наличие специфичных элементов этапа 5 (составление предложения)
      */
     async expectStage5Content() {
-        // Проверяем наличие отображения перевода предложения (обязательно должно быть, если есть примеры)
+        // Check presence of sentence translation display (must be present if examples exist)
         const translationDisplay = this.page.locator(
             '[data-testid="stage5-translation-display"]',
         );
@@ -507,31 +507,31 @@ export class TrainingPage extends BasePage {
             .catch(() => false);
 
         if (hasTranslationDisplay) {
-            // Если есть TranslationDisplay, значит этап загружен с примерами
-            // Проверяем наличие области для составления предложения
+            // If TranslationDisplay exists, stage is loaded with examples
+            // Check presence of sentence building area
             const sentenceBuilder = this.page.locator(
                 '[data-testid="stage5-sentence-builder"]',
             );
             await expect(sentenceBuilder).toBeVisible({ timeout: 5000 });
 
-            // Проверяем наличие сетки со словами
+            // Check presence of word grid
             const wordsGrid = this.page.locator(
                 '[data-testid="stage5-words-grid"]',
             );
             await expect(wordsGrid).toBeVisible({ timeout: 5000 });
 
-            // Проверяем, что есть хотя бы одно слово в сетке
+            // Check that there is at least one word in grid
             const words = wordsGrid.locator('button, div');
             const wordsCount = await words.count();
             expect(wordsCount).toBeGreaterThan(0);
         } else {
-            // Если нет TranslationDisplay, проверяем наличие сообщения о загрузке или отсутствии примеров
+            // If no TranslationDisplay, check for loading message or no examples message
             const loadingMessage = this.page.locator(
                 'text=/Loading|No words with examples/i',
             );
             await loadingMessage.isVisible({ timeout: 3000 }).catch(() => {
-                // Если сообщения нет, это нормально - этап может быть в процессе загрузки
-                // В этом случае считаем проверку пройденной, так как заголовок уже проверен
+                // If no message, this is normal - stage may be loading
+                // In this case consider check passed, as title is already checked
             });
         }
     }
@@ -540,25 +540,25 @@ export class TrainingPage extends BasePage {
      * Проверяет наличие специфичных элементов этапа 6 (составление слова по голосу)
      */
     async expectStage6Content() {
-        // Проверяем наличие кнопки "Прослушать слово"
+        // Check presence of "Listen to word" button
         const playButton = this.page.locator(
             '[data-testid="stage6-play-button"]',
         );
         await expect(playButton).toBeVisible({ timeout: 5000 });
 
-        // Проверяем наличие области для составления слова
+        // Check presence of word building area
         const wordBuilder = this.page.locator(
             '[data-testid="stage6-word-builder"]',
         );
         await expect(wordBuilder).toBeVisible({ timeout: 5000 });
 
-        // Проверяем наличие сетки с буквами
+        // Check presence of letter grid
         const lettersGrid = this.page.locator(
             '[data-testid="stage6-letters-grid"]',
         );
         await expect(lettersGrid).toBeVisible({ timeout: 5000 });
 
-        // Проверяем, что есть хотя бы одна буква в сетке
+        // Check that there is at least one letter in grid
         const letters = lettersGrid.locator('button, div');
         const lettersCount = await letters.count();
         expect(lettersCount).toBeGreaterThan(0);

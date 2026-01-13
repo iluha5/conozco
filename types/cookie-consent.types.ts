@@ -3,7 +3,7 @@
  */
 
 export interface CookiePreferences {
-    necessary: boolean; // всегда true
+    necessary: boolean; // always true
     functional: boolean;
     analytics: boolean;
     marketing: boolean;
@@ -37,7 +37,7 @@ export interface LocalStorageConsent {
     version: string;
     given: boolean;
     givenAt: string; // ISO date string
-    withdrawnAt?: string; // ISO date string (опционально, только если given: false)
+    withdrawnAt?: string; // ISO date string (optional, only if given: false)
     preferences: CookiePreferences;
 }
 

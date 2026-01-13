@@ -5,11 +5,11 @@ import { fileURLToPath } from 'url';
 
 const prisma = new PrismaClient();
 
-// Получаем директорию текущего файла
+// Get current file directory
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Счетчик пайплайна
+// Pipeline counter
 const counterFile = path.join(__dirname, 'temp', 'pipeline-counter.txt');
 let counter = 1;
 
@@ -18,14 +18,14 @@ async function getNextCounter(): Promise<number> {
         const counterData = await fs.readFile(counterFile, 'utf8');
         counter = parseInt(counterData.trim()) + 1;
     } catch (error) {
-        // Файл не существует, начинаем с 1
+        // File does not exist, start with 1
         counter = 1;
     }
     await fs.writeFile(counterFile, counter.toString());
     return counter;
 }
 
-// Глобальные переменные для логов (будут инициализированы асинхронно)
+// Global variables for logs (will be initialized asynchronously)
 let logFilePath = '';
 let tempOutputPath = '';
 let currentCounter = 1;
@@ -40,7 +40,7 @@ async function ensureDateFolder(
     try {
         await fs.access(datePath);
     } catch (error) {
-        // Папка не существует, создаем ее
+        // Folder does not exist, create it
         await fs.mkdir(datePath, { recursive: true });
     }
     return datePath;
@@ -53,7 +53,7 @@ async function initializeLogger(): Promise<void> {
 
     currentCounter = await getNextCounter();
 
-    // Создаем папки с датами
+    // Create folders with dates
     const logsDatePath = await ensureDateFolder(
         path.join(__dirname, 'logs'),
         dateFolder,
@@ -102,7 +102,7 @@ async function main(): Promise<void> {
     await log('🔍 Getting external words from BaseWord...');
 
     try {
-        // Получаем первые 10 слов из BaseWord, где source.code !== 'native'
+        // Get first 10 words from BaseWord where source.code !== 'native'
         const externalWords = await prisma.baseWord.findMany({
             where: {
                 source: {
@@ -125,22 +125,22 @@ async function main(): Promise<void> {
 
         await log(`✅ Found ${externalWords.length} external words`);
 
-        // Логируем список найденных слов
+        // Log list of found words
         const wordList = externalWords.map(word => word.word).join(', ');
         await log(`📝 Found words: ${wordList}`);
 
-        // Создаем упрощенный массив с только нужными полями
+        // Create simplified array with only needed fields
         const simplifiedWords: SimplifiedWord[] = [];
 
         for (const word of externalWords) {
-            // Получаем уникальные языки переводов
+            // Get unique translation languages
             const translationLanguages = Array.from(
                 new Set(word.translations.map(t => t.language.code)),
             );
 
-            // Если у слова нет переводов, используем дефолтный язык перевода (русский)
+            // If word has no translations, use default translation language (Russian)
             if (translationLanguages.length === 0) {
-                // Получаем или создаем русский язык как целевой язык перевода
+                // Get or create Russian language as target translation language
                 const russianLanguage = await prisma.language.findUnique({
                     where: { code: 'ru' },
                 });
@@ -171,7 +171,7 @@ async function main(): Promise<void> {
                     );
                 }
             } else {
-                // Если есть переводы, создаем пары как раньше
+                // If translations exist, create pairs as before
                 for (const translationLangCode of translationLanguages) {
                     const translationLang = word.translations.find(
                         t => t.language.code === translationLangCode,
@@ -203,19 +203,19 @@ async function main(): Promise<void> {
             }
         }
 
-        // Проверяем и удаляем существующий файл, если он есть
+        // Check and remove existing file if it exists
         try {
             await fs.access(tempOutputPath);
             await log(`🗑️ Removing existing output file: ${tempOutputPath}`);
             await fs.unlink(tempOutputPath);
         } catch (error) {
-            // Файл не существует, это нормально
+            // File does not exist, this is normal
             await log(
                 `📄 Output file does not exist, will create new one: ${tempOutputPath}`,
             );
         }
 
-        // Записываем результат в JSON файл
+        // Write result to JSON file
         await fs.writeFile(
             tempOutputPath,
             JSON.stringify(simplifiedWords, null, 2),
