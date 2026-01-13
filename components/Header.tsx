@@ -57,7 +57,7 @@ export function Header() {
         return <HeaderSkeleton />;
     }
 
-    // Показываем Header для незарегистрированных пользователей только на главной странице
+    // Show Header for unregistered users only on home page
     if (!session && !isHomePage) {
         return null;
     }

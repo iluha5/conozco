@@ -22,7 +22,7 @@ export function BulkActions({
     disabled,
 }: BulkActionsProps) {
     const { t } = useTranslation();
-    // Определяем состояние выбора на основе количества выбранных слов
+    // Determine selection state based on number of selected words
     const allSelected =
         words.length > 0 && selectedWords.length === words.length;
     const hasSelection = selectedWords.length > 0;

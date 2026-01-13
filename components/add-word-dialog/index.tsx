@@ -63,19 +63,19 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
     const { settings: userSettings } = useUserSettings();
     const { partsOfSpeech } = usePartsOfSpeech('ru');
 
-    // Используем learnLanguage из настроек пользователя
+    // Use learnLanguage from user settings
     const languageCode: LearnLanguageCode = useMemo(() => {
         const code = userSettings?.learnLanguage?.code ?? 'en';
         return isLearnLanguageAvailable(code)
             ? code
-            : AVAILABLE_LEARN_LANGUAGES[0]; // fallback на первый доступный язык
+            : AVAILABLE_LEARN_LANGUAGES[0]; // fallback to first available language
     }, [userSettings?.learnLanguage?.code]);
 
-    // Фильтр по группам
+    // Group filter
     const { selectedGroupIds, toggleGroup, toggleAll } =
         useWordGroupsFilter('addWordDialog');
 
-    // Хуки для бизнес-логики
+    // Hooks for business logic
     const {
         searchTerm,
         setSearchTerm,
@@ -115,20 +115,20 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
         languageCode,
         setAvailableWords,
         setOffset: (_value: React.SetStateAction<number>) => {
-            // Этот setState будет использоваться внутри useAiSearch
+            // This setState will be used inside useAiSearch
         },
         setHasMore: (_value: React.SetStateAction<boolean>) => {
-            // Этот setState будет использоваться внутри useAiSearch
+            // This setState will be used inside useAiSearch
         },
         addWord,
     });
 
-    // Инициализация isClient
+    // isClient initialization
     useEffect(() => {
         setIsClient(true);
     }, []);
 
-    // Проверка, нужен ли скролл для попапа
+    // Check if popup needs scroll
     useEffect(() => {
         const checkViewportSize = () => {
             const estimatedDialogHeight = 600;
@@ -141,14 +141,14 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
         return () => window.removeEventListener('resize', checkViewportSize);
     }, []);
 
-    // Функция для фильтрации слов по частям речи
+    // Function to filter words by parts of speech
     const getFilteredWords = () => {
         let filtered = availableWords;
 
-        // Фильтр по частям речи (клиентская фильтрация)
+        // Parts of speech filter (client-side filtering)
         if (selectedPartsOfSpeech.length > 0) {
             filtered = filtered.filter(word => {
-                // Проверяем partOfSpeech в переводах
+                // Check partOfSpeech in translations
                 const hasMatchingTranslation = word.translations?.some(
                     t =>
                         t.partOfSpeech &&
@@ -168,7 +168,7 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
         );
     };
 
-    // Преобразование BaseWord в формат Word для TranslationSelectorDialog
+    // Transform BaseWord to Word format for TranslationSelectorDialog
     const convertBaseWordToWord = async (
         baseWord: BaseWord,
     ): Promise<any | null> => {
@@ -282,16 +282,16 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
         return 'partial';
     }, [filteredWords, selectedWords]);
 
-    // Подсчитываем количество слов, которые реально будут добавлены или удалены
+    // Count words that will actually be added or removed
     const wordsToProcessCount = useMemo(() => {
         if (!pendingToggleAllWords) return 0;
 
         if (selectionState === 'all') {
-            // Будем удалять - считаем только те, что уже добавлены пользователем
+            // Will delete - count only those already added by user
             return pendingToggleAllWords.filter(word => word.isAddedByUser)
                 .length;
         } else {
-            // Будем добавлять - считаем только те, что еще не добавлены пользователем
+            // Will add - count only those not yet added by user
             return pendingToggleAllWords.filter(word => !word.isAddedByUser)
                 .length;
         }

@@ -49,12 +49,12 @@ export default function TrainingPage() {
     const { handleStageComplete } = useTrainingLogic();
     const storage = useTrainingStorage();
 
-    // Проверка наличия незавершённой тренировки и редирект
+    // Check for unfinished training and redirect
     const { isStorageChecked, shouldRedirect } = useTrainingStorageCheck({
         selectedWordsCount: selectedWords.size,
     });
 
-    // Загрузка данных - только после проверки localStorage
+    // Load data - only after localStorage check
     useTrainingData(
         isStorageChecked && !shouldRedirect && settingsLoaded,
         isStorageChecked && !shouldRedirect && selectionLoaded,
@@ -62,14 +62,14 @@ export default function TrainingPage() {
         state.setIsLoading,
     );
 
-    // Фильтрация слов для тренировки
+    // Filter words for training
     const filteredWords = useTrainingWordsFilter(
         state.words,
         selectedLanguage,
         selectedWords,
     );
 
-    // Включенные этапы
+    // Enabled stages
     const enabledStages = useMemo(
         () =>
             trainingSettings
@@ -80,7 +80,7 @@ export default function TrainingPage() {
         [trainingSettings],
     );
 
-    // Инициализация или восстановление тренировки - только после проверки localStorage
+    // Initialize or restore training - only after localStorage check
     useTrainingInitialization({
         settingsLoaded: isStorageChecked && !shouldRedirect && settingsLoaded,
         selectionLoaded: isStorageChecked && !shouldRedirect && selectionLoaded,
@@ -96,7 +96,7 @@ export default function TrainingPage() {
         createNewSession: storage.createNewSession,
     });
 
-    // Валидация текущего этапа - если он отключен, переключаемся на первый включенный
+    // Validate current stage - if disabled, switch to first enabled
     useEffect(() => {
         if (
             enabledStages.length > 0 &&
@@ -108,21 +108,21 @@ export default function TrainingPage() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [enabledStages, state.currentStage, state.setCurrentStage, storage]);
 
-    // Убрали автоматическую синхронизацию - сохраняем только при действиях пользователя
+    // Removed automatic sync - save only on user actions
 
-    // Обработчики
+    // Handlers
     const handleExit = () => setIsExitDialogOpen(true);
 
     const handlePause = () => {
-        // Прогресс уже сохранен в localStorage, переходим на страницу списка тренировок
+        // Progress already saved in localStorage, go to training list page
         router.push('/training/list#new');
     };
 
     const handleConfirmExit = () => {
-        // Очищаем сохраненное состояние при выходе
+        // Clear saved state on exit
         storage.clearProgress();
-        // Не вызываем setIsExitDialogOpen(false) - это вызовет history.back()
-        // и создаст конфликт с router.push. Диалог закроется при переходе.
+        // Don't call setIsExitDialogOpen(false) - this will trigger history.back()
+        // and create conflict with router.push. Dialog will close on transition.
         router.push('/training/list');
     };
 
@@ -135,15 +135,15 @@ export default function TrainingPage() {
                 storage.savedState?.stagesProgress || [],
             );
 
-            // Всегда отмечаем текущий этап как завершенный
+            // Always mark current stage as completed
             storage.completeStage(state.currentStage);
 
             if (result.completed && result.learnedWords) {
-                // Тренировка завершена успешно
+                // Training completed successfully
                 state.setIsCompleted(true);
                 state.setCompletedWords(result.learnedWords);
 
-                // Читаем актуальное состояние из localStorage для сохранения лога
+                // Read current state from localStorage for log saving
                 const savedProgress = localStorage.getItem(STORAGE_KEY);
                 if (savedProgress) {
                     try {
@@ -154,15 +154,15 @@ export default function TrainingPage() {
                     }
                 }
 
-                // Очищаем localStorage после успешного завершения
+                // Clear localStorage after successful completion
                 storage.clearProgress();
             } else if (result.nextStage) {
-                // Переходим к следующему этапу (последовательное прохождение)
+                // Move to next stage (sequential completion)
                 storage.setCurrentStage(result.nextStage);
                 state.setCurrentStage(result.nextStage);
             } else {
-                // Этап завершен, но тренировка не завершена
-                // Используем небольшую задержку чтобы дать время обновиться localStorage
+                // Stage completed, but training not finished
+                // Use small delay to let localStorage update
                 setTimeout(() => {
                     const savedProgress = localStorage.getItem(STORAGE_KEY);
 
@@ -171,7 +171,7 @@ export default function TrainingPage() {
                         const currentProgress =
                             currentState.stagesProgress || [];
 
-                        // Находим первый незавершенный этап и переключаемся на него
+                        // Find first unfinished stage and switch to it
                         const firstIncompleteStage = enabledStages.find(
                             stage => {
                                 const progress = currentProgress.find(
@@ -209,17 +209,17 @@ export default function TrainingPage() {
         }
     };
 
-    // Обработчик ручного переключения этапов
+    // Manual stage switching handler
     const handleStageSelect = (stage: TrainingStage) => {
         state.setCurrentStage(stage);
-        // Сохраняем при ручном переключении пользователем
+        // Save on manual user switching
         storage.setCurrentStage(stage);
     };
 
-    // Проверка, включен ли текущий этап
+    // Check if current stage is enabled
     const isStageEnabled = enabledStages.includes(state.currentStage);
 
-    // Получаем статусы этапов для подсветки
+    // Get stage statuses for highlighting
     const getStageStatus = (
         stage: TrainingStage,
     ): 'completed' | 'current' | 'pending' => {
@@ -233,7 +233,7 @@ export default function TrainingPage() {
         return 'pending';
     };
 
-    // Показываем лоадер пока проверяется localStorage или выполняется редирект
+    // Show loader while localStorage is checked or redirect is performed
     if (!isStorageChecked || shouldRedirect) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100">
@@ -245,7 +245,7 @@ export default function TrainingPage() {
         );
     }
 
-    // Рендер экрана результатов
+    // Render results screen
     if (state.isCompleted) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100">
@@ -260,7 +260,7 @@ export default function TrainingPage() {
         );
     }
 
-    // Рендер основного экрана тренировки
+    // Render main training screen
     return (
         <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100">
             <Header />

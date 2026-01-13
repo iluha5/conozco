@@ -80,12 +80,12 @@ export default function SettingsPage() {
                 interfaceLanguageId: formData.interfaceLanguageId
                     ? parseInt(formData.interfaceLanguageId)
                     : null,
-                hasConfigured: true, // Отмечаем, что пользователь прошел настройку
+                hasConfigured: true, // Mark that user completed setup
             };
 
             const updatedSettings = await updateSettings(updates);
 
-            // Если изменился язык интерфейса, переключаем его сразу
+            // If interface language changed, switch it immediately
             if (
                 updatedSettings?.interfaceLanguage?.code &&
                 updatedSettings.interfaceLanguage.code !== i18n.language
@@ -93,7 +93,7 @@ export default function SettingsPage() {
                 const newLanguageCode = updatedSettings.interfaceLanguage.code;
                 await i18n.changeLanguage(newLanguageCode);
 
-                // Обновляем HTML lang атрибут
+                // Update HTML lang attribute
                 if (typeof document !== 'undefined') {
                     document.documentElement.lang = newLanguageCode;
                 }
@@ -114,23 +114,23 @@ export default function SettingsPage() {
     };
 
     const handleSave = async () => {
-        // Проверяем, изменился ли язык обучения
+        // Check if learning language changed
         const isLearnLanguageChanged =
             formData.learnLanguageId !== settings?.learnLanguageId?.toString();
 
-        // Если есть активная тренировка и язык обучения изменяется, показываем подтверждение
+        // If active training exists and learning language changes, show confirmation
         if (hasUnfinishedTraining && isLearnLanguageChanged) {
             setConfirmDialogOpen(true);
             return;
         }
 
-        // Иначе сохраняем сразу
+        // Otherwise save immediately
         await performSave();
     };
 
     const handleConfirmSave = async () => {
         setConfirmDialogOpen(false);
-        // Очищаем прогресс тренировки перед сохранением
+        // Clear training progress before saving
         clearProgress();
         await performSave();
     };

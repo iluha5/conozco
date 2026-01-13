@@ -31,7 +31,7 @@ export default function TrainingSetupPage() {
     const [isInitialSelection, setIsInitialSelection] = useState(true);
     const [isStarting, setIsStarting] = useState(false);
 
-    // Настройки тренировки
+    // Training settings
     const {
         settings: trainingSettings,
         updateEnabledStages,
@@ -43,20 +43,20 @@ export default function TrainingSetupPage() {
     const { selectedWords, setSelectedWords, resetSelection } =
         useTrainingWords();
 
-    // Используем learnLanguage пользователя вместо фильтра
+    // Use user learnLanguage instead of filter
     const selectedLanguage = userSettings?.learnLanguage?.code || 'ALL';
 
-    // Фильтр по группам
+    // Group filter
     const { selectedGroupIds, toggleGroup, toggleAll } =
         useWordGroupsFilter('trainingSetup');
 
-    // Данные слов и фильтрация
+    // Word data and filtering
     const { filteredWords, isLoading } = useSetupWords(
         selectedLanguage,
         selectedGroupIds,
     );
 
-    // Выбор слов
+    // Word selection
     const {
         toggleWord,
         toggleAllWordsSelection,
@@ -69,7 +69,7 @@ export default function TrainingSetupPage() {
         hasMoreWords,
     } = useWordsSelection(filteredWords);
 
-    // Модальные окна настроек этапов
+    // Stage settings modal windows
     const {
         openModal,
         openStageModal,
@@ -80,14 +80,14 @@ export default function TrainingSetupPage() {
         settings: stageSettings,
     } = useStageModals();
 
-    // Очистка выбранных слов при монтировании страницы
+    // Clear selected words on page mount
     useEffect(() => {
         resetSelection();
         setIsInitialSelection(true);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Автовыбор первых видимых слов
+    // Auto-select first visible words
     useEffect(() => {
         if (
             visibleWords.length > 0 &&
@@ -105,7 +105,7 @@ export default function TrainingSetupPage() {
         setSelectedWords,
     ]);
 
-    // Производные значения
+    // Derived values
     const enabledStages = trainingSettings
         ? new Set(trainingSettings.enabledStages)
         : new Set([1, 2, 3, 4, 5, 6]);
@@ -114,7 +114,7 @@ export default function TrainingSetupPage() {
         ? (trainingSettings?.stagesSettingsExpanded ?? true)
         : false;
 
-    // Обработчики
+    // Handlers
     const toggleStagesSettings = () => {
         updateStagesSettingsExpanded(!showStagesSettings);
     };
@@ -150,7 +150,7 @@ export default function TrainingSetupPage() {
             return;
         }
         setIsStarting(true);
-        // Устанавливаем флаг, что переход происходит со страницы настройки
+        // Set flag that transition comes from setup page
         sessionStorage.setItem(STORAGE_KEYS.TRAINING_FROM_SETUP, 'true');
         router.push('/training');
     };

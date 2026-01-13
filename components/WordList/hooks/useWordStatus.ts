@@ -23,15 +23,15 @@ export function useWordStatus({
 
         const newStatus = word.status === 'LEARNED' ? 'NOT_LEARNED' : 'LEARNED';
 
-        // Сохраняем старое состояние для отката
+        // Save old state for rollback
         const oldWord = { ...word };
 
-        // Оптимистичное обновление - сразу меняем статус
+        // Optimistic update - change status immediately
         if (onWordUpdate) {
             onWordUpdate(word.id, { status: newStatus });
         }
 
-        // Сохраняем оптимистичное состояние
+        // Save optimistic state
         setOptimisticWords(prev => {
             const newMap = new Map(prev);
             newMap.set(word.id, { ...word, status: newStatus });
@@ -48,15 +48,15 @@ export function useWordStatus({
             });
 
             if (response.ok) {
-                // Успешно обновлено, ничего не делаем (уже обновлено оптимистично)
+                // Successfully updated, do nothing (already updated optimistically)
             } else {
-                // Ошибка - откатываем состояние
+                // Error - rollback state
                 if (onWordUpdate) {
                     onWordUpdate(word.id, { status: oldWord.status });
                 } else {
                     await onWordsChange?.();
                 }
-                // Удаляем из оптимистичных
+                // Remove from optimistic
                 setOptimisticWords(prev => {
                     const newMap = new Map(prev);
                     newMap.delete(word.id);
@@ -65,13 +65,13 @@ export function useWordStatus({
             }
         } catch (error) {
             console.error('Error updating word:', error);
-            // Ошибка - откатываем состояние
+            // Error - rollback state
             if (onWordUpdate) {
                 onWordUpdate(word.id, { status: oldWord.status });
             } else {
                 await onWordsChange?.();
             }
-            // Удаляем из оптимистичных
+            // Remove from optimistic
             setOptimisticWords(prev => {
                 const newMap = new Map(prev);
                 newMap.delete(word.id);
@@ -83,8 +83,8 @@ export function useWordStatus({
     const handleBulkStatusChange = (_newStatus: 'LEARNED' | 'NOT_LEARNED') => {
         if (readOnly) return;
 
-        // Эта функция теперь просто открывает диалог подтверждения
-        // Реальная логика будет в executeBulkStatusChange
+        // This function now just opens confirmation dialog
+        // Real logic will be in executeBulkStatusChange
     };
 
     const executeBulkStatusChange = async (
@@ -97,14 +97,14 @@ export function useWordStatus({
         if (selectedWords.length === 0) return false;
 
         try {
-            // Оптимистичное обновление - сразу обновляем UI
+            // Optimistic update - update UI immediately
             if (onWordUpdate) {
                 for (const wordId of selectedWords) {
                     onWordUpdate(wordId, { status: newStatus });
                 }
             }
 
-            // Один запрос для всех слов
+            // One request for all words
             const response = await fetch('/api/words/bulk', {
                 method: 'PATCH',
                 headers: {
@@ -117,7 +117,7 @@ export function useWordStatus({
             });
 
             if (!response.ok) {
-                // Ошибка - перезагружаем данные для отката
+                // Error - reload data for rollback
                 console.error('Bulk status update failed');
                 await onWordsChange?.();
                 onError?.(t('Failed to change word status'));
@@ -127,7 +127,7 @@ export function useWordStatus({
             return true;
         } catch (error) {
             console.error('Error updating words status:', error);
-            // При ошибке перезагружаем данные
+            // On error reload data
             await onWordsChange?.();
             onError?.(t('An error occurred while changing word status'));
             return false;
@@ -135,7 +135,7 @@ export function useWordStatus({
     };
 
     const handleMarkAsLearned = () => {
-        // Эта функция открывает диалог подтверждения для статуса LEARNED
+        // This function opens confirmation dialog for LEARNED status
     };
 
     return {

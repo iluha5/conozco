@@ -5,7 +5,7 @@ export function useWordSelection(words: Word[]) {
     const [selectedWords, setSelectedWords] = useState<(string | number)[]>([]);
 
     useEffect(() => {
-        // Сбрасываем выделение при изменении списка слов
+        // Reset selection when word list changes
         setSelectedWords([]);
     }, [words]);
 
@@ -48,7 +48,7 @@ export function useWordSelection(words: Word[]) {
         toggleAllWordsSelection,
         clearSelection,
         isWordSelected,
-        // Внутренние функции для обратной совместимости
+        // Internal functions for backward compatibility
         _selectAllWords,
         _deselectAllWords,
     };

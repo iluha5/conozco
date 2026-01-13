@@ -35,39 +35,39 @@ export default function WordsPage() {
     const [isDeleting, setIsDeleting] = useState(false);
     const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
-    // Загрузка данных
+    // Data loading
     const { words, loading, refetch, updateWord, removeWord } = useWordsData();
 
-    // Фильтр по группам
+    // Group filter
     const { selectedGroupIds, toggleGroup, toggleAll } =
         useWordGroupsFilter('myWords');
 
-    // Получаем язык для фильтрации из настроек пользователя
+    // Get filtering language from user settings
     const learnLanguageCode = useMemo(() => {
         return userSettings?.learnLanguage?.code || 'ALL';
     }, [userSettings?.learnLanguage?.code]);
 
-    // Формирование фильтра
+    // Filter formation
     const filter: WordsFilter = {
         language: learnLanguageCode,
         status: selectedStatus,
         groupIds: selectedGroupIds.length > 0 ? selectedGroupIds : undefined,
     };
 
-    // Фильтрация слов
+    // Word filtering
     const filteredWords = useWordsFilter(words, filter);
 
-    // Статистика (по языку, без учета статуса)
+    // Statistics (by language, status ignored)
     const stats = useWordsStats(words, learnLanguageCode);
 
-    // Логика выбора слов
+    // Word selection logic
     const wordSelection = useWordSelection(filteredWords);
     const selectionState = getSelectionState(
         wordSelection.selectedWords,
         filteredWords,
     );
 
-    // Логика подтверждений и команд
+    // Confirmation and command logic
     const confirmations = useConfirmationDialogs();
     const status = useWordStatus({
         onWordUpdate: (wordId, updates) => {
@@ -87,7 +87,7 @@ export default function WordsPage() {
         setIsClient(true);
     }, []);
 
-    // Обработчики команд
+    // Command handlers
     const handleMarkAsLearned = () => {
         confirmations.openStatusConfirmation('LEARNED');
     };

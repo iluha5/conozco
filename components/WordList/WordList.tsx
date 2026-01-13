@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useToast, usePartsOfSpeech } from '@/hooks/shared';
-// Кастомные хуки
+// Custom hooks
 import { useClientCheck } from './hooks/useClientCheck';
 import { useWordSelection } from './hooks/useWordSelection';
 import { useConfirmationDialogs } from './hooks/useConfirmationDialogs';
@@ -11,10 +11,10 @@ import { useWordLoading } from './hooks/useWordLoading';
 import { useWordStatus } from './hooks/useWordStatus';
 import { useWordDeletion } from './hooks/useWordDeletion';
 
-// Типы
+// Types
 import type { Word, WordsListProps } from './typing';
 
-// Компоненты
+// Components
 import { EmptyState } from './components/EmptyState';
 import { BulkActions } from './components/BulkActions';
 import { WordItem } from './components/WordItem';
@@ -34,11 +34,11 @@ export function WordsList({
 }: WordsListProps) {
     const { t } = useTranslation();
     const defaultEmptyMessage = emptyMessage || t('No words found');
-    // Состояния загрузки для bulk операций
+    // Loading states for bulk operations
     const [isDeleting, setIsDeleting] = useState(false);
     const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
-    // Кастомные хуки
+    // Custom hooks
     const { isClient } = useClientCheck();
     const internalSelection = useWordSelection(words);
     const selection = externalSelection || internalSelection;
@@ -51,7 +51,7 @@ export function WordsList({
 
     const { toast } = useToast();
 
-    // Обработчики событий с использованием хуков
+    // Event handlers using hooks
     const handleDeleteWord = async (id: string | number) => {
         await deletion.handleDeleteWord(id, words);
     };

@@ -84,7 +84,7 @@ export function WordItem({
                                     {getLanguageFlag(displayWord.language.code)}
                                 </span>
                                 {(() => {
-                                    // Приоритет: часть речи из кастомного перевода, затем из перевода
+                                    // Priority: part of speech from custom translation, then from translation
                                     const customPartOfSpeech =
                                         displayWord.customTranslations?.[0]
                                             ?.partOfSpeech;
@@ -96,7 +96,7 @@ export function WordItem({
                                         customPartOfSpeech ||
                                         translationPartOfSpeech;
 
-                                    // Не показываем плашку, если часть речи неизвестна
+                                    // Don't show badge if part of speech is unknown
                                     if (!partOfSpeech) {
                                         return null;
                                     }

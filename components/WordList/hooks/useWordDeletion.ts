@@ -21,18 +21,18 @@ export function useWordDeletion({
     const handleDeleteWord = async (id: string | number, words: Word[]) => {
         if (readOnly) return;
 
-        // Находим слово для отката при ошибке
+        // Find word for rollback on error
         const wordToDelete = words.find(w => w.id === id);
         if (!wordToDelete) return;
 
-        // Сохраняем слово для возможного отката
+        // Save word for possible rollback
         setDeletedWords(prev => {
             const newMap = new Map(prev);
             newMap.set(id, wordToDelete);
             return newMap;
         });
 
-        // Оптимистичное обновление - сразу удаляем из списка
+        // Optimistic update - remove from list immediately
         if (onWordRemove) {
             onWordRemove(id);
         }
@@ -43,17 +43,17 @@ export function useWordDeletion({
             });
 
             if (response.ok) {
-                // Успешно удалено - удаляем из сохраненных для отката
+                // Successfully deleted - remove from saved for rollback
                 setDeletedWords(prev => {
                     const newMap = new Map(prev);
                     newMap.delete(id);
                     return newMap;
                 });
             } else {
-                // Ошибка - откатываем состояние
+                // Error - rollback state
                 const _deletedWord = deletedWords.get(id) || wordToDelete;
                 if (onWordRemove) {
-                    // Восстанавливаем слово через onWordRemove (но так как нет функции добавления, используем refetch)
+                    // Restore word via onWordRemove (but since no add function, use refetch)
                     await onWordsChange?.();
                 } else {
                     await onWordsChange?.();
@@ -66,7 +66,7 @@ export function useWordDeletion({
             }
         } catch (error) {
             console.error('Error deleting word:', error);
-            // Ошибка - откатываем состояние
+            // Error - rollback state
             const _deletedWord = deletedWords.get(id) || wordToDelete;
             if (onWordRemove) {
                 await onWordsChange?.();
@@ -83,8 +83,8 @@ export function useWordDeletion({
 
     const handleBulkDelete = () => {
         if (readOnly) return;
-        // Эта функция теперь просто открывает диалог подтверждения
-        // Реальная логика будет в executeBulkDelete
+        // This function now just opens confirmation dialog
+        // Real logic will be in executeBulkDelete
     };
 
     const executeBulkDelete = async (
@@ -96,14 +96,14 @@ export function useWordDeletion({
         if (selectedWords.length === 0) return false;
 
         try {
-            // Оптимистичное обновление - сразу удаляем из UI
+            // Optimistic update - remove from UI immediately
             if (onWordRemove) {
                 for (const wordId of selectedWords) {
                     onWordRemove(wordId);
                 }
             }
 
-            // Один запрос для всех слов
+            // One request for all words
             const response = await fetch('/api/words/bulk', {
                 method: 'DELETE',
                 headers: {
@@ -115,7 +115,7 @@ export function useWordDeletion({
             });
 
             if (!response.ok) {
-                // Ошибка - перезагружаем данные для отката
+                // Error - reload data for rollback
                 console.error('Bulk delete failed');
                 await onWordsChange?.();
                 onError?.(t('Failed to delete words'));
@@ -125,7 +125,7 @@ export function useWordDeletion({
             return true;
         } catch (error) {
             console.error('Error deleting words:', error);
-            // При ошибке перезагружаем данные
+            // On error reload data
             await onWordsChange?.();
             onError?.(t('An error occurred while deleting words'));
             return false;

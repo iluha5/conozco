@@ -26,7 +26,7 @@ import { GroupWordsDialog } from '@/components/word-groups/GroupWordsDialog';
 import { useHashDialog } from '@/hooks/shared';
 import { useTranslation } from '@/lib/i18n';
 
-// Объединенный тип группы для отображения
+// Combined group type for display
 type CombinedWordGroup = {
     id: number;
     name: string;
@@ -60,7 +60,7 @@ export default function WordGroupsManagementPage() {
         setGroupViewDialogOpen(!!group);
     };
 
-    // Фильтры
+    // Filters
     const [visibilityFilter, setVisibilityFilter] = useState<string>('ALL');
     const [activityFilter, setActivityFilter] = useState<string>('ALL');
 
@@ -72,18 +72,18 @@ export default function WordGroupsManagementPage() {
     const activateMutation = useActivateWordGroup();
     const deactivateMutation = useDeactivateWordGroup();
 
-    // Синхронизируем оптимистичное состояние с реальными данными
+    // Sync optimistic state with real data
     useEffect(() => {
         if (activeGroups) {
             setOptimisticActiveGroups(new Set(activeGroups.map(g => g.id)));
         }
     }, [activeGroups]);
 
-    // Объединяем активные и доступные группы в один список
+    // Combine active and available groups into one list
     const combinedGroups = useMemo<CombinedWordGroup[]>(() => {
         const groups: CombinedWordGroup[] = [];
 
-        // Добавляем активные группы
+        // Add active groups
         if (activeGroups) {
             activeGroups.forEach(group => {
                 groups.push({
@@ -91,7 +91,7 @@ export default function WordGroupsManagementPage() {
                     name: group.name,
                     wordsCount: group.wordsCount,
                     visibility: group.visibility,
-                    createdBy: t('You'), // Для активных групп не показываем создателя
+                    createdBy: t('You'), // Don't show creator for active groups
                     isActive: true,
                     isOwner: group.isOwner,
                     canRemove: group.canRemove,
@@ -99,7 +99,7 @@ export default function WordGroupsManagementPage() {
             });
         }
 
-        // Добавляем доступные группы (если они не активны)
+        // Add available groups (if not active)
         if (availableGroups) {
             const activeIds = new Set(activeGroups?.map(g => g.id) || []);
             availableGroups.forEach(group => {
@@ -126,7 +126,7 @@ export default function WordGroupsManagementPage() {
         groupName: string,
         currentlyActive: boolean,
     ) => {
-        // Оптимистичное обновление состояния
+        // Optimistic state update
         setOptimisticActiveGroups(prev => {
             const newSet = new Set(prev);
             if (currentlyActive) {
@@ -137,7 +137,7 @@ export default function WordGroupsManagementPage() {
             return newSet;
         });
 
-        // Устанавливаем состояние загрузки
+        // Set loading state
         setLoadingGroups(prev => new Set(prev).add(groupId));
 
         try {
@@ -151,7 +151,7 @@ export default function WordGroupsManagementPage() {
                 toast.success(t('Group "{{name}}" added', { name: groupName }));
             }
         } catch (error) {
-            // Откат оптимистичного обновления в случае ошибки
+            // Rollback optimistic update on error
             setOptimisticActiveGroups(prev => {
                 const newSet = new Set(prev);
                 if (currentlyActive) {
@@ -169,7 +169,7 @@ export default function WordGroupsManagementPage() {
                       : t('Error adding group'),
             );
         } finally {
-            // Убираем состояние загрузки
+            // Remove loading state
             setLoadingGroups(prev => {
                 const newSet = new Set(prev);
                 newSet.delete(groupId);
@@ -178,18 +178,18 @@ export default function WordGroupsManagementPage() {
         }
     };
 
-    // Фильтруем объединенный список по поисковому запросу и фильтрам
+    // Filter combined list by search query and filters
     const filteredGroups = combinedGroups.filter(group => {
-        // Поисковый запрос
+        // Search query
         const matchesSearch = group.name
             .toLowerCase()
             .includes(searchQuery.toLowerCase());
 
-        // Фильтр по типу доступа
+        // Access type filter
         const matchesVisibility =
             visibilityFilter === 'ALL' || group.visibility === visibilityFilter;
 
-        // Фильтр по активности
+        // Activity filter
         const matchesActivity =
             activityFilter === 'ALL' ||
             (activityFilter === 'ACTIVE' && group.isActive) ||
