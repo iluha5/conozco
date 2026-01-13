@@ -24,37 +24,37 @@ export async function startTrainingMode(
     router: any,
     setSelectedWords: (_words: Set<string>) => void,
     toast: (_options: any) => void,
-    // Новые параметры для режимов закрепления
+    // New parameters for consolidation modes
     onFlashCardsOpen?: (_params: FlashCardsReviewParams) => void,
     onGroupSetupOpen?: () => void,
     lang: string = 'en',
 ): Promise<{ success: boolean; noWords?: boolean }> {
-    // Режим custom → /training/setup
+    // Custom mode → /training/setup
     if (modeId === 'custom') {
         router.push('/training/setup');
         return { success: true };
     }
 
-    // Режим с FlashCards (quick-check, A1 тесты)
+    // FlashCards mode (quick-check, A1 tests)
     if (config.modeType === 'flashCards') {
         if (modeId === 'learned-group-check') {
-            // Открываем диалог выбора группы
+            // Open group selection dialog
             onGroupSetupOpen?.();
             return { success: true };
         }
 
-        // Режимы с группой (A1 тесты)
+        // Group modes (A1 tests)
         if (config.groupId) {
-            // Проверяем доступность и активацию группы через API
+            // Check group availability and activation via API
             const groupInfo = await checkGroupAvailability(config.groupId);
 
-            // Если группа найдена, но не активирована, или не найдена вообще
+            // If group found but not activated, or not found at all
             if (!groupInfo.found || !groupInfo.isActive) {
-                // Пытаемся автоматически активировать группу
+                // Try to automatically activate group
                 const activated = await activateGroup(config.groupId);
 
                 if (!activated) {
-                    // Если активация не удалась, показываем ошибку
+                    // If activation failed, show error
                     toast({
                         title: tServerSync('Group unavailable', lang),
                         description: tServerSync(
@@ -67,7 +67,7 @@ export async function startTrainingMode(
                     return { success: false };
                 }
 
-                // Показываем уведомление об автоматическом добавлении группы только если группа не была активирована
+                // Show notification about automatic group addition only if group was not activated
                 if (!groupInfo.isActive) {
                     toast({
                         title: tServerSync(
@@ -94,7 +94,7 @@ export async function startTrainingMode(
             return { success: true };
         }
 
-        // Быстрая проверка изученных
+        // Quick check of learned
         const params: FlashCardsReviewParams = {
             status: 'LEARNED',
             limit: config.wordCount,
@@ -105,11 +105,11 @@ export async function startTrainingMode(
         return { success: true };
     }
 
-    // Режим training (sentences для изученных или стандартные)
+    // Training mode (sentences for learned or standard)
     const wordStatus =
         config.wordSource === 'learned' ? 'LEARNED' : 'NOT_LEARNED';
 
-    // Фильтруем слова по статусу
+    // Filter words by status
     const filteredWords = allWords.filter(
         word =>
             Number(word.languageId) === currentLanguageId &&
@@ -157,7 +157,7 @@ export async function startTrainingMode(
         saveStage5Settings(userId, config.settings.stage5);
     }
 
-    // Сохраняем источник слов для training page
+    // Save word source for training page
     sessionStorage.setItem(STORAGE_KEYS.TRAINING_WORD_SOURCE, wordStatus);
     sessionStorage.setItem(STORAGE_KEYS.TRAINING_FROM_SETUP, 'true');
 
@@ -211,7 +211,7 @@ async function activateGroup(groupId: number): Promise<boolean> {
             },
         );
 
-        // Если группа уже активирована (400), считаем это успехом
+        // If group already activated (400), consider it success
         if (response.status === 400) {
             return true;
         }

@@ -61,7 +61,7 @@ const GRADIENT_TO_COLOR_MAP: Record<
         bgLight: 'bg-red-400/10',
         bgLightMedium: 'bg-red-400/10',
     },
-    // Зеленая гамма для тестов уровней A1, A2, B1, B2
+    // Green palette for A1, A2, B1, B2 level tests
     'from-green-300 to-green-400': {
         border: 'border-green-300',
         text: 'text-green-600',
@@ -97,12 +97,12 @@ const GRADIENT_TO_COLOR_MAP: Record<
  * Пример: "from-green-400 to-emerald-500" -> "green-400"
  */
 export function extractColorFromGradient(gradient: string): string {
-    // Извлекаем первый цвет из градиента (после "from-")
+    // Extract first color from gradient (after "from-")
     const match = gradient.match(/from-([a-z]+-\d+)/);
     if (match && match[1]) {
         return match[1];
     }
-    // Fallback: если не удалось извлечь, возвращаем дефолтный цвет
+    // Fallback: if extraction failed, return default color
     return 'gray-400';
 }
 

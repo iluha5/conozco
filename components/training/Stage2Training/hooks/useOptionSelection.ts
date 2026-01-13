@@ -24,7 +24,7 @@ export function useOptionSelection({
 
     const handleSelectOption = useCallback(
         async (option: string) => {
-            if (selectedOption !== null) return; // Уже выбрано
+            if (selectedOption !== null) return; // Already selected
 
             setSelectedOption(option);
             const correctTranslation = getWordTranslation(
@@ -34,10 +34,10 @@ export function useOptionSelection({
             const correct = option === correctTranslation;
             setIsCorrect(correct);
 
-            // Обновляем результаты упражнения
+            // Update exercise results
             updateResult(currentIndex, correct);
 
-            // Записываем результат (API + localStorage)
+            // Record result (API + localStorage)
             await recordResult(2, currentWord.id, correct);
         },
         [

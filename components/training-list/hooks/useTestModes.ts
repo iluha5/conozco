@@ -23,7 +23,7 @@ export function useTestModes(
     isLoading: boolean;
     error: Error | null;
 } {
-    // Загружаем все доступные группы для получения названий
+    // Load all available groups to get names
     const { data: groups = [], isLoading: groupsLoading } = useQuery<
         WordGroup[]
     >({
@@ -35,7 +35,7 @@ export function useTestModes(
         },
     });
 
-    // Создаем Map для быстрого поиска названий групп
+    // Create Map for fast group name lookup
     const groupNameMap = useMemo(() => {
         const map = new Map<number, string>();
         groups.forEach(group => {
@@ -44,7 +44,7 @@ export function useTestModes(
         return map;
     }, [groups]);
 
-    // Загружаем названия групп, которые не найдены в списке доступных
+    // Load names of groups not found in available list
     const testConfigs = useMemo(() => {
         if (!languageCode) return [];
         return getTestConfigsForLanguage(languageCode);
@@ -56,13 +56,13 @@ export function useTestModes(
             .filter(groupId => !groupNameMap.has(groupId));
     }, [testConfigs, groupNameMap]);
 
-    // Загружаем недостающие группы одним запросом (если есть недостающие)
+    // Load missing groups in one request (if any missing)
     const { data: missingGroups = [], isLoading: isLoadingMissingGroups } =
         useQuery<WordGroup[]>({
             queryKey: ['wordGroups', missingGroupIds],
             queryFn: async () => {
                 if (missingGroupIds.length === 0) return [];
-                // Загружаем все недостающие группы параллельно
+                // Load all missing groups in parallel
                 const promises = missingGroupIds.map(async groupId => {
                     const res = await fetch(`/api/user/word-groups/${groupId}`);
                     if (!res.ok) {
@@ -79,7 +79,7 @@ export function useTestModes(
             enabled: missingGroupIds.length > 0,
         });
 
-    // Объединяем все группы в один Map
+    // Combine all groups into one Map
     const allGroupNames = useMemo(() => {
         const map = new Map(groupNameMap);
         missingGroups.forEach(group => {
@@ -88,13 +88,13 @@ export function useTestModes(
         return map;
     }, [groupNameMap, missingGroups]);
 
-    // Преобразуем конфигурации тестов в TrainingModeConfig
+    // Transform test configurations to TrainingModeConfig
     const testModes = useMemo(() => {
         if (!languageCode) return [];
 
         const configs = getTestConfigsForLanguage(languageCode);
         const modes: TrainingModeConfig[] = [
-            // Всегда добавляем "Group check" в начало
+            // Always add "Group check" at the beginning
             {
                 id: 'learned-group-check',
                 title: t('Group check'),
@@ -112,9 +112,9 @@ export function useTestModes(
             },
         ];
 
-        // Добавляем тесты с названиями групп из БД
+        // Add tests with group names from DB
         configs.forEach(config => {
-            // Определяем уровень теста из ID
+            // Determine test level from ID
             const isA2 = config.id.includes('-a2-');
             const isB1 = config.id.includes('-b1-');
             const isB2 = config.id.includes('-b2-');

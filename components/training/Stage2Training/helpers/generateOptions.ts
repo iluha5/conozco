@@ -16,7 +16,7 @@ export function generateOptions(
     const otherWords = allWords.filter((word, index) => index !== currentIndex);
     const noTranslationText = tServerSync('No translation', lang);
 
-    // Выбираем 3 случайных неправильных ответа
+    // Select 3 random incorrect answers
     const shuffledOthers = [...otherWords].sort(() => Math.random() - 0.5);
     const wrongOptions = shuffledOthers
         .slice(0, 3)
@@ -27,7 +27,7 @@ export function generateOptions(
                 translation !== noTranslationText,
         );
 
-    // Добавляем правильный ответ и перемешиваем
+    // Add correct answer and shuffle
     const allOptions = [...wrongOptions, correctTranslation].sort(
         () => Math.random() - 0.5,
     );

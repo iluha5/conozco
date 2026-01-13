@@ -9,8 +9,8 @@ interface SwipeState {
     isSwiping: boolean;
 }
 
-const SWIPE_THRESHOLD = 50; // Минимальное смещение для активации свайпа
-const SWIPE_VELOCITY_THRESHOLD = 0.3; // Минимальная скорость для быстрого свайпа
+const SWIPE_THRESHOLD = 50; // Minimum displacement for swipe activation
+const SWIPE_VELOCITY_THRESHOLD = 0.3; // Minimum velocity for fast swipe
 
 /**
  * Хук для обработки свайпов на мобильных устройствах
@@ -87,31 +87,31 @@ export function useSwipeGesture(
         const velocityX = Math.abs(deltaX) / deltaTime;
         const velocityY = Math.abs(deltaY) / deltaTime;
 
-        // Определяем направление свайпа
+        // Determine swipe direction
         const absX = Math.abs(deltaX);
         const absY = Math.abs(deltaY);
 
-        // Проверяем, достаточно ли смещение или скорости
+        // Check if displacement or velocity is sufficient
         const isSwipeX =
             absX > threshold || velocityX > SWIPE_VELOCITY_THRESHOLD;
         const isSwipeY =
             absY > threshold || velocityY > SWIPE_VELOCITY_THRESHOLD;
 
         if (isSwipeX && absX > absY) {
-            // Горизонтальный свайп
+            // Horizontal swipe
             if (deltaX > 0) {
                 onSwipe('right');
             } else {
                 onSwipe('left');
             }
         } else if (isSwipeY && absY > absX) {
-            // Вертикальный свайп вниз
+            // Vertical swipe down
             if (deltaY > 0) {
                 onSwipe('down');
             }
         }
 
-        // Сбрасываем состояние
+        // Reset state
         setSwipeState(null);
         setSwipeOffset({ x: 0, y: 0 });
     }, [swipeState, threshold, onSwipe]);

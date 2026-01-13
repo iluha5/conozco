@@ -21,7 +21,7 @@ export function getTrainingModeConfig(
         ...(testModes || []),
     ];
 
-    // Если режим не найден и это новый ID теста с префиксом языка, пытаемся найти через test-config
+    // If mode not found and this is new test ID with language prefix, try to find via test-config
     let found = allTrainingModes.find(mode => mode.id === modeId);
 
     if (
@@ -31,7 +31,7 @@ export function getTrainingModeConfig(
     ) {
         const testConfig = getTestConfigById(modeId);
         if (testConfig) {
-            // Определяем уровень теста из ID
+            // Determine test level from ID
             const isA2 = modeId.includes('-a2-');
             const isB1 = modeId.includes('-b1-');
             const isB2 = modeId.includes('-b2-');
@@ -58,7 +58,7 @@ export function getTrainingModeConfig(
                 shortDescription = t('20 random words from A1');
             }
 
-            // Создаем базовую конфигурацию (название группы будет загружено позже)
+            // Create basic configuration (group name will be loaded later)
             found = {
                 id: modeId as TrainingModeId,
                 title,
@@ -78,7 +78,7 @@ export function getTrainingModeConfig(
                 wordSource: 'group',
                 modeType: 'flashCards',
                 groupId: testConfig.groupId,
-                groupName: level, // Fallback, будет заменено при загрузке из БД
+                groupName: level, // Fallback, will be replaced when loading from DB
             };
         }
     }

@@ -28,7 +28,7 @@ export function FlashCardsWidget() {
 
     const languageCode = userSettings?.learnLanguage?.code;
 
-    // Обновляем параметры при изменении языка
+    // Update parameters when language changes
     useEffect(() => {
         if (languageCode) {
             setReviewParams(prev => ({
@@ -53,11 +53,11 @@ export function FlashCardsWidget() {
 
     const handleClose = () => {
         setOpen(false);
-        // Сбрасываем флаг загрузки при закрытии, чтобы при следующем открытии загрузились новые слова
+        // Reset loading flag on close so new words load on next open
         setShouldLoadExercise(false);
     };
 
-    // Не показываем виджет если язык еще не загружен
+    // Don't show widget if language not loaded yet
     if (!languageCode) {
         return null;
     }

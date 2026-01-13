@@ -31,7 +31,7 @@ export function TrainingModeCard({
         }
     };
 
-    // Вариант для learned: Белый фон с цветной обводкой
+    // Variant for learned: White background with colored border
     if (variant === 'learned') {
         const borderColor = getBorderColorClass(mode.gradient);
         const iconColor = getTextColorClass(mode.gradient);
@@ -95,7 +95,7 @@ export function TrainingModeCard({
         );
     }
 
-    // Вариант по умолчанию: градиентный фон (оригинальный стиль)
+    // Default variant: gradient background (original style)
     return (
         <div
             onClick={handleClick}

@@ -39,31 +39,31 @@ export function useStage3AutoAdvance({
                 if (currentBatch < totalBatches - 1) {
                     setCurrentBatch(currentBatch + 1);
                 } else {
-                    // Завершили все батчи первый раз
+                    // Completed all batches first time
                     setHasCompletedFirstRound(true);
 
-                    // Проверяем, есть ли ошибки во всех батчах
+                    // Check if there are errors in all batches
                     const hasAnyErrors = exerciseResults.some(
                         result => result === false,
                     );
 
                     if (hasAnyErrors) {
-                        // Есть ошибки - переходим в режим исправления
+                        // There are errors - switch to correction mode
                         setIsRetryMode(true);
-                        const firstErrorBatch = findNextErrorBatch(-1); // Ищем первый батч с ошибками
+                        const firstErrorBatch = findNextErrorBatch(-1); // Find first batch with errors
                         if (firstErrorBatch !== -1) {
                             setCurrentBatch(firstErrorBatch);
                         }
                     } else {
-                        // Все правильно - завершаем этап
-                        // Если это последний этап и последний батч выполнен правильно
+                        // All correct - finish stage
+                        // If this is the last stage and last batch completed correctly
                         if (isLastStage && currentBatch === totalBatches - 1) {
-                            // Проверяем, что все упражнения выполнены правильно
+                            // Check that all exercises are completed correctly
                             const allCorrect = exerciseResults.every(
                                 result => result === true,
                             );
                             if (allCorrect) {
-                                // Показываем лоадер и завершаем тренировку
+                                // Show loader and finish training
                                 setIsCompleting(true);
                                 setTimeout(() => {
                                     onComplete();
@@ -71,24 +71,24 @@ export function useStage3AutoAdvance({
                                 return;
                             }
                         }
-                        // Обычное завершение этапа
+                        // Normal stage completion
                         onComplete();
                         setCurrentBatch(0);
                         setIsRetryMode(false);
                         setHasCompletedFirstRound(false);
                     }
                 }
-            }, 1500); // Задержка 1.5 секунды для визуального подтверждения
+            }, 1500); // 1.5 second delay for visual confirmation
 
             return () => clearTimeout(timer);
         } else if (isRetryMode && allMatched && pairsLength > 0) {
-            // В режиме повторения, когда завершили текущий батч
+            // In retry mode, when completed current batch
             const timer = setTimeout(() => {
                 const nextErrorBatch = findNextErrorBatch(currentBatch);
 
                 if (nextErrorBatch === -1) {
-                    // Все ошибки исправлены - завершаем этап
-                    // Если это последний этап, показываем лоадер
+                    // All errors fixed - finish stage
+                    // If this is the last stage, show loader
                     if (isLastStage) {
                         setIsCompleting(true);
                         setTimeout(() => {
@@ -101,10 +101,10 @@ export function useStage3AutoAdvance({
                         setHasCompletedFirstRound(false);
                     }
                 } else if (nextErrorBatch === currentBatch) {
-                    // Это единственный батч с ошибками - перезагружаем его
+                    // This is the only batch with errors - reload it
                     setRefreshKey(prevKey => prevKey + 1);
                 } else {
-                    // Переходим к следующему батчу с ошибками
+                    // Move to next batch with errors
                     setCurrentBatch(nextErrorBatch);
                 }
             }, 1500);

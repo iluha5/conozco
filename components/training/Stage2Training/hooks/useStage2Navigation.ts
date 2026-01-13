@@ -35,18 +35,18 @@ export function useStage2Navigation({
         if (currentIndex < wordsLength - 1) {
             return { type: 'next' as const, nextIndex: currentIndex + 1 };
         } else {
-            // Завершили все слова первый раз
+            // Completed all words first time
             setHasCompletedFirstRound(true);
 
-            // Проверяем, есть ли ошибки
+            // Check if there are errors
             const errorIndices = getErrorIndices(exerciseResults);
 
             if (errorIndices.length > 0) {
-                // Есть ошибки - переходим в режим исправления
+                // There are errors - switch to correction mode
                 setIsRetryMode(true);
                 return { type: 'retry' as const, nextIndex: errorIndices[0] };
             } else {
-                // Все правильно - завершаем этап
+                // All correct - finish stage
                 setIsRetryMode(false);
                 setHasCompletedFirstRound(false);
                 return { type: 'complete' as const };

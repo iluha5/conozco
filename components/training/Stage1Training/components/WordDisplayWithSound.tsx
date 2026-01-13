@@ -23,7 +23,7 @@ export function WordDisplayWithSound({
     };
 
     const handleTouchEnd = (e: React.TouchEvent<HTMLButtonElement>) => {
-        // Сбрасываем состояние :active на мобильных устройствах
+        // Reset :active state on mobile devices
         e.currentTarget.blur();
     };
 

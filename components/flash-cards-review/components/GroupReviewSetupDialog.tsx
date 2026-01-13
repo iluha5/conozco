@@ -47,7 +47,7 @@ export function GroupReviewSetupDialog({
     const [wordCount, setWordCount] = useState(20);
     const [searchQuery, setSearchQuery] = useState('');
 
-    // Загружаем все доступные группы
+    // Load all available groups
     const { data: groups = [], isLoading } = useQuery<AccessibleWordGroup[]>({
         queryKey: ['allAccessibleWordGroups'],
         queryFn: async () => {
@@ -58,7 +58,7 @@ export function GroupReviewSetupDialog({
         enabled: open,
     });
 
-    // Загружаем сохраненные настройки
+    // Load saved settings
     useEffect(() => {
         if (open && typeof window !== 'undefined') {
             const saved = localStorage.getItem(STORAGE_KEY);
@@ -78,7 +78,7 @@ export function GroupReviewSetupDialog({
         }
     }, [open]);
 
-    // Фильтруем группы по поисковому запросу
+    // Filter groups by search query
     const filteredGroups = useMemo(() => {
         if (!searchQuery.trim()) return groups;
         const query = searchQuery.toLowerCase();
@@ -101,7 +101,7 @@ export function GroupReviewSetupDialog({
                           ?.name,
         };
 
-        // Сохраняем настройки
+        // Save settings
         if (typeof window !== 'undefined') {
             localStorage.setItem(
                 STORAGE_KEY,
@@ -172,7 +172,7 @@ export function GroupReviewSetupDialog({
                                 <Loader2 className="h-6 w-6 animate-spin" />
                             </div>
                         ) : (
-                            // Делаем только список адаптивным и прокручиваемым
+                            // Make only the list adaptive and scrollable
                             <div className="grid grid-cols-1 gap-1 flex-1 min-h-0 overflow-y-auto">
                                 {/* Все группы */}
                                 <Card

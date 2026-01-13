@@ -70,7 +70,7 @@ export function useFlashCardsReview(
     const [isCompleted, setIsCompleted] = useState(false);
     const [sessionId] = useState(() => Date.now().toString());
 
-    // Определяем язык для фильтрации
+    // Determine language for filtering
     const reviewParams: FlashCardsReviewParams = {
         ...params,
         languageCode:
@@ -79,7 +79,7 @@ export function useFlashCardsReview(
             undefined,
     };
 
-    // Загружаем слова с уникальным sessionId для перемешивания при каждом открытии
+    // Load words with unique sessionId for shuffling on each open
     const {
         data: words = [],
         isLoading,
@@ -88,16 +88,16 @@ export function useFlashCardsReview(
     } = useQuery({
         queryKey: ['flash-cards-words', reviewParams, sessionId],
         queryFn: () => fetchReviewWords(reviewParams),
-        staleTime: 0, // Не кэшируем, чтобы каждый раз получать новый набор
-        gcTime: 0, // Не храним в кэше
+        staleTime: 0, // Don't cache to get new set each time
+        gcTime: 0, // Don't store in cache
         enabled: enabled && !!userSettings?.learnLanguage?.code,
     });
 
-    // Мутации для действий с карточками
+    // Mutations for card actions
     const { updateWordStatus, deleteWord } =
         useFlashCardsMutations(reviewParams);
 
-    // Инициализируем статистику при загрузке слов
+    // Initialize statistics when loading words
     useEffect(() => {
         if (words.length > 0 && currentIndex === 0 && stats.total === 0) {
             setStats({
@@ -111,31 +111,31 @@ export function useFlashCardsReview(
         }
     }, [words.length, currentIndex, stats.total]);
 
-    // Синхронизируем currentIndex с актуальным списком слов
+    // Synchronize currentIndex with current word list
     useEffect(() => {
-        // Если список пуст и были слова, завершаем упражнение
+        // If list empty and there were words, finish exercise
         if (words.length === 0 && stats.total > 0) {
             setIsCompleted(true);
             return;
         }
-        // Если индекс вышел за пределы списка, завершаем упражнение
+        // If index out of list bounds, finish exercise
         if (currentIndex >= words.length && words.length > 0) {
             setIsCompleted(true);
         }
-        // НЕ сбрасываем isCompleted обратно в false, если упражнение уже завершено
-        // Это предотвращает мигание экрана завершения при оптимистичных обновлениях
+        // DO NOT reset isCompleted back to false if exercise already completed
+        // This prevents completion screen flickering on optimistic updates
     }, [currentIndex, words.length, stats.total]);
 
-    // Обработка действия с карточкой
+    // Handle card action
     const handleAction = useCallback(
         async (action: 'know' | 'dont-know' | 'delete' | 'skip') => {
             const currentWord = words[currentIndex];
             if (!currentWord) return;
 
-            // Проверяем, является ли это последним словом ДО обработки
+            // Check if this is the last word BEFORE processing
             const isLastWord = currentIndex === words.length - 1;
 
-            // Обновляем статистику сразу (оптимистично)
+            // Update statistics immediately (optimistically)
             if (action === 'delete' || action === 'skip') {
                 setStats(prev => ({
                     ...prev,
@@ -153,22 +153,22 @@ export function useFlashCardsReview(
                 }));
             }
 
-            // Если это последнее слово, завершаем упражнение сразу
+            // If this is the last word, finish exercise immediately
             if (isLastWord) {
                 setIsCompleted(true);
-                // Не обновляем currentIndex для последнего слова
+                // Don't update currentIndex for last word
             } else {
-                // Переходим к следующей карточке
+                // Move to next card
                 setCurrentIndex(currentIndex + 1);
             }
 
-            // Выполняем мутацию в фоне
+            // Execute mutation in background
             try {
                 if (action === 'delete') {
                     await deleteWord.mutateAsync(currentWord.id);
                 } else if (action === 'skip') {
-                    // Для 'skip' не нужно делать запрос, просто пропускаем слово
-                    // Статистика уже обновлена оптимистично
+                    // For 'skip' no request needed, just skip word
+                    // Statistics already updated optimistically
                 } else if (action === 'dont-know') {
                     await updateWordStatus.mutateAsync({
                         wordId: currentWord.id,
@@ -177,7 +177,7 @@ export function useFlashCardsReview(
                         belongsToUser: currentWord.belongsToUser,
                     });
                 } else if (action === 'know') {
-                    // Для 'know' нужно обновить статус или создать слово, если его нет
+                    // For 'know' need to update status or create word if doesn't exist
                     await updateWordStatus.mutateAsync({
                         wordId: currentWord.id,
                         status: 'LEARNED',
@@ -187,12 +187,12 @@ export function useFlashCardsReview(
                 }
             } catch (error) {
                 console.error('Error handling card action:', error);
-                // Ошибка уже обработана в мутации через toast
-                // Откатываем переход к следующей карточке только если это не последнее слово
+                // Error already handled in mutation via toast
+                // Rollback move to next card only if not the last word
                 if (!isLastWord) {
                     setCurrentIndex(currentIndex);
                 }
-                // Откатываем статистику
+                // Rollback statistics
                 if (action === 'delete' || action === 'skip') {
                     setStats(prev => ({
                         ...prev,
@@ -209,7 +209,7 @@ export function useFlashCardsReview(
                         known: Math.max(0, prev.known - 1),
                     }));
                 }
-                // Откатываем завершение только если это было последнее слово
+                // Rollback completion only if it was the last word
                 if (isLastWord && isCompleted) {
                     setIsCompleted(false);
                 }
@@ -218,7 +218,7 @@ export function useFlashCardsReview(
         [currentIndex, words, deleteWord, updateWordStatus, isCompleted],
     );
 
-    // Получаем текущее слово с учетом того, что слова могут удаляться из списка
+    // Get current word considering words can be removed from list
     const currentWord = useMemo(() => {
         if (currentIndex >= words.length || words.length === 0) {
             return null;

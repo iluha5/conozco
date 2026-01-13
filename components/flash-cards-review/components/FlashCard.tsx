@@ -39,7 +39,7 @@ export function FlashCard({
         } else if (direction === 'right') {
             onAction('know');
         }
-        // Свайп вниз убран - используем кнопку удаления
+        // Swipe down removed - use delete button
     };
 
     const { swipeOffset, isSwiping, handlers } = useSwipeGesture(handleSwipe, {
@@ -57,13 +57,13 @@ export function FlashCard({
     const wordText = getWordText(word);
     const translation = getWordTranslation(word, language || 'en');
 
-    // Получаем до 2 случайных примеров из базы данных
+    // Get up to 2 random examples from database
     const examples = useMemo(
         () => getWordExamples(word, ownLanguageCode),
         [word, ownLanguageCode],
     );
 
-    // Автоматически переворачиваем карточку обратно при смене слова, если она была перевернута
+    // Automatically flip card back when changing word if it was flipped
     useEffect(() => {
         if (isFlipped && !isAnimating) {
             setIsAnimating(true);
@@ -73,14 +73,14 @@ export function FlashCard({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [word.id]);
 
-    // Вычисляем transform для свайпа
+    // Calculate transform for swipe
     const swipeTransform = isSwiping
         ? `translate(${swipeOffset.x}px, ${swipeOffset.y}px) rotate(${
               swipeOffset.x * 0.1
           }deg)`
         : '';
 
-    // Определяем цвет карточки в зависимости от направления свайпа
+    // Determine card color based on swipe direction
     const getCardColor = () => {
         if (!isSwiping) return '';
         if (swipeOffset.x < -20) return 'border-red-300 bg-red-50';

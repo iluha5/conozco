@@ -17,7 +17,7 @@ export function createMatchPairs(
             foreign: getWordText(word),
             translation: getWordTranslation(word, lang),
             matched: false,
-            errorCount: hasError && isRetryMode ? 0 : 0, // Сбрасываем счетчик ошибок при повторении
+            errorCount: hasError && isRetryMode ? 0 : 0, // Reset error count on retry
         };
     });
 }

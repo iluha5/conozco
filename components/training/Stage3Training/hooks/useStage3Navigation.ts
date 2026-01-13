@@ -15,7 +15,7 @@ export function useStage3Navigation({
 }: UseStage3NavigationParams) {
     const findNextErrorBatch = useCallback(
         (startBatch: number) => {
-            // Ищем следующий батч с ошибками после текущего
+            // Find next batch with errors after current
             for (
                 let batchIndex = startBatch + 1;
                 batchIndex < totalBatches;
@@ -34,7 +34,7 @@ export function useStage3Navigation({
                     return batchIndex;
                 }
             }
-            // Если не нашли, ищем с начала до текущего батча
+            // If not found, search from beginning to current batch
             for (let batchIndex = 0; batchIndex <= startBatch; batchIndex++) {
                 const batchStart = batchIndex * wordsPerBatch;
                 const batchEnd = Math.min(
@@ -49,7 +49,7 @@ export function useStage3Navigation({
                     return batchIndex;
                 }
             }
-            return -1; // Ошибок больше нет
+            return -1; // No more errors
         },
         [totalBatches, wordsPerBatch, wordsLength, exerciseResults],
     );

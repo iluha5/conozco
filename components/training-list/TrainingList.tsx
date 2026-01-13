@@ -30,7 +30,7 @@ export function TrainingList() {
     const { settings: userSettings } = useUserSettings();
     const languageCode = userSettings?.learnLanguage?.code || null;
 
-    // Загружаем тесты с названиями групп из БД
+    // Load tests with group names from DB
     const { testModes, isLoading: isLoadingTests } = useTestModes(
         languageCode,
         t,
@@ -68,14 +68,14 @@ export function TrainingList() {
         handleGroupSetupClose,
     } = useTrainingModes();
 
-    // Инвалидация кэша при монтировании компонента
+    // Invalidate cache on component mount
     useEffect(() => {
         queryClient.invalidateQueries({
             queryKey: ['training-list-words', languageCode],
         });
     }, [queryClient, languageCode]);
 
-    // Инициализация таба на основе хеша при монтировании
+    // Initialize tab based on hash on mount
     useEffect(() => {
         const hash = window.location.hash.slice(1);
         const tabFromHash = getTabFromHash(hash, t);
@@ -84,7 +84,7 @@ export function TrainingList() {
         }
     }, [setActiveTab, t]);
 
-    // Обработка изменений хеша (кнопка "назад" в браузере)
+    // Handle hash changes (browser back button)
     useEffect(() => {
         const handleHashChange = () => {
             const hash = window.location.hash.slice(1);
@@ -102,7 +102,7 @@ export function TrainingList() {
         };
     }, [setActiveTab, t]);
 
-    // Обработчик переключения табов с управлением хешем
+    // Tab switching handler with hash management
     const handleTabChange = (value: string) => {
         const newTab = value as TrainingModeGroupId;
         updateUrlHash(newTab, t);
@@ -125,7 +125,7 @@ export function TrainingList() {
         clearProgress();
     };
 
-    // Показываем лоадер только для тестов, слова загружаются в фоне
+    // Show loader only for tests, words load in background
     if (isLoadingTests) {
         return (
             <div className="flex items-center justify-center py-12">
@@ -223,9 +223,9 @@ export function TrainingList() {
                 open={showGroupReviewSetup}
                 onOpenChange={handleGroupSetupClose}
                 onStart={params => {
-                    // Устанавливаем параметры для FlashCardsReview
+                    // Set parameters for FlashCardsReview
                     handleFlashCardsOpen(params);
-                    // Закрываем диалог настроек
+                    // Close settings dialog
                     handleGroupSetupClose(false);
                 }}
             />

@@ -47,20 +47,20 @@ export function useStage3Matching({
             );
 
             if (pair) {
-                // Определяем индекс для записи результата
+                // Determine index for recording result
                 let resultIndex: number;
 
                 if (pair.resultIndex !== undefined) {
-                    // Пара уже была отмечена (с ошибкой) - используем тот же индекс
+                    // Pair was already marked (with error) - use the same index
                     resultIndex = pair.resultIndex;
                 } else {
-                    // Находим следующий свободный индекс для записи результата
+                    // Find next available index for recording result
                     resultIndex = currentBatchResults.findIndex(
                         result => result === null,
                     );
                 }
 
-                // Правильное совпадение
+                // Correct match
                 setPairs(prevPairs =>
                     prevPairs.map(prevPair =>
                         prevPair.id === pair.id
@@ -77,13 +77,13 @@ export function useStage3Matching({
                     });
                 }
 
-                // Находим глобальный индекс слова для общих результатов
+                // Find global word index for overall results
                 const globalIndex = words.findIndex(
                     word => word.id === pair.id,
                 );
                 if (globalIndex !== -1) {
-                    // В режиме повторения, если слово было с ошибкой - меняем на зеленое
-                    // В обычном режиме - просто отмечаем как правильное
+                    // In retry mode, if word had error - change to green
+                    // In normal mode - just mark as correct
                     setExerciseResults(prevResults => {
                         const newResults = [...prevResults];
                         newResults[globalIndex] = true;
@@ -91,7 +91,7 @@ export function useStage3Matching({
                     });
                 }
 
-                // Записываем попытку в localStorage
+                // Record attempt in localStorage
                 recordAttempt(3, pair.id, true);
 
                 await fetch('/api/training', {
@@ -106,15 +106,15 @@ export function useStage3Matching({
                     }),
                 });
 
-                // Снимаем фокус с обоих слов после правильного сопоставления
+                // Remove focus from both words after correct matching
                 setSelectedForeign(null);
                 setSelectedTranslation(null);
             } else {
-                // Неправильное совпадение - подсвечиваем оба слова красным на 0.2 секунды
+                // Incorrect match - highlight both words red for 0.2 seconds
                 setErrorForeign(foreign);
                 setErrorTranslation(translation);
 
-                // Снимаем подсветку и фокус через 0.2 секунды
+                // Remove highlight and focus after 0.2 seconds
                 setTimeout(() => {
                     setErrorForeign(null);
                     setErrorTranslation(null);
@@ -126,20 +126,20 @@ export function useStage3Matching({
                     pairItem => pairItem.foreign === foreign,
                 );
                 if (wordPair) {
-                    // Увеличиваем счетчик ошибок для этой пары
+                    // Increase error count for this pair
                     const currentErrorCount = (wordPair.errorCount || 0) + 1;
 
-                    // Находим глобальный индекс слова
+                    // Find global word index
                     const globalIndex = words.findIndex(
                         word => word.id === wordPair.id,
                     );
 
-                    // Отмечаем как ошибку только если превышен лимит ошибок (3) и еще не отмечено
+                    // Mark as error only if error limit exceeded (3) and not already marked
                     if (
                         currentErrorCount >= 3 &&
                         wordPair.resultIndex === undefined
                     ) {
-                        // Находим следующий свободный индекс для записи результата
+                        // Find next available index for recording result
                         const nextResultIndex = currentBatchResults.findIndex(
                             result => result === null,
                         );
@@ -150,7 +150,7 @@ export function useStage3Matching({
                                 return newResults;
                             });
 
-                            // Сохраняем индекс в паре
+                            // Save index in pair
                             setPairs(prevPairs =>
                                 prevPairs.map(prevPair =>
                                     prevPair.id === wordPair.id
@@ -172,7 +172,7 @@ export function useStage3Matching({
                             });
                         }
                     } else {
-                        // Просто увеличиваем счетчик ошибок
+                        // Just increase error count
                         setPairs(prevPairs =>
                             prevPairs.map(prevPair =>
                                 prevPair.id === wordPair.id
@@ -185,7 +185,7 @@ export function useStage3Matching({
                         );
                     }
 
-                    // Записываем попытку в localStorage
+                    // Record attempt in localStorage
                     recordAttempt(3, wordPair.id, false);
 
                     await fetch('/api/training', {

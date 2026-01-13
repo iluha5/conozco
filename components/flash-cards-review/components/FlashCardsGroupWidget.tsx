@@ -45,10 +45,10 @@ export function FlashCardsGroupWidget() {
         };
         setReviewParams(finalParams);
         setShouldLoadExercise(true);
-        // Сначала закрываем setup диалог
+        // First close setup dialog
         setSetupOpen(false);
-        // Затем открываем review диалог с небольшой задержкой
-        // чтобы избежать конфликта с window.history.back() из useHashDialog
+        // Then open review dialog with small delay
+        // to avoid conflict with window.history.back() from useHashDialog
         setTimeout(() => {
             setReviewOpen(true);
         }, 150);
@@ -56,12 +56,12 @@ export function FlashCardsGroupWidget() {
 
     const handleClose = () => {
         setReviewOpen(false);
-        // Сбрасываем флаг загрузки при закрытии, чтобы при следующем открытии загрузились новые слова
+        // Reset loading flag on close so new words load on next open
         setShouldLoadExercise(false);
         setReviewParams(null);
     };
 
-    // Не показываем виджет если язык еще не загружен
+    // Don't show widget if language not loaded yet
     if (!languageCode) {
         return null;
     }

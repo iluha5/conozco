@@ -54,17 +54,17 @@ export function useAutoAdvance({
             const delay = isCorrect ? 800 : 2000;
             const timer = setTimeout(() => {
                 if (isRetryMode) {
-                    // В режиме исправления ошибок
+                    // In error correction mode
                     if (isCorrect) {
-                        // Исправил ошибку - ищем следующую ошибку с учетом обновленных результатов
+                        // Fixed error - find next error considering updated results
                         setExerciseResults(currentResults => {
                             const nextErrorIndex = findNextErrorWithResults(
                                 currentIndex,
                                 currentResults,
                             );
                             if (nextErrorIndex === -1) {
-                                // Все ошибки исправлены - даем время увидеть все зеленые точки, затем завершаем этап
-                                // Если это последний этап, показываем лоадер
+                                // All errors fixed - give time to see all green dots, then finish stage
+                                // If this is the last stage, show loader
                                 if (isLastStage) {
                                     setIsCompleting(true);
                                     setTimeout(() => {
@@ -78,22 +78,22 @@ export function useAutoAdvance({
                                         retryMode.setHasCompletedFirstRound(
                                             false,
                                         );
-                                    }, 1500); // Дополнительная задержка для визуального подтверждения
+                                    }, 1500); // Additional delay for visual confirmation
                                 }
                             } else {
-                                // Переходим к следующей ошибке
+                                // Move to next error
                                 setCurrentIndex(nextErrorIndex);
                             }
-                            return currentResults; // Возвращаем без изменений
+                            return currentResults; // Return unchanged
                         });
                     } else {
-                        // Снова ошибся - переходим к следующей ошибке (или к этой же, если она одна)
+                        // Made mistake again - move to next error (or stay on this one if it's the only one)
                         const nextErrorIndex = findNextError(currentIndex);
                         if (
                             nextErrorIndex === -1 ||
                             nextErrorIndex === currentIndex
                         ) {
-                            // Это единственная ошибка или других нет - остаемся на ней, но перезагружаем карточку
+                            // This is the only error or no others - stay on it, but reload card
                             triggerAnimation();
                             regenerateOptions();
                             resetSelection();
@@ -102,23 +102,23 @@ export function useAutoAdvance({
                         }
                     }
                 } else {
-                    // Обычный режим
+                    // Normal mode
                     const result = handleNext();
                     if (result.type === 'next' || result.type === 'retry') {
                         setCurrentIndex(result.nextIndex);
                     } else if (result.type === 'complete') {
-                        // Если это последний этап и последнее упражнение выполнено правильно
+                        // If this is the last stage and last exercise completed correctly
                         if (
                             isLastStage &&
                             currentIndex === wordsLength - 1 &&
                             isCorrect
                         ) {
-                            // Проверяем, что все упражнения выполнены правильно
+                            // Check that all exercises are completed correctly
                             const allCorrect = exerciseResults.every(
                                 result => result === true,
                             );
                             if (allCorrect) {
-                                // Показываем лоадер и завершаем тренировку
+                                // Show loader and finish training
                                 setIsCompleting(true);
                                 setTimeout(() => {
                                     onComplete();
@@ -126,7 +126,7 @@ export function useAutoAdvance({
                                 return;
                             }
                         }
-                        // Обычное завершение этапа
+                        // Normal stage completion
                         onComplete();
                         setCurrentIndex(0);
                     }

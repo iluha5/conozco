@@ -18,7 +18,7 @@ export function getTabFromHash(
         return tabConfig.id;
     }
 
-    // Если хеш пустой или не найден, возвращаем первый таб (new) по умолчанию
+    // If hash empty or not found, return first tab (new) by default
     if (!normalizedHash) {
         return 'new';
     }
@@ -54,7 +54,7 @@ export function updateUrlHash(tab: TrainingModeGroupId, t: I18n['t']): void {
         return;
     }
 
-    // Обновляем хеш только если он отличается от текущего
+    // Update hash only if it differs from current
     if (currentHash !== hash) {
         window.history.pushState(null, '', `#${hash}`);
     }

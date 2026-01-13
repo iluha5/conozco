@@ -39,12 +39,12 @@ export function Stage3Training({
         (currentBatch + 1) * wordsPerBatch,
     );
 
-    // Инициализируем массив результатов упражнений
+    // Initialize exercise results array
     useEffect(() => {
         setExerciseResults(new Array(words.length).fill(null));
     }, [words.length]);
 
-    // Инициализируем массив результатов для текущего батча
+    // Initialize results array for current batch
     useEffect(() => {
         setCurrentBatchResults(new Array(currentWords.length).fill(null));
     }, [currentWords.length]);
@@ -83,7 +83,7 @@ export function Stage3Training({
         exerciseResults,
     });
 
-    // Сбрасываем выбор при изменении батча
+    // Reset selection when batch changes
     useEffect(() => {
         resetSelection();
     }, [currentBatch, resetSelection]);

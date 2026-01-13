@@ -57,11 +57,11 @@ export interface TestConfig {
  * Названия групп будут загружаться динамически из БД
  */
 export const TEST_CONFIGS: TestConfig[] = [
-    // Испанский язык - A1
+    // Spanish language - A1
     {
         id: 'learned-test-es-a1-easy',
         languageCode: 'es',
-        groupId: 4, // A1: All words (испанский)
+        groupId: 4, // A1: All words (Spanish)
         difficulty: 'easy',
         wordCount: 20,
         gradient: getGradientForLevel(
@@ -69,11 +69,11 @@ export const TEST_CONFIGS: TestConfig[] = [
         ),
         icon: GraduationCap,
     },
-    // Испанский язык - A2
+    // Spanish language - A2
     {
         id: 'learned-test-es-a2-easy',
         languageCode: 'es',
-        groupId: 28, // A2: Todas las Palabras (испанский)
+        groupId: 28, // A2: Todas las Palabras (Spanish)
         difficulty: 'easy',
         wordCount: 20,
         gradient: getGradientForLevel(
@@ -81,11 +81,11 @@ export const TEST_CONFIGS: TestConfig[] = [
         ),
         icon: GraduationCap,
     },
-    // Испанский язык - B1
+    // Spanish language - B1
     {
         id: 'learned-test-es-b1-easy',
         languageCode: 'es',
-        groupId: 43, // B1: Todas las Palabras (испанский)
+        groupId: 43, // B1: Todas las Palabras (Spanish)
         difficulty: 'easy',
         wordCount: 20,
         gradient: getGradientForLevel(
@@ -93,11 +93,11 @@ export const TEST_CONFIGS: TestConfig[] = [
         ),
         icon: GraduationCap,
     },
-    // Испанский язык - B2
+    // Spanish language - B2
     {
         id: 'learned-test-es-b2-easy',
         languageCode: 'es',
-        groupId: 66, // B2: Todas las Palabras (испанский)
+        groupId: 66, // B2: Todas las Palabras (Spanish)
         difficulty: 'easy',
         wordCount: 20,
         gradient: getGradientForLevel(
@@ -105,11 +105,11 @@ export const TEST_CONFIGS: TestConfig[] = [
         ),
         icon: GraduationCap,
     },
-    // Английский язык - A1
+    // English language - A1
     {
         id: 'learned-test-en-a1-easy',
         languageCode: 'en',
-        groupId: 27, // A1: All Word (английский)
+        groupId: 27, // A1: All Word (English)
         difficulty: 'easy',
         wordCount: 20,
         gradient: getGradientForLevel(
@@ -117,11 +117,11 @@ export const TEST_CONFIGS: TestConfig[] = [
         ),
         icon: GraduationCap,
     },
-    // Английский язык - A2
+    // English language - A2
     {
         id: 'learned-test-en-a2-easy',
         languageCode: 'en',
-        groupId: 108, // A2: All Words (английский)
+        groupId: 108, // A2: All Words (English)
         difficulty: 'easy',
         wordCount: 20,
         gradient: getGradientForLevel(

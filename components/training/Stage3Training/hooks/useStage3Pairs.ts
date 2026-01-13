@@ -41,9 +41,9 @@ export function useStage3Pairs({
         );
 
         setPairs(prevPairs => {
-            // Если пары уже существуют, сохраняем состояние matched при переинициализации
+            // If pairs already exist, preserve matched state during reinitialization
             if (prevPairs.length > 0) {
-                // Сохраняем состояние matched из предыдущих пар
+                // Preserve matched state from previous pairs
                 return newPairs.map(newPair => {
                     const existingPair = prevPairs.find(
                         p => p.id === newPair.id,
@@ -60,11 +60,11 @@ export function useStage3Pairs({
                 });
             }
 
-            // Первая инициализация
+            // First initialization
             return newPairs;
         });
 
-        // Перемешиваем переводы только при первой инициализации или при refreshKey
+        // Shuffle translations only on first initialization or with refreshKey
         setShuffledTranslations(prevTranslations => {
             if (prevTranslations.length === 0) {
                 const translations = newPairs

@@ -12,7 +12,7 @@ export function useFlashCardsMutations(params: FlashCardsReviewParams) {
     const { toast } = useToast();
     const { t } = useTranslation();
 
-    // Query key для кэша слов
+    // Query key for words cache
     const queryKey = ['flash-cards-words', params];
 
     /**
@@ -31,14 +31,14 @@ export function useFlashCardsMutations(params: FlashCardsReviewParams) {
             baseWordId?: string;
             belongsToUser?: boolean;
         }) => {
-            // Если слова нет в словаре, сначала создаем его
+            // If word not in dictionary, create it first
             if (!belongsToUser && baseWordId) {
-                // Извлекаем baseWordId из wordId если он в формате "base-{id}"
+                // Extract baseWordId from wordId if in "base-{id}" format
                 const actualBaseWordId = wordId.startsWith('base-')
                     ? wordId.replace('base-', '')
                     : baseWordId;
 
-                // Создаем слово
+                // Create word
                 const createResponse = await fetch('/api/words', {
                     method: 'POST',
                     headers: {
@@ -58,7 +58,7 @@ export function useFlashCardsMutations(params: FlashCardsReviewParams) {
                 wordId = createdWord.id;
             }
 
-            // Обновляем статус
+            // Update status
             const response = await fetch(`/api/words/${wordId}`, {
                 method: 'PATCH',
                 headers: {
@@ -75,13 +75,13 @@ export function useFlashCardsMutations(params: FlashCardsReviewParams) {
             return response.json();
         },
         onMutate: async ({ wordId }) => {
-            // Отменяем текущие запросы
+            // Cancel current requests
             await queryClient.cancelQueries({ queryKey });
 
-            // Сохраняем предыдущее значение
+            // Save previous value
             const previousWords = queryClient.getQueryData<Word[]>(queryKey);
 
-            // Оптимистично удаляем слово из списка
+            // Optimistically remove word from list
             queryClient.setQueryData<Word[]>(queryKey, oldWords => {
                 if (!oldWords) return [];
                 return oldWords.filter(word => word.id !== wordId);
@@ -90,7 +90,7 @@ export function useFlashCardsMutations(params: FlashCardsReviewParams) {
             return { previousWords };
         },
         onError: (error, variables, context) => {
-            // Откатываем изменения
+            // Rollback changes
             if (context?.previousWords) {
                 queryClient.setQueryData(queryKey, context.previousWords);
             }
@@ -105,7 +105,7 @@ export function useFlashCardsMutations(params: FlashCardsReviewParams) {
             });
         },
         onSettled: () => {
-            // Обновляем кэш для синхронизации с другими компонентами
+            // Update cache for synchronization with other components
             queryClient.invalidateQueries({ queryKey: ['words'] });
         },
     });
@@ -127,13 +127,13 @@ export function useFlashCardsMutations(params: FlashCardsReviewParams) {
             return response.json();
         },
         onMutate: async wordId => {
-            // Отменяем текущие запросы
+            // Cancel current requests
             await queryClient.cancelQueries({ queryKey });
 
-            // Сохраняем предыдущее значение
+            // Save previous value
             const previousWords = queryClient.getQueryData<Word[]>(queryKey);
 
-            // Оптимистично удаляем слово из списка
+            // Optimistically remove word from list
             queryClient.setQueryData<Word[]>(queryKey, oldWords => {
                 if (!oldWords) return [];
                 return oldWords.filter(word => word.id !== wordId);
@@ -142,7 +142,7 @@ export function useFlashCardsMutations(params: FlashCardsReviewParams) {
             return { previousWords };
         },
         onError: (error, wordId, context) => {
-            // Откатываем изменения
+            // Rollback changes
             if (context?.previousWords) {
                 queryClient.setQueryData(queryKey, context.previousWords);
             }
@@ -157,7 +157,7 @@ export function useFlashCardsMutations(params: FlashCardsReviewParams) {
             });
         },
         onSettled: () => {
-            // Обновляем кэш для синхронизации с другими компонентами
+            // Update cache for synchronization with other components
             queryClient.invalidateQueries({ queryKey: ['words'] });
         },
     });

@@ -12,7 +12,7 @@ export function getWordExamples(
         return [];
     }
 
-    // Фильтруем примеры по языку перевода
+    // Filter examples by translation language
     const filteredExamples = word.baseWord.examples.filter(
         example => example.translationLanguage?.code === ownLanguageCode,
     );
@@ -21,15 +21,15 @@ export function getWordExamples(
         return [];
     }
 
-    // Если примеров больше 2, выбираем 2 случайных на основе word.id для стабильности
+    // If more than 2 examples, select 2 random based on word.id for stability
     if (filteredExamples.length > 2) {
-        // Используем word.id как seed для стабильного выбора
+        // Use word.id as seed for stable selection
         const seed = word.id
             .toString()
             .split('')
             .reduce((acc, char) => acc + char.charCodeAt(0), 0);
         const shuffled = [...filteredExamples].sort((a, b) => {
-            // Используем индекс и содержимое примера для создания хеша
+            // Use index and example content to create hash
             const indexA = filteredExamples.indexOf(a);
             const indexB = filteredExamples.indexOf(b);
             const hashA = (indexA + seed) * (a.example.charCodeAt(0) || 1);

@@ -24,7 +24,7 @@ export function useWordInitialization({
             triggerAnimation();
             setShowTranslation(false);
 
-            // Озвучиваем слово
+            // Pronounce word
             const wordText = getWordText(currentWord);
             if (speechSupported && wordText) {
                 speak(wordText);

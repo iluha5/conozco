@@ -6,20 +6,20 @@ export type TrainingModeId =
     | 'hard'
     | 'sentences'
     | 'custom'
-    // Новые режимы закрепления
+    // New consolidation modes
     | 'learned-quick-check'
     | 'learned-group-check'
     | 'learned-sentences'
-    // Тесты по языкам (старые ID для обратной совместимости)
+    // Language tests (old IDs for backward compatibility)
     | 'learned-test-a1-easy'
     | 'learned-test-a1-medium'
-    // Тесты для испанского языка
+    // Tests for Spanish language
     | 'learned-test-es-a1-easy'
     | 'learned-test-es-a1-medium'
     | 'learned-test-es-a2-easy'
     | 'learned-test-es-b1-easy'
     | 'learned-test-es-b2-easy'
-    // Тесты для английского языка
+    // Tests for English language
     | 'learned-test-en-a1-easy'
     | 'learned-test-en-a1-medium'
     | 'learned-test-en-a2-easy';
@@ -45,9 +45,9 @@ export type TrainingModeConfig = {
         stage5?: { sentencesPerWord: number };
     };
 
-    // Новые поля для режимов закрепления
-    wordSource: WordSource; // Источник слов
-    modeType: ModeType; // Тип запуска
-    groupId?: number; // ID группы для режимов с группами
-    groupName?: string; // Название группы для UI
+    // New fields for consolidation modes
+    wordSource: WordSource; // Word source
+    modeType: ModeType; // Launch type
+    groupId?: number; // Group ID for group modes
+    groupName?: string; // Group name for UI
 };

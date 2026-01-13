@@ -57,16 +57,16 @@ export function PatternCardSide({ children, variant }: CardSideProps) {
  * circuit-board для слова (front), floating-cogs для перевода (back)
  */
 export function WatermarkCardSide({ children, variant }: CardSideProps) {
-    // Выбираем паттерн в зависимости от стороны карточки
+    // Select pattern based on card side
     const selectedPattern =
         variant === 'front' ? circuitBoardPattern : floatingCogsPattern;
 
-    // Получаем URL паттерна (Next.js может импортировать SVG по-разному)
+    // Get pattern URL (Next.js may import SVG differently)
     const getPatternUrl = () => {
         if (typeof selectedPattern === 'string') {
             return selectedPattern;
         }
-        // Проверяем различные варианты импорта SVG в Next.js
+        // Check different SVG import options in Next.js
         const pattern = selectedPattern as any;
         return pattern?.src || pattern?.default || pattern;
     };

@@ -26,7 +26,7 @@ export function useTrainingModes() {
     const { open: showConfirmDialog, setOpen: setShowConfirmDialog } =
         useHashDialog('new-training-confirm');
 
-    // Загружаем слова через React Query с фильтрацией по языку
+    // Load words via React Query with language filtering
     const languageCode = userSettings?.learnLanguage?.code || null;
     const { words: allWords, isLoading } = useTrainingListWords(languageCode);
 
@@ -37,21 +37,21 @@ export function useTrainingModes() {
     );
     const [isContinueLoading, setIsContinueLoading] = useState(false);
 
-    // Новое состояние для табов и FlashCards
+    // New state for tabs and FlashCards
     const [activeTab, setActiveTab] = useState<TrainingModeGroupId>('new');
     const [flashCardsParams, setFlashCardsParams] =
         useState<FlashCardsReviewParams | null>(null);
     const [showFlashCardsReview, setShowFlashCardsReview] = useState(false);
     const [showGroupReviewSetup, setShowGroupReviewSetup] = useState(false);
 
-    // Мемоизация слов по статусу
+    // Memoization of words by status
     const { learnedWords, notLearnedWords } = useMemo(() => {
         const learned = allWords.filter(w => w.status === 'LEARNED');
         const notLearned = allWords.filter(w => w.status !== 'LEARNED');
         return { learnedWords: learned, notLearnedWords: notLearned };
     }, [allWords]);
 
-    // Обработчик открытия FlashCards
+    // FlashCards open handler
     const handleFlashCardsOpen = (params: FlashCardsReviewParams) => {
         const returnUrl =
             window.location.pathname +
@@ -64,7 +64,7 @@ export function useTrainingModes() {
         setShowFlashCardsReview(true);
     };
 
-    // Обработчик открытия диалога выбора группы
+    // Group selection dialog open handler
     const handleGroupSetupOpen = () => {
         setShowGroupReviewSetup(true);
     };
@@ -79,7 +79,7 @@ export function useTrainingModes() {
             return;
         }
 
-        // Проверяем наличие незавершенной тренировки
+        // Check for unfinished training
         if (hasUnfinishedTraining) {
             setPendingModeId(modeId);
             setShowConfirmDialog(true);
@@ -193,13 +193,13 @@ export function useTrainingModes() {
         }
     };
 
-    // Обработчик закрытия FlashCards
+    // FlashCards close handler
     const handleFlashCardsClose = () => {
         setShowFlashCardsReview(false);
         setIsStarting(false);
     };
 
-    // Обработчик закрытия диалога выбора группы
+    // Group selection dialog close handler
     const handleGroupSetupClose = (open: boolean) => {
         setShowGroupReviewSetup(open);
         if (!open) {
@@ -223,7 +223,7 @@ export function useTrainingModes() {
         handleContinueExisting,
         handleStartNew,
         isContinueLoading,
-        // Новые возвращаемые значения
+        // New return values
         activeTab,
         setActiveTab,
         learnedWords,

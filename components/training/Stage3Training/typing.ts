@@ -12,5 +12,5 @@ export type MatchPair = {
     translation: string;
     matched: boolean;
     errorCount?: number;
-    resultIndex?: number; // Индекс в массиве currentBatchResults
+    resultIndex?: number; // Index in currentBatchResults array
 };

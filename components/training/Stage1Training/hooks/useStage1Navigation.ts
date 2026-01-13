@@ -26,23 +26,23 @@ export function useStage1Navigation({
     setIsCompleting,
 }: UseStage1NavigationParams) {
     const handleNext = useCallback(async () => {
-        // Записываем результат (всегда успешный на 1 этапе - просто просмотр)
+        // Record result (always successful on stage 1 - just viewing)
         await recordResult(1, currentWordId, true);
 
-        // Обновляем результаты упражнения
+        // Update exercise results
         updateResult(currentIndex, true);
 
         if (currentIndex < wordsLength - 1) {
             return { type: 'next' as const, nextIndex: currentIndex + 1 };
         } else {
-            // Если это последний этап и последнее упражнение
+            // If this is the last stage and last exercise
             if (isLastStage && currentIndex === wordsLength - 1) {
-                // Проверяем, что все упражнения выполнены
+                // Check that all exercises are completed
                 const allCompleted = exerciseResults.every(
                     result => result === true,
                 );
                 if (allCompleted) {
-                    // Показываем лоадер и завершаем тренировку
+                    // Show loader and finish training
                     setIsCompleting(true);
                     setTimeout(() => {
                         onComplete();
@@ -50,7 +50,7 @@ export function useStage1Navigation({
                     return { type: 'complete' as const };
                 }
             }
-            // Обычное завершение этапа
+            // Normal stage completion
             onComplete();
             return { type: 'complete' as const };
         }

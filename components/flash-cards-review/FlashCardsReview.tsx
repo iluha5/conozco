@@ -39,7 +39,7 @@ export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
     const learnLanguageCode = userSettings?.learnLanguage?.code || 'en';
     const ownLanguageCode = userSettings?.ownLanguage?.code || 'ru';
 
-    // Инвалидация счетчиков слов при завершении или закрытии теста
+    // Invalidate word counters on test completion or closure
     const invalidateWordCounters = useCallback(() => {
         const languageCode = userSettings?.learnLanguage?.code || null;
         if (languageCode) {
@@ -50,7 +50,7 @@ export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
     }, [queryClient, userSettings?.learnLanguage?.code]);
 
     const handleClose = () => {
-        // Инвалидируем счетчики при закрытии
+        // Invalidate counters on close
         invalidateWordCounters();
         if (params.returnUrl) {
             router.push(params.returnUrl);
@@ -58,14 +58,14 @@ export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
         onClose();
     };
 
-    // Инвалидируем счетчики при завершении теста
+    // Invalidate counters on test completion
     useEffect(() => {
         if (isCompleted) {
             invalidateWordCounters();
         }
     }, [invalidateWordCounters, isCompleted]);
 
-    // Блокируем прокрутку body при открытии модального окна
+    // Block body scroll when opening modal
     useEffect(() => {
         document.body.style.overflow = 'hidden';
         return () => {
@@ -263,7 +263,7 @@ export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
         );
     };
 
-    // Рендерим через Portal напрямую в body для избежания влияния родительских стилей
+    // Render through Portal directly to body to avoid parent style influence
     if (typeof window === 'undefined') {
         return null;
     }
