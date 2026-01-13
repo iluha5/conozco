@@ -10,7 +10,7 @@ import { useState, useEffect, useCallback } from 'react';
 export function useHashDialog(dialogId: string) {
     const [open, setOpenState] = useState(false);
 
-    // Слушаем изменения в истории браузера (кнопка "Назад")
+    // Listen to browser history changes (Back button)
     useEffect(() => {
         const handlePopState = () => {
             const currentHash = window.location.hash;
@@ -27,11 +27,11 @@ export function useHashDialog(dialogId: string) {
     const setOpen = useCallback(
         (value: boolean) => {
             if (value) {
-                // Открытие: добавляем hash в историю
+                // Opening: add hash to history
                 window.history.pushState(null, '', `#${dialogId}`);
                 setOpenState(true);
             } else {
-                // Закрытие: возвращаемся назад, если мы на hash диалога
+                // Closing: go back if we are on dialog hash
                 if (window.location.hash === `#${dialogId}`) {
                     window.history.back();
                 }

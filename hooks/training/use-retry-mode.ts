@@ -3,7 +3,7 @@
  * Используется в stage 2-6 для обработки неправильных ответов
  */
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 
 export interface UseRetryModeOptions {
     /**
@@ -26,35 +26,38 @@ export interface UseRetryModeReturn {
     /**
      * Найти следующую ошибку (использует текущее состояние exerciseResults)
      */
-    findNextError: (startIndex: number, results: (boolean | null)[]) => number;
+    findNextError: (
+        _startIndex: number,
+        _results: (boolean | null)[],
+    ) => number;
 
     /**
      * Найти следующую ошибку с передачей результатов (для работы в setExerciseResults callback)
      */
     findNextErrorWithResults: (
-        startIndex: number,
-        results: (boolean | null)[],
+        _startIndex: number,
+        _results: (boolean | null)[],
     ) => number;
 
     /**
      * Проверить, есть ли ошибки в результатах
      */
-    hasErrors: (results: (boolean | null)[]) => boolean;
+    hasErrors: (_results: (boolean | null)[]) => boolean;
 
     /**
      * Получить индексы всех ошибок
      */
-    getErrorIndices: (results: (boolean | null)[]) => number[];
+    getErrorIndices: (_results: (boolean | null)[]) => number[];
 
     /**
      * Установить режим повторения
      */
-    setIsRetryMode: (value: boolean) => void;
+    setIsRetryMode: (_value: boolean) => void;
 
     /**
      * Установить флаг завершения первого раунда
      */
-    setHasCompletedFirstRound: (value: boolean) => void;
+    setHasCompletedFirstRound: (_value: boolean) => void;
 
     /**
      * Сбросить состояние retry mode
@@ -62,7 +65,7 @@ export interface UseRetryModeReturn {
     reset: () => void;
 }
 
-export function useRetryMode(options: UseRetryModeOptions): UseRetryModeReturn {
+export function useRetryMode(): UseRetryModeReturn {
     const [isRetryMode, setIsRetryMode] = useState(false);
     const [hasCompletedFirstRound, setHasCompletedFirstRound] = useState(false);
 
@@ -71,19 +74,19 @@ export function useRetryMode(options: UseRetryModeOptions): UseRetryModeReturn {
      */
     const findNextErrorWithResults = useCallback(
         (startIndex: number, results: (boolean | null)[]): number => {
-            // Ищем следующую ошибку после текущего индекса
+            // Find next error after current index
             for (let i = startIndex + 1; i < results.length; i++) {
                 if (results[i] === false) {
                     return i;
                 }
             }
-            // Если не нашли, ищем с начала до текущего индекса
+            // If not found, search from beginning to current index
             for (let i = 0; i <= startIndex; i++) {
                 if (results[i] === false) {
                     return i;
                 }
             }
-            return -1; // Ошибок больше нет
+            return -1; // No more errors
         },
         [],
     );

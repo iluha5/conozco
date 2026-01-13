@@ -79,7 +79,7 @@ export function useUserSettings() {
     const mutation = useMutation({
         mutationFn: patchUserSettings,
         onSuccess: updatedSettings => {
-            // Обновляем кэш с новыми данными
+            // Update cache with new data
             queryClient.setQueryData(['user-settings'], updatedSettings);
         },
     });

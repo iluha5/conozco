@@ -19,52 +19,52 @@ export function useTrainingStorageCheck({
     const [isStorageChecked, setIsStorageChecked] = useState(false);
     const [shouldRedirect, setShouldRedirect] = useState(false);
 
-    // Ранняя проверка наличия незавершённой тренировки - выполняется ДО загрузки данных
+    // Early check for unfinished training - executed BEFORE data loading
     useEffect(() => {
-        // Проверяем, пришёл ли пользователь со страницы настройки
+        // Check if user came from setup page
         const fromSetup =
             sessionStorage.getItem(STORAGE_KEYS.TRAINING_FROM_SETUP) === 'true';
 
         if (fromSetup) {
-            // Очищаем флаг после использования
+            // Clear flag after use
             sessionStorage.removeItem(STORAGE_KEYS.TRAINING_FROM_SETUP);
-            // Если пользователь пришёл со страницы настройки, разрешаем инициализацию
+            // If user came from setup page, allow initialization
             setIsStorageChecked(true);
             return;
         }
 
-        // Если есть выбранные слова в контексте, значит пользователь пришёл со страницы настройки
+        // If there are selected words in context, user came from setup page
         if (selectedWordsCount > 0) {
             setIsStorageChecked(true);
             return;
         }
 
-        // Проверяем localStorage синхронно
+        // Check localStorage synchronously
         try {
             const savedProgress = localStorage.getItem(STORAGE_KEY);
 
             if (!savedProgress) {
-                // Если нет незавершённой тренировки, редиректим на страницу настройки
+                // If no unfinished training, redirect to setup page
                 setShouldRedirect(true);
                 setIsStorageChecked(true);
                 return;
             }
 
-            // Проверяем, что данные валидны
+            // Check that data is valid
             const parsed = JSON.parse(savedProgress);
 
             if (!parsed || !parsed.sessionId || !parsed.selectedWordIds) {
-                // Если данные невалидны, очищаем и редиректим
+                // If data invalid, clear and redirect
                 localStorage.removeItem(STORAGE_KEY);
                 setShouldRedirect(true);
                 setIsStorageChecked(true);
                 return;
             }
 
-            // Если есть валидная незавершённая тренировка, разрешаем инициализацию
+            // If valid unfinished training exists, allow initialization
             setIsStorageChecked(true);
         } catch (error) {
-            // Если произошла ошибка при парсинге, очищаем и редиректим
+            // If parsing error occurred, clear and redirect
             console.error('Error checking training progress:', error);
             localStorage.removeItem(STORAGE_KEY);
             setShouldRedirect(true);
@@ -72,7 +72,7 @@ export function useTrainingStorageCheck({
         }
     }, [selectedWordsCount]);
 
-    // Выполняем редирект после проверки localStorage
+    // Execute redirect after localStorage check
     useEffect(() => {
         if (shouldRedirect) {
             router.push('/training/setup');

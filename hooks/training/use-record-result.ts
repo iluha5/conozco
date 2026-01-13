@@ -16,18 +16,18 @@ export interface UseRecordResultReturn {
      * @returns Promise<boolean> - true если успешно, false если ошибка
      */
     recordResult: (
-        stage: TrainingStage,
-        wordId: string,
-        isCorrect: boolean,
+        _stage: TrainingStage,
+        _wordId: string,
+        _isCorrect: boolean,
     ) => Promise<boolean>;
 
     /**
      * Записать только в localStorage (без API запроса)
      */
     recordLocalResult: (
-        stage: TrainingStage,
-        wordId: string,
-        isCorrect: boolean,
+        _stage: TrainingStage,
+        _wordId: string,
+        _isCorrect: boolean,
     ) => void;
 }
 
@@ -92,10 +92,10 @@ export function useRecordResult(): UseRecordResultReturn {
             wordId: string,
             isCorrect: boolean,
         ): Promise<boolean> => {
-            // Сначала записываем в localStorage (синхронно)
+            // First record to localStorage (synchronously)
             recordLocalResult(stage, wordId, isCorrect);
 
-            // Затем в API (асинхронно)
+            // Then to API (asynchronously)
             const apiSuccess = await recordApiResult(stage, wordId, isCorrect);
 
             return apiSuccess;

@@ -1,4 +1,4 @@
-// Определяем PartOfSpeech локально, так как импорт из Prisma может не работать во время выполнения seed
+// Define PartOfSpeech locally, as import from Prisma may not work during seed execution
 /* eslint-disable no-unused-vars */
 export enum PartOfSpeech {
     NOUN = 'NOUN',
@@ -25,7 +25,7 @@ export interface WordData {
     languageCode: string;
     translations: {
         languageCode: string;
-        translations: string[]; // до 3 переводов
+        translations: string[]; // up to 3 translations
     }[];
     examples: {
         pronoun: string;
@@ -48,7 +48,7 @@ export interface WordData {
     }[];
 }
 
-// Данные слов для испанского языка
+// Spanish language word data
 export const SPANISH_WORDS_DATA: WordData[] = [
     {
         word: 'hablar',
@@ -392,7 +392,7 @@ export const SPANISH_WORDS_DATA: WordData[] = [
             },
         ],
         grammaticalExamples: [
-            // Для существительных не нужны грамматические времена, но оставлю пустым
+            // Nouns don't need grammatical tenses, but will leave empty
         ],
     },
     {

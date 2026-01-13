@@ -11,7 +11,7 @@ export function useTrainingWordsFilter(
     selectedWords: Set<string>,
 ) {
     return useMemo(() => {
-        // Определяем статус слов из sessionStorage
+        // Determine word status from sessionStorage
         const wordSource =
             typeof window !== 'undefined'
                 ? sessionStorage.getItem(STORAGE_KEYS.TRAINING_WORD_SOURCE)
@@ -19,7 +19,7 @@ export function useTrainingWordsFilter(
         const expectedStatus =
             wordSource === 'LEARNED' ? 'LEARNED' : 'NOT_LEARNED';
 
-        // Фильтруем по статусу (LEARNED или NOT_LEARNED)
+        // Filter by status (LEARNED or NOT_LEARNED)
         let filtered = words.filter(w => w.status === expectedStatus);
 
         if (selectedLanguage !== 'ALL') {

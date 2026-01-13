@@ -5,25 +5,25 @@ export const useWordsFilter = (words: Word[], filter: WordsFilter) => {
     const filteredWords = useMemo(() => {
         let result = words;
 
-        // Фильтр по языку
+        // Language filter
         if (filter.language !== 'ALL') {
             result = result.filter(
                 word => word.language.code === filter.language,
             );
         }
 
-        // Фильтр по статусу
+        // Status filter
         if (filter.status !== 'ALL') {
             result = result.filter(word => word.status === filter.status);
         }
 
-        // Фильтр по группам
+        // Group filter
         if (filter.groupIds && filter.groupIds.length > 0) {
             result = result.filter(word => {
-                // Проверяем, что у слова есть baseWord с группами
+                // Check that word has baseWord with groups
                 if (!word.baseWord?.wordGroups) return false;
 
-                // Проверяем, что слово принадлежит хотя бы одной из выбранных групп
+                // Check that word belongs to at least one of selected groups
                 return word.baseWord.wordGroups.some(wg =>
                     filter.groupIds!.includes(wg.wordGroupId),
                 );

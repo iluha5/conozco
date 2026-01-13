@@ -9,8 +9,6 @@ import {
     saveStage4Settings,
     getStage5Settings,
     saveStage5Settings,
-    getEnabledStages,
-    saveEnabledStages,
     type Stage1Settings,
     type Stage4Settings,
     type Stage5Settings,
@@ -25,7 +23,7 @@ export function useTrainingSettings() {
     const [isLoaded, setIsLoaded] = useState(false);
     const [settings, setSettings] = useState<TrainingSettings | null>(null);
 
-    // Загружаем настройки при монтировании или изменении сессии
+    // Load settings on mount or session change
     useEffect(() => {
         if (session?.user?.id) {
             const loadedSettings = getTrainingSettings(session.user.id);
@@ -34,7 +32,7 @@ export function useTrainingSettings() {
         }
     }, [session]);
 
-    // Сохраняем настройки при их изменении (только после загрузки)
+    // Save settings when they change (only after loading)
     useEffect(() => {
         if (session?.user?.id && isLoaded && settings) {
             saveTrainingSettings(session.user.id, settings);
@@ -191,7 +189,7 @@ export function useTrainingSelection() {
     const [selectedLanguage, setSelectedLanguage] = useState<string>('ALL');
     const [isLoaded, setIsLoaded] = useState(false);
 
-    // Загружаем язык при монтировании
+    // Load language on mount
     useEffect(() => {
         if (session?.user?.id) {
             const savedLanguage = localStorage.getItem(
@@ -204,7 +202,7 @@ export function useTrainingSelection() {
         }
     }, [session]);
 
-    // Сохраняем язык при изменении (только после загрузки)
+    // Save language when changed (only after loading)
     useEffect(() => {
         if (session?.user?.id && isLoaded) {
             localStorage.setItem(

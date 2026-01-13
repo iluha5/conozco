@@ -146,7 +146,7 @@ describe('Translation API Utilities', () => {
 
             const result = filterDuplicateExamples(examples);
 
-            // Должен остаться только один пример
+            // Should keep only one example
             expect(result).toHaveLength(1);
             expect(result[0].sentenceId).toBe(1);
         });
@@ -167,7 +167,7 @@ describe('Translation API Utilities', () => {
 
             const result = filterDuplicateExamples(examples);
 
-            // Должен остаться только один, так как переводы одинаковые
+            // Should keep only one, as translations are identical
             expect(result).toHaveLength(1);
             expect(result[0].sentenceId).toBe(1);
         });
@@ -188,7 +188,7 @@ describe('Translation API Utilities', () => {
 
             const result = filterDuplicateExamples(examples);
 
-            // Должен остаться только один, так как предложения одинаковые после нормализации
+            // Should keep only one, as sentences are identical after normalization
             expect(result).toHaveLength(1);
             expect(result[0].sentenceId).toBe(1);
         });
@@ -242,7 +242,7 @@ describe('Translation API Utilities', () => {
 
             const result = filterDuplicateExamples(examples);
 
-            // Должны остаться только 2 примера (без одиночных слов)
+            // Should keep only 2 examples (without single words)
             expect(result).toHaveLength(2);
             expect(result[0].sentenceId).toBe(2);
             expect(result[1].sentenceId).toBe(3);
@@ -269,7 +269,7 @@ describe('Translation API Utilities', () => {
 
             const result = filterDuplicateExamples(examples, 'por favor');
 
-            // Должен остаться только третий пример
+            // Should keep only the third example
             expect(result).toHaveLength(1);
             expect(result[0].sentenceId).toBe(3);
         });
@@ -295,7 +295,7 @@ describe('Translation API Utilities', () => {
 
             const result = filterDuplicateExamples(examples, 'черный кот');
 
-            // Должны остаться только 1 и 3 примеры (2 фильтруется как совпадение с оригиналом)
+            // Should keep only examples 1 and 3 (2 is filtered as matching original)
             expect(result).toHaveLength(2);
             expect(result[0].sentenceId).toBe(1);
             expect(result[1].sentenceId).toBe(3);

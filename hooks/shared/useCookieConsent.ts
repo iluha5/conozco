@@ -126,7 +126,7 @@ async function fetchCookieConsent(): Promise<CookieConsentResponse | null> {
     const response = await fetch('/api/user/cookie-consent');
 
     if (response.status === 401) {
-        // Пользователь не авторизован
+        // User not authorized
         return null;
     }
 
@@ -185,7 +185,7 @@ export function useCookieConsent() {
     const queryClient = useQueryClient();
     const isAuthenticated = !!session?.user?.id;
 
-    // Загрузка согласия из БД для авторизованных пользователей
+    // Load consent from DB for authorized users
     const {
         data: dbConsent = null,
         isLoading: loadingDb,
@@ -198,12 +198,12 @@ export function useCookieConsent() {
         gcTime: QUERY_GC_TIME,
     });
 
-    // Мутация для сохранения согласия
+    // Mutation for saving consent
     const saveMutation = useMutation({
         mutationFn: saveCookieConsent,
         onSuccess: updatedConsent => {
             queryClient.setQueryData(['cookie-consent'], updatedConsent);
-            // Сохраняем в localStorage только для кэширования (БД - источник правды для зарегистрированных)
+            // Save to localStorage only for caching (DB is source of truth for registered)
             const localStorageConsent: LocalStorageConsent = {
                 version: updatedConsent.version,
                 given: updatedConsent.given,
@@ -215,12 +215,12 @@ export function useCookieConsent() {
         },
     });
 
-    // Мутация для отзыва согласия
+    // Mutation for withdrawing consent
     const withdrawMutation = useMutation({
         mutationFn: withdrawCookieConsent,
         onSuccess: updatedConsent => {
             queryClient.setQueryData(['cookie-consent'], updatedConsent);
-            // Сохраняем в localStorage для быстрого доступа (но БД - источник правды)
+            // Save to localStorage for fast access (but DB is source of truth)
             const localStorageConsent: LocalStorageConsent = {
                 version: updatedConsent.version,
                 given: false,
@@ -233,25 +233,25 @@ export function useCookieConsent() {
         },
     });
 
-    // Получить текущее согласие
-    // Для зарегистрированных пользователей - источник правды БД
-    // Для незарегистрированных - источник правды localStorage
+    // Get current consent
+    // For registered users - DB is source of truth
+    // For unregistered - localStorage is source of truth
     const getConsent = useCallback((): CookieConsent | null => {
-        // Для зарегистрированных пользователей - используем БД как источник правды
+        // For registered users - use DB as source of truth
         if (isAuthenticated) {
             if (dbConsent) {
                 return responseToConsent(dbConsent);
             }
-            // Если данных в БД нет - возвращаем null (будет показан баннер)
+            // If no data in DB - return null (banner will be shown)
             return null;
         }
 
-        // Для незарегистрированных пользователей - используем localStorage как источник правды
+        // For unregistered users - use localStorage as source of truth
         const localStorageConsent = loadFromLocalStorage();
         return localStorageToConsent(localStorageConsent);
     }, [isAuthenticated, dbConsent]);
 
-    // Сохранить согласие
+    // Save consent
     const saveConsent = useCallback(
         async (
             preferences: CookiePreferences,
@@ -262,14 +262,14 @@ export function useCookieConsent() {
                 given,
                 preferences: {
                     ...preferences,
-                    necessary: true, // всегда true
+                    necessary: true, // always true
                 },
             };
 
             if (isAuthenticated) {
-                // Для зарегистрированных пользователей - сохраняем только в БД (источник правды)
+                // For registered users - save only to DB (source of truth)
                 await saveMutation.mutateAsync(request);
-                // Также сохраняем в localStorage для быстрого доступа (но БД - источник правды)
+                // Also save to localStorage for fast access (but DB is source of truth)
                 const now = new Date().toISOString();
                 const localStorageConsent: LocalStorageConsent = {
                     version: request.version,
@@ -280,7 +280,7 @@ export function useCookieConsent() {
                 };
                 saveToLocalStorage(localStorageConsent);
             } else {
-                // Для незарегистрированных пользователей - сохраняем только в localStorage (источник правды)
+                // For unregistered users - save only to localStorage (source of truth)
                 const now = new Date().toISOString();
                 const currentConsent = getConsent();
                 const localStorageConsent: LocalStorageConsent = {
@@ -289,7 +289,7 @@ export function useCookieConsent() {
                     givenAt: given
                         ? now
                         : currentConsent?.givenAt?.toISOString() || now,
-                    withdrawnAt: given ? undefined : now, // Сохраняем время отказа если given: false
+                    withdrawnAt: given ? undefined : now, // Save withdrawal time if given: false
                     preferences: request.preferences,
                 };
                 saveToLocalStorage(localStorageConsent);
@@ -299,12 +299,12 @@ export function useCookieConsent() {
         [isAuthenticated, saveMutation, getConsent, dbConsent],
     );
 
-    // Отозвать согласие
+    // Withdraw consent
     const withdrawConsent = useCallback(async (): Promise<void> => {
         if (isAuthenticated) {
-            // Для зарегистрированных пользователей - обновляем БД (источник правды)
+            // For registered users - update DB (source of truth)
             await withdrawMutation.mutateAsync();
-            // Также обновляем localStorage для быстрого доступа
+            // Also update localStorage for fast access
             const localStorageConsent = loadFromLocalStorage();
             if (localStorageConsent) {
                 const updated: LocalStorageConsent = {
@@ -315,13 +315,13 @@ export function useCookieConsent() {
                 saveToLocalStorage(updated);
             }
         } else {
-            // Для незарегистрированных пользователей - обновляем localStorage (источник правды)
+            // For unregistered users - update localStorage (source of truth)
             const localStorageConsent = loadFromLocalStorage();
             if (localStorageConsent) {
                 const updated: LocalStorageConsent = {
                     ...localStorageConsent,
                     given: false,
-                    withdrawnAt: new Date().toISOString(), // Сохраняем время отзыва
+                    withdrawnAt: new Date().toISOString(), // Save withdrawal time
                 };
                 saveToLocalStorage(updated);
                 setLocalStorageVersion(prev => prev + 1);
@@ -329,11 +329,11 @@ export function useCookieConsent() {
         }
     }, [isAuthenticated, withdrawMutation]);
 
-    // Убрана синхронизация при авторизации - БД является источником правды для зарегистрированных пользователей
-    // Если пользователь сначала дал согласие как незарегистрированный, а потом зарегистрировался,
-    // он увидит баннер еще раз и сможет дать согласие уже как зарегистрированный пользователь
+    // Removed sync on auth - DB is source of truth for registered users
+    // If user first gave consent as unregistered, then registered,
+    // they will see banner again and can give consent as registered user
 
-    // Проверка типов согласия
+    // Consent type checking
     const canUseFunctional = useCallback((): boolean => {
         const consent = getConsent();
         return (
@@ -361,49 +361,49 @@ export function useCookieConsent() {
     }, [getConsent]);
 
     const needsConsent = useCallback((): boolean => {
-        // Для зарегистрированных пользователей - ждем загрузки данных из БД
+        // For registered users - wait for DB data loading
         if (isAuthenticated && loadingDb) {
-            return false; // Не показываем пока не загрузили данные из БД
+            return false; // Don't show until DB data loaded
         }
 
-        // Для незарегистрированных пользователей - данные из localStorage доступны сразу
+        // For unregistered users - localStorage data available immediately
         const consent = getConsent();
 
-        // Если согласия нет - показываем баннер
+        // If no consent - show banner
         if (!consent) {
             return true;
         }
 
-        // Проверяем версию политики
+        // Check policy version
         if (consent.version !== COOKIE_CONSENT_VERSION) {
             return true;
         }
 
-        // Если согласие дано - не показываем попап
+        // If consent given - don't show popup
         if (consent.given) {
             return false;
         }
 
-        // Если согласие не дано (отказ), проверяем время по withdrawnAt
-        // Если прошло менее 24 часов с момента отказа - не показываем попап
+        // If consent not given (declined), check time by withdrawnAt
+        // If less than 24 hours passed since decline - don't show popup
         if (!consent.given && consent.withdrawnAt) {
             const hoursSinceWithdrawal =
                 (Date.now() - consent.withdrawnAt.getTime()) / (1000 * 60 * 60);
             if (hoursSinceWithdrawal < 24) {
-                return false; // Прошло менее 24 часов - не показываем
+                return false; // Less than 24 hours passed - don't show
             }
-            // Прошло 24 часа или более - показываем попап снова
+            // 24 hours or more passed - show popup again
             return true;
         }
 
-        // Если нет информации о времени отказа, но given: false - показываем попап
+        // If no withdrawal time info but given: false - show popup
         return !consent.given;
     }, [getConsent, isAuthenticated, loadingDb]);
 
-    // Состояние для отслеживания изменений localStorage (для неавторизованных пользователей)
+    // State for tracking localStorage changes (for unauthorized users)
     const [localStorageVersion, setLocalStorageVersion] = useState(0);
 
-    // Отслеживаем изменения localStorage через событие storage
+    // Track localStorage changes via storage event
     useEffect(() => {
         if (typeof window === 'undefined' || isAuthenticated) {
             return;
@@ -421,19 +421,19 @@ export function useCookieConsent() {
         };
     }, [isAuthenticated]);
 
-    // Мемоизируем consent чтобы избежать создания нового объекта при каждом рендере
-    // Используем ключевые поля для стабильного сравнения
+    // Memoize consent to avoid creating new object on every render
+    // Use key fields for stable comparison
     const memoizedConsent = useMemo(() => {
         return getConsent();
     }, [
         isAuthenticated,
-        // Используем примитивные значения для стабильного сравнения
+        // Use primitive values for stable comparison
         dbConsent?.id,
         dbConsent?.version,
         dbConsent?.given,
         dbConsent?.givenAt,
         dbConsent?.withdrawnAt,
-        // Для неавторизованных пользователей отслеживаем изменения через версию
+        // For unauthorized users track changes via version
         localStorageVersion,
     ]);
 

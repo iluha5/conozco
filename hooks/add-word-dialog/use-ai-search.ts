@@ -81,7 +81,7 @@ export function useAiSearch({
                     description: message,
                 });
 
-                // Обновляем список слов
+                // Update word list
                 setTimeout(async () => {
                     setOffset(0);
                     setHasMore(true);
@@ -103,7 +103,7 @@ export function useAiSearch({
                         setHasMore(words.length === 30);
                         setOffset(words.length);
 
-                        // Добавляем найденное слово в список пользователя
+                        // Add found word to user list
                         const addedBaseWord = words.find(
                             (w: BaseWord) =>
                                 w.word.toLowerCase() ===

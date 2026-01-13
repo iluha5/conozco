@@ -22,7 +22,7 @@ export function useWordManagement({
     const { toast } = useToast();
     const { t } = useTranslation();
 
-    // Автоматически выбираем слова, уже добавленные пользователем
+    // Automatically select words already added by user
     useEffect(() => {
         const addedWords = availableWords
             .filter(word => word.isAddedByUser)

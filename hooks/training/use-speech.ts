@@ -45,7 +45,7 @@ export interface UseSpeechReturn {
     /**
      * Произнести текст
      */
-    speak: (text: string) => void;
+    speak: (_text: string) => void;
 
     /**
      * Остановить текущее воспроизведение
@@ -80,7 +80,7 @@ export function useSpeech(options: UseSpeechOptions): UseSpeechReturn {
     const [hasPlayedOnce, setHasPlayedOnce] = useState(false);
     const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
-    // Проверка поддержки Speech API
+    // Check Speech API support
     const isSupported =
         typeof window !== 'undefined' && 'speechSynthesis' in window;
 
@@ -124,7 +124,7 @@ export function useSpeech(options: UseSpeechOptions): UseSpeechReturn {
                 return;
             }
 
-            // Остановить предыдущее воспроизведение, если нужно
+            // Stop previous playback if needed
             if (autoStop && window.speechSynthesis.speaking) {
                 stop();
             }
@@ -168,7 +168,7 @@ export function useSpeech(options: UseSpeechOptions): UseSpeechReturn {
         setHasPlayedOnce(false);
     }, [stop]);
 
-    // Очистка при размонтировании
+    // Cleanup on unmount
     useEffect(() => {
         return () => {
             if (isSupported && window.speechSynthesis.speaking) {

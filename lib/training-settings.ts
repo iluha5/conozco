@@ -57,7 +57,7 @@ export const getTrainingSettings = (userId: string): TrainingSettings => {
         );
         if (savedSettings) {
             const parsed = JSON.parse(savedSettings);
-            // Мерджим с дефолтными настройками на случай если добавились новые поля
+            // Merge with default settings in case new fields were added
             return {
                 ...DEFAULT_SETTINGS,
                 ...parsed,
@@ -152,14 +152,6 @@ export const saveStage5Settings = (
 };
 
 /**
- * Получить выбранные этапы
- */
-export const getEnabledStages = (userId: string): number[] => {
-    const settings = getTrainingSettings(userId);
-    return settings.enabledStages;
-};
-
-/**
  * Сохранить выбранные этапы
  */
 export const saveEnabledStages = (
@@ -168,14 +160,6 @@ export const saveEnabledStages = (
 ): void => {
     const settings = getTrainingSettings(userId);
     saveTrainingSettings(userId, { ...settings, enabledStages });
-};
-
-/**
- * Получить состояние развернутости настроек этапов
- */
-export const getStagesSettingsExpanded = (userId: string): boolean => {
-    const settings = getTrainingSettings(userId);
-    return settings.stagesSettingsExpanded;
 };
 
 /**

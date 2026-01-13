@@ -17,9 +17,9 @@ export function useLanguages() {
                 setLoading(true);
                 setError(null);
 
-                // Получаем языки через Prisma query
-                // В реальном приложении можно создать отдельный API endpoint
-                // Пока используем статические данные, как в существующих компонентах
+                // Get languages via Prisma query
+                // In real app can create separate API endpoint
+                // For now use static data, as in existing components
                 const staticLanguages: Language[] = [
                     { id: 1, code: 'en', name: 'English' },
                     { id: 2, code: 'es', name: 'Spanish' },

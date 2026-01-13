@@ -11,14 +11,14 @@ export { useTrainingStorage } from './use-training-storage';
 export { useTrainingInitialization } from './use-training-initialization';
 export { useTrainingStorageCheck } from './use-training-storage-check';
 
-// Новые хуки для stage компонентов
+// New hooks for stage components
 export { useRetryMode } from './use-retry-mode';
 export { useExerciseResults } from './use-exercise-results';
 export { useFadeAnimation } from './use-fade-animation';
 export { useRecordResult } from './use-record-result';
 export { useSpeech } from './use-speech';
 
-// Экспорт типов
+// Type exports
 export type { UseRetryModeOptions, UseRetryModeReturn } from './use-retry-mode';
 export type {
     UseExerciseResultsOptions,

@@ -2,7 +2,7 @@
  * Утилиты для работы со словами
  */
 
-// Мапа частей речи: name -> человеко-читаемое название
+// Parts of speech map: name -> human-readable name
 export const PART_OF_SPEECH_DISPLAY_NAMES: Record<string, string> = {
     NOUN: 'Noun',
     VERB: 'Verb',
@@ -18,7 +18,7 @@ export const PART_OF_SPEECH_DISPLAY_NAMES: Record<string, string> = {
     PHRASE: 'Phrase',
 };
 
-// Мапа частей речи: name -> аббревиатура
+// Parts of speech map: name -> abbreviation
 export const PART_OF_SPEECH_ABBREVIATIONS: Record<string, string> = {
     NOUN: 'n',
     VERB: 'v',
@@ -42,7 +42,7 @@ type Translation = {
 type CustomTranslation = {
     id: number;
     translation: string;
-    [key: string]: any; // Остальные поля не важны для этой функции
+    [key: string]: any; // Other fields are not important for this function
 };
 
 /**

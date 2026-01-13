@@ -1,7 +1,7 @@
 import { translateWithDeepL } from './deepl-api';
 import { translateWithMyMemory } from './mymemory-api';
 
-// Типы для Tatoeba
+// Types for Tatoeba
 interface TatoebaSearchParams {
     from: string;
     to: string;
@@ -34,7 +34,7 @@ interface TatoebaSearchResponse {
     results: TatoebaSentence[];
 }
 
-// Типы для результатов
+// Types for results
 export interface TranslationResult {
     word: string;
     sourceLanguage: string;
@@ -49,19 +49,19 @@ export interface TranslationResult {
     }>;
 }
 
-// Конфигурация API
+// API configuration
 const TATOEBA_API_URL = 'https://tatoeba.org/en/api_v0';
 const TATOEBA_MAX_RETRIES = 3;
-const TATOEBA_RETRY_DELAY = 2000; // 2 секунды
+const TATOEBA_RETRY_DELAY = 2000; // 2 seconds
 
-// Маппинг языковых кодов для Tatoeba
+// Language code mapping for Tatoeba
 const LANGUAGE_CODE_MAP: { [key: string]: string } = {
     en: 'eng',
     es: 'spa',
     ru: 'rus',
 };
 
-// Утилита для получения ID источника по коду
+// Utility to get source ID by code
 async function getSourceId(sourceCode: string): Promise<number | null> {
     try {
         const { prisma } = await import('./prisma');
@@ -86,7 +86,7 @@ async function getSourceId(sourceCode: string): Promise<number | null> {
     }
 }
 
-// Утилита для получения ID языка по коду
+// Utility to get language ID by code
 async function getLanguageId(languageCode: string): Promise<number | null> {
     try {
         const { prisma } = await import('./prisma');
@@ -111,7 +111,7 @@ async function getLanguageId(languageCode: string): Promise<number | null> {
     }
 }
 
-// Утилита для логирования запросов к API
+// Utility for logging API requests
 async function logApiRequest(
     userId: number | null,
     sourceCode: string, // 'DEEPL', 'MYMEMORY', 'TATOEBA'
@@ -121,15 +121,15 @@ async function logApiRequest(
     statusCode: number | null,
     errorMessage: string | null | undefined,
     duration: number,
-    sourceLanguageCode?: string, // Код исходного языка (например: 'es', 'en')
-    targetLanguageCode?: string, // Код целевого языка (например: 'ru')
+    sourceLanguageCode?: string, // Source language code (e.g.: 'es', 'en')
+    targetLanguageCode?: string, // Target language code (e.g.: 'ru')
 ) {
     try {
         console.log(
             `[LOG] Attempting to log API request: ${sourceCode}/${requestType}`,
         );
 
-        // Получаем sourceId
+        // Get sourceId
         const sourceId = await getSourceId(sourceCode);
 
         if (!sourceId) {
@@ -137,7 +137,7 @@ async function logApiRequest(
             return;
         }
 
-        // Получаем language IDs если они указаны
+        // Get language IDs if specified
         let sourceLanguageId: number | null | undefined = undefined;
         let targetLanguageId: number | null | undefined = undefined;
 
@@ -149,7 +149,7 @@ async function logApiRequest(
             targetLanguageId = await getLanguageId(targetLanguageCode);
         }
 
-        // Импортируем prisma внутри функции для гарантии серверного контекста
+        // Import prisma inside function to guarantee server context
         const { prisma } = await import('./prisma');
 
         if (!prisma) {
@@ -157,7 +157,7 @@ async function logApiRequest(
             return;
         }
 
-        // Безопасная сериализация данных
+        // Safe data serialization
         let requestDataStr: string;
         let responseDataStr: string | null = null;
 
@@ -210,7 +210,7 @@ async function logApiRequest(
     }
 }
 
-// Утилита для задержки
+// Delay utility
 function delay(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -219,7 +219,7 @@ function delay(ms: number): Promise<void> {
  * Проверяет, содержит ли строка латинские символы
  */
 export function hasLatinCharacters(text: string): boolean {
-    // Проверяем наличие латинских букв (a-z, A-Z)
+    // Check for Latin letters presence (a-z, A-Z)
     return /[a-zA-Z]/.test(text);
 }
 
@@ -227,7 +227,7 @@ export function hasLatinCharacters(text: string): boolean {
  * Удаляет все знаки препинания из строки для сравнения
  */
 export function removePunctuation(text: string): string {
-    // Удаляем все символы кроме букв (кириллица, латиница), цифр и пробелов
+    // Remove all characters except letters (Cyrillic, Latin), digits and spaces
     return text
         .replace(/[^а-яА-ЯёЁa-zA-Z0-9\s]/g, '')
         .toLowerCase()
@@ -242,13 +242,13 @@ export function filterTranslations(translations: string[]): string[] {
         return translations;
     }
 
-    // Сохраняем оригинальные переводы на случай, если все будут отфильтрованы
+    // Save original translations in case all are filtered out
     const originalTranslations = [...translations];
 
-    // 1. Фильтруем переводы с латинскими символами
+    // 1. Filter translations with Latin characters
     let filtered = translations.filter(t => !hasLatinCharacters(t));
 
-    // 2. Удаляем дубликаты (сравниваем без знаков препинания)
+    // 2. Remove duplicates (compare without punctuation)
     const seen = new Set<string>();
     filtered = filtered.filter(translation => {
         const normalized = removePunctuation(translation);
@@ -259,7 +259,7 @@ export function filterTranslations(translations: string[]): string[] {
         return true;
     });
 
-    // 3. Если после фильтрации не осталось ни одного перевода - возвращаем первый оригинальный
+    // 3. If no translations left after filtering - return first original
     if (filtered.length === 0) {
         return [originalTranslations[0]];
     }
@@ -300,7 +300,7 @@ export function filterDuplicateExamples<
     const seenSentences = new Set<string>();
     const seenTranslations = new Set<string>();
 
-    // Нормализуем исходное слово/фразу для проверки
+    // Normalize source word/phrase for checking
     const normalizedOriginal = originalWord
         ? removePunctuation(originalWord)
         : null;
@@ -309,7 +309,7 @@ export function filterDuplicateExamples<
         const normalizedSentence = removePunctuation(example.sentence);
         const normalizedTranslation = removePunctuation(example.translation);
 
-        // Фильтруем примеры из одного слова
+        // Filter single-word examples
         if (
             isSingleWord(example.sentence) ||
             isSingleWord(example.translation)
@@ -317,7 +317,7 @@ export function filterDuplicateExamples<
             return false;
         }
 
-        // Фильтруем примеры, совпадающие с исходным словом/фразой
+        // Filter examples matching source word/phrase
         if (normalizedOriginal) {
             if (
                 normalizedSentence === normalizedOriginal ||
@@ -327,12 +327,12 @@ export function filterDuplicateExamples<
             }
         }
 
-        // Проверяем дубликаты предложений
+        // Check sentence duplicates
         if (seenSentences.has(normalizedSentence)) {
             return false;
         }
 
-        // Проверяем дубликаты переводов
+        // Check translation duplicates
         if (seenTranslations.has(normalizedTranslation)) {
             return false;
         }
@@ -361,7 +361,7 @@ export async function translateWord(
 }> {
     console.log(`[Translation] Starting translation for "${word}"`);
 
-    // Пробуем DeepL (с 3 попытками)
+    // Try DeepL (with 3 attempts)
     const deeplResult = await translateWithDeepL(
         word,
         sourceLanguage,
@@ -370,7 +370,7 @@ export async function translateWord(
         3, // MAX_RETRIES
     );
 
-    // Если DeepL успешно вернул перевод
+    // If DeepL successfully returned translation
     if (deeplResult.mainTranslation && !deeplResult.error) {
         console.log(`[Translation] DeepL translation successful`);
         return {
@@ -379,7 +379,7 @@ export async function translateWord(
         };
     }
 
-    // Если DeepL не удалось - используем MyMemory как fallback
+    // If DeepL failed - use MyMemory as fallback
     console.log(
         `[Translation] DeepL failed: ${deeplResult.error}. Falling back to MyMemory...`,
     );
@@ -399,7 +399,7 @@ export async function translateWord(
         };
     }
 
-    // Если оба сервиса не удалось
+    // If both services failed
     console.error(`[Translation] Both DeepL and MyMemory failed for "${word}"`);
     return {
         mainTranslation: '',
@@ -477,7 +477,7 @@ export async function searchExamples(
                 );
             }
 
-            // Обрабатываем результаты
+            // Process results
             const examples: Array<{
                 sentence: string;
                 translation: string;
@@ -485,9 +485,9 @@ export async function searchExamples(
             }> = [];
 
             for (const result of data.results) {
-                // Tatoeba API возвращает translations как массив массивов
+                // Tatoeba API returns translations as array of arrays
                 // translations[0] - indirect translations
-                // translations[1] - direct translations (которые нам нужны)
+                // translations[1] - direct translations (which we need)
                 if (
                     result.translations &&
                     Array.isArray(result.translations) &&
@@ -496,9 +496,9 @@ export async function searchExamples(
                     result.translations[1].length > 0
                 ) {
                     const translation = result.translations[1][0];
-                    // Проверяем что перевод содержит текст
+                    // Check that translation contains text
                     if (translation && translation.text) {
-                        // Проверяем что предложение и перевод различаются
+                        // Check that sentence and translation differ
                         if (
                             areSentencesDifferent(result.text, translation.text)
                         ) {
@@ -511,24 +511,24 @@ export async function searchExamples(
                     }
                 }
 
-                // Ограничиваем до 15 примеров (с учетом возможных дубликатов)
+                // Limit to 15 examples (accounting for possible duplicates)
                 if (examples.length >= 15) {
                     break;
                 }
             }
 
-            // Фильтруем дубликаты и ограничиваем до 10 примеров
+            // Filter duplicates and limit to 10 examples
             const filteredExamples = filterDuplicateExamples(
                 examples,
                 word,
             ).slice(0, 10);
 
-            // Если нашли примеры - возвращаем
+            // If found examples - return
             if (filteredExamples.length > 0) {
                 return filteredExamples;
             }
 
-            // Если это не последняя попытка и примеров нет - пробуем еще раз
+            // If not last attempt and no examples - try again
             if (attempt < maxRetries) {
                 console.log(
                     `Tatoeba: No examples found for "${word}", retrying (${attempt}/${maxRetries})...`,
@@ -537,7 +537,7 @@ export async function searchExamples(
                 continue;
             }
 
-            // Если это последняя попытка и примеров нет - возвращаем пустой массив
+            // If last attempt and no examples - return empty array
             return [];
         } catch (error: any) {
             const duration = Date.now() - startTime;
@@ -556,7 +556,7 @@ export async function searchExamples(
                 targetLanguage,
             );
 
-            // Если это не последняя попытка - пробуем еще раз
+            // If not last attempt - try again
             if (attempt < maxRetries) {
                 console.log(
                     `Tatoeba error (attempt ${attempt}/${maxRetries}):`,
@@ -566,7 +566,7 @@ export async function searchExamples(
                 continue;
             }
 
-            // Если это последняя попытка - возвращаем пустой массив
+            // If last attempt - return empty array
             console.error(
                 `Tatoeba: Failed after ${maxRetries} attempts:`,
                 lastError,
@@ -589,13 +589,13 @@ export async function getWordData(
     userId: number | null = null,
 ): Promise<TranslationResult | { error: string }> {
     try {
-        // Параллельно запрашиваем перевод и примеры
+        // Request translation and examples in parallel
         const [translationResult, examples] = await Promise.all([
             translateWord(word, sourceLanguage, targetLanguage, userId),
-            searchExamples(word, sourceLanguage, targetLanguage, userId, 1), // Первая попытка
+            searchExamples(word, sourceLanguage, targetLanguage, userId, 1), // First attempt
         ]);
 
-        // Если перевод не удалось получить - возвращаем ошибку
+        // If translation failed to get - return error
         if (translationResult.error || !translationResult.mainTranslation) {
             return {
                 error:
@@ -604,16 +604,16 @@ export async function getWordData(
             };
         }
 
-        // Если примеры не найдены - запускаем фоновый поиск
+        // If examples not found - start background search
         if (examples.length === 0) {
-            // Запускаем фоновый поиск (без await)
+            // Start background search (without await)
             searchExamples(word, sourceLanguage, targetLanguage, userId, 3)
                 .then(backgroundExamples => {
                     if (backgroundExamples.length > 0) {
                         console.log(
                             `Found ${backgroundExamples.length} examples in background for "${word}"`,
                         );
-                        // В реальном приложении здесь можно обновить данные в БД или уведомить пользователя
+                        // In real app here can update DB data or notify user
                     }
                 })
                 .catch(error => {

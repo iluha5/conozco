@@ -54,9 +54,7 @@ export function Stage6Training({
         getErrorIndices,
         setIsRetryMode,
         setHasCompletedFirstRound,
-    } = useRetryMode({
-        totalExercises: baseWords.length,
-    });
+    } = useRetryMode();
     const {
         speak,
         isPlaying,

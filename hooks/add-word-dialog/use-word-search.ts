@@ -37,7 +37,7 @@ export function useWordSearch({
     const [hasExactMatch, setHasExactMatch] = useState(false);
     const { toast } = useToast();
 
-    // Debounce поиска на 400мс
+    // Debounce search by 400ms
     useDebounce(
         () => {
             setDebouncedSearchTerm(searchTerm);
@@ -46,7 +46,7 @@ export function useWordSearch({
         [searchTerm],
     );
 
-    // Проверка наличия точных совпадений
+    // Check for exact matches
     useEffect(() => {
         if (!searchTerm.trim()) {
             setHasExactMatch(false);
@@ -60,9 +60,9 @@ export function useWordSearch({
         setHasExactMatch(!!exactMatch);
     }, [searchTerm, availableWords]);
 
-    // Поиск слов при изменении параметров
+    // Search words when parameters change
     useEffect(() => {
-        // Не запускаем поиск, если поле поиска пустое
+        // Don't start search if search field is empty
         if (!debouncedSearchTerm.trim()) {
             setAvailableWords([]);
             setOffset(0);
@@ -110,7 +110,7 @@ export function useWordSearch({
                 params.set('search', debouncedSearchTerm.trim());
             }
 
-            // Добавляем код родного языка для поиска по переводам
+            // Add native language code for translation search
             if (ownLanguageCode) {
                 params.set('translationLanguageCode', ownLanguageCode);
             }

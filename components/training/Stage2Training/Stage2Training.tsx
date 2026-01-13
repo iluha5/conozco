@@ -36,9 +36,7 @@ export function Stage2Training({
             totalExercises: words.length,
         });
     const { recordResult } = useRecordResult();
-    const retryMode = useRetryMode({
-        totalExercises: words.length,
-    });
+    const retryMode = useRetryMode();
 
     // Stage-specific hooks
     const { options, regenerateOptions } = useTranslationOptions(

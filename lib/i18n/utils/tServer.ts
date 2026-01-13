@@ -20,7 +20,7 @@ export async function tServer(
     const resources = getStaticResources();
     const targetLang = lang || (await getUserInterfaceLanguage()) || 'en';
 
-    // Получаем перевод из ресурсов
+    // Get translation from resources
     const langResource = resources[targetLang as keyof typeof resources] as
         | { glob?: Record<string, string> }
         | undefined;
@@ -31,7 +31,7 @@ export async function tServer(
     const translation =
         langResource?.glob?.[key] || enResource?.glob?.[key] || key;
 
-    // Интерполяция параметров
+    // Parameter interpolation
     if (params && typeof translation === 'string') {
         return translation.replace(/\{\{(\w+)\}\}/g, (match, paramKey) => {
             return params[paramKey]?.toString() || match;

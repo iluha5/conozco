@@ -31,23 +31,23 @@ export function initGoogleAnalytics(gaMeasurementId: string): void {
 
     measurementId = gaMeasurementId;
 
-    // Создаем dataLayer
+    // Create dataLayer
     window.dataLayer = window.dataLayer || [];
     function gtag(...args: any[]) {
         window.dataLayer?.push(args);
     }
 
-    // Загружаем скрипт Google Analytics
+    // Load Google Analytics script
     const script = document.createElement('script');
     script.async = true;
     script.src = `https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`;
     document.head.appendChild(script);
 
-    // Инициализируем gtag
+    // Initialize gtag
     window.gtag = gtag as typeof window.gtag;
     gtag('js', new Date());
     gtag('config', gaMeasurementId, {
-        anonymize_ip: true, // Анонимизация IP адресов для GDPR
+        anonymize_ip: true, // Anonymize IP addresses for GDPR
         cookie_flags: 'SameSite=None;Secure',
     });
 
@@ -89,21 +89,21 @@ export function disableGoogleAnalytics(): void {
         return;
     }
 
-    // Удаляем скрипт GA
+    // Remove GA script
     const scripts = document.querySelectorAll(
         'script[src*="googletagmanager.com/gtag/js"]',
     );
     scripts.forEach(script => script.remove());
 
-    // Очищаем dataLayer
+    // Clear dataLayer
     if (window.dataLayer) {
         window.dataLayer = [];
     }
 
-    // Удаляем gtag функцию
+    // Remove gtag function
     delete window.gtag;
 
-    // Удаляем куки Google Analytics
+    // Remove Google Analytics cookies
     const cookies = document.cookie.split(';');
     cookies.forEach(cookie => {
         const eqPos = cookie.indexOf('=');

@@ -9,7 +9,7 @@ export function useWordGroupsFilter(contextKey: WordGroupsFilterContext) {
     const [selectedGroupIds, setSelectedGroupIds] = useState<number[]>([]);
     const [isInitialized, setIsInitialized] = useState(false);
 
-    // Загрузить из localStorage при монтировании (только на клиенте)
+    // Load from localStorage on mount (client-side only)
     useEffect(() => {
         if (typeof window === 'undefined') return;
 
@@ -28,7 +28,7 @@ export function useWordGroupsFilter(contextKey: WordGroupsFilterContext) {
         setIsInitialized(true);
     }, [storageKey, contextKey]);
 
-    // Сохранить в localStorage при изменении (только после инициализации)
+    // Save to localStorage on change (only after initialization)
     useEffect(() => {
         if (typeof window === 'undefined' || !isInitialized) return;
 

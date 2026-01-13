@@ -27,26 +27,26 @@ export function useTrainingLogic() {
         ): Promise<StageCompletionResult> => {
             const stages = Array.from(enabledStages).sort();
 
-            // Проверяем, все ли включенные этапы будут завершены после текущего
+            // Check if all enabled stages will be completed after current
             const allStagesCompleted = stages.every(stage => {
                 const progress = stagesProgress.find(sp => sp.stage === stage);
-                // Этап считается завершенным, если он уже completed или это текущий этап
+                // Stage is considered completed if already completed or this is current stage
                 return (
                     progress?.status === 'completed' || stage === currentStage
                 );
             });
 
-            // Если все этапы завершены - тренировка завершена
+            // If all stages completed - training finished
             if (allStagesCompleted) {
-                // Все этапы завершены - отмечаем слова как выученные
+                // All stages completed - mark words as learned
                 try {
                     await trainingApi.markWordsAsLearned(
                         trainingWords.map(w => w.id),
                     );
 
-                    // Инвалидируем кэш React Query для обновления списков слов
-                    // Это гарантирует, что при следующем открытии /training/setup
-                    // будут загружены актуальные данные без уже выученных слов
+                    // Invalidate React Query cache to update word lists
+                    // This ensures that on next opening /training/setup
+                    // current data will be loaded without already learned words
                     await queryClient.invalidateQueries({
                         queryKey: ['words'],
                     });
@@ -57,7 +57,7 @@ export function useTrainingLogic() {
                         ],
                     });
 
-                    // Получаем обновленный список слов
+                    // Get updated word list
                     const allWords = await trainingApi.fetchWords();
                     const trainedWordIds = trainingWords.map(w => w.id);
                     const learnedWords = allWords.filter(w =>
@@ -84,8 +84,8 @@ export function useTrainingLogic() {
                 }
             }
 
-            // Не все этапы завершены - ищем следующий незавершенный
-            // Сначала проверяем следующий по порядку этап
+            // Not all stages completed - find next unfinished
+            // First check next stage in order
             const currentIndex = stages.indexOf(currentStage);
             if (currentIndex < stages.length - 1) {
                 const nextStage = stages[currentIndex + 1] as TrainingStage;
@@ -93,7 +93,7 @@ export function useTrainingLogic() {
                     sp => sp.stage === nextStage,
                 );
 
-                // Если следующий этап еще не завершен - переходим к нему
+                // If next stage not yet completed - move to it
                 if (nextProgress?.status !== 'completed') {
                     return {
                         nextStage,
@@ -102,8 +102,8 @@ export function useTrainingLogic() {
                 }
             }
 
-            // Следующий этап уже завершен или мы на последнем этапе
-            // Ищем любой незавершенный этап
+            // Next stage already completed or we are on last stage
+            // Find any unfinished stage
             return {
                 completed: false,
             };

@@ -22,20 +22,20 @@ export function useTrainingListWords(languageCode: string | null) {
         enabled: !!languageCode,
         staleTime: QUERY_STALE_TIME,
         gcTime: QUERY_GC_TIME,
-        refetchOnMount: true, // Инвалидировать при каждом заходе на страницу
+        refetchOnMount: true, // Invalidate on each page visit
     });
 
-    // Используем стабильную ссылку на пустой массив
+    // Use stable reference to empty array
     const words = data ?? EMPTY_WORDS;
 
-    // Логируем ошибку если есть
+    // Log error if exists
     if (error) {
         console.error('Error fetching training list words:', error);
     }
 
     return {
         words,
-        isLoading: isLoading && !data, // isLoading только если данных нет
-        isFetching, // Для отслеживания фоновой загрузки
+        isLoading: isLoading && !data, // isLoading only if no data
+        isFetching, // For tracking background loading
     };
 }

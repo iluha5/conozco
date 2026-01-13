@@ -33,20 +33,20 @@ export const useWordsData = () => {
         gcTime: QUERY_GC_TIME,
     });
 
-    // Используем стабильную ссылку на пустой массив
+    // Use stable reference to empty array
     const words = data ?? EMPTY_WORDS;
 
-    // Показываем toast при ошибке
+    // Show toast on error
     if (error) {
         console.error('Error fetching words:', error);
     }
 
-    // Обёртка для совместимости с существующим API
+    // Wrapper for compatibility with existing API
     const refetch = useCallback(async (): Promise<void> => {
         await queryRefetch();
     }, [queryRefetch]);
 
-    // Оптимистичное обновление слова в кэше
+    // Optimistic word update in cache
     const updateWord = useCallback(
         (wordId: number, updates: Partial<Word>) => {
             queryClient.setQueryData<Word[]>(['words'], oldWords => {
@@ -57,7 +57,7 @@ export const useWordsData = () => {
                 );
             });
 
-            // Также обновляем кэш для setup-words если он есть
+            // Also update setup-words cache if exists
             queryClient.setQueryData<Word[]>(
                 ['words', { status: 'NOT_LEARNED', limit: 120 }],
                 oldWords => {
@@ -72,7 +72,7 @@ export const useWordsData = () => {
         [queryClient],
     );
 
-    // Оптимистичное удаление слова из кэша
+    // Optimistic word removal from cache
     const removeWord = useCallback(
         (wordId: number) => {
             queryClient.setQueryData<Word[]>(['words'], oldWords => {
@@ -81,7 +81,7 @@ export const useWordsData = () => {
                 return oldWords.filter(word => word.id !== wordId);
             });
 
-            // Также удаляем из кэша setup-words если он есть
+            // Also remove from setup-words cache if exists
             queryClient.setQueryData<Word[]>(
                 ['words', { status: 'NOT_LEARNED', limit: 120 }],
                 oldWords => {

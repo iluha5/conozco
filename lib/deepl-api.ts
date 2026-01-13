@@ -1,6 +1,6 @@
 import { filterTranslations } from './translation-api';
 
-// Типы для DeepL API
+// Types for DeepL API
 interface DeepLTranslation {
     detected_source_language: string;
     text: string;
@@ -10,13 +10,13 @@ interface DeepLResponse {
     translations: DeepLTranslation[];
 }
 
-// Конфигурация API
+// API configuration
 const DEEPL_API_URL = 'https://api-free.deepl.com/v2/translate';
-const TRANSLATION_TIMEOUT = 10000; // 10 секунд
+const TRANSLATION_TIMEOUT = 10000; // 10 seconds
 const MAX_RETRIES = 3;
-const RETRY_DELAY = 1000; // 1 секунда
+const RETRY_DELAY = 1000; // 1 second
 
-// Маппинг языковых кодов для DeepL (заглавные буквы)
+// Language code mapping for DeepL (uppercase)
 const LANGUAGE_CODE_MAP: { [key: string]: string } = {
     en: 'EN',
     es: 'ES',
@@ -27,12 +27,12 @@ const LANGUAGE_CODE_MAP: { [key: string]: string } = {
     pt: 'PT',
 };
 
-// Утилита для задержки
+// Delay utility
 function delay(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// Утилита для получения ID источника по коду
+// Utility to get source ID by code
 async function getSourceId(sourceCode: string): Promise<number | null> {
     try {
         const { prisma } = await import('./prisma');
@@ -57,7 +57,7 @@ async function getSourceId(sourceCode: string): Promise<number | null> {
     }
 }
 
-// Утилита для получения ID языка по коду
+// Utility to get language ID by code
 async function getLanguageId(languageCode: string): Promise<number | null> {
     try {
         const { prisma } = await import('./prisma');
@@ -82,7 +82,7 @@ async function getLanguageId(languageCode: string): Promise<number | null> {
     }
 }
 
-// Утилита для логирования запросов к API
+// Utility for logging API requests
 async function logApiRequest(
     userId: number | null,
     sourceCode: string, // 'DEEPL', 'MYMEMORY', 'TATOEBA'
@@ -92,15 +92,15 @@ async function logApiRequest(
     statusCode: number | null,
     errorMessage: string | null | undefined,
     duration: number,
-    sourceLanguageCode?: string, // Код исходного языка (например: 'es', 'en')
-    targetLanguageCode?: string, // Код целевого языка (например: 'ru')
+    sourceLanguageCode?: string, // Source language code (e.g.: 'es', 'en')
+    targetLanguageCode?: string, // Target language code (e.g.: 'ru')
 ) {
     try {
         console.log(
             `[LOG] Attempting to log API request: ${sourceCode}/${requestType}`,
         );
 
-        // Получаем sourceId
+        // Get sourceId
         const sourceId = await getSourceId(sourceCode);
 
         if (!sourceId) {
@@ -108,7 +108,7 @@ async function logApiRequest(
             return;
         }
 
-        // Получаем language IDs если они указаны
+        // Get language IDs if specified
         let sourceLanguageId: number | null | undefined = undefined;
         let targetLanguageId: number | null | undefined = undefined;
 
@@ -120,7 +120,7 @@ async function logApiRequest(
             targetLanguageId = await getLanguageId(targetLanguageCode);
         }
 
-        // Импортируем prisma внутри функции для гарантии серверного контекста
+        // Import prisma inside function to guarantee server context
         const { prisma } = await import('./prisma');
 
         if (!prisma) {
@@ -128,7 +128,7 @@ async function logApiRequest(
             return;
         }
 
-        // Безопасная сериализация данных
+        // Safe data serialization
         let requestDataStr: string;
         let responseDataStr: string | null = null;
 
@@ -273,18 +273,18 @@ export async function translateWithDeepL(
                 throw new Error('DeepL API returned no translations');
             }
 
-            // DeepL возвращает один перевод, но мы можем попробовать получить альтернативы
-            // запросив перевод с небольшими вариациями (если слово/фраза позволяет)
-            // Убираем trailing знаки препинания из переводов
+            // DeepL returns one translation, but we can try to get alternatives
+            // by requesting translation with small variations (if word/phrase allows)
+            // Remove trailing punctuation from translations
             const cleanedTranslation = data.translations[0].text
                 .trim()
                 .replace(/[,.;:!?]+$/, '');
             const allTranslations: string[] = [cleanedTranslation];
 
-            // Применяем фильтрацию
+            // Apply filtering
             const filteredTranslations = filterTranslations(allTranslations);
 
-            // Разделяем на главный и альтернативные
+            // Split into main and alternative
             const mainTranslation = filteredTranslations[0];
             const alternatives = filteredTranslations.slice(1);
 
@@ -316,16 +316,16 @@ export async function translateWithDeepL(
                 targetLanguage,
             );
 
-            // Если это не последняя попытка - пробуем еще раз
+            // If not last attempt - try again
             if (attempt < maxRetries) {
                 console.log(
                     `[DeepL] Attempt ${attempt}/${maxRetries} failed: ${lastError}. Retrying...`,
                 );
-                await delay(RETRY_DELAY * attempt); // Увеличиваем задержку с каждой попыткой
+                await delay(RETRY_DELAY * attempt); // Increase delay with each attempt
                 continue;
             }
 
-            // Если это последняя попытка - возвращаем ошибку
+            // If last attempt - return error
             console.error(
                 `[DeepL] Failed after ${maxRetries} attempts: ${lastError}`,
             );

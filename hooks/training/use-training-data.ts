@@ -21,7 +21,7 @@ export function useTrainingData(
     const fetchWords = useCallback(async () => {
         onLoadingChange(true);
         try {
-            // Проверяем источник слов из sessionStorage
+            // Check word source from sessionStorage
             const wordSource =
                 typeof window !== 'undefined'
                     ? sessionStorage.getItem(STORAGE_KEYS.TRAINING_WORD_SOURCE)

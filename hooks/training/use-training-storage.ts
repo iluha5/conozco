@@ -18,7 +18,7 @@ export function useTrainingStorage() {
         null,
     );
 
-    // Функция для загрузки состояния из localStorage
+    // Function to load state from localStorage
     const loadSavedState = useCallback(() => {
         try {
             const saved = localStorage.getItem(STORAGE_KEY);
@@ -34,21 +34,21 @@ export function useTrainingStorage() {
         }
     }, []);
 
-    // Загрузка сохраненного состояния при монтировании
+    // Load saved state on mount
     useEffect(() => {
         loadSavedState();
     }, [loadSavedState]);
 
-    // Синхронизация состояния между компонентами через события storage
+    // Synchronize state between components via storage events
     useEffect(() => {
-        // Обработчик события storage (для синхронизации между вкладками)
+        // Storage event handler (for sync between tabs)
         const handleStorageChange = (e: StorageEvent) => {
             if (e.key === STORAGE_KEY) {
                 loadSavedState();
             }
         };
 
-        // Обработчик кастомного события (для синхронизации в том же окне)
+        // Custom event handler (for sync in same window)
         const handleCustomStorageChange = () => {
             loadSavedState();
         };
@@ -68,7 +68,7 @@ export function useTrainingStorage() {
         };
     }, [loadSavedState]);
 
-    // Функция для отправки кастомного события при изменении localStorage
+    // Function to send custom event when localStorage changes
     const notifyStorageChange = useCallback(() => {
         window.dispatchEvent(new CustomEvent(STORAGE_CHANGE_EVENT));
     }, []);
@@ -126,7 +126,7 @@ export function useTrainingStorage() {
             const sessionId = `training_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
             const now = new Date().toISOString();
 
-            // Инициализируем прогресс для каждого этапа
+            // Initialize progress for each stage
             const stagesProgress: StageProgress[] = params.enabledStages.map(
                 stage => ({
                     stage,
@@ -197,7 +197,7 @@ export function useTrainingStorage() {
                     },
                 );
 
-                // Подсчитываем завершенные слова
+                // Count completed words
                 const completedWords = updatedStagesProgress.reduce(
                     (count, sp) => {
                         if (sp.status === 'completed') {
@@ -276,7 +276,7 @@ export function useTrainingStorage() {
                 if (!saved) return;
 
                 const currentState = JSON.parse(saved) as SavedTrainingState;
-                // Обновляем статус этапов
+                // Update stage statuses
                 const updatedStagesProgress = currentState.stagesProgress.map(
                     sp => {
                         if (sp.stage === stage && sp.status === 'pending') {
@@ -328,7 +328,7 @@ export function useTrainingStorage() {
                                         : wp.correctAttempts,
                                     isCompleted: isCorrect
                                         ? true
-                                        : wp.isCompleted, // Отмечаем как завершенное при правильном ответе
+                                        : wp.isCompleted, // Mark as completed on correct answer
                                     lastAttemptAt: new Date().toISOString(),
                                 };
                             },
@@ -341,7 +341,7 @@ export function useTrainingStorage() {
                     },
                 );
 
-                // Подсчитываем уникальные завершенные слова по всем этапам
+                // Count unique completed words across all stages
                 const completedWordIds = new Set<string>();
                 updatedStagesProgress.forEach(sp => {
                     sp.wordsProgress.forEach(wp => {

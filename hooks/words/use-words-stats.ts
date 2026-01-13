@@ -6,7 +6,7 @@ export const useWordsStats = (
     selectedLanguage: string,
 ): WordsStats => {
     return useMemo(() => {
-        // Фильтруем слова только по языку для статистики
+        // Filter words only by language for statistics
         const wordsByLanguage =
             selectedLanguage === 'ALL'
                 ? words

@@ -21,11 +21,13 @@ export interface UseExerciseResultsReturn {
     /**
      * Обновить результат упражнения
      */
+    // eslint-disable-next-line no-unused-vars
     updateResult: (index: number, result: boolean) => void;
 
     /**
      * Обновить результаты батчем (для stage3 с группами)
      */
+    // eslint-disable-next-line no-unused-vars
     updateResults: (updates: Array<{ index: number; result: boolean }>) => void;
 
     /**
@@ -65,7 +67,7 @@ export function useExerciseResults(
         () => new Array(totalExercises).fill(null),
     );
 
-    // Инициализируем массив результатов при изменении количества упражнений
+    // Initialize results array when exercise count changes
     useEffect(() => {
         setExerciseResults(new Array(totalExercises).fill(null));
     }, [totalExercises]);

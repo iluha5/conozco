@@ -1,6 +1,6 @@
 import { filterTranslations } from './translation-api';
 
-// Типы для MyMemory Translation API
+// Types for MyMemory Translation API
 interface MyMemoryResponse {
     responseData: {
         translatedText: string;
@@ -26,11 +26,11 @@ interface MyMemoryResponse {
     }>;
 }
 
-// Конфигурация API
+// API configuration
 const MYMEMORY_API_URL = 'https://api.mymemory.translated.net';
-const TRANSLATION_TIMEOUT = 10000; // 10 секунд
+const TRANSLATION_TIMEOUT = 10000; // 10 seconds
 
-// Утилита для получения ID источника по коду
+// Utility to get source ID by code
 async function getSourceId(sourceCode: string): Promise<number | null> {
     try {
         const { prisma } = await import('./prisma');
@@ -55,7 +55,7 @@ async function getSourceId(sourceCode: string): Promise<number | null> {
     }
 }
 
-// Утилита для получения ID языка по коду
+// Utility to get language ID by code
 async function getLanguageId(languageCode: string): Promise<number | null> {
     try {
         const { prisma } = await import('./prisma');
@@ -80,7 +80,7 @@ async function getLanguageId(languageCode: string): Promise<number | null> {
     }
 }
 
-// Утилита для логирования запросов к API
+// Utility for logging API requests
 async function logApiRequest(
     userId: number | null,
     sourceCode: string, // 'DEEPL', 'MYMEMORY', 'TATOEBA'
@@ -90,15 +90,15 @@ async function logApiRequest(
     statusCode: number | null,
     errorMessage: string | null | undefined,
     duration: number,
-    sourceLanguageCode?: string, // Код исходного языка (например: 'es', 'en')
-    targetLanguageCode?: string, // Код целевого языка (например: 'ru')
+    sourceLanguageCode?: string, // Source language code (e.g.: 'es', 'en')
+    targetLanguageCode?: string, // Target language code (e.g.: 'ru')
 ) {
     try {
         console.log(
             `[LOG] Attempting to log API request: ${sourceCode}/${requestType}`,
         );
 
-        // Получаем sourceId
+        // Get sourceId
         const sourceId = await getSourceId(sourceCode);
 
         if (!sourceId) {
@@ -106,7 +106,7 @@ async function logApiRequest(
             return;
         }
 
-        // Получаем language IDs если они указаны
+        // Get language IDs if specified
         let sourceLanguageId: number | null | undefined = undefined;
         let targetLanguageId: number | null | undefined = undefined;
 
@@ -118,7 +118,7 @@ async function logApiRequest(
             targetLanguageId = await getLanguageId(targetLanguageCode);
         }
 
-        // Импортируем prisma внутри функции для гарантии серверного контекста
+        // Import prisma inside function to guarantee server context
         const { prisma } = await import('./prisma');
 
         if (!prisma) {
@@ -126,7 +126,7 @@ async function logApiRequest(
             return;
         }
 
-        // Безопасная сериализация данных
+        // Safe data serialization
         let requestDataStr: string;
         let responseDataStr: string | null = null;
 
@@ -246,8 +246,8 @@ export async function translateWithMyMemory(
             );
         }
 
-        // Собираем все переводы (главный + альтернативные из matches)
-        // Убираем trailing знаки препинания из переводов
+        // Collect all translations (main + alternatives from matches)
+        // Remove trailing punctuation from translations
         const cleanMainTranslation = data.responseData.translatedText
             .trim()
             .replace(/[,.;:!?]+$/, '');
@@ -258,7 +258,7 @@ export async function translateWithMyMemory(
                 if (
                     match.translation &&
                     match.translation !== data.responseData.translatedText &&
-                    allTranslations.length < 3 // Ограничиваем до 3 переводов
+                    allTranslations.length < 3 // Limit to 3 translations
                 ) {
                     const cleanTranslation = match.translation
                         .trim()
@@ -268,10 +268,10 @@ export async function translateWithMyMemory(
             }
         }
 
-        // Применяем фильтрацию
+        // Apply filtering
         const filteredTranslations = filterTranslations(allTranslations);
 
-        // Разделяем на главный и альтернативные
+        // Split into main and alternative
         const mainTranslation = filteredTranslations[0];
         const alternatives = filteredTranslations.slice(1);
 

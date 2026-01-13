@@ -44,12 +44,12 @@ export function useFadeAnimation(
     const [fadeIn, setFadeIn] = useState(false);
     const [animationKey, setAnimationKey] = useState(0);
 
-    // Запускаем fade-in анимацию при изменении animationKey
+    // Start fade-in animation when animationKey changes
     useEffect(() => {
-        // Сначала делаем невидимым
+        // First make invisible
         setFadeIn(false);
 
-        // Затем с небольшой задержкой делаем видимым для плавного появления
+        // Then with small delay make visible for smooth appearance
         const timer = setTimeout(() => {
             setFadeIn(true);
         }, delay);

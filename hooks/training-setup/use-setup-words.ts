@@ -29,26 +29,26 @@ export const useSetupWords = (
         gcTime: QUERY_GC_TIME,
     });
 
-    // Используем стабильную ссылку на пустой массив
+    // Use stable reference to empty array
     const words = data ?? EMPTY_WORDS;
 
-    // Логируем ошибку если есть
+    // Log error if exists
     if (error) {
         console.error('Error fetching words:', error);
     }
 
-    // Мемоизация фильтрованных слов
+    // Memoization of filtered words
     const filteredWords = useMemo(() => {
         let filtered = words;
 
-        // Фильтр по языку
+        // Language filter
         if (selectedLanguage !== 'ALL') {
             filtered = filtered.filter(
                 word => word.language.code === selectedLanguage,
             );
         }
 
-        // Фильтр по группам
+        // Group filter
         if (selectedGroupIds.length > 0) {
             filtered = filtered.filter(word => {
                 if (!word.baseWord?.wordGroups) return false;
