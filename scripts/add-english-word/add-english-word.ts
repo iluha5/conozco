@@ -410,23 +410,92 @@ async function main() {
             console.log(`📖 Read ${words.length} words from ${args.filePath}`);
         }
 
+        // Progress tracking
+        let processedCount = 0;
+        let successCount = 0;
+        let failedCount = 0;
+        const successfulWords: string[] = [];
+        const failedWords: string[] = [];
+        const startTime = Date.now();
+
+        // Create progress log file
+        const timestamp = new Date()
+            .toISOString()
+            .replace(/[:.]/g, '-')
+            .slice(0, -5);
+        const progressLogPath = path.join(__dirname, 'temp', `progress-${timestamp}.txt`);
+        await fs.mkdir(path.dirname(progressLogPath), { recursive: true });
+
+        console.log(`📊 Starting batch processing of ${words.length} words...`);
+        console.log(`📝 Progress will be saved to: ${progressLogPath}`);
+
         // Process each word
         for (const { word, languageCode } of words) {
+            processedCount++;
+            const progress = Math.round((processedCount / words.length) * 100);
+            const elapsed = Math.round((Date.now() - startTime) / 1000);
+            const eta = processedCount > 0 ? Math.round((elapsed / processedCount) * (words.length - processedCount)) : 0;
+
             try {
-                console.log(`\n🚀 Processing word: ${word} (${languageCode})`);
+                console.log(`\n🚀 [${processedCount}/${words.length}] Processing: "${word}" (${progress}%, ETA: ${eta}s)`);
                 const wordData = await generateWordData(word, languageCode);
                 await importWordToDatabase(wordData);
-                console.log(`🎉 Successfully processed word: ${word}`);
+                successCount++;
+                successfulWords.push(word);
+                console.log(`✅ Successfully processed: "${word}" (${successCount}/${processedCount})`);
             } catch (error) {
-                console.error(
-                    `❌ Failed to process word "${word}":`,
-                    error instanceof Error ? error.message : error,
-                );
+                failedCount++;
+                failedWords.push(word);
+                const errorMessage = error instanceof Error ? error.message : String(error);
+                console.error(`❌ Failed to process "${word}": ${errorMessage} (${failedCount} failed)`);
                 // Continue with next word
+            }
+
+            // Save progress to file every 10 words
+            if (processedCount % 10 === 0 || processedCount === words.length) {
+                const progressContent = `
+=== ENGLISH WORDS PROCESSING PROGRESS ===
+Started: ${new Date(startTime).toISOString()}
+Current: ${new Date().toISOString()}
+Elapsed: ${elapsed}s
+Progress: ${processedCount}/${words.length} (${progress}%)
+
+SUCCESSFUL (${successCount}):
+${successfulWords.map(w => `✅ ${w}`).join('\n')}
+
+FAILED (${failedCount}):
+${failedWords.map(w => `❌ ${w}`).join('\n')}
+
+SUMMARY:
+- Total: ${words.length}
+- Processed: ${processedCount}
+- Successful: ${successCount}
+- Failed: ${failedCount}
+- Success Rate: ${processedCount > 0 ? Math.round((successCount / processedCount) * 100) : 0}%
+
+${processedCount < words.length ? `Next: Processing continues...` : `FINISHED: All words processed!`}
+`;
+                await fs.writeFile(progressLogPath, progressContent.trim());
             }
         }
 
-        console.log('\n✅ All words processed!');
+        const totalTime = Math.round((Date.now() - startTime) / 1000);
+        const successRate = words.length > 0 ? Math.round((successCount / words.length) * 100) : 0;
+
+        console.log(`\n🎉 Batch processing completed!`);
+        console.log(`📊 Final Results:`);
+        console.log(`   - Total words: ${words.length}`);
+        console.log(`   - Successful: ${successCount}`);
+        console.log(`   - Failed: ${failedCount}`);
+        console.log(`   - Success rate: ${successRate}%`);
+        console.log(`   - Total time: ${totalTime}s`);
+        console.log(`📝 Progress log saved to: ${progressLogPath}`);
+
+        if (failedWords.length > 0) {
+            console.log(`\n⚠️ Failed words (${failedWords.length}):`);
+            failedWords.forEach(word => console.log(`   - ${word}`));
+        }
+
     } catch (error) {
         console.error(
             '❌ Script failed:',
