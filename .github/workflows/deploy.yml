@@ -68,7 +68,7 @@ jobs:
             if ! docker image inspect "$REGISTRY/$IMAGE_NAME:${IMAGE_TAG}" >/dev/null 2>&1; then
               echo "ERROR: Image not found: $REGISTRY/$IMAGE_NAME:${IMAGE_TAG}"; exit 1; fi
             # Run DB migrations before starting app
-            docker compose -f docker-compose.prod.yml run --rm --no-deps app npx prisma migrate deploy
+            docker compose -f docker-compose.prod.yml run --rm --no-deps app npx prisma@5.22.0 migrate deploy
             docker compose -f docker-compose.prod.yml up -d --remove-orphans
             docker image prune -f
             echo "Deployment completed at $(date)"
