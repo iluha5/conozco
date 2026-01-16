@@ -1,0 +1,31 @@
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+
+export async function GET() {
+    try {
+        // Проверка подключения к базе данных
+        await prisma.$queryRaw`SELECT 1`;
+
+        return NextResponse.json(
+            {
+                status: 'ok',
+                timestamp: new Date().toISOString(),
+                database: 'connected',
+            },
+            { status: 200 },
+        );
+    } catch (error) {
+        return NextResponse.json(
+            {
+                status: 'error',
+                timestamp: new Date().toISOString(),
+                database: 'disconnected',
+                error:
+                    process.env.NODE_ENV === 'production'
+                        ? undefined
+                        : (error as Error).message,
+            },
+            { status: 503 },
+        );
+    }
+}

@@ -1,0 +1,74 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20'
+  REGISTRY: registry.digitalocean.com/conozco-registry
+  IMAGE_NAME: flashcards-app
+  IMAGE_TAG: sha-${{ github.sha }}
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  build_and_push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Login to DigitalOcean Container Registry
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DO_TOKEN }}
+      - name: DOCR login
+        run: doctl registry login --expiry-seconds 600
+      - name: Build and push image
+        run: |
+          docker buildx build \
+            -f Dockerfile.prod \
+            -t $REGISTRY/$IMAGE_NAME:${IMAGE_TAG} \
+            --push .
+
+  deploy:
+    needs: build_and_push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to server via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          envs: REGISTRY,IMAGE_NAME,IMAGE_TAG
+          script: |
+            set -euo pipefail
+            cd /opt/flashcards
+
+            # Login to DOCR (requires doctl or docker login on server)
+            if command -v doctl >/dev/null 2>&1; then
+              echo "Logging to DOCR via doctl..."
+              doctl registry login || true
+            else
+              echo "Logging to DOCR via docker login..."
+              echo "${{ secrets.DOCR_READ_TOKEN }}" | docker login registry.digitalocean.com -u doctl-token --password-stdin
+            fi
+
+            if [ -z "${IMAGE_TAG:-}" ]; then
+              echo "ERROR: IMAGE_TAG is not set"; exit 1; fi
+            echo "Deploying image tag: ${IMAGE_TAG}"
+
+            export IMAGE_TAG="${IMAGE_TAG}"
+            docker compose -f docker-compose.prod.yml pull
+            if ! docker image inspect "$REGISTRY/$IMAGE_NAME:${IMAGE_TAG}" >/dev/null 2>&1; then
+              echo "ERROR: Image not found: $REGISTRY/$IMAGE_NAME:${IMAGE_TAG}"; exit 1; fi
+            # Run DB migrations before starting app
+            docker compose -f docker-compose.prod.yml run --rm --no-deps app npx prisma migrate deploy
+            docker compose -f docker-compose.prod.yml up -d --remove-orphans
+            docker image prune -f
+            echo "Deployment completed at $(date)"
