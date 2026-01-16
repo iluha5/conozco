@@ -9,6 +9,8 @@ services:
       POSTGRES_DB: flashcards
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    ports:
+      - '127.0.0.1:5433:5432' # Temporary: для подключения через SSH туннель
     networks:
       - flashcards-network
     healthcheck:

@@ -9,6 +9,8 @@ RUN npm ci --only=production
 FROM node:20-alpine AS builder
 WORKDIR /app
 RUN apk add --no-cache libc6-compat openssl
+ARG NODE_OPTIONS=--max-old-space-size=4096
+ENV NODE_OPTIONS=$NODE_OPTIONS
 COPY package*.json ./
 RUN npm ci
 COPY . .
@@ -27,11 +29,12 @@ RUN apk add --no-cache libc6-compat openssl wget
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+# Create public directory (Next.js may not have it)
+RUN mkdir -p ./public
 
 USER nextjs
 
