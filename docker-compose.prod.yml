@@ -10,7 +10,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - '127.0.0.1:5433:5432' # Temporary: для подключения через SSH туннель
+      - '127.0.0.1:5433:5432' # Temporary: for SSH tunnel connection
     networks:
       - flashcards-network
     healthcheck:
@@ -29,6 +29,7 @@ services:
       NEXTAUTH_URL: https://conozco.net
       NODE_ENV: production
       DEEPL_API_KEY: ${DEEPL_API_KEY}
+      ADMIN_REGISTRATION_PASSWORD: ${ADMIN_REGISTRATION_PASSWORD}
     depends_on:
       postgres:
         condition: service_healthy

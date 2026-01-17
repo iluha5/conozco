@@ -1,80 +1,80 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * Конфигурация Playwright для E2E тестов Flash Cards приложения
- * Используется только Chromium браузер для ускорения тестов
+ * Playwright configuration for Flash Cards application E2E tests
+ * Uses only Chromium browser for faster test execution
  */
 export default defineConfig({
-    // Тестируемое приложение
+    // Application under test
     testDir: './e2e/tests',
 
-    // Global setup и teardown для запуска/остановки тестовой БД
+    // Global setup and teardown for starting/stopping test database
     globalSetup: './e2e/global-setup.ts',
     globalTeardown: './e2e/global-teardown.ts',
 
-    // Максимальное время выполнения одного теста
+    // Maximum timeout for a single test
     timeout: 30 * 1000,
 
-    // Таймаут для expect assertions
+    // Timeout for expect assertions
     expect: {
         timeout: 5000,
     },
 
-    // Параллельный запуск тестов
+    // Run tests in parallel
     fullyParallel: true,
 
-    // Запретить запуск тестов, если есть ошибки компиляции
+    // Prevent test execution if there are compilation errors
     forbidOnly: !!process.env.CI,
 
-    // Retry только в CI
+    // Retry only in CI
     retries: process.env.CI ? 2 : 0,
 
-    // Количество параллельных воркеров
+    // Number of parallel workers
     workers: process.env.CI ? 4 : 4,
 
-    // Репортер для CI и локальной разработки
+    // Reporter for CI and local development
     reporter: [
         ['html'],
         ['list'],
         ...(process.env.CI ? [['github'] as const] : []),
     ],
 
-    // Общие настройки для всех проектов
+    // Shared settings for all projects
     use: {
-        // Базовый URL приложения
-        // Используется порт 8001 для тестового приложения, чтобы не конфликтовать с основным (8000)
+        // Base URL for the application
+        // Uses port 8001 for test application to avoid conflicts with main app (8000)
         baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:8001',
 
-        // Трассировка для отладки
+        // Tracing for debugging
         trace: 'on-first-retry',
 
-        // Скриншоты только при падении
+        // Screenshots only on failure
         screenshot: 'only-on-failure',
 
-        // Видео только при падении
+        // Video only on failure
         video: 'retain-on-failure',
     },
 
-    // Проекты - только Chromium
+    // Projects - Chromium only
     projects: [
         {
             name: 'chromium',
             use: {
                 ...devices['Desktop Chrome'],
-                // Можно настроить viewport если нужно
+                // Can configure viewport if needed
                 // viewport: { width: 1280, height: 720 },
             },
         },
     ],
 
-    // Настройки веб-сервера для запуска приложения перед тестами
-    // Используется порт 8001 и тестовая БД для изоляции от основного приложения
+    // Web server settings for starting application before tests
+    // Uses port 8001 and test database for isolation from main application
     webServer: {
         command:
             'DATABASE_URL="postgresql://flashcards_test:flashcards_test_password@localhost:5434/flashcards_test" npm run dev:test',
         url: 'http://localhost:8001',
-        reuseExistingServer: !process.env.CI, // Переиспользовать существующий сервер локально
-        timeout: 120 * 1000, // 2 минуты на запуск
+        reuseExistingServer: !process.env.CI, // Reuse existing server locally
+        timeout: 120 * 1000, // 2 minutes to start
         stdout: 'pipe',
         stderr: 'pipe',
     },
