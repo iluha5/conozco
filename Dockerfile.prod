@@ -17,6 +17,8 @@ COPY . .
 COPY prisma ./prisma
 RUN npx prisma generate
 RUN npm run build
+# Compile TypeScript scripts to JavaScript
+RUN npx tsc -p tsconfig.scripts.json
 
 # Stage 3: Runner
 FROM node:20-alpine AS runner
@@ -32,9 +34,16 @@ RUN adduser --system --uid 1001 nextjs
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/prisma ./prisma
+# Copy only @prisma/client (needed for scripts, not full node_modules)
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+# Copy generated Prisma client
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+# Copy compiled JavaScript scripts (compiled from TypeScript during build)
+COPY --from=builder /app/scripts ./scripts
 # Create public directory (Next.js may not have it)
 RUN mkdir -p ./public
+# Ensure script has execute permissions
+RUN chmod +x ./scripts/apply-data-migrations.sh
 
 USER nextjs
 
