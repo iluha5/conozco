@@ -435,6 +435,20 @@ model UserCookieConsent {
   @@index([given])
 }
 
+model DataMigration {
+  id         Int       @id @default(autoincrement())
+  name       String    @unique
+  appliedAt  DateTime  @default(now())
+  appliedBy  String?
+  gitSha     String?
+  checksum   String
+  durationMs Int?
+  status     String    @default("SUCCESS")
+
+  @@index([name])
+  @@index([appliedAt])
+}
+
 enum WordGroupVisibility {
   PUBLIC
   PRIVATE

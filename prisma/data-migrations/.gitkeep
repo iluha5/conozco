@@ -1,0 +1,2 @@
+# Data migrations directory
+# This directory contains data migration SQL files that are applied separately from schema migrations
