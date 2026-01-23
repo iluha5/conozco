@@ -1,33 +1,37 @@
 ---
 name: Генерация миграций данных для обновления продакшн БД
-overview: Пайплайн для генерации новых слов и переводов через миграции данных. Вход: файл {name}.{lang}.txt, выход: обратимая миграция данных в prisma/data-migrations/
+overview: |
+  Пайплайн для генерации новых слов и переводов через миграции данных.
+  Вход: файл {name}.{lang}.txt, выход: миграция данных в prisma/data-migrations/ с транзакционным применением,
+  advisory lock, метаданными и ограниченным rollback (для новых вставок). В v1 допускаются апдейты существующих
+  переводов/примеров без snapshot (принимается риск отсутствия полного отката апдейтов).
 todos:
   - id: create-data-migrations-structure
     content: Создать структуру prisma/data-migrations/ для хранения миграций данных отдельно от схемных миграций
     status: pending
   - id: create-data-migration-table
-    content: Создать миграцию схемы для таблицы DataMigration для отслеживания примененных миграций
+    content: Создать миграцию схемы для таблицы DataMigration для отслеживания примененных миграций (добавить поля checksum, status, durationMs, gitSha)
     status: pending
   - id: create-migration-generator
-    content: Создать скрипт scripts/generate-word-migration.ts для генерации SQL миграций из WordData с UPSERT логикой
+    content: Создать скрипт scripts/generate-word-migration.ts для генерации SQL миграций из WordData с UPSERT логикой, транзакционной шапкой (BEGIN/COMMIT, advisory lock, SET LOCAL timeouts) и батчами
     status: pending
   - id: create-migration-pipeline
     content: Создать главный пайплайн scripts/generate-word-migration-pipeline.ts который принимает {name}.{lang}.txt и генерирует миграцию
     status: pending
   - id: create-rollback-generator
-    content: Реализовать генерацию rollback.sql для каждой миграции данных
+    content: Реализовать генерацию rollback.sql для каждой миграции данных (в v1 — только удаление новых вставок; апдейты без отката)
     status: pending
   - id: create-migration-applier
-    content: Создать скрипт scripts/apply-data-migrations.ts для применения всех непримененных миграций данных
+    content: Создать скрипт scripts/apply-data-migrations.ts для применения всех непримененных миграций данных (проверка бэкапа, верификация checksum, логирование duration, запись gitSha/appliedBy)
     status: pending
   - id: create-github-actions-wrapper
-    content: Создать скрипт scripts/apply-data-migrations.sh обертку для GitHub Actions
+    content: Создать скрипт scripts/apply-data-migrations.sh обертку для GitHub Actions (бэкап обязателен; при неудаче — прерывание)
     status: pending
   - id: update-deploy-workflow
-    content: Обновить .github/workflows/deploy.yml для применения миграций данных после схемных миграций
+    content: Обновить .github/workflows/deploy.yml для применения миграций данных после схемных миграций (concurrency group, SSH на сервер, таймауты)
     status: pending
   - id: test-pipeline
-    content: Протестировать пайплайн на небольшой выборке (5-10 слов) локально и через GitHub Actions
+    content: Протестировать пайплайн на небольшой выборке (5-10 слов) локально и через GitHub Actions (apply → re-apply → partial rollback)
     status: pending
 ---
 
@@ -35,14 +39,15 @@ todos:
 
 ## Обзор
 
-Создание пайплайна для генерации новых слов и переводов через **миграции данных** вместо прямого обновления БД. Миграции данных хранятся отдельно от схемных миграций и являются обратимыми.
+Создание пайплайна для генерации новых слов и переводов через **миграции данных** вместо прямого обновления БД. Миграции данных хранятся отдельно от схемных миграций и применяются транзакционно.
+В v1 допускаются апдейты существующих переводов и примеров без хранения snapshot предыдущего состояния — принимается риск невозможности полного отката таких изменений.
 
 ## Архитектура пайплайна
 
 ```mermaid
 flowchart LR
     InputFile["{name}.{lang}.txt<br/>список слов"] --> GenerateData["Генерация WordData<br/>add-english-word.ts<br/>или add-word.ts"]
-    GenerateData --> GenerateSQL["Генерация SQL<br/>migration.sql + rollback.sql<br/>UPSERT логика"]
+    GenerateData --> GenerateSQL["Генерация SQL<br/>migration.sql + rollback.sql<br/>UPSERT логика, транзакция, advisory lock"]
     GenerateSQL --> Commit["Коммит в Git<br/>prisma/data-migrations/"]
     Commit --> Push["Push в main"]
     Push --> GitHubActions["GitHub Actions<br/>автоматическое применение"]
@@ -62,7 +67,7 @@ prisma/
         └── rollback.sql     # SQL для отката
 ```
 
-**Отслеживание примененных миграций:**
+**Отслеживание примененных миграций и метаданных:**
 
 Для отслеживания примененных миграций данных создается таблица `DataMigration`:
 
@@ -72,7 +77,10 @@ CREATE TABLE IF NOT EXISTS "DataMigration" (
   "name" TEXT NOT NULL UNIQUE,
   "appliedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "appliedBy" TEXT,
-  "commitSha" TEXT
+  "gitSha" TEXT,
+  "checksum" TEXT NOT NULL,
+  "durationMs" INT,
+  "status" TEXT NOT NULL DEFAULT 'SUCCESS'
 );
 ```
 
@@ -137,7 +145,7 @@ tsx scripts/generate-word-migration-pipeline.ts spanish_verbs.es.txt --check-onl
 - `migration.sql` - SQL для вставки/обновления данных (UPSERT)
 - `rollback.sql` - SQL для отката (удаление/восстановление данных)
 
-**Важно:** Миграция должна обновлять существующие записи, а не только вставлять новые.
+**Важно:** Миграция может обновлять существующие записи (UPSERT), а не только вставлять новые. Откат апдейтов в v1 не поддерживается (см. раздел Rollback).
 
 **Структура SQL миграции (с UPSERT и сохранением существующих ID):**
 
@@ -147,6 +155,12 @@ tsx scripts/generate-word-migration-pipeline.ts spanish_verbs.es.txt --check-onl
 -- Words count: 10
 -- Language: en
 -- Strategy: UPSERT (insert or update existing, preserve existing IDs)
+
+BEGIN;
+SELECT pg_advisory_lock(hashtext('data_migrations_global_lock'));
+SET LOCAL statement_timeout = '10min';
+SET LOCAL lock_timeout = '60s';
+SET LOCAL client_min_messages = warning;
 
 -- Ensure languages exist (idempotent)
 INSERT INTO "Language" ("code", "name") 
@@ -158,34 +172,32 @@ INSERT INTO "PartOfSpeech" ("name")
 VALUES ('NOUN'), ('VERB')
 ON CONFLICT ("name") DO NOTHING;
 
--- Ensure word source exists
-INSERT INTO "WordSource" ("code", "displayName") 
-VALUES ('native', 'Native')
+-- Ensure word sources exist (including migration label)
+INSERT INTO "WordSource" ("code", "displayName") VALUES
+  ('native', 'Native'),
+  ('dm_20260118120000_add_words_batch_1', 'Data Migration add_words_batch_1')
 ON CONFLICT ("code") DO NOTHING;
 
--- UPSERT BaseWord records (update sourceId if exists, preserve existing ID)
--- Важно: После этого запроса подзапрос (SELECT "id" FROM "BaseWord" WHERE ...) 
--- вернет существующий ID если слово уже было в БД, или новый ID если было создано
+-- UPSERT BaseWord records
+-- Новые слова получают sourceId = dm_...; существующие слова не меняют sourceId (чтобы rollback не удалил их)
 INSERT INTO "BaseWord" ("word", "languageId", "sourceId") VALUES
-  ('hello', (SELECT "id" FROM "Language" WHERE "code" = 'en'), (SELECT "id" FROM "WordSource" WHERE "code" = 'native')),
-  ('world', (SELECT "id" FROM "Language" WHERE "code" = 'en'), (SELECT "id" FROM "WordSource" WHERE "code" = 'native'))
+  ('hello', (SELECT "id" FROM "Language" WHERE "code" = 'en'), (SELECT "id" FROM "WordSource" WHERE "code" = 'dm_20260118120000_add_words_batch_1')),
+  ('world', (SELECT "id" FROM "Language" WHERE "code" = 'en'), (SELECT "id" FROM "WordSource" WHERE "code" = 'dm_20260118120000_add_words_batch_1'))
 ON CONFLICT ("word", "languageId") 
-DO UPDATE SET "sourceId" = EXCLUDED."sourceId";
+DO NOTHING;
 
 -- UPSERT WordTranslation records (используем подзапрос для получения baseWordId)
--- Подзапрос автоматически вернет существующий ID если слово уже было в БД
 INSERT INTO "WordTranslation" ("baseWordId", "languageId", "translation", "priority", "partOfSpeechId") VALUES
-  -- Для слова 'hello': подзапрос вернет существующий ID если слово уже есть
-  ((SELECT "id" FROM "BaseWord" WHERE "word" = 'hello' AND "languageId" = (SELECT "id" FROM "Language" WHERE "code" = 'en')), 
-   (SELECT "id" FROM "Language" WHERE "code" = 'ru'), 'привет', 1, 
-   (SELECT "id" FROM "PartOfSpeech" WHERE "name" = 'NOUN')),
-  -- ... остальные переводы
+  ((SELECT "id" FROM "BaseWord" WHERE "word" = 'hello' AND "languageId" = (SELECT "id" FROM "Language" WHERE "code" = 'en')),
+   (SELECT "id" FROM "Language" WHERE "code" = 'ru'), 'привет', 1,
+   (SELECT "id" FROM "PartOfSpeech" WHERE "name" = 'NOUN'))
 ON CONFLICT ("baseWordId", "languageId", "priority") 
 DO UPDATE SET 
   "translation" = EXCLUDED."translation",
   "partOfSpeechId" = EXCLUDED."partOfSpeechId";
 
--- Delete existing WordExample records for these words (to replace with new ones)
+-- Заменяем примеры: удаляем старые и вставляем новые.
+-- Новые примеры помечаем sourceId = dm_... (для выборочного удаления при rollback)
 DELETE FROM "WordExample" 
 WHERE "baseWordId" IN (
   SELECT "id" FROM "BaseWord" 
@@ -193,12 +205,10 @@ WHERE "baseWordId" IN (
   AND "languageId" = (SELECT "id" FROM "Language" WHERE "code" = 'en')
 );
 
--- Insert WordExample records (always fresh)
 INSERT INTO "WordExample" ("baseWordId", "pronounId", "example", "translation", "translationLanguageId", "sentenceTypeId", "sourceId") VALUES
-  -- ... примеры
+  -- ... примеры, указываем sourceId = (SELECT id FROM WordSource WHERE code = 'dm_20260118120000_add_words_batch_1')
 ON CONFLICT DO NOTHING;
 
--- Delete existing GrammaticalExample records for these words
 DELETE FROM "GrammaticalExample" 
 WHERE "baseWordId" IN (
   SELECT "id" FROM "BaseWord" 
@@ -206,22 +216,21 @@ WHERE "baseWordId" IN (
   AND "languageId" = (SELECT "id" FROM "Language" WHERE "code" = 'en')
 );
 
--- Insert GrammaticalExample records (если есть)
 INSERT INTO "GrammaticalExample" ("baseWordId", "tenseId", "pronounId", "example", "translation", "translationLanguageId", "sentenceTypeId", "sourceId") VALUES
-  -- ... грамматические примеры
+  -- ... грамматические примеры, sourceId = (SELECT id FROM WordSource WHERE code = 'dm_20260118120000_add_words_batch_1')
 ON CONFLICT DO NOTHING;
 
--- Record migration as applied
-INSERT INTO "DataMigration" ("name", "appliedAt", "appliedBy", "commitSha") 
-VALUES ('20260118120000_add_words_batch_1', CURRENT_TIMESTAMP, 'github-actions', '${GITHUB_SHA}')
-ON CONFLICT ("name") DO NOTHING;
+-- Запись о применении, времени, checksum и gitSha выполняется apply-скриптом параметрами после успешного выполнения
+
+SELECT pg_advisory_unlock(hashtext('data_migrations_global_lock'));
+COMMIT;
 ```
 
-**Стратегия UPSERT с сохранением существующих ID:**
+**Стратегия UPSERT с сохранением существующих ID и маркировкой вставок:**
 
 - **BaseWord**: 
-  - Если слово существует → обновляет `sourceId`, **сохраняет существующий ID**
-  - Если слова нет → создает новую запись с новым ID
+  - Если слово существует → запись не меняет `sourceId` (чтобы rollback не тронул существующую запись), **ID сохраняется**
+  - Если слова нет → создается новая запись с `sourceId` = `dm_<timestamp>_<name>`
   - Подзапрос `(SELECT "id" FROM "BaseWord" WHERE "word" = '...' AND "languageId" = ...)` всегда возвращает правильный ID (существующий или новый)
 
 - **WordTranslation**: 
@@ -230,55 +239,46 @@ ON CONFLICT ("name") DO NOTHING;
   - Создает новую запись если перевода еще нет
 
 - **WordExample**: 
-  - Использует подзапрос для получения `baseWordId` (сохраняет существующий ID слова)
-  - Удаляет старые примеры для этих слов
-  - Вставляет новые примеры с правильным `baseWordId`
+  - Использует подзапрос для получения `baseWordId`
+  - Старые примеры удаляются, новые вставляются с `sourceId` = `dm_<timestamp>_<name>` (чтобы их можно было безопасно удалить при rollback)
 
 - **GrammaticalExample**: 
-  - Использует подзапрос для получения `baseWordId` (сохраняет существующий ID слова)
-  - Удаляет старые примеры для этих слов
-  - Вставляет новые примеры с правильным `baseWordId`
+  - Аналогично `WordExample`: удаляем старые, вставляем новые с маркировкой `sourceId` = `dm_<timestamp>_<name>`
 
 **Важно:** Подзапросы `(SELECT "id" FROM "BaseWord" WHERE ...)` работают корректно как для существующих, так и для новых записей, так как они выполняются после UPSERT операции.
 
-**Структура rollback.sql:**
+**Структура rollback.sql (v1):**
 
 ```sql
--- Rollback: add_words_batch_1
+-- Rollback: add_words_batch_1 (v1)
 -- Generated: 2026-01-18 12:00:00
 
--- Delete in reverse order (children first)
-DELETE FROM "GrammaticalExample" 
-WHERE "baseWordId" IN (
-  SELECT "id" FROM "BaseWord" 
-  WHERE "word" IN ('hello', 'world', ...) 
-  AND "languageId" = (SELECT "id" FROM "Language" WHERE "code" = 'en')
-);
+BEGIN;
+SET LOCAL statement_timeout = '10min';
+SET LOCAL lock_timeout = '60s';
 
-DELETE FROM "WordExample" 
-WHERE "baseWordId" IN (
-  SELECT "id" FROM "BaseWord" 
-  WHERE "word" IN ('hello', 'world', ...) 
-  AND "languageId" = (SELECT "id" FROM "Language" WHERE "code" = 'en')
-);
+-- Удаляем только записи, созданные этой миграцией (помечены source = dm_...)
+-- Примеры
+DELETE FROM "GrammaticalExample"
+WHERE "sourceId" = (SELECT "id" FROM "WordSource" WHERE "code" = 'dm_20260118120000_add_words_batch_1');
 
-DELETE FROM "WordTranslation" 
-WHERE "baseWordId" IN (
-  SELECT "id" FROM "BaseWord" 
-  WHERE "word" IN ('hello', 'world', ...) 
-  AND "languageId" = (SELECT "id" FROM "Language" WHERE "code" = 'en')
-);
+DELETE FROM "WordExample"
+WHERE "sourceId" = (SELECT "id" FROM "WordSource" WHERE "code" = 'dm_20260118120000_add_words_batch_1');
 
-DELETE FROM "BaseWord" 
-WHERE "word" IN ('hello', 'world', ...) 
-AND "languageId" = (SELECT "id" FROM "Language" WHERE "code" = 'en');
+-- Переводы: явной маркировки нет в схеме, откат переводов не выполняется в v1
+
+-- Новые BaseWord, созданные этой миграцией
+DELETE FROM "BaseWord"
+WHERE "sourceId" = (SELECT "id" FROM "WordSource" WHERE "code" = 'dm_20260118120000_add_words_batch_1');
+
+COMMIT;
 ```
 
 **Важные моменты:**
-- Использовать `ON CONFLICT DO NOTHING` для идемпотентности
-- Использовать подзапросы для получения ID (не хардкодить)
-- Rollback должен удалять в правильном порядке (сначала дочерние записи)
-- Сохранять список слов для rollback
+- Все операции выполняются в одной транзакции с advisory lock.
+- Использовать `ON CONFLICT` для идемпотентности.
+- Для новых записей проставлять `sourceId` = `dm_<timestamp>_<name>` (BaseWord, WordExample, GrammaticalExample). В апдейтах `sourceId` не менять.
+- Rollback v1 удаляет только новые записи, помеченные `dm_<...>`. Апдейты существующих переводов/примеров не откатываются.
 
 ### 3. Применение миграций данных: `scripts/apply-data-migrations.ts`
 
@@ -299,9 +299,9 @@ tsx scripts/apply-data-migrations.ts
 ```
 
 **Обработка ошибок:**
-- Если миграция не может быть применена - остановка процесса
-- Логирование ошибки с указанием миграции
-- Возможность ручного отката через rollback.sql
+- Если миграция не может быть применена - остановка процесса, транзакция откатывается автоматически.
+- Логирование ошибки с указанием миграции, времени и чексуммы.
+- Возможность ручного отката через rollback.sql (только новые вставки, см. ограничения v1).
 
 ### 4. Скрипт применения в GitHub Actions: `scripts/apply-data-migrations.sh`
 
@@ -423,11 +423,16 @@ docker exec flashcards-db psql -U flashcards -d flashcards -c "DELETE FROM \"Dat
 
 **Добавление в deploy.yml:**
 
-```yaml
+```yml
+concurrency:
+  group: data-migrations-${{ github.ref }}
+  cancel-in-progress: false
+
 - name: Apply data migrations
   uses: appleboy/ssh-action@v1.0.3
   env:
     DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    GIT_SHA: ${{ github.sha }}
   with:
     host: ${{ secrets.SERVER_HOST }}
     username: ${{ secrets.SERVER_USER }}
@@ -435,23 +440,22 @@ docker exec flashcards-db psql -U flashcards -d flashcards -c "DELETE FROM \"Dat
     script: |
       set -euo pipefail
       cd /opt/flashcards
-      
-      # Create backup before applying data migrations
+
       echo "Creating database backup..."
-      ./scripts/server-setup/backup-db-prod.sh || echo "Warning: Backup failed, continuing..."
-      
-      # Apply data migrations
+      ./scripts/server-setup/backup-db-prod.sh
+
       echo "Applying data migrations..."
       export DATABASE_URL="${DATABASE_URL}"
+      export GIT_SHA="${GIT_SHA}"
       docker compose -f docker-compose.prod.yml run --rm --no-deps app \
         tsx scripts/apply-data-migrations.ts
-      
+
       echo "Data migrations applied successfully"
 ```
 
 **Альтернативный вариант (через скрипт на сервере):**
 
-```yaml
+```yml
 - name: Apply data migrations
   uses: appleboy/ssh-action@v1.0.3
   with:
@@ -496,7 +500,10 @@ CREATE TABLE IF NOT EXISTS "DataMigration" (
   "name" TEXT NOT NULL UNIQUE,
   "appliedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "appliedBy" TEXT,
-  "commitSha" TEXT
+  "gitSha" TEXT,
+  "checksum" TEXT NOT NULL,
+  "durationMs" INT,
+  "status" TEXT NOT NULL DEFAULT 'SUCCESS'
 );
 ```
 
@@ -521,7 +528,7 @@ ORDER BY "appliedAt" DESC;
 5. **Tense** - создается если не существует
 6. **SentenceType** - создается если не существует
 
-### Идемпотентность и UPSERT с сохранением ID
+### Идемпотентность, UPSERT и маркировка вставок
 
 Миграции должны быть идемпотентными и поддерживать обновление существующих записей **с сохранением их ID**:
 
@@ -532,11 +539,11 @@ ORDER BY "appliedAt" DESC;
   - Подзапросы `(SELECT "id" FROM "BaseWord" WHERE ...)` всегда возвращают правильный ID:
     - Если слово существует → возвращает существующий ID
     - Если слова нет → после INSERT возвращает новый ID
-- **BaseWord**: Обновляет `sourceId` если слово уже существует, **ID остается прежним**
+- **BaseWord**: Если слово уже существует, `sourceId` не меняется (чтобы rollback не затронул запись), **ID остается прежним**
 - **WordTranslation**: Использует подзапрос для получения `baseWordId` (который может быть существующим), обновляет `translation` и `partOfSpeechId` если запись существует
-- **WordExample/GrammaticalExample**: Используют подзапросы для получения `baseWordId`, удаляют старые и вставляют новые с правильным ID
+- **WordExample/GrammaticalExample**: Используют подзапросы для получения `baseWordId`, старые записи удаляются, новые вставляются с `sourceId` = `dm_<timestamp>_<name>`
 - Проверка через таблицу `DataMigration` предотвращает повторное применение
-- Rollback должен корректно работать даже если миграция применена частично
+- Rollback v1 удаляет только новые записи по `sourceId`, апдейты не откатываются
 
 **Пример работы с существующим ID:**
 
@@ -571,7 +578,7 @@ INSERT INTO "WordTranslation" ("baseWordId", ...) VALUES
 4. **`scripts/apply-data-migrations.sh`** - обертка для GitHub Actions
 5. **`prisma/data-migrations/.gitkeep`** - создание директории (если нужно)
 6. **`.github/workflows/deploy.yml`** - модификация для применения миграций данных
-7. **`prisma/migrations/YYYYMMDDHHMMSS_create_data_migration_table/migration.sql`** - миграция схемы для таблицы DataMigration
+7. **`prisma/migrations/YYYYMMDDHHMMSS_create_data_migration_table/migration.sql`** - миграция схемы для таблицы DataMigration (c расширенными полями)
 
 ## Модификации существующих файлов
 
@@ -635,19 +642,36 @@ tsx scripts/generate-word-migration-pipeline.ts update_hello.en.txt
 
 # Миграция будет содержать UPSERT логику:
 # - Обновит переводы если они изменились
-# - Заменит примеры на новые
-# - Обновит грамматические примеры
+# - Заменит примеры на новые (старые будут удалены, откат невозможен в v1)
+# - Обновит грамматические примеры (старые будут удалены, откат невозможен в v1)
 ```
 
 ## Безопасность
 
-1. **Всегда создавать бэкап** перед применением миграции (автоматически в GitHub Actions через скрипт на сервере)
+1. **Всегда создавать бэкап** перед применением миграции (обязательно; при неуспехе — прерывать job)
 2. **Ревью миграции** перед коммитом (через Git PR)
 3. **Тестирование на локальной БД** перед продакшн (можно применить миграцию локально для проверки)
 4. **Наличие rollback** для быстрого отката
 5. **Логирование** всех операций в GitHub Actions
 6. **Отслеживание примененных миграций** через таблицу `DataMigration` предотвращает повторное применение
-7. **Идемпотентность** - миграции можно применять несколько раз без побочных эффектов
+7. **Идемпотентность** - миграции можно применять несколько раз без побочных эффектов (за счет `ON CONFLICT`) 
+8. **Ограничения отката v1** - откатываются только новые вставки по `sourceId`; апдейты не откатываются
+9. **Таймауты и батчи** - `statement_timeout=10min`, `lock_timeout=60s`, разбивка вставок на батчи по 200–300 записей
+
+## Почему нужна маркировка вставленных сущностей
+
+Маркировка (через создание `WordSource` вида `dm_<timestamp>_<name>` и присвоение его новым `BaseWord`/`WordExample`/`GrammaticalExample`) позволяет:
+- безопасно удалить ТОЛЬКО вставленные этой миграцией записи при rollback;
+- упростить аудит и диагностику;
+- избежать удаления ранее существовавших данных при откате.
+
+В схеме нет `sourceId` у `WordTranslation`, поэтому новые переводы откатывать точечно невозможно — это ограничение v1.
+
+## Dry‑run на копии продакшн‑данных (опционально)
+
+Dry‑run нужен, чтобы ловить ошибки до продакшна: синтаксис SQL, уникальные/внешние ключи, оценка времени. Если прод‑дамп хранить нельзя:
+- использовать staging‑базу;
+- или синтетический датасет для базовой проверки.
 
 ## Преимущества подхода
 
