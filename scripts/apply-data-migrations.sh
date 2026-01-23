@@ -63,11 +63,11 @@ fi
 # Get applied by user
 export APPLIED_BY="${APPLIED_BY:-${USER:-unknown}}"
 
-# Run the TypeScript migration script
+# Run the compiled JavaScript migration script
 cd "$PROJECT_ROOT"
 echo ""
 echo "📦 Applying data migrations..."
-npx tsx scripts/apply-data-migrations/apply-data-migrations.ts
+node scripts/apply-data-migrations/apply-data-migrations.js
 
 if [ $? -eq 0 ]; then
     echo ""

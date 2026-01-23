@@ -43,6 +43,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# Compiled JavaScript files from TypeScript scripts
+scripts/**/*.js
+!scripts/**/*.mjs
+
 # others
 prepared-words.txt
 temp.ts

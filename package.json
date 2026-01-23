@@ -6,6 +6,7 @@
         "dev": "next dev -H 0.0.0.0 -p 8000",
         "dev:test": "next dev -H 0.0.0.0 -p ${PORT:-8001}",
         "build": "next build",
+        "build:scripts": "tsc -p tsconfig.scripts.json",
         "start": "next start -p 8000",
         "lint": "next lint",
         "type-check": "tsc --noEmit",
