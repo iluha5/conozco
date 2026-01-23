@@ -1,0 +1,9 @@
+{
+    "name": "words_to_fix",
+    "description": "Data migration for 10 words",
+    "timestamp": "20260123205923",
+    "wordsCount": 10,
+    "language": "en",
+    "checksum": "43f0ef32599447e8f35dc816113de93bf407b78583776f4e3717f7ef7bb00960",
+    "generatedAt": "2026-01-23T20:59:23.982Z"
+}

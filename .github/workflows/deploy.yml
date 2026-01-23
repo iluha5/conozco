@@ -48,7 +48,7 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: REGISTRY,IMAGE_NAME,IMAGE_TAG,DOCR_READ_TOKEN,ADMIN_REGISTRATION_PASSWORD
+          envs: REGISTRY,IMAGE_NAME,IMAGE_TAG,DOCR_READ_TOKEN,ADMIN_REGISTRATION_PASSWORD,DATABASE_URL
           script: |
             set -euo pipefail
             cd /opt/flashcards
@@ -73,8 +73,13 @@ jobs:
             docker compose -f docker-compose.prod.yml pull
             if ! docker image inspect "$REGISTRY/$IMAGE_NAME:${IMAGE_TAG}" >/dev/null 2>&1; then
               echo "ERROR: Image not found: $REGISTRY/$IMAGE_NAME:${IMAGE_TAG}"; exit 1; fi
-            # Run DB migrations before starting app
+            # Run schema migrations before starting app
             docker compose -f docker-compose.prod.yml run --rm --no-deps app npx prisma@5.22.0 migrate deploy
+            # Apply data migrations after schema migrations
+            echo "Applying data migrations..."
+            # DATABASE_URL is already set in docker-compose.prod.yml, but we pass it explicitly to ensure it's available
+            export GIT_SHA="${{ github.sha }}"
+            docker compose -f docker-compose.prod.yml run --rm --no-deps -e GIT_SHA="${GIT_SHA}" app ./scripts/apply-data-migrations.sh
             docker compose -f docker-compose.prod.yml up -d --remove-orphans
             docker image prune -f
             echo "Deployment completed at $(date)"
