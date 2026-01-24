@@ -31,7 +31,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=8000
 
-RUN apk add --no-cache libc6-compat openssl wget bash
+RUN apk add --no-cache libc6-compat openssl wget bash postgresql-client git
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 

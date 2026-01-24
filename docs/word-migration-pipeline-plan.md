@@ -22,7 +22,7 @@ todos:
     content: Реализовать генерацию rollback.sql для каждой миграции данных (в v1 — только удаление новых вставок; апдейты без отката)
     status: pending
   - id: create-migration-applier
-    content: Создать скрипт scripts/apply-data-migrations.ts для применения всех непримененных миграций данных (проверка бэкапа, верификация checksum, логирование duration, запись gitSha/appliedBy)
+    content: Создать скрипт scripts/apply-data-migrations.mts для применения всех непримененных миграций данных (проверка бэкапа, верификация checksum, логирование duration, запись gitSha/appliedBy)
     status: pending
   - id: create-github-actions-wrapper
     content: Создать скрипт scripts/apply-data-migrations.sh обертку для GitHub Actions (бэкап обязателен; при неудаче — прерывание)
@@ -280,7 +280,7 @@ COMMIT;
 - Для новых записей проставлять `sourceId` = `dm_<timestamp>_<name>` (BaseWord, WordExample, GrammaticalExample). В апдейтах `sourceId` не менять.
 - Rollback v1 удаляет только новые записи, помеченные `dm_<...>`. Апдейты существующих переводов/примеров не откатываются.
 
-### 3. Применение миграций данных: `scripts/apply-data-migrations.ts`
+### 3. Применение миграций данных: `scripts/apply-data-migrations.mts`
 
 **Назначение:** Применить все непримененные миграции данных на продакшн БД
 
@@ -295,7 +295,7 @@ COMMIT;
 
 **Использование:**
 ```bash
-tsx scripts/apply-data-migrations.ts
+tsx scripts/apply-data-migrations.mts
 ```
 
 **Обработка ошибок:**
@@ -310,7 +310,7 @@ tsx scripts/apply-data-migrations.ts
 **Процесс:**
 1. Проверка наличия `DATABASE_URL`
 2. Создание бэкапа продакшн БД (через скрипт на сервере)
-3. Запуск `scripts/apply-data-migrations.ts`
+3. Запуск `scripts/apply-data-migrations.mts`
 4. Проверка успешности применения
 5. Логирование результатов
 
@@ -448,7 +448,7 @@ concurrency:
       export DATABASE_URL="${DATABASE_URL}"
       export GIT_SHA="${GIT_SHA}"
       docker compose -f docker-compose.prod.yml run --rm --no-deps app \
-        tsx scripts/apply-data-migrations.ts
+        tsx scripts/apply-data-migrations.mts
 
       echo "Data migrations applied successfully"
 ```
@@ -574,7 +574,7 @@ INSERT INTO "WordTranslation" ("baseWordId", ...) VALUES
 
 1. **`scripts/generate-word-migration-pipeline.ts`** - главный пайплайн генерации миграций
 2. **`scripts/generate-word-migration.ts`** - генератор SQL миграций (с UPSERT логикой)
-3. **`scripts/apply-data-migrations.ts`** - применение миграций данных (TypeScript)
+3. **`scripts/apply-data-migrations.mts`** - применение миграций данных (TypeScript ES Module)
 4. **`scripts/apply-data-migrations.sh`** - обертка для GitHub Actions
 5. **`prisma/data-migrations/.gitkeep`** - создание директории (если нужно)
 6. **`.github/workflows/deploy.yml`** - модификация для применения миграций данных

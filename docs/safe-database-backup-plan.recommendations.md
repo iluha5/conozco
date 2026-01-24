@@ -120,11 +120,11 @@ docker compose -f docker-compose.prod.yml run --rm --no-deps app \
 
 # Data migrations (if present)
 # docker compose -f docker-compose.prod.yml run --rm --no-deps app \
-#   node scripts/apply-data-migrations/apply-data-migrations.js || { echo "ERROR: Data migrations failed"; exit 1; }
+#   node scripts/apply-data-migrations/apply-data-migrations.mjs || { echo "ERROR: Data migrations failed"; exit 1; }
 ```
 
 Notes:
-- Ensure apply-data-migrations.js is built and present before invocation.
+- Ensure apply-data-migrations.mjs is built and present before invocation.
 - Prefer masking secrets and avoid echoing sensitive environment variables.
 
 ## 15. Risks and mitigations

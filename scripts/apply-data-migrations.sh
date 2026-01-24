@@ -51,7 +51,7 @@ else
 fi
 
 # Check if compiled migration script exists
-if [ ! -f "$PROJECT_ROOT/scripts/apply-data-migrations/apply-data-migrations.js" ]; then
+if [ ! -f "$PROJECT_ROOT/scripts/apply-data-migrations/apply-data-migrations.mjs" ]; then
     echo "❌ Compiled migration script not found. Please build the project first."
     exit 1
 fi
@@ -78,7 +78,7 @@ export APPLIED_BY="${APPLIED_BY:-${USER:-unknown}}"
 cd "$PROJECT_ROOT"
 echo ""
 echo "📦 Applying data migrations..."
-node scripts/apply-data-migrations/apply-data-migrations.js
+node scripts/apply-data-migrations/apply-data-migrations.mjs
 
 if [ $? -eq 0 ]; then
     echo ""

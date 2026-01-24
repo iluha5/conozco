@@ -13,7 +13,7 @@
         "sourceMap": false
     },
     "include": [
-        "scripts/apply-data-migrations/apply-data-migrations.ts",
+        "scripts/apply-data-migrations/apply-data-migrations.mts",
         "scripts/generate-word-migration.ts"
     ],
     "exclude": ["node_modules", "scripts/**/*.test.ts", "scripts/cursor/**"]
