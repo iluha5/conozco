@@ -24,7 +24,7 @@ services:
     container_name: flashcards-app
     restart: always
     environment:
-      DATABASE_URL: postgresql://flashcards:${DB_PASSWORD}@postgres:5432/flashcards
+      DATABASE_URL: ${DATABASE_URL}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
       NEXTAUTH_URL: https://conozco.net
       NODE_ENV: production
