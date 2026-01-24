@@ -19,7 +19,6 @@ temp/
 
 # Документация и скрипты разработки
 docs/
-scripts/
 e2e/
 *.md
 !package.json
