@@ -5,7 +5,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
-import { calculateChecksum } from '../generate-word-migration.js';
+import { calculateChecksum } from '../generate-word-migration.mjs';
 import { URL } from 'url';
 import { existsSync } from 'fs';
 
@@ -178,14 +178,15 @@ async function applyMigration(
         const port = dbUrl.port || '5432';
         const database = dbUrl.pathname.slice(1); // Remove leading /
         const username = dbUrl.username;
-        const password = dbUrl.password ? '***' : 'not set';
+        const actualPassword = dbUrl.password || '';
+        const passwordForLogging = actualPassword ? '***' : 'not set';
 
         console.log(`   Database connection details:`);
         console.log(`     Host: ${host}`);
         console.log(`     Port: ${port}`);
         console.log(`     Database: ${database}`);
         console.log(`     Username: ${username}`);
-        console.log(`     Password: ${password}`);
+        console.log(`     Password: ${passwordForLogging}`);
 
         // Use psql to execute the migration SQL
         // Check if we can use docker exec (only when running on host, not inside container)
@@ -234,7 +235,7 @@ async function applyMigration(
                     `docker exec flashcards-db psql -U ${username} -d ${database} -f ${containerTempFile}`,
                     {
                         stdio: 'inherit',
-                        env: { ...process.env, PGPASSWORD: password },
+                        env: { ...process.env, PGPASSWORD: actualPassword },
                     },
                 );
                 console.log(`   ✓ SQL executed successfully`);
@@ -270,7 +271,7 @@ async function applyMigration(
                 );
                 execSync(psqlCommand, {
                     stdio: 'inherit',
-                    env: { ...process.env, PGPASSWORD: password },
+                    env: { ...process.env, PGPASSWORD: actualPassword },
                 });
                 console.log(`   ✓ SQL executed successfully`);
             } finally {

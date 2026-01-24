@@ -14,7 +14,7 @@
     },
     "include": [
         "scripts/apply-data-migrations/apply-data-migrations.mts",
-        "scripts/generate-word-migration.ts"
+        "scripts/generate-word-migration.mts"
     ],
     "exclude": ["node_modules", "scripts/**/*.test.ts", "scripts/cursor/**"]
 }
