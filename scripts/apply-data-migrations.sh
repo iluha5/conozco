@@ -18,9 +18,20 @@ if [ -z "${DATABASE_URL:-}" ]; then
     exit 1
 fi
 
+# Check if we're running inside a Docker container
+IS_DOCKER_CONTAINER=false
+if [ -f "/.dockerenv" ] || [ -n "${container:-}" ]; then
+    IS_DOCKER_CONTAINER=true
+fi
+
 # Check if we're on production server (check for backup script)
+# Skip backup if running inside Docker container (backup script requires docker command from host)
 BACKUP_SCRIPT="$PROJECT_ROOT/scripts/server-setup/backup-db-prod.sh"
-if [ -f "$BACKUP_SCRIPT" ]; then
+if [ "$IS_DOCKER_CONTAINER" = "true" ]; then
+    echo "ℹ️  Running inside Docker container - backup should have been created on host before deployment"
+    echo "ℹ️  If backup was not created, migration will proceed without backup (NOT RECOMMENDED)"
+    echo "ℹ️  In production, backup is created automatically by deployment workflow before migrations"
+elif [ -f "$BACKUP_SCRIPT" ]; then
     echo "📦 Creating database backup before applying migrations..."
     echo "   Backup script: $BACKUP_SCRIPT"
     

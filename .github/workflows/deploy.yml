@@ -73,6 +73,21 @@ jobs:
             docker compose -f docker-compose.prod.yml pull
             if ! docker image inspect "$REGISTRY/$IMAGE_NAME:${IMAGE_TAG}" >/dev/null 2>&1; then
               echo "ERROR: Image not found: $REGISTRY/$IMAGE_NAME:${IMAGE_TAG}"; exit 1; fi
+
+            # Create database backup before migrations
+            echo "Creating database backup before migrations..."
+            BACKUP_SCRIPT="/opt/flashcards/scripts/server-setup/backup-db-prod.sh"
+            if [ -f "$BACKUP_SCRIPT" ]; then
+              bash "$BACKUP_SCRIPT" || {
+                echo "ERROR: Database backup failed. Aborting deployment."
+                exit 1
+              }
+              echo "Database backup completed successfully"
+            else
+              echo "WARNING: Backup script not found at $BACKUP_SCRIPT"
+              echo "Proceeding without backup (NOT RECOMMENDED for production)"
+            fi
+
             # Run schema migrations before starting app
             docker compose -f docker-compose.prod.yml run --rm --no-deps app npx prisma@5.22.0 migrate deploy
             # Apply data migrations after schema migrations
