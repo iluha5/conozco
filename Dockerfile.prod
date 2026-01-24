@@ -31,7 +31,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=8000
 
-RUN apk add --no-cache libc6-compat openssl wget
+RUN apk add --no-cache libc6-compat openssl wget bash
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
@@ -44,10 +44,13 @@ COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 # Copy compiled JavaScript scripts (compiled from TypeScript during build)
 COPY --from=builder /app/scripts ./scripts
+# Debug: Verify scripts were copied
+RUN ls -la ./scripts/ || echo "Scripts directory not found"
+RUN ls -la ./scripts/apply-data-migrations.sh || echo "Migration script not found"
 # Create public directory (Next.js may not have it)
 RUN mkdir -p ./public
 # Verify script exists and set execute permissions
-RUN test -f ./scripts/apply-data-migrations.sh && chmod +x ./scripts/apply-data-migrations.sh || (echo "ERROR: Script not found" && exit 1)
+RUN test -f ./scripts/apply-data-migrations.sh && chmod +x ./scripts/apply-data-migrations.sh || (echo "ERROR: Script not found at ./scripts/apply-data-migrations.sh" && ls -la ./scripts/ && exit 1)
 
 USER nextjs
 

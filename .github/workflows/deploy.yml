@@ -48,7 +48,7 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: REGISTRY,IMAGE_NAME,IMAGE_TAG,DOCR_READ_TOKEN,ADMIN_REGISTRATION_PASSWORD,DATABASE_URL
+          envs: REGISTRY,IMAGE_NAME,IMAGE_TAG,DOCR_READ_TOKEN,ADMIN_REGISTRATION_PASSWORD,DATABASE_URL,COMMIT_HASH
           script: |
             set -euo pipefail
             cd /opt/flashcards
