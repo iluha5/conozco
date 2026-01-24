@@ -15,9 +15,13 @@ COPY package*.json ./
 RUN npm ci
 COPY . .
 COPY prisma ./prisma
+# Explicitly copy scripts directory (needed for compilation, may be excluded by .dockerignore)
+COPY scripts ./scripts
 RUN npx prisma generate
 RUN npm run build
 # Compile TypeScript scripts to JavaScript
+# Debug: Check which TypeScript files are available
+RUN echo "=== Checking for TypeScript files ===" && find scripts -name "*.ts" -not -path "*/node_modules/*" -not -path "*/cursor/*" -not -name "*.test.ts" | head -10 || true
 RUN npx tsc -p tsconfig.scripts.json
 
 # Stage 3: Runner
