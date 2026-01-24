@@ -46,8 +46,8 @@ COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/scripts ./scripts
 # Create public directory (Next.js may not have it)
 RUN mkdir -p ./public
-# Ensure script has execute permissions
-RUN chmod +x ./scripts/apply-data-migrations.sh
+# Verify script exists and set execute permissions
+RUN test -f ./scripts/apply-data-migrations.sh && chmod +x ./scripts/apply-data-migrations.sh || (echo "ERROR: Script not found" && exit 1)
 
 USER nextjs
 

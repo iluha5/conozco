@@ -39,9 +39,9 @@ else
     echo "   Skipping backup (this is OK for local development)"
 fi
 
-# Check if node_modules exists
-if [ ! -d "$PROJECT_ROOT/node_modules" ]; then
-    echo "❌ node_modules not found. Please run 'npm install' first."
+# Check if compiled migration script exists
+if [ ! -f "$PROJECT_ROOT/scripts/apply-data-migrations/apply-data-migrations.js" ]; then
+    echo "❌ Compiled migration script not found. Please build the project first."
     exit 1
 fi
 
