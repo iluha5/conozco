@@ -141,33 +141,31 @@ async function applyMigration(
         const password = dbUrl.password;
 
         // Use psql to execute the migration SQL
-        // Check if we're in Docker environment
-        // In docker-compose, database host is usually the service name (e.g., 'postgres', 'flashcards-db')
-        // or 'localhost' when connecting from host to container
-        const isDocker =
-            process.env.DOCKER_CONTAINER === 'true' ||
-            existsSync('/.dockerenv') ||
-            host === 'postgres' ||
-            host === 'flashcards-db' ||
-            (host === 'localhost' &&
-                process.env.DATABASE_URL?.includes('flashcards-db'));
+        // Check if we can use docker exec (only when running on host, not inside container)
+        // Inside container, we can connect directly via docker network
+        const isInsideContainer = existsSync('/.dockerenv');
+        const canUseDockerExec =
+            !isInsideContainer &&
+            (process.env.DOCKER_CONTAINER === 'true' ||
+                host === 'postgres' ||
+                host === 'flashcards-db' ||
+                (host === 'localhost' &&
+                    process.env.DATABASE_URL?.includes('flashcards-db')));
 
-        if (isDocker) {
-            // In Docker environment, use docker exec to run psql
-            // Write SQL to temporary file inside container
+        // Use /tmp for temporary files (always writable)
+        const tempSqlFile = `/tmp/migration_${migrationName}_${Date.now()}.sql`;
+
+        if (canUseDockerExec) {
+            // On host, use docker exec to run psql inside container
+            // Write SQL to temporary file first
+            await fs.writeFile(tempSqlFile, migrationSQL, 'utf8');
+
             const containerTempFile = `/tmp/migration_${migrationName}_${Date.now()}.sql`;
-            const hostTempFile = path.join(
-                __dirname,
-                'temp',
-                `migration_${migrationName}_${Date.now()}.sql`,
-            );
-            await fs.mkdir(path.dirname(hostTempFile), { recursive: true });
-            await fs.writeFile(hostTempFile, migrationSQL, 'utf8');
 
             try {
                 // Copy file to container
                 execSync(
-                    `docker cp ${hostTempFile} flashcards-db:${containerTempFile}`,
+                    `docker cp ${tempSqlFile} flashcards-db:${containerTempFile}`,
                     {
                         stdio: 'inherit',
                     },
@@ -192,20 +190,14 @@ async function applyMigration(
             } finally {
                 // Clean up host temp file
                 try {
-                    await fs.unlink(hostTempFile);
+                    await fs.unlink(tempSqlFile);
                 } catch (e) {
                     // Ignore cleanup errors
                 }
             }
         } else {
-            // Direct psql connection (for local development)
+            // Direct psql connection (for containers or local development)
             // Write SQL to temporary file first
-            const tempSqlFile = path.join(
-                __dirname,
-                'temp',
-                `migration_${migrationName}_${Date.now()}.sql`,
-            );
-            await fs.mkdir(path.dirname(tempSqlFile), { recursive: true });
             await fs.writeFile(tempSqlFile, migrationSQL, 'utf8');
 
             try {
