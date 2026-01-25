@@ -6,7 +6,7 @@ import { getWordData } from '@/lib/translation-api';
 
 /**
  * POST /api/ai-search
- * Searches for word via LibreTranslate and Tatoeba, then adds it to database
+ * Searches for word via inner and external API
  */
 export async function POST(request: NextRequest) {
     try {
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Determine translation language (user's ownLanguage)
-        const translationLanguageCode = user.ownLanguage?.code || 'ru';
+        const translationLanguageCode = user.ownLanguage?.code || 'en';
 
         const { word, languageCode } = await request.json();
 

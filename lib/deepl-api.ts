@@ -232,14 +232,18 @@ export async function translateWithDeepL(
             );
 
             const params = new URLSearchParams({
-                auth_key: apiKey,
                 text: word,
                 source_lang: sourceLang,
                 target_lang: targetLang,
             });
 
-            const response = await fetch(`${DEEPL_API_URL}?${params}`, {
+            const response = await fetch(DEEPL_API_URL, {
                 method: 'POST',
+                headers: {
+                    Authorization: `DeepL-Auth-Key ${apiKey}`,
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: params,
                 signal: controller.signal,
             });
 
