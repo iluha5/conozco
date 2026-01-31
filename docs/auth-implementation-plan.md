@@ -1409,8 +1409,92 @@ NEXTAUTH_URL=https://conozco.net
 - `RESEND_API_KEY`
 - `GOOGLE_CLIENT_ID`
 - `GOOGLE_CLIENT_SECRET`
-- `NEXTAUTH_SECRET`
-- `ADMIN_REGISTRATION_PASSWORD`
+- `NEXTAUTH_SECRET` (если ещё не добавлен)
+- `ADMIN_REGISTRATION_PASSWORD` (уже должен быть)
+- `EMAIL_FROM` - email отправителя (например: `noreply@conozco.net`)
+
+## CI/CD изменения
+
+### 1. Обновить `.github/workflows/deploy.yml`
+
+Добавить новые переменные окружения в deploy job:
+
+```yaml
+deploy:
+  needs: build_and_push
+  runs-on: ubuntu-latest
+  steps:
+    - name: Deploy to server via SSH
+      uses: appleboy/ssh-action@v1.0.3
+      env:
+        DOCR_READ_TOKEN: ${{ secrets.DOCR_READ_TOKEN }}
+        ADMIN_REGISTRATION_PASSWORD: ${{ secrets.ADMIN_REGISTRATION_PASSWORD }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
+        # Добавить новые секреты:
+        NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+        RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+        GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+        GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        # Обновить envs для прокидывания через SSH:
+        envs: REGISTRY,IMAGE_NAME,IMAGE_TAG,DOCR_READ_TOKEN,ADMIN_REGISTRATION_PASSWORD,DB_PASSWORD,DATABASE_URL,DEEPL_API_KEY,NEXTAUTH_SECRET,RESEND_API_KEY,EMAIL_FROM,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,COMMIT_HASH
+        script: |
+          # ... остальной скрипт без изменений
+```
+
+**Изменения:**
+1. В секции `env:` добавлены 5 новых переменных
+2. В параметре `envs:` добавлены те же 5 переменных для прокидывания через SSH
+
+### 2. Обновить `docker-compose.prod.yml`
+
+Добавить новые переменные окружения в секцию `app`:
+
+```yaml
+app:
+  image: registry.digitalocean.com/conozco-registry/flashcards-app:${IMAGE_TAG}
+  container_name: flashcards-app
+  restart: always
+  environment:
+    DATABASE_URL: ${DATABASE_URL}
+    NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+    NEXTAUTH_URL: https://conozco.net
+    NODE_ENV: production
+    DEEPL_API_KEY: ${DEEPL_API_KEY}
+    ADMIN_REGISTRATION_PASSWORD: ${ADMIN_REGISTRATION_PASSWORD}
+    # Добавить новые переменные:
+    RESEND_API_KEY: ${RESEND_API_KEY}
+    EMAIL_FROM: ${EMAIL_FROM}
+    GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+    GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+  depends_on:
+    postgres:
+      condition: service_healthy
+  # ... остальное без изменений
+```
+
+**Изменения:**
+Добавлены 4 новые переменные окружения для приложения
+
+### 3. Чек-лист для CI/CD
+
+- [ ] Добавить `NEXTAUTH_SECRET` в GitHub Secrets (если отсутствует)
+- [ ] Добавить `RESEND_API_KEY` в GitHub Secrets
+- [ ] Добавить `EMAIL_FROM` в GitHub Secrets
+- [ ] Добавить `GOOGLE_CLIENT_ID` в GitHub Secrets
+- [ ] Добавить `GOOGLE_CLIENT_SECRET` в GitHub Secrets
+- [ ] Обновить `.github/workflows/deploy.yml` - добавить переменные в `env` и `envs`
+- [ ] Обновить `docker-compose.prod.yml` - добавить переменные в `app.environment`
+- [ ] Проверить, что все секреты правильно названы (без опечаток)
+- [ ] Сделать test deploy на staging для проверки прокидывания переменных
+
+**Важно:** После добавления секретов в GitHub, они будут доступны только при следующем deploy через Actions. Для локального тестирования нужно также обновить `.env.production` на сервере (если используется).
 
 ## Зависимости
 
@@ -1422,16 +1506,34 @@ npm install resend
 
 ### Перед деплоем:
 
+**Настройка сервисов:**
 - [ ] DNS настроен в Namecheap (за 7 дней!)
 - [ ] Домен верифицирован в Resend
 - [ ] Тестовое письмо отправлено успешно
 - [ ] Google OAuth credentials созданы
 - [ ] OAuth consent screen настроен
-- [ ] Все секреты добавлены в GitHub Actions
-- [ ] `.env.production` готов
+
+**GitHub Actions секреты:**
+- [ ] `NEXTAUTH_SECRET` добавлен в GitHub Secrets
+- [ ] `RESEND_API_KEY` добавлен в GitHub Secrets
+- [ ] `EMAIL_FROM` добавлен в GitHub Secrets
+- [ ] `GOOGLE_CLIENT_ID` добавлен в GitHub Secrets
+- [ ] `GOOGLE_CLIENT_SECRET` добавлен в GitHub Secrets
+
+**CI/CD файлы:**
+- [ ] `.github/workflows/deploy.yml` обновлён (добавлены новые переменные в env и envs)
+- [ ] `docker-compose.prod.yml` обновлён (добавлены новые переменные в app.environment)
+
+**База данных:**
 - [ ] Миграция БД протестирована на staging
-- [ ] E2E тесты проходят
 - [ ] Rollback миграция подготовлена
+
+**Тестирование:**
+- [ ] E2E тесты проходят
+- [ ] Test deploy на staging для проверки прокидывания переменных
+
+**Готовность:**
+- [ ] `.env.production` готов на сервере
 
 ### Во время деплоя:
 
@@ -1575,3 +1677,7 @@ main();
 ### Config:
 - `.env.example` - обновить
 - `package.json` - добавить `resend`
+
+### CI/CD:
+- `.github/workflows/deploy.yml` - добавить новые секреты в env и envs
+- `docker-compose.prod.yml` - добавить новые переменные окружения в app.environment
