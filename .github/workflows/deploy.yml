@@ -46,11 +46,17 @@ jobs:
           ADMIN_REGISTRATION_PASSWORD: ${{ secrets.ADMIN_REGISTRATION_PASSWORD }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: REGISTRY,IMAGE_NAME,IMAGE_TAG,DOCR_READ_TOKEN,ADMIN_REGISTRATION_PASSWORD,DB_PASSWORD,DATABASE_URL,COMMIT_HASH
+          envs: REGISTRY,IMAGE_NAME,IMAGE_TAG,DOCR_READ_TOKEN,ADMIN_REGISTRATION_PASSWORD,DB_PASSWORD,DATABASE_URL,NEXTAUTH_SECRET,RESEND_API_KEY,EMAIL_FROM,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,DEEPL_API_KEY,COMMIT_HASH
           script: |
             set -euo pipefail
             cd /opt/flashcards
@@ -71,7 +77,18 @@ jobs:
               echo "ERROR: IMAGE_TAG is not set"; exit 1; fi
             echo "Deploying image tag: ${IMAGE_TAG}"
 
+            # Export all environment variables for docker-compose
             export IMAGE_TAG="${IMAGE_TAG}"
+            export NEXTAUTH_SECRET="${NEXTAUTH_SECRET}"
+            export RESEND_API_KEY="${RESEND_API_KEY}"
+            export EMAIL_FROM="${EMAIL_FROM}"
+            export GOOGLE_CLIENT_ID="${GOOGLE_CLIENT_ID}"
+            export GOOGLE_CLIENT_SECRET="${GOOGLE_CLIENT_SECRET}"
+            export DEEPL_API_KEY="${DEEPL_API_KEY}"
+            export ADMIN_REGISTRATION_PASSWORD="${ADMIN_REGISTRATION_PASSWORD}"
+            export DB_PASSWORD="${DB_PASSWORD}"
+            export DATABASE_URL="${DATABASE_URL}"
+
             docker compose -f docker-compose.prod.yml pull
             if ! docker image inspect "$REGISTRY/$IMAGE_NAME:${IMAGE_TAG}" >/dev/null 2>&1; then
               echo "ERROR: Image not found: $REGISTRY/$IMAGE_NAME:${IMAGE_TAG}"; exit 1; fi

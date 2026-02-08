@@ -30,6 +30,10 @@ services:
       NODE_ENV: production
       DEEPL_API_KEY: ${DEEPL_API_KEY}
       ADMIN_REGISTRATION_PASSWORD: ${ADMIN_REGISTRATION_PASSWORD}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      EMAIL_FROM: ${EMAIL_FROM}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
     depends_on:
       postgres:
         condition: service_healthy
