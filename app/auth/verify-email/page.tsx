@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,6 +22,7 @@ function VerifyEmailContent() {
     const router = useRouter();
     const { t } = useTranslation();
     const token = searchParams.get('token');
+    const hasVerified = useRef(false);
 
     useEffect(() => {
         if (!token) {
@@ -30,6 +31,12 @@ function VerifyEmailContent() {
             return;
         }
 
+        // Prevent double verification in React Strict Mode
+        if (hasVerified.current) {
+            return;
+        }
+
+        hasVerified.current = true;
         verifyEmail(token);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [token]);
