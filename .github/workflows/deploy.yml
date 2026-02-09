@@ -47,6 +47,7 @@ jobs:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
@@ -56,7 +57,7 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: REGISTRY,IMAGE_NAME,IMAGE_TAG,DOCR_READ_TOKEN,ADMIN_REGISTRATION_PASSWORD,DB_PASSWORD,DATABASE_URL,NEXTAUTH_SECRET,RESEND_API_KEY,EMAIL_FROM,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,DEEPL_API_KEY,COMMIT_HASH
+          envs: REGISTRY,IMAGE_NAME,IMAGE_TAG,DOCR_READ_TOKEN,ADMIN_REGISTRATION_PASSWORD,DB_PASSWORD,DATABASE_URL,NEXTAUTH_SECRET,NEXTAUTH_URL,RESEND_API_KEY,EMAIL_FROM,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,DEEPL_API_KEY,COMMIT_HASH
           script: |
             set -euo pipefail
             cd /opt/flashcards
@@ -80,6 +81,7 @@ jobs:
             # Export all environment variables for docker-compose
             export IMAGE_TAG="${IMAGE_TAG}"
             export NEXTAUTH_SECRET="${NEXTAUTH_SECRET}"
+            export NEXTAUTH_URL="${NEXTAUTH_URL}"
             export RESEND_API_KEY="${RESEND_API_KEY}"
             export EMAIL_FROM="${EMAIL_FROM}"
             export GOOGLE_CLIENT_ID="${GOOGLE_CLIENT_ID}"
