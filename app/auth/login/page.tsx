@@ -148,7 +148,7 @@ export default function LoginPage() {
                             </div>
                             <div className="relative flex justify-center text-xs uppercase">
                                 <span className="bg-white px-2 text-gray-500">
-                                    {t('Or continue with')}
+                                    {t('Or')}
                                 </span>
                             </div>
                         </div>

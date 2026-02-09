@@ -68,6 +68,7 @@ model User {
   email               String               @unique
   password            String?              // nullable для OAuth пользователей
   name                String?
+  image               String?              // Avatar URL from OAuth providers
   roleId              Int                  @default(1)
   emailVerified       DateTime?            // null = не верифицирован
   emailBounced        Boolean              @default(false) // true если email недоступен

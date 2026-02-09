@@ -162,12 +162,13 @@ export const authOptions: NextAuthOptions = {
         async signIn({ user, account, profile }) {
             if (account?.provider === 'google') {
                 const email = user.email;
-                if (!email) return false;
+                if (!email) {
+                    return false;
+                }
 
                 // Check email_verified from Google
                 const emailVerified = (profile as any)?.email_verified ?? false;
                 if (!emailVerified) {
-                    console.error('Google email not verified:', email);
                     return '/auth/error?error=EmailNotVerifiedByProvider';
                 }
 
@@ -210,11 +211,23 @@ export const authOptions: NextAuthOptions = {
         async jwt({ token, user, trigger }) {
             // First login - save user data in token
             if (user) {
-                token.role = user.role;
                 token.id = user.id;
+                token.image = user.image;
                 token.emailVerified = user.emailVerified;
                 token.registrationMethod = user.registrationMethod;
                 token.passwordChangedAt = user.passwordChangedAt;
+
+                // For OAuth users, role might not be populated - fetch from DB
+                if (user.role) {
+                    token.role = user.role;
+                } else {
+                    // Fetch user with role from DB
+                    const dbUser = await prisma.user.findUnique({
+                        where: { id: Number(user.id) },
+                        include: { role: true },
+                    });
+                    token.role = dbUser?.role.code || 'user';
+                }
             }
 
             // On session update - check if password changed
@@ -232,7 +245,6 @@ export const authOptions: NextAuthOptions = {
                         new Date(dbUser.passwordChangedAt) >
                             new Date(token.passwordChangedAt as string)
                     ) {
-                        console.log('Token invalidated: password changed');
                         return {}; // Empty token = logout user
                     }
 
@@ -247,6 +259,7 @@ export const authOptions: NextAuthOptions = {
             if (session.user) {
                 session.user.role = token.role as string;
                 session.user.id = token.id as string;
+                session.user.image = token.image as string | null;
                 session.user.emailVerified = token.emailVerified as Date | null;
                 session.user.registrationMethod =
                     token.registrationMethod as string;
@@ -258,6 +271,15 @@ export const authOptions: NextAuthOptions = {
     events: {
         async createUser({ user }) {
             // Called when PrismaAdapter creates a new user (OAuth)
+            // Update registrationMethod and emailVerified for OAuth user
+            await prisma.user.update({
+                where: { id: Number(user.id) },
+                data: {
+                    registrationMethod: 'OAUTH_GOOGLE',
+                    emailVerified: new Date(),
+                },
+            });
+
             await logAudit({
                 userId: Number(user.id),
                 action: 'USER_CREATED',
