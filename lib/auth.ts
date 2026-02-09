@@ -178,20 +178,51 @@ export const authOptions: NextAuthOptions = {
                 });
 
                 if (existingUser) {
-                    // Update emailVerified for existing user
-                    await prisma.user.update({
-                        where: { id: existingUser.id },
-                        data: {
-                            emailVerified: new Date(),
-                            registrationMethod: 'OAUTH_GOOGLE',
-                        },
-                    });
+                    // Check if Google OAuth is already linked
+                    const hasGoogleAccount = existingUser.accounts.some(
+                        acc => acc.provider === 'google',
+                    );
+
+                    if (!hasGoogleAccount) {
+                        // Link Google OAuth to existing account by creating Account record
+                        await prisma.account.create({
+                            data: {
+                                userId: existingUser.id,
+                                type: account.type,
+                                provider: account.provider,
+                                providerAccountId: account.providerAccountId,
+                                refresh_token: account.refresh_token,
+                                access_token: account.access_token,
+                                expires_at: account.expires_at,
+                                token_type: account.token_type,
+                                scope: account.scope,
+                                id_token: account.id_token,
+                                session_state: account.session_state,
+                            },
+                        });
+
+                        await logAudit({
+                            userId: existingUser.id,
+                            action: 'OAUTH_LINKED',
+                            metadata: { provider: 'google', email },
+                        });
+                    }
+
+                    // Update emailVerified if not already verified, but keep original registrationMethod
+                    if (!existingUser.emailVerified) {
+                        await prisma.user.update({
+                            where: { id: existingUser.id },
+                            data: { emailVerified: new Date() },
+                        });
+                    }
 
                     await logAudit({
                         userId: existingUser.id,
                         action: 'OAUTH_LOGIN',
                         metadata: { provider: 'google', email },
                     });
+
+                    return true;
                 } else {
                     // New user will be created by PrismaAdapter
                     // We'll log it in events.createUser
