@@ -340,21 +340,29 @@ export const authOptions: NextAuthOptions = {
             : undefined),
 };
 
-// Validate required env variables on startup
-if (!process.env.NEXTAUTH_SECRET) {
-    if (process.env.NODE_ENV === 'production') {
-        throw new Error('NEXTAUTH_SECRET is required in production');
-    } else {
-        console.warn(
-            '⚠️  NEXTAUTH_SECRET not set. Using insecure fallback for development.',
-        );
-        console.warn('   Generate one with: openssl rand -base64 32');
-        console.warn(
-            '   Add it to .env.local: NEXTAUTH_SECRET=<generated-secret>',
-        );
+// Validate required env variables at runtime (not during build)
+// During build time, env variables are not available yet (they're passed at runtime via docker-compose)
+if (typeof window === 'undefined') {
+    // Server-side validation only
+    if (!process.env.NEXTAUTH_SECRET) {
+        if (process.env.NODE_ENV === 'production') {
+            // Log error but don't throw during build
+            // The error will be thrown when NextAuth is actually used at runtime
+            console.error(
+                '❌ NEXTAUTH_SECRET is required in production. App will fail at runtime if not set.',
+            );
+        } else {
+            console.warn(
+                '⚠️  NEXTAUTH_SECRET not set. Using insecure fallback for development.',
+            );
+            console.warn('   Generate one with: openssl rand -base64 32');
+            console.warn(
+                '   Add it to .env.local: NEXTAUTH_SECRET=<generated-secret>',
+            );
+        }
     }
-}
 
-if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
-    console.warn('Google OAuth credentials not configured');
+    if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+        console.warn('⚠️  Google OAuth credentials not configured');
+    }
 }
