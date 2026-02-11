@@ -7,7 +7,21 @@ import {
     getWelcomeEmailHtml,
 } from './email-utils';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy initialization to avoid requiring API key during build time
+let resendClient: Resend | null = null;
+
+function getResendClient(): Resend {
+    if (!resendClient) {
+        const apiKey = process.env.RESEND_API_KEY;
+        if (!apiKey) {
+            throw new Error(
+                'RESEND_API_KEY is required. Set it in environment variables.',
+            );
+        }
+        resendClient = new Resend(apiKey);
+    }
+    return resendClient;
+}
 
 interface SendEmailResult {
     success: boolean;
@@ -26,7 +40,7 @@ export async function sendVerificationEmail(
     const { subject, html } = getVerificationEmailHtml(verificationUrl);
 
     try {
-        const result = await resend.emails.send({
+        const result = await getResendClient().emails.send({
             from: process.env.EMAIL_FROM || 'noreply@conozco.net',
             to: email,
             subject,
@@ -75,7 +89,7 @@ export async function sendPasswordResetEmail(
     const { subject, html } = getPasswordResetEmailHtml(resetUrl);
 
     try {
-        const result = await resend.emails.send({
+        const result = await getResendClient().emails.send({
             from: process.env.EMAIL_FROM || 'noreply@conozco.net',
             to: email,
             subject,
@@ -123,7 +137,7 @@ export async function sendWelcomeEmail(
     const { subject, html } = getWelcomeEmailHtml(loginUrl);
 
     try {
-        const result = await resend.emails.send({
+        const result = await getResendClient().emails.send({
             from: process.env.EMAIL_FROM || 'noreply@conozco.net',
             to: email,
             subject,
