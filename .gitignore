@@ -34,7 +34,7 @@ yarn-error.log*
 
 # Local env files
 .env*.local
-.env
+.env  # Auto-generated on production by CI/CD (.github/workflows/deploy.yml)
 
 # Vercel
 .vercel

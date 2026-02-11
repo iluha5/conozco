@@ -17,6 +17,8 @@ prisma/migrations
 .env
 .env.local
 .env.production
+.env.example
+.gitignore
 
 # Lock files
 package-lock.json
@@ -28,5 +30,8 @@ coverage
 
 # Documentation (if you want to exclude)
 *.md
+
+# GitHub workflows (contain embedded bash scripts)
+.github/workflows/*.yml
 
 data/
