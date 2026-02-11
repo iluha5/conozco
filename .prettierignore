@@ -31,7 +31,4 @@ coverage
 # Documentation (if you want to exclude)
 *.md
 
-# GitHub workflows (contain embedded bash scripts)
-.github/workflows/*.yml
-
 data/
