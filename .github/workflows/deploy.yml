@@ -120,7 +120,7 @@ jobs:
             echo "Verifying .env file contents (secrets masked)..."
             cat /opt/flashcards/.env | grep -E '^[A-Z_]+=.+' | sed 's/=.*/=***/' | head -15
 
-            docker compose -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yml --env-file /opt/flashcards/.env pull
             if ! docker image inspect "$REGISTRY/$IMAGE_NAME:${IMAGE_TAG}" >/dev/null 2>&1; then
               echo "ERROR: Image not found: $REGISTRY/$IMAGE_NAME:${IMAGE_TAG}"; exit 1; fi
 
@@ -139,12 +139,12 @@ jobs:
             fi
 
             # Run schema migrations before starting app
-            docker compose -f docker-compose.prod.yml run --rm --no-deps app npx prisma@5.22.0 migrate deploy
+            docker compose -f docker-compose.prod.yml --env-file /opt/flashcards/.env run --rm --no-deps app npx prisma@5.22.0 migrate deploy
             # Apply data migrations after schema migrations
             echo "Applying data migrations..."
             # DATABASE_URL is already set in docker-compose.prod.yml, but we pass it explicitly to ensure it's available
             export GIT_SHA="${{ github.sha }}"
-            docker compose -f docker-compose.prod.yml run --rm --no-deps -e GIT_SHA="${GIT_SHA}" app ./scripts/apply-data-migrations.sh
-            docker compose -f docker-compose.prod.yml up -d --remove-orphans
+            docker compose -f docker-compose.prod.yml --env-file /opt/flashcards/.env run --rm --no-deps -e GIT_SHA="${GIT_SHA}" app ./scripts/apply-data-migrations.sh
+            docker compose -f docker-compose.prod.yml --env-file /opt/flashcards/.env up -d --remove-orphans
             docker image prune -f
             echo "Deployment completed at $(date)"
