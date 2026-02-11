@@ -16,6 +16,7 @@ import {
 import { useToast } from '@/hooks/shared';
 import { Loader2 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
+import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -47,11 +48,22 @@ export default function LoginPage() {
             });
 
             if (result?.error) {
-                toast({
-                    title: t('Login error'),
-                    description: t('Invalid email or password'),
-                    variant: 'destructive',
-                });
+                // Check for specific error types
+                if (result.error === 'EMAIL_NOT_VERIFIED') {
+                    toast({
+                        title: t('Email not verified'),
+                        description: t(
+                            'Please verify your email before logging in',
+                        ),
+                        variant: 'destructive',
+                    });
+                } else {
+                    toast({
+                        title: t('Login error'),
+                        description: t('Invalid email or password'),
+                        variant: 'destructive',
+                    });
+                }
             } else {
                 router.push('/');
                 router.refresh();
@@ -95,9 +107,17 @@ export default function LoginPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium">
-                                {t('Password')}
-                            </label>
+                            <div className="flex items-center justify-between">
+                                <label className="text-sm font-medium">
+                                    {t('Password')}
+                                </label>
+                                <Link
+                                    href="/auth/forgot-password"
+                                    className="text-sm text-blue-600 hover:underline"
+                                >
+                                    {t('Forgot password?')}
+                                </Link>
+                            </div>
                             <Input
                                 type="password"
                                 placeholder="••••••••"
@@ -122,10 +142,23 @@ export default function LoginPage() {
                             )}
                         </Button>
 
+                        <div className="relative">
+                            <div className="absolute inset-0 flex items-center">
+                                <span className="w-full border-t" />
+                            </div>
+                            <div className="relative flex justify-center text-xs uppercase">
+                                <span className="bg-white px-2 text-gray-500">
+                                    {t('Or')}
+                                </span>
+                            </div>
+                        </div>
+
+                        <GoogleSignInButton />
+
                         <div className="text-center text-sm text-gray-600">
                             {t("Don't have an account?")}{' '}
                             <Link
-                                href="/auth/register"
+                                href="/auth/register-public"
                                 className="text-blue-600 hover:underline"
                             >
                                 {t('Sign up')}

@@ -64,32 +64,40 @@ model Language {
 }
 
 model User {
-  id                  Int                 @id @default(autoincrement())
-  email               String              @unique
-  password            String
+  id                  Int                  @id @default(autoincrement())
+  email               String               @unique
+  password            String?              // nullable для OAuth пользователей
   name                String?
-  roleId              Int                 @default(1)
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
+  image               String?              // Avatar URL from OAuth providers
+  roleId              Int                  @default(1)
+  emailVerified       DateTime?            // null = не верифицирован
+  emailBounced        Boolean              @default(false) // true если email недоступен
+  registrationMethod  RegistrationMethod   @default(EMAIL_PASSWORD)
+  passwordChangedAt   DateTime?            // для инвалидации старых JWT токенов
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
   interfaceLanguageId Int?
   learnLanguageId     Int?
   ownLanguageId       Int?
-  hasConfigured       Boolean             @default(false)
+  hasConfigured       Boolean              @default(false)
   accounts            Account[]
   apiRequestLogs      ApiRequestLog[]
+  auditLogs           AuditLog[]
   customTranslations  CustomTranslation[]
   sessions            Session[]
   cookieConsent       UserCookieConsent?
-  interfaceLanguage   Language?           @relation("UserInterfaceLanguage", fields: [interfaceLanguageId], references: [id])
-  learnLanguage       Language?           @relation("UserLearnLanguage", fields: [learnLanguageId], references: [id])
-  ownLanguage         Language?           @relation("UserOwnLanguage", fields: [ownLanguageId], references: [id])
-  role                UserRole            @relation(fields: [roleId], references: [id])
+  interfaceLanguage   Language?            @relation("UserInterfaceLanguage", fields: [interfaceLanguageId], references: [id])
+  learnLanguage       Language?            @relation("UserLearnLanguage", fields: [learnLanguageId], references: [id])
+  ownLanguage         Language?            @relation("UserOwnLanguage", fields: [ownLanguageId], references: [id])
+  role                UserRole             @relation(fields: [roleId], references: [id])
   activeWordGroups    UserWordGroup[]
   words               Word[]
-  createdWordGroups   WordGroup[]         @relation("CreatedWordGroups")
-  sharedWordGroups    WordGroupAccess[]   @relation("SharedWordGroups")
+  createdWordGroups   WordGroup[]          @relation("CreatedWordGroups")
+  sharedWordGroups    WordGroupAccess[]    @relation("SharedWordGroups")
 
   @@index([email])
+  @@index([emailVerified])
+  @@index([registrationMethod])
 }
 
 model Account {
@@ -453,4 +461,91 @@ enum WordGroupVisibility {
   PUBLIC
   PRIVATE
   SHARED
+}
+
+enum RegistrationMethod {
+  ADMIN_CREATED    // Создан администратором
+  EMAIL_PASSWORD   // Публичная регистрация через email
+  OAUTH_GOOGLE     // Регистрация через Google
+}
+
+enum RateLimitAction {
+  REGISTER
+  RESEND
+  FORGOT
+  LOGIN
+}
+
+enum EmailType {
+  EMAIL_VERIFICATION
+  PASSWORD_RESET
+  EMAIL_CHANGED
+  WELCOME
+}
+
+model EmailVerificationToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expires   DateTime
+  createdAt DateTime @default(now())
+
+  @@unique([email, token])
+  @@index([token])
+  @@index([email])
+  @@index([expires])
+}
+
+model RateLimitLog {
+  id        Int             @id @default(autoincrement())
+  email     String?
+  ipAddress String?
+  action    RateLimitAction
+  createdAt DateTime        @default(now())
+
+  @@index([action, createdAt])
+  @@index([email, createdAt])
+  @@index([ipAddress, createdAt])
+}
+
+model EmailLog {
+  id        Int       @id @default(autoincrement())
+  email     String
+  type      EmailType
+  status    String    // 'SUCCESS', 'FAILED', 'BOUNCED'
+  provider  String
+  messageId String?
+  error     String?
+  sentAt    DateTime  @default(now())
+
+  @@index([email, sentAt])
+  @@index([type, sentAt])
+  @@index([status, sentAt])
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int?
+  action    String   // 'PASSWORD_CHANGED', 'EMAIL_VERIFIED', 'LOGIN_FAILED', etc.
+  ipAddress String?
+  userAgent String?
+  metadata  Json?    // Дополнительная информация
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([action, createdAt])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expires   DateTime
+  createdAt DateTime @default(now())
+
+  @@unique([email, token])
+  @@index([token])
+  @@index([email])
+  @@index([expires])
 }
