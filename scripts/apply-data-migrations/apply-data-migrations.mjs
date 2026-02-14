@@ -147,8 +147,18 @@ async function applyMigration(migrationDir, metadata, gitSha, appliedBy) {
         const port = dbUrl.port || '5432';
         const database = dbUrl.pathname.slice(1); // Remove leading /
         const username = dbUrl.username;
-        const actualPassword = dbUrl.password || '';
+        // Decode password from URL encoding (important for special characters)
+        const actualPassword = dbUrl.password
+            ? decodeURIComponent(dbUrl.password)
+            : '';
         const passwordForLogging = actualPassword ? '***' : 'not set';
+        // Validate that password is not empty
+        if (!actualPassword) {
+            console.error('   ERROR: Password is empty in DATABASE_URL');
+            throw new Error(
+                'Database password is not set in DATABASE_URL. Please check that DATABASE_URL contains a password.',
+            );
+        }
         console.log(`   Database connection details:`);
         console.log(`     Host: ${host}`);
         console.log(`     Port: ${port}`);

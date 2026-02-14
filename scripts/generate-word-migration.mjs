@@ -143,9 +143,37 @@ export function generateMigrationSQL(wordDataArray, metadata) {
         });
     });
     if (translationBatches.length > 0) {
-        // Process in batches
-        for (let i = 0; i < translationBatches.length; i += BATCH_SIZE) {
-            const batch = translationBatches.slice(i, i + BATCH_SIZE);
+        // Group translations by word to avoid splitting them across batches
+        // This prevents "ON CONFLICT DO UPDATE command cannot affect row a second time" error
+        const translationsByWord = new Map();
+        translationBatches.forEach(t => {
+            const key = `${t.word}:${t.languageCode}`;
+            if (!translationsByWord.has(key)) {
+                translationsByWord.set(key, []);
+            }
+            translationsByWord.get(key).push(t);
+        });
+        // Split into batches, keeping all translations of a word together
+        const batches = [];
+        let currentBatch = [];
+        for (const wordTranslations of Array.from(
+            translationsByWord.values(),
+        )) {
+            // If adding this word's translations would exceed BATCH_SIZE and batch is not empty, start new batch
+            if (
+                currentBatch.length > 0 &&
+                currentBatch.length + wordTranslations.length > BATCH_SIZE
+            ) {
+                batches.push(currentBatch);
+                currentBatch = [];
+            }
+            currentBatch.push(...wordTranslations);
+        }
+        if (currentBatch.length > 0) {
+            batches.push(currentBatch);
+        }
+        // Process each batch
+        for (const batch of batches) {
             const values = batch
                 .map(
                     t =>
@@ -222,9 +250,33 @@ export function generateMigrationSQL(wordDataArray, metadata) {
             }
         }
         lines.push('');
+        // Group examples by word and pronoun to avoid splitting translations across batches
+        const examplesByWordPronoun = new Map();
+        exampleBatches.forEach(e => {
+            const key = `${e.word}:${e.pronoun}:${e.example}`;
+            if (!examplesByWordPronoun.has(key)) {
+                examplesByWordPronoun.set(key, []);
+            }
+            examplesByWordPronoun.get(key).push(e);
+        });
+        // Split into batches, keeping all translations of an example together
+        const exampleBatchesArray = [];
+        let currentExampleBatch = [];
+        for (const wordExamples of Array.from(examplesByWordPronoun.values())) {
+            if (
+                currentExampleBatch.length > 0 &&
+                currentExampleBatch.length + wordExamples.length > BATCH_SIZE
+            ) {
+                exampleBatchesArray.push(currentExampleBatch);
+                currentExampleBatch = [];
+            }
+            currentExampleBatch.push(...wordExamples);
+        }
+        if (currentExampleBatch.length > 0) {
+            exampleBatchesArray.push(currentExampleBatch);
+        }
         // Process examples in batches
-        for (let i = 0; i < exampleBatches.length; i += BATCH_SIZE) {
-            const batch = exampleBatches.slice(i, i + BATCH_SIZE);
+        for (const batch of exampleBatchesArray) {
             const values = batch
                 .map(
                     e =>
@@ -312,9 +364,36 @@ export function generateMigrationSQL(wordDataArray, metadata) {
             lines.push(`ON CONFLICT ("pronoun", "languageId") DO NOTHING;`);
         }
         lines.push('');
+        // Group grammatical examples by word, tense, pronoun to avoid splitting translations across batches
+        const grammaticalExamplesByKey = new Map();
+        grammaticalExampleBatches.forEach(ge => {
+            const key = `${ge.word}:${ge.tenseName}:${ge.pronoun}:${ge.example}`;
+            if (!grammaticalExamplesByKey.has(key)) {
+                grammaticalExamplesByKey.set(key, []);
+            }
+            grammaticalExamplesByKey.get(key).push(ge);
+        });
+        // Split into batches, keeping all translations of a grammatical example together
+        const grammaticalBatchesArray = [];
+        let currentGrammaticalBatch = [];
+        for (const wordExamples of Array.from(
+            grammaticalExamplesByKey.values(),
+        )) {
+            if (
+                currentGrammaticalBatch.length > 0 &&
+                currentGrammaticalBatch.length + wordExamples.length >
+                    BATCH_SIZE
+            ) {
+                grammaticalBatchesArray.push(currentGrammaticalBatch);
+                currentGrammaticalBatch = [];
+            }
+            currentGrammaticalBatch.push(...wordExamples);
+        }
+        if (currentGrammaticalBatch.length > 0) {
+            grammaticalBatchesArray.push(currentGrammaticalBatch);
+        }
         // Process grammatical examples in batches
-        for (let i = 0; i < grammaticalExampleBatches.length; i += BATCH_SIZE) {
-            const batch = grammaticalExampleBatches.slice(i, i + BATCH_SIZE);
+        for (const batch of grammaticalBatchesArray) {
             const values = batch
                 .map(
                     ge =>

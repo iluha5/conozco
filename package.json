@@ -26,7 +26,7 @@
         "format": "prettier --write .",
         "format:check": "prettier --check .",
         "prisma:generate": "prisma generate",
-        "prisma:migrate": "prisma migrate dev",
+        "prisma:migrate": "dotenv -e .env.local -- prisma migrate dev",
         "prisma:studio": "dotenv -e .env.local -- prisma studio",
         "prisma:seed": "tsx prisma/seed.ts",
         "db:backup": "./scripts/backup-db.sh",
