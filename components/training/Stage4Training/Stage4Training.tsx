@@ -50,12 +50,10 @@ export function Stage4Training({
 
     const currentWord = words[currentIndex];
 
-    // Инициализируем массив результатов упражнений
     useEffect(() => {
         setExerciseResults(new Array(words.length).fill(null));
     }, [words.length]);
 
-    // Запускаем анимацию при каждом монтировании компонента (при новом слове)
     useEffect(() => {
         const timer = setTimeout(() => {
             setFadeIn(true);
@@ -99,7 +97,6 @@ export function Stage4Training({
         setIsFirstCard,
     });
 
-    // Обновляем результаты упражнения при завершении слова
     useEffect(() => {
         if (
             isComplete &&
@@ -108,25 +105,21 @@ export function Stage4Training({
             completedWordId === null &&
             lastCompletedIndex !== currentIndex
         ) {
-            // Устанавливаем ID завершенного слова только если он еще не установлен
             setCompletedWordId(currentWord.id);
             setLastCompletedIndex(currentIndex);
 
             setExerciseResults(prevResults => {
                 const newResults = [...prevResults];
-                // В режиме retry всегда обновляем результат, даже если он уже был установлен
-                // В обычном режиме устанавливаем результат только если для этого индекса еще нет результата
+                // Retry mode overwrites results; normal mode only fills empty slots
                 if (isRetryMode || newResults[currentIndex] === null) {
                     newResults[currentIndex] = isCorrect;
                 }
                 return newResults;
             });
 
-            // Устанавливаем цвет фона и показываем попап с результатом
             setBackgroundFlash(isCorrect ? 'green' : 'red');
             setShowResultPopup(true);
 
-            // После первого ответа скрываем кнопку настроек
             if (isFirstCard) {
                 setIsFirstCard(false);
             }
@@ -135,7 +128,6 @@ export function Stage4Training({
             completedWordId !== null &&
             currentWord.id !== completedWordId
         ) {
-            // Если перешли к новому слову, скрываем попап
             setShowResultPopup(false);
             setBackgroundFlash(null);
         }
@@ -168,16 +160,14 @@ export function Stage4Training({
         handleNext,
     });
 
-    // Сброс состояния при изменении слова
     useEffect(() => {
         if (currentWord) {
-            // Сбрасываем попап и фон сразу при переходе к новому слову
             setBackgroundFlash(null);
             setShowResultPopup(false);
             setCompletedWordId(null);
             setLastCompletedIndex(null);
 
-            // Генерируем новый ключ для принудительного перемонтирования компонента
+            // Bump key to force remount and replay the fade-in animation
             setAnimationKey(prevKey => prevKey + 1);
             setFadeIn(false);
 
@@ -194,10 +184,9 @@ export function Stage4Training({
 
     const handleManualNext = () => {
         if (isRetryMode) {
-            // В режиме исправления ошибок при неправильном ответе
             const nextErrorIndex = findNextError(currentIndex);
             if (nextErrorIndex === -1 || nextErrorIndex === currentIndex) {
-                // Это единственная ошибка или других нет - остаемся на ней, но перезагружаем карточку
+                // Only error left -- stay on it but reload the card
                 setAnimationKey(prevKey => prevKey + 1);
                 setFadeIn(false);
                 resetLetters();
@@ -210,7 +199,6 @@ export function Stage4Training({
                 setCurrentIndex(nextErrorIndex);
             }
         } else {
-            // Обычный режим - переходим к следующему
             const result = handleNext();
             if (result.type === 'next') {
                 setCurrentIndex(result.nextIndex);

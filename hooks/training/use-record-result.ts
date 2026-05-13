@@ -1,29 +1,13 @@
-/**
- * Хук для записи результатов тренировки
- * Объединяет запись в БД (API) и localStorage
- */
-
 import { useCallback } from 'react';
 import { useTrainingStorage } from './use-training-storage';
 import type { TrainingStage } from '@/types/training.types';
 
 export interface UseRecordResultReturn {
-    /**
-     * Записать результат упражнения
-     * @param stage - Номер этапа (1-6)
-     * @param wordId - ID слова
-     * @param isCorrect - Правильный ли ответ
-     * @returns Promise<boolean> - true если успешно, false если ошибка
-     */
     recordResult: (
         _stage: TrainingStage,
         _wordId: string,
         _isCorrect: boolean,
     ) => Promise<boolean>;
-
-    /**
-     * Записать только в localStorage (без API запроса)
-     */
     recordLocalResult: (
         _stage: TrainingStage,
         _wordId: string,
@@ -34,9 +18,6 @@ export interface UseRecordResultReturn {
 export function useRecordResult(): UseRecordResultReturn {
     const storage = useTrainingStorage();
 
-    /**
-     * Записать результат в БД через API
-     */
     const recordApiResult = useCallback(
         async (
             stage: TrainingStage,
@@ -46,14 +27,8 @@ export function useRecordResult(): UseRecordResultReturn {
             try {
                 const response = await fetch('/api/training', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        wordId,
-                        stage,
-                        isCorrect,
-                    }),
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ wordId, stage, isCorrect }),
                 });
 
                 if (!response.ok) {
@@ -73,9 +48,6 @@ export function useRecordResult(): UseRecordResultReturn {
         [],
     );
 
-    /**
-     * Записать результат только в localStorage
-     */
     const recordLocalResult = useCallback(
         (stage: TrainingStage, wordId: string, isCorrect: boolean) => {
             storage.recordAttempt(stage, wordId, isCorrect);
@@ -83,28 +55,17 @@ export function useRecordResult(): UseRecordResultReturn {
         [storage],
     );
 
-    /**
-     * Записать результат везде (API + localStorage)
-     */
     const recordResult = useCallback(
         async (
             stage: TrainingStage,
             wordId: string,
             isCorrect: boolean,
         ): Promise<boolean> => {
-            // First record to localStorage (synchronously)
             recordLocalResult(stage, wordId, isCorrect);
-
-            // Then to API (asynchronously)
-            const apiSuccess = await recordApiResult(stage, wordId, isCorrect);
-
-            return apiSuccess;
+            return recordApiResult(stage, wordId, isCorrect);
         },
         [recordApiResult, recordLocalResult],
     );
 
-    return {
-        recordResult,
-        recordLocalResult,
-    };
+    return { recordResult, recordLocalResult };
 }

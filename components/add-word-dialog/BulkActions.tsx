@@ -1,7 +1,3 @@
-/**
- * Кнопки массовых действий
- */
-
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -22,7 +18,6 @@ export function BulkActions({
     disabled,
 }: BulkActionsProps) {
     const { t } = useTranslation();
-    // Determine selection state based on number of selected words
     const allSelected =
         words.length > 0 && selectedWords.length === words.length;
     const hasSelection = selectedWords.length > 0;

@@ -73,7 +73,6 @@ const addToRemoveQueue = (toastId: string) => {
 export const reducer = (state: State, action: Action): State => {
     switch (action.type) {
         case 'ADD_TOAST':
-            console.log('add: ');
             return {
                 ...state,
                 toasts: [action.toast, ...state.toasts].slice(0, TOAST_LIMIT),
@@ -111,7 +110,6 @@ export const reducer = (state: State, action: Action): State => {
             };
         }
         case 'REMOVE_TOAST':
-            console.log('remove: ');
             if (action.toastId === undefined) {
                 return {
                     ...state,
@@ -125,7 +123,7 @@ export const reducer = (state: State, action: Action): State => {
     }
 };
 
-const listeners: Array<(state: State) => void> = [];
+const listeners: Array<(_state: State) => void> = [];
 
 let memoryState: State = { toasts: [] };
 

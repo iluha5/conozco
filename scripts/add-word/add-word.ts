@@ -6,11 +6,9 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { DEFAULT_AI_MODEL } from '../cursor/config.mjs';
 
-// Get current file directory
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// File paths
 const promptTemplatePath = path.join(
     __dirname,
     '..',
@@ -69,7 +67,6 @@ function parseArgs(): AddWordArgs {
         process.exit(1);
     }
 
-    // Check if it's a file path
     if (args.length === 1 && args[0].includes('.')) {
         const filePath = args[0];
         if (!filePath.endsWith('.txt')) {
@@ -81,7 +78,6 @@ function parseArgs(): AddWordArgs {
         return { filePath };
     }
 
-    // Check if it's word + language
     if (args.length === 2) {
         const [word, languageCode] = args;
         if (word.includes('.') || !['en', 'es', 'ru'].includes(languageCode)) {
@@ -125,7 +121,6 @@ async function readWordsFromFile(
             .map(line => line.trim())
             .filter(line => line.length > 0);
 
-        // Extract language code from filename (e.g., words.es.txt -> es)
         const fileName = path.basename(filePath);
         const match = fileName.match(/^(.+)\.([a-z]{2})\.txt$/);
         if (!match) {
@@ -156,9 +151,6 @@ async function generateWordData(
     word: string,
     languageCode: string,
 ): Promise<WordData> {
-    console.log(`🎯 Generating data for word: "${word}" (${languageCode})`);
-
-    // Read prompt template
     let prompt = '';
     try {
         prompt = await fs.readFile(promptTemplatePath, 'utf8');
@@ -166,21 +158,14 @@ async function generateWordData(
         throw new Error(`Failed to read prompt template: ${error}`);
     }
 
-    // Get language name from code
-    const languageNames = {
-        en: 'English',
-        es: 'Spanish',
-        ru: 'Russian',
-    };
+    const languageNames = { en: 'English', es: 'Spanish', ru: 'Russian' };
     const languageName =
         languageNames[languageCode as keyof typeof languageNames];
 
-    // Replace placeholders in prompt
     prompt = prompt.replace(/\$\{word\}/g, word);
     prompt = prompt.replace(/\$\{language\}/g, languageName);
     prompt = prompt.replace(/\$\{languageCode\}/g, languageCode);
 
-    // Create temporary prompt file
     const tempDir = path.join(__dirname, 'temp');
     await fs.mkdir(tempDir, { recursive: true });
 
@@ -191,19 +176,14 @@ async function generateWordData(
     const promptFile = path.join(tempDir, `add-word-${word}-${timestamp}.txt`);
     await fs.writeFile(promptFile, prompt, 'utf8');
 
-    console.log(`📝 Created prompt file: ${promptFile}`);
-    console.log(`🤖 Using AI model: ${DEFAULT_AI_MODEL}`);
-
-    // Execute Cursor CLI directly (like execute-cursor-prompt.ts)
     return new Promise<WordData>((resolve, reject) => {
         const cursorCommand = `/Applications/Cursor.app/Contents/Resources/app/bin/cursor agent --print --output-format json --model ${DEFAULT_AI_MODEL}`;
         const cursorProcess = spawn(cursorCommand, {
             cwd: tempDir,
-            stdio: ['pipe', 'pipe', 'pipe'], // stdin, stdout, stderr
+            stdio: ['pipe', 'pipe', 'pipe'],
             shell: true,
             env: {
                 ...process.env,
-                // Force specific AI model for consistent results and cost control
                 CURSOR_MODEL: DEFAULT_AI_MODEL,
                 MODEL: DEFAULT_AI_MODEL,
                 AI_MODEL: DEFAULT_AI_MODEL,
@@ -213,7 +193,6 @@ async function generateWordData(
         let stdout = '';
         let stderr = '';
 
-        // Timeout in case Cursor hangs
         const timeout = setTimeout(() => {
             cursorProcess.kill('SIGTERM');
             reject(
@@ -221,28 +200,24 @@ async function generateWordData(
                     `Cursor CLI timeout after 60 seconds for word "${word}"`,
                 ),
             );
-        }, 60000); // 60 seconds
+        }, 60000);
 
-        // Send prompt to stdin
         cursorProcess.stdin.write(prompt);
         cursorProcess.stdin.end();
 
-        // Collect output
         cursorProcess.stdout.on('data', data => {
             stdout += data.toString();
         });
-
         cursorProcess.stderr.on('data', data => {
             stderr += data.toString();
         });
 
         cursorProcess.on('close', async code => {
             clearTimeout(timeout);
-            // Clean up prompt file
             try {
                 await fs.unlink(promptFile);
-            } catch (e) {
-                // Ignore cleanup errors
+            } catch {
+                // best-effort cleanup
             }
 
             if (code !== 0) {
@@ -255,87 +230,80 @@ async function generateWordData(
             }
 
             try {
-                // Parse result from Cursor agent (improved version like in execute-cursor-prompt.ts)
                 const parsedResponse = JSON.parse(stdout);
-
-                if (parsedResponse.result) {
-                    // Extract JSON from result field
-                    const resultText = parsedResponse.result;
-
-                    let cleanJson = '';
-
-                    // First try to find ```json block
-                    const jsonBlockMatch = resultText.match(
-                        /```json\s*(\{[\s\S]*?\})\s*```/,
-                    );
-                    if (jsonBlockMatch) {
-                        cleanJson = jsonBlockMatch[1];
-                    } else {
-                        // If JSON block not found, try to find JSON itself
-                        const jsonStart = resultText.indexOf('{');
-                        const jsonEnd = resultText.lastIndexOf('}');
-                        if (
-                            jsonStart !== -1 &&
-                            jsonEnd !== -1 &&
-                            jsonEnd > jsonStart
-                        ) {
-                            cleanJson = resultText.substring(
-                                jsonStart,
-                                jsonEnd + 1,
-                            );
-                        } else {
-                            reject(
-                                new Error(
-                                    `No JSON found in Cursor result. Result text: ${resultText.substring(0, 500)}`,
-                                ),
-                            );
-                            return;
-                        }
-                    }
-
-                    const wordData: WordData = JSON.parse(cleanJson);
-
-                    // Validation: check word match
-                    const generatedWord = wordData.word?.toLowerCase().trim();
-                    const requestedWord = word.toLowerCase().trim();
-
-                    if (!generatedWord) {
-                        reject(
-                            new Error(
-                                `Generated data has no word field. Generated data: ${JSON.stringify(wordData).substring(0, 200)}`,
-                            ),
-                        );
-                        return;
-                    }
-
-                    if (generatedWord !== requestedWord) {
-                        reject(
-                            new Error(
-                                `Word mismatch: requested "${requestedWord}" but got "${generatedWord}". The AI returned data for a different word.`,
-                            ),
-                        );
-                        return;
-                    }
-
-                    // Check language match
-                    if (wordData.languageCode !== languageCode) {
-                        reject(
-                            new Error(
-                                `Language mismatch: requested "${languageCode}" but got "${wordData.languageCode}"`,
-                            ),
-                        );
-                        return;
-                    }
-
-                    console.log(`✅ Successfully generated data for "${word}"`);
-                    resolve(wordData);
-                } else {
+                if (!parsedResponse.result) {
                     reject(
                         new Error(
                             `No result field in Cursor response. Full response: ${stdout.substring(0, 500)}`,
                         ),
                     );
+                    return;
                 }
+
+                const resultText = parsedResponse.result;
+                let cleanJson = '';
+
+                // The agent may wrap JSON in a fenced block or emit it inline.
+                const jsonBlockMatch = resultText.match(
+                    /```json\s*(\{[\s\S]*?\})\s*```/,
+                );
+                if (jsonBlockMatch) {
+                    cleanJson = jsonBlockMatch[1];
+                } else {
+                    const jsonStart = resultText.indexOf('{');
+                    const jsonEnd = resultText.lastIndexOf('}');
+                    if (
+                        jsonStart !== -1 &&
+                        jsonEnd !== -1 &&
+                        jsonEnd > jsonStart
+                    ) {
+                        cleanJson = resultText.substring(
+                            jsonStart,
+                            jsonEnd + 1,
+                        );
+                    } else {
+                        reject(
+                            new Error(
+                                `No JSON found in Cursor result. Result text: ${resultText.substring(0, 500)}`,
+                            ),
+                        );
+                        return;
+                    }
+                }
+
+                const wordData: WordData = JSON.parse(cleanJson);
+
+                const generatedWord = wordData.word?.toLowerCase().trim();
+                const requestedWord = word.toLowerCase().trim();
+
+                if (!generatedWord) {
+                    reject(
+                        new Error(
+                            `Generated data has no word field. Generated data: ${JSON.stringify(wordData).substring(0, 200)}`,
+                        ),
+                    );
+                    return;
+                }
+
+                if (generatedWord !== requestedWord) {
+                    reject(
+                        new Error(
+                            `Word mismatch: requested "${requestedWord}" but got "${generatedWord}".`,
+                        ),
+                    );
+                    return;
+                }
+
+                if (wordData.languageCode !== languageCode) {
+                    reject(
+                        new Error(
+                            `Language mismatch: requested "${languageCode}" but got "${wordData.languageCode}"`,
+                        ),
+                    );
+                    return;
+                }
+
+                resolve(wordData);
             } catch (parseError) {
                 reject(
                     new Error(
@@ -352,9 +320,6 @@ async function generateWordData(
 }
 
 async function importWordToDatabase(wordData: WordData): Promise<void> {
-    console.log(`💾 Importing "${wordData.word}" to database...`);
-
-    // Create temporary JSON file for import
     const tempDir = path.join(__dirname, 'temp');
     await fs.mkdir(tempDir, { recursive: true });
 
@@ -368,7 +333,6 @@ async function importWordToDatabase(wordData: WordData): Promise<void> {
     );
     await fs.writeFile(jsonFile, JSON.stringify([wordData], null, 2), 'utf8');
 
-    // Execute import script
     return new Promise<void>((resolve, reject) => {
         const importProcess = spawn(
             'tsx',
@@ -383,22 +347,18 @@ async function importWordToDatabase(wordData: WordData): Promise<void> {
             ],
             {
                 stdio: 'inherit',
-                cwd: path.join(__dirname, '..', '..'), // Project root
+                cwd: path.join(__dirname, '..', '..'),
             },
         );
 
         importProcess.on('close', async code => {
-            // Clean up JSON file
             try {
                 await fs.unlink(jsonFile);
-            } catch (e) {
-                // Ignore cleanup errors
+            } catch {
+                // best-effort cleanup
             }
 
             if (code === 0) {
-                console.log(
-                    `✅ Successfully imported "${wordData.word}" to database`,
-                );
                 resolve();
             } else {
                 reject(
@@ -421,34 +381,31 @@ async function main() {
         let words: { word: string; languageCode: string }[] = [];
 
         if (args.word && args.languageCode) {
-            // Single word mode
             words = [{ word: args.word, languageCode: args.languageCode }];
         } else if (args.filePath) {
-            // File mode
             words = await readWordsFromFile(args.filePath);
-            console.log(`📖 Read ${words.length} words from ${args.filePath}`);
+            console.log(`Read ${words.length} words from ${args.filePath}`);
         }
 
-        // Process each word
+        let succeeded = 0;
         for (const { word, languageCode } of words) {
             try {
-                console.log(`\n🚀 Processing word: ${word} (${languageCode})`);
                 const wordData = await generateWordData(word, languageCode);
                 await importWordToDatabase(wordData);
-                console.log(`🎉 Successfully added word: ${word}`);
+                console.log(`Added: ${word}`);
+                succeeded++;
             } catch (error) {
                 console.error(
-                    `❌ Failed to process word "${word}":`,
+                    `Failed to process "${word}":`,
                     error instanceof Error ? error.message : error,
                 );
-                // Continue with next word
             }
         }
 
-        console.log('\n✅ All words processed!');
+        console.log(`Done: ${succeeded}/${words.length} words added.`);
     } catch (error) {
         console.error(
-            '❌ Script failed:',
+            'Script failed:',
             error instanceof Error ? error.message : error,
         );
         process.exit(1);

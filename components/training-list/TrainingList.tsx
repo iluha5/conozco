@@ -30,7 +30,6 @@ export function TrainingList() {
     const { settings: userSettings } = useUserSettings();
     const languageCode = userSettings?.learnLanguage?.code || null;
 
-    // Load tests with group names from DB
     const { testModes, isLoading: isLoadingTests } = useTestModes(
         languageCode,
         t,
@@ -68,14 +67,12 @@ export function TrainingList() {
         handleGroupSetupClose,
     } = useTrainingModes();
 
-    // Invalidate cache on component mount
     useEffect(() => {
         queryClient.invalidateQueries({
             queryKey: ['training-list-words', languageCode],
         });
     }, [queryClient, languageCode]);
 
-    // Initialize tab based on hash on mount
     useEffect(() => {
         const hash = window.location.hash.slice(1);
         const tabFromHash = getTabFromHash(hash, t);
@@ -84,7 +81,6 @@ export function TrainingList() {
         }
     }, [setActiveTab, t]);
 
-    // Handle hash changes (browser back button)
     useEffect(() => {
         const handleHashChange = () => {
             const hash = window.location.hash.slice(1);
@@ -102,7 +98,6 @@ export function TrainingList() {
         };
     }, [setActiveTab, t]);
 
-    // Tab switching handler with hash management
     const handleTabChange = (value: string) => {
         const newTab = value as TrainingModeGroupId;
         updateUrlHash(newTab, t);
@@ -125,7 +120,6 @@ export function TrainingList() {
         clearProgress();
     };
 
-    // Show loader only for tests, words load in background
     if (isLoadingTests) {
         return (
             <div className="flex items-center justify-center py-12">
@@ -194,7 +188,6 @@ export function TrainingList() {
                 }}
             </TrainingTabs>
 
-            {/* Диалоги */}
             <NoWordsDialog
                 open={showNoWordsDialog}
                 onOpenChange={setShowNoWordsDialog}
@@ -210,7 +203,6 @@ export function TrainingList() {
                 startNewLoading={isStarting}
             />
 
-            {/* FlashCards Review */}
             {showFlashCardsReview && flashCardsParams && (
                 <FlashCardsReview
                     params={flashCardsParams}
@@ -218,19 +210,15 @@ export function TrainingList() {
                 />
             )}
 
-            {/* Group Setup Dialog */}
             <GroupReviewSetupDialog
                 open={showGroupReviewSetup}
                 onOpenChange={handleGroupSetupClose}
                 onStart={params => {
-                    // Set parameters for FlashCardsReview
                     handleFlashCardsOpen(params);
-                    // Close settings dialog
                     handleGroupSetupClose(false);
                 }}
             />
 
-            {/* Delete Training Confirmation Dialog */}
             <DeleteTrainingConfirmationDialog
                 open={deleteDialogOpen}
                 onOpenChange={setDeleteDialogOpen}

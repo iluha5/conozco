@@ -57,10 +57,6 @@ async function patchUserSettings(
     return response.json();
 }
 
-/**
- * Хук для работы с настройками пользователя с кэшированием через React Query
- * Данные кэшируются глобально и переиспользуются между компонентами
- */
 export function useUserSettings() {
     const queryClient = useQueryClient();
 
@@ -79,7 +75,6 @@ export function useUserSettings() {
     const mutation = useMutation({
         mutationFn: patchUserSettings,
         onSuccess: updatedSettings => {
-            // Update cache with new data
             queryClient.setQueryData(['user-settings'], updatedSettings);
         },
     });

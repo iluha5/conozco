@@ -4,12 +4,6 @@ import { getLearnedTrainingModes } from '../constants/learned-training-modes';
 import { getTestConfigById } from '../constants/test-config';
 import { I18n } from '@/lib/i18n';
 
-/**
- * Найти конфигурацию режима тренировки по ID
- * @param modeId - ID режима тренировки
- * @param t - функция перевода
- * @param testModes - опциональный массив тестов (если передан, используется вместо загрузки через getTestTrainingModes)
- */
 export function getTrainingModeConfig(
     modeId: TrainingModeId,
     t: I18n['t'],
@@ -21,7 +15,8 @@ export function getTrainingModeConfig(
         ...(testModes || []),
     ];
 
-    // If mode not found and this is new test ID with language prefix, try to find via test-config
+    // For language-prefixed test IDs (`learned-test-{lang}-...`), fall back to
+    // looking up the test by its TEST_CONFIGS entry.
     let found = allTrainingModes.find(mode => mode.id === modeId);
 
     if (
@@ -31,7 +26,6 @@ export function getTrainingModeConfig(
     ) {
         const testConfig = getTestConfigById(modeId);
         if (testConfig) {
-            // Determine test level from ID
             const isA2 = modeId.includes('-a2-');
             const isB1 = modeId.includes('-b1-');
             const isB2 = modeId.includes('-b2-');
@@ -58,7 +52,7 @@ export function getTrainingModeConfig(
                 shortDescription = t('20 random words from A1');
             }
 
-            // Create basic configuration (group name will be loaded later)
+            // groupName is a placeholder; real name resolved once DB groups load
             found = {
                 id: modeId as TrainingModeId,
                 title,
@@ -78,7 +72,7 @@ export function getTrainingModeConfig(
                 wordSource: 'group',
                 modeType: 'flashCards',
                 groupId: testConfig.groupId,
-                groupName: level, // Fallback, will be replaced when loading from DB
+                groupName: level,
             };
         }
     }

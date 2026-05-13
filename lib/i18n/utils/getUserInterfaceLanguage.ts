@@ -2,10 +2,6 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
-/**
- * Получает код языка интерфейса пользователя из БД
- * Возвращает код языка (ru, en, es) или null если пользователь не авторизован
- */
 export async function getUserInterfaceLanguage(): Promise<string | null> {
     try {
         const session = await getServerSession(authOptions);

@@ -1,18 +1,12 @@
 #!/usr/bin/env ts-node
 
-/**
- * Script to update existing users after auth migration
- * Sets registrationMethod to ADMIN_CREATED and emailVerified to current date
- */
+// One-shot post-auth-migration backfill: marks legacy users as ADMIN_CREATED with verified email.
 
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 async function main() {
-    console.log('🔍 Checking existing users...\n');
-
-    // Get all users
     const users = await prisma.user.findMany({
         select: {
             id: true,
@@ -23,37 +17,21 @@ async function main() {
         },
     });
 
-    console.log(`Found ${users.length} users\n`);
-
     if (users.length === 0) {
-        console.log('✅ No existing users to update');
+        console.log('No users found.');
         return;
     }
 
-    // Show current state
-    console.log('Current state:');
-    users.forEach(user => {
-        console.log(`  - ${user.email}`);
-        console.log(`    registrationMethod: ${user.registrationMethod}`);
-        console.log(`    emailVerified: ${user.emailVerified}`);
-        console.log(`    hasPassword: ${!!user.password}\n`);
-    });
-
-    // Update users that need updating
     const usersToUpdate = users.filter(
-        u =>
-            u.registrationMethod === 'EMAIL_PASSWORD' ||
-            u.emailVerified === null,
+        user =>
+            user.registrationMethod === 'EMAIL_PASSWORD' ||
+            user.emailVerified === null,
     );
 
     if (usersToUpdate.length === 0) {
-        console.log('✅ All users already have correct data');
+        console.log(`${users.length} users — already up to date.`);
         return;
     }
-
-    console.log(
-        `\n🔄 Updating ${usersToUpdate.length} users to ADMIN_CREATED with verified email...\n`,
-    );
 
     const now = new Date();
 
@@ -65,19 +43,14 @@ async function main() {
                 emailVerified: now,
             },
         });
-        console.log(`  ✅ Updated: ${user.email}`);
     }
 
-    console.log('\n✨ All existing users updated successfully!');
-    console.log(
-        '   - registrationMethod: ADMIN_CREATED (были созданы через admin API)',
-    );
-    console.log('   - emailVerified: set to current timestamp');
+    console.log(`Updated ${usersToUpdate.length} of ${users.length} users.`);
 }
 
 main()
-    .catch(e => {
-        console.error('❌ Error:', e);
+    .catch(error => {
+        console.error('Update failed:', error);
         process.exit(1);
     })
     .finally(async () => {

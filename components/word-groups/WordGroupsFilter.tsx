@@ -54,7 +54,7 @@ export function WordGroupsFilter({
 
     useEffect(() => {
         if (isOpen && containerRef.current && popupRef.current) {
-            // Используем двойной requestAnimationFrame для получения актуальных размеров после полного рендеринга
+            // Double rAF so layout has settled before we measure
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
                     if (!containerRef.current || !popupRef.current) return;
@@ -64,15 +64,14 @@ export function WordGroupsFilter({
                     const popupRect = popupRef.current.getBoundingClientRect();
                     const viewportWidth = window.innerWidth;
                     const viewportHeight = window.innerHeight;
-                    const isMobile = viewportWidth < 640; // Мобильный размер (sm breakpoint)
+                    const isMobile = viewportWidth < 640; // sm breakpoint
 
-                    // Проверяем вертикальное позиционирование
                     const fitsDown =
                         containerRect.bottom + popupRect.height <=
                         viewportHeight;
                     const fitsUp = containerRect.top - popupRect.height >= 0;
 
-                    // На мобильных устройствах всегда сдвигаем влево на 80px
+                    // Shift left on mobile so popup stays inside viewport
                     const translateX = isMobile ? -80 : 0;
 
                     setPopupPosition({

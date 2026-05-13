@@ -11,7 +11,6 @@ export function initializeLetters(
     const wordText = getWordText(word);
     const wordLetters = wordText.split('');
 
-    // Получаем дополнительные буквы в зависимости от сложности
     let extraLetters: string[] = [];
     if (difficulty === 'medium') {
         extraLetters = getRandomLetters(3, wordLetters);

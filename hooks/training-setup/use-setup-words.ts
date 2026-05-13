@@ -15,9 +15,6 @@ async function fetchSetupWords(): Promise<Word[]> {
     return response.json();
 }
 
-/**
- * Хук для загрузки слов для настройки тренировки с кэшированием через React Query
- */
 export const useSetupWords = (
     selectedLanguage: string,
     selectedGroupIds: number[] = [],
@@ -29,30 +26,24 @@ export const useSetupWords = (
         gcTime: QUERY_GC_TIME,
     });
 
-    // Use stable reference to empty array
     const words = data ?? EMPTY_WORDS;
 
-    // Log error if exists
     if (error) {
         console.error('Error fetching words:', error);
     }
 
-    // Memoization of filtered words
     const filteredWords = useMemo(() => {
         let filtered = words;
 
-        // Language filter
         if (selectedLanguage !== 'ALL') {
             filtered = filtered.filter(
                 word => word.language.code === selectedLanguage,
             );
         }
 
-        // Group filter
         if (selectedGroupIds.length > 0) {
             filtered = filtered.filter(word => {
                 if (!word.baseWord?.wordGroups) return false;
-
                 return word.baseWord.wordGroups.some(wg =>
                     selectedGroupIds.includes(wg.wordGroupId),
                 );

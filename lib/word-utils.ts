@@ -1,8 +1,3 @@
-/**
- * Утилиты для работы со словами
- */
-
-// Parts of speech map: name -> human-readable name
 export const PART_OF_SPEECH_DISPLAY_NAMES: Record<string, string> = {
     NOUN: 'Noun',
     VERB: 'Verb',
@@ -18,7 +13,6 @@ export const PART_OF_SPEECH_DISPLAY_NAMES: Record<string, string> = {
     PHRASE: 'Phrase',
 };
 
-// Parts of speech map: name -> abbreviation
 export const PART_OF_SPEECH_ABBREVIATIONS: Record<string, string> = {
     NOUN: 'n',
     VERB: 'v',
@@ -42,13 +36,11 @@ type Translation = {
 type CustomTranslation = {
     id: number;
     translation: string;
-    [key: string]: any; // Other fields are not important for this function
+    [key: string]: any;
 };
 
-/**
- * Получить текущий перевод слова
- * Приоритет: кастомный перевод -> базовый перевод
- */
+// Custom (user-supplied) translation wins over the base translation list.
+// Callers in localized contexts should resolve "No translation" via useTranslation themselves.
 export function getCurrentTranslation(
     customTranslations?: CustomTranslation[],
     baseTranslations?: Translation[],
@@ -59,29 +51,22 @@ export function getCurrentTranslation(
     if (baseTranslations && baseTranslations.length > 0) {
         return baseTranslations[0].translation;
     }
-    // This function is used in various contexts, so we return English fallback
-    // Components should use useTranslation hook for proper localization
     return 'No translation';
 }
 
-/**
- * Получить флаг языка по коду
- */
+const LANGUAGE_FLAGS: Record<string, string> = {
+    en: '🇬🇧',
+    es: '🇪🇸',
+    fr: '🇫🇷',
+    de: '🇩🇪',
+    it: '🇮🇹',
+    ru: '🇷🇺',
+};
+
 export function getLanguageFlag(languageCode: string): string {
-    const flags: Record<string, string> = {
-        en: '🇬🇧',
-        es: '🇪🇸',
-        fr: '🇫🇷',
-        de: '🇩🇪',
-        it: '🇮🇹',
-        ru: '🇷🇺',
-    };
-    return flags[languageCode] || '🌐';
+    return LANGUAGE_FLAGS[languageCode] || '🌐';
 }
 
-/**
- * Получить аббревиатуру части речи по имени
- */
 export function getPartOfSpeechAbbrev(partOfSpeechName: string): string {
     return (
         PART_OF_SPEECH_ABBREVIATIONS[partOfSpeechName] ||
@@ -89,32 +74,19 @@ export function getPartOfSpeechAbbrev(partOfSpeechName: string): string {
     );
 }
 
-/**
- * Получить человеко-читаемое название части речи
- */
 export function getPartOfSpeechDisplayName(partOfSpeechName: string): string {
     return PART_OF_SPEECH_DISPLAY_NAMES[partOfSpeechName] || partOfSpeechName;
 }
 
-/**
- * Получить текст с количеством переводов
- * Формат: "(5)" или "(5+1)" если есть кастомный перевод
- */
+// Renders "(N)" or "(N+1)" if a custom translation also exists.
 export function getTranslationsCountText(
     baseTranslationsCount: number,
     hasCustomTranslation: boolean,
 ): string {
-    if (baseTranslationsCount === 0 && !hasCustomTranslation) {
-        return '';
-    }
-
-    const customPart = hasCustomTranslation ? '+1' : '';
-    return `(${baseTranslationsCount}${customPart})`;
+    if (baseTranslationsCount === 0 && !hasCustomTranslation) return '';
+    return `(${baseTranslationsCount}${hasCustomTranslation ? '+1' : ''})`;
 }
 
-/**
- * Проверить, есть ли у слова переводы
- */
 export function hasTranslations(
     customTranslations?: CustomTranslation[],
     baseTranslations?: Translation[],

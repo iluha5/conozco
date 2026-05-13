@@ -1,7 +1,3 @@
-/**
- * Фильтры для диалога добавления слов
- */
-
 'use client';
 
 import { useRef } from 'react';
@@ -72,7 +68,6 @@ export function AddWordDialogFilters({
 
     return (
         <div className="space-y-3">
-            {/* Поле поиска и кнопка AI */}
             <div className="relative flex-1 min-w-[200px] flex gap-2">
                 <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -129,7 +124,6 @@ export function AddWordDialogFilters({
                 </Button>
             </div>
 
-            {/* Фильтры: Группы, Части речи, Добавить все */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                 <div className="flex flex-wrap items-center gap-2">
                     <WordGroupsFilter

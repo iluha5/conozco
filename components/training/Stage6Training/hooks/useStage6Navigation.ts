@@ -24,21 +24,17 @@ export function useStage6Navigation({
                 nextIndex: currentIndex + 1,
             };
         } else {
-            // Завершили все слова первый раз
             setHasCompletedFirstRound(true);
 
-            // Проверяем, есть ли ошибки
             const errorIndices = getErrorIndices(exerciseResults);
 
             if (errorIndices.length > 0) {
-                // Есть ошибки - переходим в режим исправления
                 setIsRetryMode(true);
                 return {
                     type: 'retry' as const,
                     nextIndex: errorIndices[0],
                 };
             } else {
-                // Все правильно - завершаем этап
                 return { type: 'complete' as const };
             }
         }

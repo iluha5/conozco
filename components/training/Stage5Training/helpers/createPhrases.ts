@@ -9,7 +9,6 @@ export function createPhrases(
 
         const allPhrases: Phrase[] = [];
 
-        // Добавляем простые примеры
         if (word.baseWord.examples) {
             word.baseWord.examples.forEach(example => {
                 allPhrases.push({
@@ -25,7 +24,6 @@ export function createPhrases(
             });
         }
 
-        // Добавляем грамматические примеры
         if (word.baseWord.grammaticalExamples) {
             word.baseWord.grammaticalExamples.forEach(example => {
                 allPhrases.push({
@@ -41,7 +39,6 @@ export function createPhrases(
             });
         }
 
-        // Ограничиваем до выбранного количества предложений, но не больше доступных
         return allPhrases.slice(0, sentencesPerWord);
     });
 }

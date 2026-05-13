@@ -9,18 +9,15 @@ export function ScrollIndicator() {
 
     useEffect(() => {
         const handleScroll = () => {
-            // Проверяем, прокрутил ли пользователь страницу достаточно далеко
-            // Скрываем стрелку когда прокрутили больше 300px или когда следующий блок начинает появляться
             const scrollY = window.scrollY || window.pageYOffset;
             const windowHeight = window.innerHeight;
 
-            // Скрываем если прокрутили больше половины экрана или если следующий блок виден
             if (scrollY > windowHeight * 0.3) {
                 setIsVisible(false);
             }
         };
 
-        // Также проверяем видимость следующего блока через IntersectionObserver
+        // Also hide once the workflow section starts appearing
         const observer = new IntersectionObserver(
             entries => {
                 entries.forEach(entry => {
@@ -35,14 +32,13 @@ export function ScrollIndicator() {
             },
         );
 
-        // Находим следующий блок (Workflow Section)
         const nextSection = document.querySelector('[data-section="workflow"]');
         if (nextSection) {
             observer.observe(nextSection);
         }
 
         window.addEventListener('scroll', handleScroll, { passive: true });
-        handleScroll(); // Проверяем сразу
+        handleScroll();
 
         return () => {
             window.removeEventListener('scroll', handleScroll);

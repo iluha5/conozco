@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useToast, usePartsOfSpeech } from '@/hooks/shared';
-// Custom hooks
 import { useClientCheck } from './hooks/useClientCheck';
 import { useWordSelection } from './hooks/useWordSelection';
 import { useConfirmationDialogs } from './hooks/useConfirmationDialogs';
@@ -11,10 +10,8 @@ import { useWordLoading } from './hooks/useWordLoading';
 import { useWordStatus } from './hooks/useWordStatus';
 import { useWordDeletion } from './hooks/useWordDeletion';
 
-// Types
 import type { Word, WordsListProps } from './typing';
 
-// Components
 import { EmptyState } from './components/EmptyState';
 import { BulkActions } from './components/BulkActions';
 import { WordItem } from './components/WordItem';
@@ -34,11 +31,9 @@ export function WordsList({
 }: WordsListProps) {
     const { t } = useTranslation();
     const defaultEmptyMessage = emptyMessage || t('No words found');
-    // Loading states for bulk operations
     const [isDeleting, setIsDeleting] = useState(false);
     const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
-    // Custom hooks
     const { isClient } = useClientCheck();
     const internalSelection = useWordSelection(words);
     const selection = externalSelection || internalSelection;
@@ -51,7 +46,6 @@ export function WordsList({
 
     const { toast } = useToast();
 
-    // Event handlers using hooks
     const handleDeleteWord = async (id: string | number) => {
         await deletion.handleDeleteWord(id, words);
     };
@@ -170,7 +164,6 @@ export function WordsList({
 
     return (
         <div className="space-y-4">
-            {/* Кнопки массового управления */}
             {showBulkActions && words.length > 0 && (
                 <BulkActions
                     words={words}
@@ -184,7 +177,6 @@ export function WordsList({
                 />
             )}
 
-            {/* Список слов */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-1 max-h-[400px] overflow-y-auto p-2">
                 {words.map(word => {
                     const isLoading = loading.isWordLoading(word.id);

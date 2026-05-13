@@ -10,15 +10,11 @@ import { STORAGE_KEYS } from '@/config/storage-keys';
 const STORAGE_KEY = STORAGE_KEYS.TRAINING_PROGRESS;
 const STORAGE_CHANGE_EVENT = STORAGE_KEYS.TRAINING_STORAGE_CHANGE_EVENT;
 
-/**
- * Хук для работы с сохранением прогресса тренировки в localStorage
- */
 export function useTrainingStorage() {
     const [savedState, setSavedState] = useState<SavedTrainingState | null>(
         null,
     );
 
-    // Function to load state from localStorage
     const loadSavedState = useCallback(() => {
         try {
             const saved = localStorage.getItem(STORAGE_KEY);
@@ -34,21 +30,17 @@ export function useTrainingStorage() {
         }
     }, []);
 
-    // Load saved state on mount
     useEffect(() => {
         loadSavedState();
     }, [loadSavedState]);
 
-    // Synchronize state between components via storage events
     useEffect(() => {
-        // Storage event handler (for sync between tabs)
-        const handleStorageChange = (e: StorageEvent) => {
-            if (e.key === STORAGE_KEY) {
+        const handleStorageChange = (event: StorageEvent) => {
+            if (event.key === STORAGE_KEY) {
                 loadSavedState();
             }
         };
 
-        // Custom event handler (for sync in same window)
         const handleCustomStorageChange = () => {
             loadSavedState();
         };
@@ -68,14 +60,11 @@ export function useTrainingStorage() {
         };
     }, [loadSavedState]);
 
-    // Function to send custom event when localStorage changes
+    // Cross-tab sync uses native `storage`; same-window updates need a custom event.
     const notifyStorageChange = useCallback(() => {
         window.dispatchEvent(new CustomEvent(STORAGE_CHANGE_EVENT));
     }, []);
 
-    /**
-     * Сохранить состояние тренировки
-     */
     const saveProgress = useCallback(
         (state: SavedTrainingState) => {
             try {
@@ -93,9 +82,6 @@ export function useTrainingStorage() {
         [notifyStorageChange],
     );
 
-    /**
-     * Очистить сохраненное состояние
-     */
     const clearProgress = useCallback(() => {
         try {
             localStorage.removeItem(STORAGE_KEY);
@@ -106,16 +92,10 @@ export function useTrainingStorage() {
         }
     }, [notifyStorageChange]);
 
-    /**
-     * Проверить, есть ли незавершенная тренировка
-     */
     const hasUnfinishedTraining = useCallback(() => {
         return savedState !== null;
     }, [savedState]);
 
-    /**
-     * Создать новую сессию тренировки
-     */
     const createNewSession = useCallback(
         (params: {
             enabledStages: TrainingStage[];
@@ -126,7 +106,6 @@ export function useTrainingStorage() {
             const sessionId = `training_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
             const now = new Date().toISOString();
 
-            // Initialize progress for each stage
             const stagesProgress: StageProgress[] = params.enabledStages.map(
                 stage => ({
                     stage,
@@ -161,9 +140,6 @@ export function useTrainingStorage() {
         [saveProgress],
     );
 
-    /**
-     * Обновить прогресс по текущему слову
-     */
     const updateWordProgress = useCallback(
         (
             stage: TrainingStage,
@@ -197,7 +173,6 @@ export function useTrainingStorage() {
                     },
                 );
 
-                // Count completed words
                 const completedWords = updatedStagesProgress.reduce(
                     (count, sp) => {
                         if (sp.status === 'completed') {
@@ -229,9 +204,6 @@ export function useTrainingStorage() {
         [notifyStorageChange],
     );
 
-    /**
-     * Отметить этап как завершенный
-     */
     const completeStage = useCallback(
         (stage: TrainingStage) => {
             try {
@@ -266,9 +238,6 @@ export function useTrainingStorage() {
         [notifyStorageChange],
     );
 
-    /**
-     * Переключить текущий этап
-     */
     const setCurrentStage = useCallback(
         (stage: TrainingStage) => {
             try {
@@ -276,7 +245,6 @@ export function useTrainingStorage() {
                 if (!saved) return;
 
                 const currentState = JSON.parse(saved) as SavedTrainingState;
-                // Update stage statuses
                 const updatedStagesProgress = currentState.stagesProgress.map(
                     sp => {
                         if (sp.stage === stage && sp.status === 'pending') {
@@ -303,9 +271,6 @@ export function useTrainingStorage() {
         [notifyStorageChange],
     );
 
-    /**
-     * Записать попытку для слова (вызывается при ответе пользователя)
-     */
     const recordAttempt = useCallback(
         (stage: TrainingStage, wordId: string, isCorrect: boolean) => {
             try {
@@ -328,7 +293,7 @@ export function useTrainingStorage() {
                                         : wp.correctAttempts,
                                     isCompleted: isCorrect
                                         ? true
-                                        : wp.isCompleted, // Mark as completed on correct answer
+                                        : wp.isCompleted,
                                     lastAttemptAt: new Date().toISOString(),
                                 };
                             },
@@ -341,7 +306,6 @@ export function useTrainingStorage() {
                     },
                 );
 
-                // Count unique completed words across all stages
                 const completedWordIds = new Set<string>();
                 updatedStagesProgress.forEach(sp => {
                     sp.wordsProgress.forEach(wp => {
@@ -368,9 +332,6 @@ export function useTrainingStorage() {
         [notifyStorageChange],
     );
 
-    /**
-     * Получить прогресс по этапу
-     */
     const getStageProgress = useCallback(
         (stage: TrainingStage): StageProgress | undefined => {
             return savedState?.stagesProgress.find(sp => sp.stage === stage);

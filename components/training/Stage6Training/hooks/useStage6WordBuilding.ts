@@ -26,7 +26,6 @@ export function useStage6WordBuilding({
             const correctWord = currentWord;
             const nextExpectedLetter = correctWord[userWord.length];
 
-            // Если буква правильная
             if (letter.toLowerCase() === nextExpectedLetter.toLowerCase()) {
                 setUserWord([...userWord, letter]);
                 setLetters(prev =>
@@ -37,7 +36,6 @@ export function useStage6WordBuilding({
                     ),
                 );
 
-                // Если слово завершено
                 if (userWord.length + 1 === correctWord.length) {
                     setIsCorrect(true);
                     setIsComplete(true);
@@ -45,14 +43,14 @@ export function useStage6WordBuilding({
                 }
                 return null;
             } else {
-                // Неправильная буква - показываем анимацию
                 setFlashingLetter(index);
-                setTimeout(() => setFlashingLetter(null), 150); // Анимация длится 0.15 сек
+                // Animation duration is 0.15s
+                setTimeout(() => setFlashingLetter(null), 150);
 
                 const newErrorCount = totalErrors + 1;
                 setTotalErrors(newErrorCount);
 
-                // Если 3 ошибки всего за слово - автоматически заполняем слово
+                // After 3 mistakes auto-fill the word
                 if (newErrorCount >= 3) {
                     const correctLetters = correctWord.split('');
                     setUserWord(correctLetters);
@@ -76,7 +74,6 @@ export function useStage6WordBuilding({
             const letter = userWord[index];
             setUserWord(userWord.filter((_, wordIndex) => wordIndex !== index));
 
-            // Найти эту букву в массиве letters и снять выделение
             setLetters(prev =>
                 prev.map(item =>
                     item.letter === letter && item.selected

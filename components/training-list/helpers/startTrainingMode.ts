@@ -11,10 +11,9 @@ import { STORAGE_KEYS } from '@/config/storage-keys';
 import { FlashCardsReviewParams } from '@/components/flash-cards-review/typing';
 import { tServerSync } from '@/lib/i18n';
 
-/**
- * ВАЖНО: Эта функция отвечает за правильное сохранение конфигурации в localStorage
- * При паузе тренировки эти настройки будут сохранены в SavedTrainingState
- */
+// IMPORTANT: this function is responsible for persisting training config to
+// localStorage. When a training is paused these settings are picked up by
+// SavedTrainingState.
 export async function startTrainingMode(
     modeId: TrainingModeId,
     config: TrainingModeConfig,
@@ -24,37 +23,29 @@ export async function startTrainingMode(
     router: any,
     setSelectedWords: (_words: Set<string>) => void,
     toast: (_options: any) => void,
-    // New parameters for consolidation modes
     onFlashCardsOpen?: (_params: FlashCardsReviewParams) => void,
     onGroupSetupOpen?: () => void,
     lang: string = 'en',
 ): Promise<{ success: boolean; noWords?: boolean }> {
-    // Custom mode → /training/setup
     if (modeId === 'custom') {
         router.push('/training/setup');
         return { success: true };
     }
 
-    // FlashCards mode (quick-check, A1 tests)
     if (config.modeType === 'flashCards') {
         if (modeId === 'learned-group-check') {
-            // Open group selection dialog
             onGroupSetupOpen?.();
             return { success: true };
         }
 
-        // Group modes (A1 tests)
         if (config.groupId) {
-            // Check group availability and activation via API
             const groupInfo = await checkGroupAvailability(config.groupId);
 
-            // If group found but not activated, or not found at all
             if (!groupInfo.found || !groupInfo.isActive) {
-                // Try to automatically activate group
+                // Try to auto-activate the group on the user's behalf
                 const activated = await activateGroup(config.groupId);
 
                 if (!activated) {
-                    // If activation failed, show error
                     toast({
                         title: tServerSync('Group unavailable', lang),
                         description: tServerSync(
@@ -67,7 +58,6 @@ export async function startTrainingMode(
                     return { success: false };
                 }
 
-                // Show notification about automatic group addition only if group was not activated
                 if (!groupInfo.isActive) {
                     toast({
                         title: tServerSync(
@@ -94,7 +84,6 @@ export async function startTrainingMode(
             return { success: true };
         }
 
-        // Quick check of learned
         const params: FlashCardsReviewParams = {
             status: 'LEARNED',
             limit: config.wordCount,
@@ -105,11 +94,9 @@ export async function startTrainingMode(
         return { success: true };
     }
 
-    // Training mode (sentences for learned or standard)
     const wordStatus =
         config.wordSource === 'learned' ? 'LEARNED' : 'NOT_LEARNED';
 
-    // Filter words by status
     const filteredWords = allWords.filter(
         word =>
             Number(word.languageId) === currentLanguageId &&
@@ -168,10 +155,6 @@ export async function startTrainingMode(
     return { success: true };
 }
 
-/**
- * Хелпер для проверки доступности и активации группы
- * Возвращает объект с информацией о группе
- */
 async function checkGroupAvailability(groupId: number): Promise<{
     found: boolean;
     isActive: boolean;
@@ -199,9 +182,6 @@ async function checkGroupAvailability(groupId: number): Promise<{
     }
 }
 
-/**
- * Хелпер для активации группы через API
- */
 async function activateGroup(groupId: number): Promise<boolean> {
     try {
         const response = await fetch(
@@ -211,7 +191,7 @@ async function activateGroup(groupId: number): Promise<boolean> {
             },
         );
 
-        // If group already activated (400), consider it success
+        // 400 means group is already activated; treat as success
         if (response.status === 400) {
             return true;
         }

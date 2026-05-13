@@ -19,7 +19,7 @@ export function useStage5Settings({
     const handleSettingsChange = useCallback(
         (newSettings: Partial<Stage5Settings>) => {
             updateSettings({ ...currentSettings, ...newSettings });
-            // Сбрасываем прогресс при изменении количества предложений
+            // Reset progress when sentence count changes
             setCurrentIndex(0);
             setCurrentPhraseIndex(0);
             setIsFirstCard(true);

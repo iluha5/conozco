@@ -52,7 +52,6 @@ export function ConfirmationDialogs({
 
     return (
         <>
-            {/* Диалог подтверждения удаления */}
             <Dialog
                 open={deleteDialogOpen}
                 onOpenChange={handleCloseDeleteDialog}
@@ -89,7 +88,6 @@ export function ConfirmationDialogs({
                 </DialogContent>
             </Dialog>
 
-            {/* Диалог подтверждения изменения статуса */}
             <Dialog
                 open={statusDialogOpen}
                 onOpenChange={handleCloseStatusDialog}

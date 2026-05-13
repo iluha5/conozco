@@ -5,10 +5,6 @@ import { trainingApi } from '@/lib/api/training.api';
 import { Word } from '@/types/training.types';
 import { STORAGE_KEYS } from '@/config/storage-keys';
 
-/**
- * Хук для загрузки данных тренировки
- * Поддерживает загрузку как неизученных, так и изученных слов
- */
 export function useTrainingData(
     settingsLoaded: boolean,
     selectionLoaded: boolean,
@@ -21,7 +17,6 @@ export function useTrainingData(
     const fetchWords = useCallback(async () => {
         onLoadingChange(true);
         try {
-            // Check word source from sessionStorage
             const wordSource =
                 typeof window !== 'undefined'
                     ? sessionStorage.getItem(STORAGE_KEYS.TRAINING_WORD_SOURCE)

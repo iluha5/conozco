@@ -1,12 +1,5 @@
 import { Word } from '@/types/training.types';
 
-/**
- * Получить последние добавленные слова для текущего языка
- * @param words - Массив всех слов
- * @param languageId - ID языка для фильтрации
- * @param count - Количество слов
- * @param status - Статус слов (опционально, по умолчанию только NOT_LEARNED)
- */
 export function getLastAddedWords(
     words: Word[],
     languageId: number,
@@ -29,9 +22,6 @@ export function getLastAddedWords(
         .slice(0, count);
 }
 
-/**
- * Получить случайные изученные слова
- */
 export function getRandomLearnedWords(
     words: Word[],
     languageId: number,

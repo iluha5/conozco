@@ -1470,9 +1470,6 @@ function generateGrammaticalExamples(
 
 async function main() {
     try {
-        console.log('🔍 Querying database for external words...');
-
-        // Get native source ID
         const nativeSource = await prisma.wordSource.findUnique({
             where: { code: 'native' },
         });
@@ -1481,33 +1478,25 @@ async function main() {
             throw new Error("WordSource with code 'native' not found");
         }
 
-        // Query BaseWord records where sourceId != native, limit to 10
         const externalWords = await prisma.baseWord.findMany({
             where: {
-                sourceId: {
-                    not: nativeSource.id,
-                },
+                sourceId: { not: nativeSource.id },
             },
             take: 10,
             include: {
                 language: true,
                 translations: {
-                    include: {
-                        partOfSpeech: true,
-                    },
+                    include: { partOfSpeech: true },
                     take: 1,
                 },
             },
         });
 
-        console.log(`✅ Found ${externalWords.length} external words`);
-
         if (externalWords.length === 0) {
-            console.log('⚠️ No external words found. Exiting.');
+            console.log('No external words found.');
             return;
         }
 
-        // Generate WordData for each word
         const wordDataMap = new Map<string, WordData>();
 
         for (const wordRecord of externalWords) {
@@ -1515,12 +1504,8 @@ async function main() {
             const languageCode = wordRecord.language.code;
             const partOfSpeech = wordRecord.translations?.[0]?.partOfSpeech
                 ? mapPartOfSpeech(wordRecord.translations[0].partOfSpeech.name)
-                : PartOfSpeech.NOUN; // Default to NOUN if part of speech is unknown
+                : PartOfSpeech.NOUN;
             const targetLangs = getTargetLanguages(languageCode);
-
-            console.log(
-                `📝 Processing word: "${word}" (${languageCode}, ${partOfSpeech})`,
-            );
 
             const wordData: WordData = {
                 word,
@@ -1680,13 +1665,10 @@ async function main() {
 
         fileContent += `]);\n`;
 
-        // Write file
         await fs.writeFile(filePath, fileContent, 'utf8');
-
-        console.log(`✅ Generated TypeScript file: ${filePath}`);
-        console.log(`📊 Processed ${wordDataMap.size} words`);
+        console.log(`Generated ${filePath} with ${wordDataMap.size} words.`);
     } catch (error) {
-        console.error('❌ Error:', error);
+        console.error('Error:', error);
         process.exit(1);
     } finally {
         await prisma.$disconnect();

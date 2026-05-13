@@ -44,42 +44,37 @@ export function useStage4AutoAdvance({
     handleNext,
 }: UseStage4AutoAdvanceParams) {
     useEffect(() => {
-        // Автоматический переход только при правильном ответе
+        // Auto-advance only on a correct answer
         if (isComplete && isCorrect) {
             const delay = 1000;
             const timer = setTimeout(() => {
                 if (isRetryMode) {
-                    // В режиме исправления ошибок
-                    // Исправил ошибку - ищем следующую ошибку с учетом обновленных результатов
                     setExerciseResults(currentResults => {
                         const nextErrorIndex = findNextErrorWithResults(
                             currentIndex,
                             currentResults,
                         );
                         if (nextErrorIndex === -1) {
-                            // Все ошибки исправлены - даем время увидеть все зеленые точки, затем завершаем этап
-                            // Если это последний этап, показываем лоадер
                             if (isLastStage) {
                                 setIsCompleting(true);
                                 setTimeout(() => {
                                     onComplete();
                                 }, 500);
                             } else {
+                                // Extra delay so user sees all green dots
                                 setTimeout(() => {
                                     onComplete();
                                     setCurrentIndex(0);
                                     setIsRetryMode(false);
                                     setHasCompletedFirstRound(false);
-                                }, 1500); // Дополнительная задержка для визуального подтверждения
+                                }, 1500);
                             }
                         } else {
-                            // Переходим к следующей ошибке
                             setCurrentIndex(nextErrorIndex);
                         }
-                        return currentResults; // Возвращаем без изменений
+                        return currentResults;
                     });
                 } else {
-                    // Обычный режим - переходим к следующему
                     const result = handleNext();
                     if (result.type === 'next') {
                         setCurrentIndex(result.nextIndex);
@@ -88,18 +83,15 @@ export function useStage4AutoAdvance({
                         setHasCompletedFirstRound(true);
                         setCurrentIndex(result.nextIndex);
                     } else if (result.type === 'complete') {
-                        // Если это последний этап и последнее упражнение выполнено правильно
                         if (
                             isLastStage &&
                             currentIndex === baseWordsLength - 1 &&
                             isCorrect
                         ) {
-                            // Проверяем, что все упражнения выполнены правильно
                             const allCorrect = exerciseResults.every(
                                 result => result === true,
                             );
                             if (allCorrect) {
-                                // Показываем лоадер и завершаем тренировку
                                 setIsCompleting(true);
                                 setTimeout(() => {
                                     onComplete();
@@ -107,7 +99,6 @@ export function useStage4AutoAdvance({
                                 return;
                             }
                         }
-                        // Обычное завершение этапа
                         onComplete();
                         setCurrentIndex(0);
                         setIsRetryMode(false);

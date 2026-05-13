@@ -21,10 +21,6 @@ async function fetchPartsOfSpeech(
     return response.json();
 }
 
-/**
- * Хук для загрузки частей речи с кэшированием через React Query
- * Данные кэшируются глобально и переиспользуются между компонентами
- */
 export function usePartsOfSpeech(languageCode: string = 'ru') {
     const {
         data: partsOfSpeech = [],

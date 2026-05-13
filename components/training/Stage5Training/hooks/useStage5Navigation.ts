@@ -20,7 +20,6 @@ export function useStage5Navigation({
     exerciseResults,
     onComplete: _onComplete,
 }: UseStage5NavigationParams) {
-    // Функция для преобразования линейного индекса упражнения в (wordIndex, phraseIndex)
     const getWordAndPhraseIndexFromExercise = useCallback(
         (exerciseIndex: number) => {
             return getWordAndPhraseIndex(exerciseIndex, wordPhrases);
@@ -28,7 +27,6 @@ export function useStage5Navigation({
         [wordPhrases],
     );
 
-    // Функция для поиска следующей ошибки (использует текущее состояние)
     const findNextErrorIndex = useCallback(
         (currentExerciseIndex: number) => {
             return findNextError(currentExerciseIndex, exerciseResults);
@@ -37,10 +35,8 @@ export function useStage5Navigation({
     );
 
     const handleNext = useCallback(() => {
-        // Обычный режим (не retry)
         const currentWordPhrases = wordPhrases[currentIndex] || [];
 
-        // Если есть еще предложения для текущего слова
         if (currentPhraseIndex < currentWordPhrases.length - 1) {
             return {
                 type: 'nextPhrase' as const,
@@ -48,7 +44,6 @@ export function useStage5Navigation({
                 phraseIndex: currentPhraseIndex + 1,
             };
         } else {
-            // Переходим к следующему слову
             if (currentIndex < wordsWithPhrasesLength - 1) {
                 return {
                     type: 'nextWord' as const,
@@ -56,14 +51,11 @@ export function useStage5Navigation({
                     phraseIndex: 0,
                 };
             } else {
-                // Завершили все фразы первый раз
-                // Проверяем, есть ли ошибки
                 const errorIndices = exerciseResults
                     .map((result, idx) => (result === false ? idx : -1))
                     .filter(idx => idx !== -1);
 
                 if (errorIndices.length > 0) {
-                    // Есть ошибки - переходим в режим исправления
                     const firstErrorPosition =
                         getWordAndPhraseIndexFromExercise(errorIndices[0]);
                     if (firstErrorPosition) {
@@ -74,7 +66,6 @@ export function useStage5Navigation({
                         };
                     }
                 } else {
-                    // Все правильно - завершаем этап
                     return { type: 'complete' as const };
                 }
             }

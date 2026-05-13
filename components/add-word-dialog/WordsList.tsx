@@ -1,7 +1,3 @@
-/**
- * Список слов в диалоге добавления
- */
-
 'use client';
 
 import { WordCard } from './WordCard';
@@ -93,12 +89,10 @@ export function WordsList({
     return (
         <div className="space-y-2">
             <div className="space-y-3">
-                {/* Список слов */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 h-[300px] overflow-y-auto border rounded-md p-3 bg-gray-50">
                     {renderListContent()}
                 </div>
 
-                {/* Кнопка "Показать еще" */}
                 <div className="flex justify-center pt-1 pb-1">
                     <button
                         onClick={onLoadMore}

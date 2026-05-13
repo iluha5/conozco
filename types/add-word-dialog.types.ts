@@ -1,7 +1,3 @@
-/**
- * Типы для компонента AddWordDialog
- */
-
 export type PartOfSpeech = {
     id: string;
     name: string;
@@ -59,4 +55,4 @@ export type BaseWord = {
     }>;
 };
 
-export type SelectedWord = string; // baseWordId
+export type SelectedWord = string;

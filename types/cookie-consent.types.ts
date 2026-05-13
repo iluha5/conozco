@@ -1,9 +1,5 @@
-/**
- * Типы для работы с согласием на использование куки
- */
-
 export interface CookiePreferences {
-    necessary: boolean; // always true
+    necessary: boolean;
     functional: boolean;
     analytics: boolean;
     marketing: boolean;
@@ -36,8 +32,8 @@ export interface CookieConsentResponse {
 export interface LocalStorageConsent {
     version: string;
     given: boolean;
-    givenAt: string; // ISO date string
-    withdrawnAt?: string; // ISO date string (optional, only if given: false)
+    givenAt: string;
+    withdrawnAt?: string;
     preferences: CookiePreferences;
 }
 

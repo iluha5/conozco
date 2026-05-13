@@ -17,14 +17,6 @@ interface TrainingTabsProps {
     children: Record<TrainingModeGroupId, React.ReactNode>;
 }
 
-/**
- * Минималистичный дизайн табов с подчеркиванием
- * Особенности:
- * - Чистый минималистичный стиль
- * - Акцент через подчеркивание активного таба
- * - Тонкие тени и плавные переходы
- * - Динамический рендеринг на основе конфигурации
- */
 export function TrainingTabs({
     activeTab,
     onTabChange,
@@ -42,7 +34,7 @@ export function TrainingTabs({
                     'grid w-full grid-cols-3 max-w-2xl mx-auto mb-8 h-auto bg-transparent p-0 gap-0.5 sm:gap-1',
                     'border-b-2 border-gray-200',
                     'overflow-x-auto',
-                    // Use flex for horizontal scroll on very small screens
+                    // flex layout enables horizontal scroll on very small screens
                     'max-[480px]:flex max-[480px]:flex-nowrap max-[480px]:grid-cols-none',
                 )}
             >

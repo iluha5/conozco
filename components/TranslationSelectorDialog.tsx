@@ -102,7 +102,6 @@ export function TranslationSelectorDialog({
     const [isSaving, setIsSaving] = useState(false);
     const { toast } = useToast();
 
-    // Инициализация состояния при открытии диалога
     useEffect(() => {
         if (open) {
             setIsSaving(false);
@@ -129,10 +128,9 @@ export function TranslationSelectorDialog({
         }
     }, [open, word]);
 
-    // Автоматическая установка фокуса при активации кастомного варианта
     useEffect(() => {
         if (selectedTranslation === 'custom') {
-            // Небольшая задержка для гарантии обновления DOM
+            // Wait for the input to enable before focusing
             const timer = setTimeout(() => {
                 const input = document.getElementById(
                     `custom-text-${word.id}`,
@@ -149,7 +147,6 @@ export function TranslationSelectorDialog({
         setIsSaving(true);
         try {
             if (selectedTranslation === 'custom') {
-                // Сохраняем кастомный перевод
                 const customText = customTranslationText?.trim();
                 const partOfSpeechId =
                     selectedPartOfSpeech === 'none'
@@ -191,7 +188,6 @@ export function TranslationSelectorDialog({
                     throw new Error('Failed to save translation');
                 }
             } else {
-                // Выбран перевод из базы данных
                 const translationIndex = parseInt(selectedTranslation);
                 if (
                     word.baseWord?.translations &&
@@ -200,8 +196,8 @@ export function TranslationSelectorDialog({
                     const translation =
                         word.baseWord.translations[translationIndex];
 
-                    // Если выбран первый перевод (index 0), удаляем кастомный перевод
-                    // Если выбран другой перевод (index > 0), сохраняем его как кастомный
+                    // index 0 means "primary translation": clear customTranslation.
+                    // For index > 0, copy the chosen translation into customTranslation.
                     if (translationIndex === 0) {
                         const response = await fetch(`/api/words/${word.id}`, {
                             method: 'PATCH',
@@ -224,7 +220,6 @@ export function TranslationSelectorDialog({
                             throw new Error('Failed to save translation');
                         }
                     } else {
-                        // Сохраняем выбранный перевод как кастомный
                         const response = await fetch(`/api/words/${word.id}`, {
                             method: 'PATCH',
                             headers: {
@@ -292,7 +287,6 @@ export function TranslationSelectorDialog({
                         }}
                         className="flex flex-col gap-5 sm:gap-4"
                         ref={el => {
-                            // Сохраняем ссылку на RadioGroup для программного выбора
                             if (el) {
                                 (window as any).radioGroupRef = el;
                             }
@@ -332,7 +326,7 @@ export function TranslationSelectorDialog({
                                         e.preventDefault();
                                         if (selectedTranslation !== 'custom') {
                                             setSelectedTranslation('custom');
-                                            // Небольшая задержка для активации поля перед фокусом
+                                            // Wait for the input to enable before focusing
                                             setTimeout(() => {
                                                 const input =
                                                     document.getElementById(

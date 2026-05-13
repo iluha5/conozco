@@ -102,22 +102,14 @@ export interface StageCompletionResult {
     learnedWords?: Word[];
 }
 
-// ===== Extended types for saving progress =====
-
-/**
- * Прогресс по одному слову в этапе
- */
 export interface WordProgress {
     wordId: string;
     isCompleted: boolean;
-    attempts: number; // total number of attempts
-    correctAttempts: number; // number of correct attempts
+    attempts: number;
+    correctAttempts: number;
     lastAttemptAt?: string;
 }
 
-/**
- * Прогресс по этапу тренировки
- */
 export interface StageProgress {
     stage: TrainingStage;
     status: StageStatus;
@@ -126,9 +118,6 @@ export interface StageProgress {
     completedAt?: string;
 }
 
-/**
- * Настройки этапов (если они есть)
- */
 export interface StageSettings {
     stage1?: {
         showTranslation: boolean;
@@ -142,51 +131,39 @@ export interface StageSettings {
     };
 }
 
-/**
- * Сохраненное состояние тренировки в localStorage
- */
 export interface SavedTrainingState {
-    sessionId: string; // Unique training session ID
+    sessionId: string;
     startedAt: string;
     lastUpdatedAt: string;
 
-    // Training settings
     enabledStages: TrainingStage[];
     stageSettings: StageSettings;
     selectedLanguage: string;
     selectedWordIds: string[];
 
-    // Current progress
     currentStage: TrainingStage;
     stagesProgress: StageProgress[];
 
-    // Metadata
     totalWords: number;
     completedWords: number;
 }
 
-/**
- * Лог тренировки для сохранения в БД
- */
 export interface TrainingLog {
     id?: string;
     userId: string;
     sessionId: string;
     startedAt: Date;
     completedAt: Date;
-    duration: number; // in seconds
+    duration: number;
 
-    // Settings
     enabledStages: number[];
     selectedLanguage: string;
     totalWords: number;
 
-    // Results
     completedWords: number;
     stagesProgress: StageProgress[];
 
-    // Statistics
     totalAttempts: number;
     correctAttempts: number;
-    accuracy: number; // percentage of correct answers
+    accuracy: number;
 }

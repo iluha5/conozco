@@ -26,7 +26,6 @@ export function useStage5SentenceBuilding({
             const correctPhrase = currentPhrase?.words || [];
             const nextExpectedWord = correctPhrase[userSentence.length];
 
-            // Если слово правильное
             if (word.toLowerCase() === nextExpectedWord.toLowerCase()) {
                 setUserSentence([...userSentence, word]);
                 setAvailableWords(prev =>
@@ -37,7 +36,6 @@ export function useStage5SentenceBuilding({
                     ),
                 );
 
-                // Если предложение завершено
                 if (userSentence.length + 1 === correctPhrase.length) {
                     setIsCorrect(true);
                     setIsComplete(true);
@@ -45,14 +43,14 @@ export function useStage5SentenceBuilding({
                 }
                 return null;
             } else {
-                // Неправильное слово - показываем анимацию
                 setFlashingWord(index);
-                setTimeout(() => setFlashingWord(null), 150); // Анимация длится 0.15 сек
+                // Animation duration is 0.15s
+                setTimeout(() => setFlashingWord(null), 150);
 
                 const newErrorCount = totalErrors + 1;
                 setTotalErrors(newErrorCount);
 
-                // Если 3 ошибки всего за предложение - автоматически заполняем предложение
+                // After 3 mistakes auto-fill the sentence
                 if (newErrorCount >= 3) {
                     const correctPhraseWords = currentPhrase?.words || [];
                     setUserSentence(correctPhraseWords);
@@ -87,7 +85,6 @@ export function useStage5SentenceBuilding({
                 ),
             );
 
-            // Найти это слово в массиве availableWords и снять выделение
             setAvailableWords(prev =>
                 prev.map(item =>
                     item.word === word && item.selected

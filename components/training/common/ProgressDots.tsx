@@ -15,21 +15,6 @@ export function ProgressDots({
 }: ProgressDotsProps) {
     const dotsRef = useRef<HTMLDivElement>(null);
 
-    // Прокрутка к текущей точке отключена
-    // useEffect(() => {
-    //   // Автоматическая прокрутка к текущей точке
-    //   if (dotsRef.current) {
-    //     const dotElement = dotsRef.current.children[completedExercises] as HTMLElement
-    //     if (dotElement) {
-    //       dotElement.scrollIntoView({
-    //         behavior: 'smooth',
-    //         block: 'nearest',
-    //         inline: 'center'
-    //       })
-    //     }
-    //   }
-    // }, [completedExercises])
-
     return (
         <div className="w-full overflow-x-auto">
             <div
@@ -41,7 +26,6 @@ export function ProgressDots({
                     let dotClass =
                         'w-3 h-3 rounded-full transition-colors duration-300 ';
 
-                    // Показываем индикатор на текущей карточке
                     const activeIndex =
                         currentIndex !== undefined
                             ? currentIndex
@@ -50,17 +34,14 @@ export function ProgressDots({
                         dotClass += 'ring-2 ring-purple-400 ring-offset-1 ';
                     }
 
-                    // Определяем цвет точки на основе результата
                     const result = exerciseResults[index];
                     if (result === true) {
                         dotClass += 'bg-green-500';
                     } else if (result === false) {
                         dotClass += 'bg-red-500';
                     } else if (result === null) {
-                        // Еще не завершено
                         dotClass += 'bg-gray-300';
                     } else {
-                        // Для совместимости
                         dotClass += 'bg-gray-300';
                     }
 

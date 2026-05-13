@@ -9,9 +9,6 @@ interface CardSideProps {
     variant: 'front' | 'back';
 }
 
-/**
- * Вариант 1: Градиентные фоны
- */
 export function GradientCardSide({ children, variant }: CardSideProps) {
     return (
         <div
@@ -27,9 +24,6 @@ export function GradientCardSide({ children, variant }: CardSideProps) {
     );
 }
 
-/**
- * Вариант 2: Текстурированные фоны с узорами
- */
 export function PatternCardSide({ children, variant }: CardSideProps) {
     return (
         <div
@@ -38,7 +32,6 @@ export function PatternCardSide({ children, variant }: CardSideProps) {
                 variant === 'front' ? 'bg-blue-50' : 'bg-pink-50',
             )}
         >
-            {/* Узор */}
             <div
                 className={cn(
                     'absolute inset-0 opacity-10',
@@ -52,21 +45,16 @@ export function PatternCardSide({ children, variant }: CardSideProps) {
     );
 }
 
-/**
- * Фоны с паттернами из изображений
- * circuit-board для слова (front), floating-cogs для перевода (back)
- */
+// circuit-board for word (front), floating-cogs for translation (back)
 export function WatermarkCardSide({ children, variant }: CardSideProps) {
-    // Select pattern based on card side
     const selectedPattern =
         variant === 'front' ? circuitBoardPattern : floatingCogsPattern;
 
-    // Get pattern URL (Next.js may import SVG differently)
+    // Next.js can resolve SVG imports as string, { src }, or { default }
     const getPatternUrl = () => {
         if (typeof selectedPattern === 'string') {
             return selectedPattern;
         }
-        // Check different SVG import options in Next.js
         const pattern = selectedPattern as any;
         return pattern?.src || pattern?.default || pattern;
     };
@@ -83,7 +71,6 @@ export function WatermarkCardSide({ children, variant }: CardSideProps) {
             )}
             style={{ width: '100%', height: '100%' }}
         >
-            {/* Паттерн как фоновое изображение - уменьшен и повторяется */}
             {patternUrl && (
                 <div
                     className="absolute inset-0 pointer-events-none opacity-[0.06]"
@@ -97,7 +84,6 @@ export function WatermarkCardSide({ children, variant }: CardSideProps) {
                     }}
                 />
             )}
-            {/* Текст по центру */}
             <div className="relative z-10 w-full h-full flex items-center justify-center p-8">
                 {children}
             </div>

@@ -28,14 +28,12 @@ export function TranslationDisplay({
 
     return (
         <div className="space-y-3 sm:space-y-4 md:space-y-4">
-            {/* Блок перевода */}
             <div className="bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 sm:px-5 sm:py-4 md:px-6 md:py-4 text-center">
                 <p className="text-lg sm:text-xl md:text-2xl text-gray-800 font-medium break-words">
                     {getWordTranslation(word, i18n.language || 'en')}
                 </p>
             </div>
 
-            {/* Блок примеров */}
             {showExamples && (
                 <div
                     className={`${

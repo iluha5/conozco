@@ -35,7 +35,6 @@ export function useStage4WordBuilding({
             const correctWord = getWordText(currentWord);
             const nextExpectedLetter = correctWord[userWord.length];
 
-            // Если буква правильная
             if (letter.toLowerCase() === nextExpectedLetter.toLowerCase()) {
                 setUserWord([...userWord, letter]);
                 setLetters(prevLetters =>
@@ -46,15 +45,12 @@ export function useStage4WordBuilding({
                     ),
                 );
 
-                // Если слово завершено
                 if (userWord.length + 1 === correctWord.length) {
                     setIsComplete(true);
                     setIsCorrect(true);
 
-                    // Записываем попытку в localStorage
                     recordAttempt(4, currentWord.id, true);
 
-                    // Записываем результат в БД
                     await fetch('/api/training', {
                         method: 'POST',
                         headers: {
@@ -68,14 +64,14 @@ export function useStage4WordBuilding({
                     });
                 }
             } else {
-                // Неправильная буква - показываем анимацию
                 setFlashingLetter(index);
-                setTimeout(() => setFlashingLetter(null), 150); // Анимация длится 0.15 сек
+                // Animation duration is 0.15s
+                setTimeout(() => setFlashingLetter(null), 150);
 
                 const newErrorCount = totalErrors + 1;
                 setTotalErrors(newErrorCount);
 
-                // Если 3 ошибки всего за слово - автоматически заполняем слово
+                // After 3 mistakes auto-fill the word
                 if (newErrorCount >= 3) {
                     const correctWordLetters = correctWord.split('');
                     setUserWord(correctWordLetters);
@@ -85,10 +81,8 @@ export function useStage4WordBuilding({
                     setIsComplete(true);
                     setIsCorrect(false);
 
-                    // Записываем попытку в localStorage
                     recordAttempt(4, currentWord.id, false);
 
-                    // Записываем результат в БД
                     await fetch('/api/training', {
                         method: 'POST',
                         headers: {
@@ -118,7 +112,6 @@ export function useStage4WordBuilding({
             const letter = userWord[index];
             setUserWord(userWord.filter((_, wordIndex) => wordIndex !== index));
 
-            // Найти эту букву в массиве letters и снять выделение
             setLetters(prevLetters =>
                 prevLetters.map(item =>
                     item.letter === letter && item.selected

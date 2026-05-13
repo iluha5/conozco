@@ -1,7 +1,3 @@
-/**
- * Хук для AI-поиска слов
- */
-
 import { useState } from 'react';
 import { useToast } from '@/hooks/shared';
 import { useTranslation } from '@/lib/i18n';
@@ -81,7 +77,6 @@ export function useAiSearch({
                     description: message,
                 });
 
-                // Update word list
                 setTimeout(async () => {
                     setOffset(0);
                     setHasMore(true);
@@ -103,7 +98,6 @@ export function useAiSearch({
                         setHasMore(words.length === 30);
                         setOffset(words.length);
 
-                        // Add found word to user list
                         const addedBaseWord = words.find(
                             (w: BaseWord) =>
                                 w.word.toLowerCase() ===

@@ -1,51 +1,12 @@
-# Data Sync Scripts
+# Data Sync
 
-Скрипты для синхронизации данных между локальной и production базой данных.
+`sync-to-prod.sh` syncs reference tables (BaseWord, WordTranslation, WordExample, WordGroup, Pronoun, Tense, GrammaticalExample, Language, SentenceType, WordSource, PartOfSpeech, BaseWordOnWordGroup) from local DB to production. User-owned tables (User, Session, Account, Word, TrainingSession, TrainingLog) are not synced.
 
-## sync-to-prod.sh
+A production backup is created before sync.
 
-Синхронизирует справочные данные из локальной БД в production:
-- Автоматически создает бэкап production БД перед синхронизацией
-- Экспортирует только справочные таблицы (BaseWord, WordTranslation, WordExample, и т.д.)
-- Импортирует данные в production БД
-
-**Синхронизируемые таблицы:**
-- BaseWord
-- WordTranslation
-- WordExample
-- WordGroup
-- BaseWordOnWordGroup
-- Pronoun
-- Tense
-- GrammaticalExample
-- Language
-- SentenceType
-- WordSource
-- PartOfSpeech
-
-**НЕ синхронизируются:**
-- User
-- Session
-- Account
-- Word (пользовательские слова)
-- TrainingSession
-- TrainingLog
-
-**Использование:**
 ```bash
-# Убедитесь что локальная БД запущена
 docker compose up -d postgres
-
-# Запустите синхронизацию
 ./scripts/sync-data/sync-to-prod.sh
 ```
 
-**Требования:**
-- SSH доступ к production серверу
-- Локальная БД должна быть запущена
-- Production БД должна быть доступна через Docker
-
-**Важно:**
-- Скрипт использует только `INSERT`, без upsert
-- Повторный импорт может создать дубликаты
-- Для первичного переноса всех данных используйте data-only дамп (см. раздел 2 плана развертывания)
+Requires SSH access to the production server and a running local DB. Inserts only (no upsert) — re-running may produce duplicates.

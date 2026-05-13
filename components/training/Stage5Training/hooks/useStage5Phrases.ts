@@ -11,7 +11,6 @@ export function useStage5Phrases({
     words,
     sentencesPerWord,
 }: UseStage5PhrasesParams) {
-    // Фильтруем слова, у которых есть фразы
     const wordsWithPhrases = useMemo(
         () =>
             words.filter(word => {
@@ -29,7 +28,6 @@ export function useStage5Phrases({
         [words],
     );
 
-    // Инициализируем массив фраз для всех слов
     const [wordPhrases, setWordPhrases] = useState<Phrase[][]>([]);
 
     useEffect(() => {
@@ -37,7 +35,6 @@ export function useStage5Phrases({
         setWordPhrases(phrases);
     }, [wordsWithPhrases, sentencesPerWord]);
 
-    // Рассчитываем общий прогресс
     const totalPhrases = wordPhrases.reduce(
         (total, phrases) => total + phrases.length,
         0,

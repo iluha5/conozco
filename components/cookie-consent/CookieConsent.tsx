@@ -28,17 +28,11 @@ export function CookieConsent() {
         marketing: false,
     });
 
-    // Используем needsConsent напрямую - он уже учитывает loading для зарегистрированных пользователей
-    // и данные из БД/localStorage для определения необходимости показа баннера
     useEffect(() => {
-        // needsConsent уже учитывает:
-        // - для зарегистрированных: не показывать пока loadingDb === true
-        // - для незарегистрированных: данные из localStorage доступны сразу
         const shouldShow = needsConsent();
         setShowBanner(shouldShow);
     }, [needsConsent]);
 
-    // Инициализируем preferences из существующего согласия
     useEffect(() => {
         if (consent) {
             setPreferences(consent.preferences);
@@ -54,7 +48,6 @@ export function CookieConsent() {
         };
         setShowBanner(false);
         await saveConsent(allAccepted, true);
-        // После сохранения needsConsent обновится автоматически через useEffect
     };
 
     const handleRejectAll = async () => {
@@ -64,18 +57,15 @@ export function CookieConsent() {
             analytics: false,
             marketing: false,
         };
-        // При отказе сохраняем given: false - явный отказ пользователя
-        // withdrawnAt будет установлен автоматически в saveConsent
+        // given: false records an explicit rejection; withdrawnAt is set in saveConsent
         setShowBanner(false);
         await saveConsent(onlyNecessary, false);
-        // После сохранения needsConsent обновится автоматически через useEffect
     };
 
     const handleSavePreferences = async () => {
         setShowSettings(false);
         setShowBanner(false);
         await saveConsent(preferences, true);
-        // После сохранения needsConsent обновится автоматически через useEffect
     };
 
     if (!showBanner) {
@@ -84,7 +74,6 @@ export function CookieConsent() {
 
     return (
         <>
-            {/* Баннер согласия */}
             <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t shadow-lg p-4">
                 <div className="container mx-auto max-w-4xl">
                     <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -127,7 +116,6 @@ export function CookieConsent() {
                 </div>
             </div>
 
-            {/* Диалог настроек */}
             <Dialog open={showSettings} onOpenChange={setShowSettings}>
                 <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                     <DialogHeader>
@@ -139,7 +127,6 @@ export function CookieConsent() {
                         </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 mt-4">
-                        {/* Necessary Cookies */}
                         <div className="border rounded-lg p-4">
                             <div className="flex items-center justify-between mb-2">
                                 <Label
@@ -162,7 +149,6 @@ export function CookieConsent() {
                             </p>
                         </div>
 
-                        {/* Functional Cookies */}
                         <div className="border rounded-lg p-4">
                             <div className="flex items-center justify-between mb-2">
                                 <Label
@@ -190,7 +176,6 @@ export function CookieConsent() {
                             </p>
                         </div>
 
-                        {/* Analytics Cookies */}
                         <div className="border rounded-lg p-4">
                             <div className="flex items-center justify-between mb-2">
                                 <Label
@@ -218,7 +203,6 @@ export function CookieConsent() {
                             </p>
                         </div>
 
-                        {/* Marketing Cookies */}
                         <div className="border rounded-lg p-4 opacity-60">
                             <div className="flex items-center justify-between mb-2">
                                 <Label

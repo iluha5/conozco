@@ -14,7 +14,6 @@ export function useStage4Navigation({
 }: UseStage4NavigationParams) {
     const findNextErrorWithResults = useCallback(
         (startIndex: number, results: (boolean | null)[]) => {
-            // Ищем следующую ошибку после текущего индекса
             for (
                 let errorIndex = startIndex + 1;
                 errorIndex < results.length;
@@ -24,13 +23,13 @@ export function useStage4Navigation({
                     return errorIndex;
                 }
             }
-            // Если не нашли, ищем с начала до текущего индекса
+            // Wrap to start when no error after startIndex
             for (let errorIndex = 0; errorIndex <= startIndex; errorIndex++) {
                 if (results[errorIndex] === false) {
                     return errorIndex;
                 }
             }
-            return -1; // Ошибок больше нет
+            return -1;
         },
         [],
     );
@@ -52,17 +51,14 @@ export function useStage4Navigation({
         if (currentIndex < wordsLength - 1) {
             return { type: 'next' as const, nextIndex: currentIndex + 1 };
         } else {
-            // Завершили все слова первый раз
             const errorIndices = getErrorIndices();
 
             if (errorIndices.length > 0) {
-                // Есть ошибки - переходим в режим исправления
                 return {
                     type: 'retry' as const,
                     nextIndex: errorIndices[0],
                 };
             } else {
-                // Все правильно - завершаем этап
                 return { type: 'complete' as const };
             }
         }
