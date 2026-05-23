@@ -62,7 +62,6 @@ export function Stage5Training({
 
     const currentWord = wordsWithPhrases[currentIndex];
 
-    // Инициализируем массив результатов для всех упражнений
     useEffect(() => {
         const totalExercises = wordPhrases.reduce(
             (total, phrases) => total + phrases.length,
@@ -71,7 +70,6 @@ export function Stage5Training({
         setExerciseResults(new Array(totalExercises).fill(null));
     }, [wordPhrases]);
 
-    // Запускаем анимацию при каждом монтировании компонента (при новом предложении)
     useEffect(() => {
         const timer = setTimeout(() => {
             setFadeIn(true);
@@ -90,7 +88,6 @@ export function Stage5Training({
         const phrase = currentWordPhrases[currentPhraseIndex];
         setCurrentPhrase(phrase);
 
-        // Получаем дополнительные слова
         const extraWords = getExtraWords(
             phrase.pronoun,
             currentWord.language.code,
@@ -99,7 +96,6 @@ export function Stage5Training({
         );
         const allWords = [...phrase.words, ...extraWords];
 
-        // Перемешиваем слова и создаем объекты состояния
         const shuffledWords = allWords.sort(() => Math.random() - 0.5);
         const wordStates: WordState[] = shuffledWords.map(word => ({
             word,
@@ -114,7 +110,7 @@ export function Stage5Training({
             wordPhrases.length > currentIndex &&
             wordPhrases[currentIndex].length > 0
         ) {
-            // Генерируем новый ключ для принудительного перемонтирования компонента
+            // Bump key to force remount and replay the fade-in animation
             setAnimationKey(prev => prev + 1);
             setFadeIn(false);
 
@@ -162,7 +158,6 @@ export function Stage5Training({
         setIsFirstCard,
     });
 
-    // Обновляем результаты упражнения при завершении фразы
     useEffect(() => {
         if (
             isComplete &&
@@ -182,29 +177,23 @@ export function Stage5Training({
                     .reduce((total, phrases) => total + phrases.length, 0) +
                 currentPhraseIndex;
 
-            // Помечаем эту фразу как обработанную
             setCompletedPhraseId(`${currentIndex}-${currentPhraseIndex}`);
             setLastCompletedExerciseIndex(exerciseIndex);
 
-            // Устанавливаем цвет фона и показываем попап с результатом
             setBackgroundFlash(isCorrect ? 'green' : 'red');
             setShowResultPopup(true);
 
-            // Обновляем результаты упражнения
             setExerciseResults(prev => {
                 const newResults = [...prev];
-                // В режиме retry всегда обновляем результат, даже если он уже был установлен
-                // В обычном режиме устанавливаем результат только если для этого индекса еще нет результата
+                // Retry mode overwrites results; normal mode only fills empty slots
                 if (isRetryMode || newResults[exerciseIndex] === null) {
                     newResults[exerciseIndex] = isCorrect;
                 }
                 return newResults;
             });
 
-            // Записываем попытку в localStorage
             storage.recordAttempt(5, currentWord.id, isCorrect);
 
-            // Записываем результат в БД
             fetch('/api/training', {
                 method: 'POST',
                 headers: {
@@ -217,7 +206,6 @@ export function Stage5Training({
                 }),
             });
 
-            // После первого ответа скрываем кнопку настроек
             if (isFirstCard) {
                 setIsFirstCard(false);
             }
@@ -227,7 +215,6 @@ export function Stage5Training({
             completedPhraseId !== null &&
             completedPhraseId !== `${currentIndex}-${currentPhraseIndex}`
         ) {
-            // Если перешли к новой фразе, скрываем попап
             setShowResultPopup(false);
             setBackgroundFlash(null);
         }
@@ -265,15 +252,14 @@ export function Stage5Training({
         setIsCompleting,
     });
 
-    // Сброс состояния при изменении фразы
     useEffect(() => {
         if (currentPhrase) {
             resetSentenceBuilding();
             setBackgroundFlash(null);
             setShowResultPopup(false);
-            // Сбрасываем completedPhraseId при переходе на новую фразу
             setCompletedPhraseId(null);
-            // Не сбрасываем lastCompletedExerciseIndex, чтобы предотвратить установку результата для нового слова
+            // Intentionally NOT resetting lastCompletedExerciseIndex so a stale
+            // result is not re-applied to a freshly opened phrase.
         }
     }, [
         currentIndex,
@@ -291,7 +277,6 @@ export function Stage5Training({
 
     const handleManualNext = () => {
         if (isRetryMode) {
-            // В режиме исправления ошибок при неправильном ответе
             const currentExerciseIndex =
                 wordPhrases
                     .slice(0, currentIndex)
@@ -303,7 +288,7 @@ export function Stage5Training({
                 nextErrorIndex === -1 ||
                 nextErrorIndex === currentExerciseIndex
             ) {
-                // Это единственная ошибка или других нет - остаемся на ней, но перезагружаем карточку
+                // Only error left -- stay on it but reload the card
                 setAnimationKey(prev => prev + 1);
                 setFadeIn(false);
                 initializePhrase();
@@ -311,7 +296,6 @@ export function Stage5Training({
                 setBackgroundFlash(null);
                 setShowResultPopup(false);
             } else {
-                // Переходим к следующей ошибке
                 const nextErrorPosition = getWordAndPhraseIndex(nextErrorIndex);
                 if (nextErrorPosition) {
                     setCurrentIndex(nextErrorPosition.wordIndex);
@@ -319,7 +303,6 @@ export function Stage5Training({
                 }
             }
         } else {
-            // Обычный режим - переходим к следующему
             const result = handleNext();
             if (result.type === 'nextPhrase') {
                 setCurrentPhraseIndex(result.phraseIndex);

@@ -1,7 +1,3 @@
-/**
- * Карточка слова в диалоге добавления
- */
-
 'use client';
 
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';

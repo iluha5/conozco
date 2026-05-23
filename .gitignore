@@ -70,6 +70,5 @@ backups
 # Data dumps
 dumps/
 
-docs/lists
-docs/temp
+docs/
 scripts/cursor/scheduled/

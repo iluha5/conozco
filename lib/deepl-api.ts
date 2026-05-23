@@ -1,6 +1,5 @@
 import { filterTranslations } from './translation-api';
 
-// Types for DeepL API
 interface DeepLTranslation {
     detected_source_language: string;
     text: string;
@@ -10,13 +9,11 @@ interface DeepLResponse {
     translations: DeepLTranslation[];
 }
 
-// API configuration
 const DEEPL_API_URL = 'https://api-free.deepl.com/v2/translate';
-const TRANSLATION_TIMEOUT = 10000; // 10 seconds
+const TRANSLATION_TIMEOUT = 10000;
 const MAX_RETRIES = 3;
-const RETRY_DELAY = 1000; // 1 second
+const RETRY_DELAY = 1000;
 
-// Language code mapping for DeepL (uppercase)
 const LANGUAGE_CODE_MAP: { [key: string]: string } = {
     en: 'EN',
     es: 'ES',
@@ -27,20 +24,14 @@ const LANGUAGE_CODE_MAP: { [key: string]: string } = {
     pt: 'PT',
 };
 
-// Delay utility
 function delay(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// Utility to get source ID by code
 async function getSourceId(sourceCode: string): Promise<number | null> {
     try {
         const { prisma } = await import('./prisma');
-
-        if (!prisma) {
-            console.error('[LOG] Prisma client is undefined!');
-            return null;
-        }
+        if (!prisma) return null;
 
         const source = await prisma.wordSource.findUnique({
             where: { code: sourceCode },
@@ -49,23 +40,15 @@ async function getSourceId(sourceCode: string): Promise<number | null> {
 
         return source?.id || null;
     } catch (error) {
-        console.error(
-            `[LOG] Failed to get sourceId for "${sourceCode}":`,
-            error,
-        );
+        console.error(`Failed to get sourceId for "${sourceCode}":`, error);
         return null;
     }
 }
 
-// Utility to get language ID by code
 async function getLanguageId(languageCode: string): Promise<number | null> {
     try {
         const { prisma } = await import('./prisma');
-
-        if (!prisma) {
-            console.error('[LOG] Prisma client is undefined!');
-            return null;
-        }
+        if (!prisma) return null;
 
         const language = await prisma.language.findUnique({
             where: { code: languageCode },
@@ -74,103 +57,64 @@ async function getLanguageId(languageCode: string): Promise<number | null> {
 
         return language?.id || null;
     } catch (error) {
-        console.error(
-            `[LOG] Failed to get languageId for "${languageCode}":`,
-            error,
-        );
+        console.error(`Failed to get languageId for "${languageCode}":`, error);
         return null;
     }
 }
 
-// Utility for logging API requests
 async function logApiRequest(
     userId: number | null,
-    sourceCode: string, // 'DEEPL', 'MYMEMORY', 'TATOEBA'
+    sourceCode: string,
     requestType: string,
     requestData: any,
     responseData: any | null,
     statusCode: number | null,
     errorMessage: string | null | undefined,
     duration: number,
-    sourceLanguageCode?: string, // Source language code (e.g.: 'es', 'en')
-    targetLanguageCode?: string, // Target language code (e.g.: 'ru')
+    sourceLanguageCode?: string,
+    targetLanguageCode?: string,
 ) {
     try {
-        console.log(
-            `[LOG] Attempting to log API request: ${sourceCode}/${requestType}`,
-        );
-
-        // Get sourceId
         const sourceId = await getSourceId(sourceCode);
+        if (!sourceId) return;
 
-        if (!sourceId) {
-            console.error(`[LOG] Failed to get sourceId for "${sourceCode}"`);
-            return;
-        }
-
-        // Get language IDs if specified
-        let sourceLanguageId: number | null | undefined = undefined;
-        let targetLanguageId: number | null | undefined = undefined;
+        let sourceLanguageId: number | null | undefined;
+        let targetLanguageId: number | null | undefined;
 
         if (sourceLanguageCode) {
             sourceLanguageId = await getLanguageId(sourceLanguageCode);
         }
-
         if (targetLanguageCode) {
             targetLanguageId = await getLanguageId(targetLanguageCode);
         }
 
-        // Import prisma inside function to guarantee server context
         const { prisma } = await import('./prisma');
+        if (!prisma) return;
 
-        if (!prisma) {
-            console.error('[LOG] Prisma client is undefined!');
-            return;
-        }
-
-        // Safe data serialization
-        let requestDataStr: string;
-        let responseDataStr: string | null = null;
-
-        try {
-            requestDataStr = JSON.stringify(requestData);
-        } catch (e) {
-            console.error('[LOG] Failed to stringify requestData:', e);
-            requestDataStr = JSON.stringify({ error: 'Failed to serialize' });
-        }
-
-        if (responseData) {
+        const safeStringify = (value: unknown): string => {
             try {
-                responseDataStr = JSON.stringify(responseData);
-            } catch (e) {
-                console.error('[LOG] Failed to stringify responseData:', e);
-                responseDataStr = JSON.stringify({
-                    error: 'Failed to serialize',
-                });
+                return JSON.stringify(value);
+            } catch {
+                return JSON.stringify({ error: 'Failed to serialize' });
             }
-        }
+        };
 
-        const logEntry = await prisma.apiRequestLog.create({
+        await prisma.apiRequestLog.create({
             data: {
                 userId,
                 sourceId,
                 sourceLanguageId,
                 targetLanguageId,
                 requestType,
-                requestData: requestDataStr,
-                responseData: responseDataStr,
+                requestData: safeStringify(requestData),
+                responseData: responseData ? safeStringify(responseData) : null,
                 statusCode,
                 errorMessage,
                 duration,
             },
         });
-
-        console.log(
-            `[LOG] Successfully logged API request with ID: ${logEntry.id}`,
-        );
     } catch (error) {
-        console.error('[LOG] Failed to log API request:', error);
-        console.error('[LOG] Request data:', {
+        console.error('Failed to log API request:', error, {
             userId,
             sourceCode,
             requestType,
@@ -181,10 +125,7 @@ async function logApiRequest(
     }
 }
 
-/**
- * Переводит слово через DeepL API с повторными попытками
- * Возвращает до 3 вариантов перевода
- */
+// Up to `maxRetries` attempts with linear back-off (RETRY_DELAY * attempt).
 export async function translateWithDeepL(
     word: string,
     sourceLanguage: string,
@@ -201,11 +142,7 @@ export async function translateWithDeepL(
     if (!apiKey) {
         const error = 'DEEPL_API_KEY not found in environment variables';
         console.error(`[DeepL] ${error}`);
-        return {
-            mainTranslation: '',
-            alternatives: [],
-            error,
-        };
+        return { mainTranslation: '', alternatives: [], error };
     }
 
     const sourceLang =
@@ -219,7 +156,7 @@ export async function translateWithDeepL(
         target_lang: targetLang,
     };
 
-    let lastError: string | undefined = undefined;
+    let lastError: string | undefined;
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
         const startTime = Date.now();
@@ -277,28 +214,16 @@ export async function translateWithDeepL(
                 throw new Error('DeepL API returned no translations');
             }
 
-            // DeepL returns one translation, but we can try to get alternatives
-            // by requesting translation with small variations (if word/phrase allows)
-            // Remove trailing punctuation from translations
             const cleanedTranslation = data.translations[0].text
                 .trim()
                 .replace(/[,.;:!?]+$/, '');
-            const allTranslations: string[] = [cleanedTranslation];
-
-            // Apply filtering
-            const filteredTranslations = filterTranslations(allTranslations);
-
-            // Split into main and alternative
-            const mainTranslation = filteredTranslations[0];
-            const alternatives = filteredTranslations.slice(1);
-
-            console.log(
-                `[DeepL] Translation successful on attempt ${attempt}/${maxRetries}`,
-            );
+            const filteredTranslations = filterTranslations([
+                cleanedTranslation,
+            ]);
 
             return {
-                mainTranslation,
-                alternatives,
+                mainTranslation: filteredTranslations[0],
+                alternatives: filteredTranslations.slice(1),
             };
         } catch (error: any) {
             const duration = Date.now() - startTime;
@@ -320,18 +245,13 @@ export async function translateWithDeepL(
                 targetLanguage,
             );
 
-            // If not last attempt - try again
             if (attempt < maxRetries) {
-                console.log(
-                    `[DeepL] Attempt ${attempt}/${maxRetries} failed: ${lastError}. Retrying...`,
-                );
-                await delay(RETRY_DELAY * attempt); // Increase delay with each attempt
+                await delay(RETRY_DELAY * attempt);
                 continue;
             }
 
-            // If last attempt - return error
             console.error(
-                `[DeepL] Failed after ${maxRetries} attempts: ${lastError}`,
+                `[DeepL] failed after ${maxRetries} attempts: ${lastError}`,
             );
             return {
                 mainTranslation: '',

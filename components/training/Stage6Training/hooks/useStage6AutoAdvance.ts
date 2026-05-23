@@ -66,11 +66,8 @@ export function useStage6AutoAdvance({
             const delay = isCorrect ? 1000 : 2000;
             const timer = setTimeout(() => {
                 if (isRetryMode) {
-                    // В режиме исправления ошибок
                     if (isCorrect) {
-                        // Исправил ошибку - ищем следующую ошибку с учетом обновленных результатов
                         setExerciseResults(currentResults => {
-                            // Сначала обновляем результат текущего упражнения на правильный
                             const updatedResults = [...currentResults];
                             updatedResults[currentIndex] = true;
 
@@ -79,40 +76,36 @@ export function useStage6AutoAdvance({
                                 updatedResults,
                             );
                             if (nextErrorIndex === -1) {
-                                // Все ошибки исправлены - даем время увидеть все зеленые точки, затем завершаем этап
+                                // Extra delay so user sees all green dots
                                 setTimeout(() => {
                                     onComplete();
                                     setCurrentIndex(0);
                                     setIsRetryMode(false);
                                     setHasCompletedFirstRound(false);
-                                }, 1500); // Дополнительная задержка для визуального подтверждения
+                                }, 1500);
                             } else {
-                                // Переходим к следующей ошибке
                                 setCurrentIndex(nextErrorIndex);
                             }
                             return updatedResults;
                         });
                     } else {
-                        // Снова ошибся - переходим к следующей ошибке (или к этой же, если она одна)
                         const nextErrorIndex = findNextError(currentIndex);
                         if (
                             nextErrorIndex === -1 ||
                             nextErrorIndex === currentIndex
                         ) {
-                            // Это единственная ошибка или других нет - остаемся на ней, но перезагружаем карточку
+                            // Only error left -- stay on it but reload the card
                             triggerAnimation();
                             initializeLetters();
                             resetWordBuilding();
                             setBackgroundFlash(null);
                             setShowResultPopup(false);
-                            // Автоматически проигрываем слово снова
                             setTimeout(() => speak(currentWordText), 500);
                         } else {
                             setCurrentIndex(nextErrorIndex);
                         }
                     }
                 } else {
-                    // Обычный режим - всегда переходим к следующему (или в retry mode)
                     const result = handleNext();
                     if (result.type === 'next') {
                         setCurrentIndex(result.nextIndex);
@@ -121,18 +114,15 @@ export function useStage6AutoAdvance({
                         setHasCompletedFirstRound(true);
                         setCurrentIndex(result.nextIndex);
                     } else if (result.type === 'complete') {
-                        // Если это последний этап и последнее упражнение выполнено правильно
                         if (
                             isLastStage &&
                             currentIndex === baseWordsLength - 1 &&
                             isCorrect
                         ) {
-                            // Проверяем, что все упражнения выполнены правильно
                             const allCorrect = exerciseResults.every(
                                 result => result === true,
                             );
                             if (allCorrect) {
-                                // Показываем лоадер и завершаем тренировку
                                 setIsCompleting(true);
                                 setTimeout(() => {
                                     onComplete();
@@ -140,7 +130,6 @@ export function useStage6AutoAdvance({
                                 return;
                             }
                         }
-                        // Обычное завершение этапа
                         onComplete();
                         setCurrentIndex(0);
                         setIsRetryMode(false);

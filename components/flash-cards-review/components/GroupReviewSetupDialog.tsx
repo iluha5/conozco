@@ -9,7 +9,6 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-// removed unused Select imports after UI refactor
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useQuery } from '@tanstack/react-query';
@@ -47,7 +46,6 @@ export function GroupReviewSetupDialog({
     const [wordCount, setWordCount] = useState(20);
     const [searchQuery, setSearchQuery] = useState('');
 
-    // Load all available groups
     const { data: groups = [], isLoading } = useQuery<AccessibleWordGroup[]>({
         queryKey: ['allAccessibleWordGroups'],
         queryFn: async () => {
@@ -58,7 +56,6 @@ export function GroupReviewSetupDialog({
         enabled: open,
     });
 
-    // Load saved settings
     useEffect(() => {
         if (open && typeof window !== 'undefined') {
             const saved = localStorage.getItem(STORAGE_KEY);
@@ -78,7 +75,6 @@ export function GroupReviewSetupDialog({
         }
     }, [open]);
 
-    // Filter groups by search query
     const filteredGroups = useMemo(() => {
         if (!searchQuery.trim()) return groups;
         const query = searchQuery.toLowerCase();
@@ -101,7 +97,6 @@ export function GroupReviewSetupDialog({
                           ?.name,
         };
 
-        // Save settings
         if (typeof window !== 'undefined') {
             localStorage.setItem(
                 STORAGE_KEY,
@@ -144,11 +139,8 @@ export function GroupReviewSetupDialog({
                     </DialogDescription>
                 </DialogHeader>
 
-                {/* Центральная зона, которая подстраивается по высоте */}
                 <div className="space-y-6 py-4 flex-1 min-h-0 flex flex-col">
-                    {/* Выбор группы (как на странице Управление группами, без фильтров) */}
                     <div className="space-y-3 flex-1 min-h-0 flex flex-col">
-                        {/* Поле поиска с иконкой + счетчик в одной строке */}
                         <div className="flex items-center gap-4">
                             <div className="relative flex-1">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -166,15 +158,12 @@ export function GroupReviewSetupDialog({
                             </Badge>
                         </div>
 
-                        {/* Список групп */}
                         {isLoading ? (
                             <div className="flex items-center justify-center py-8">
                                 <Loader2 className="h-6 w-6 animate-spin" />
                             </div>
                         ) : (
-                            // Make only the list adaptive and scrollable
                             <div className="grid grid-cols-1 gap-1 flex-1 min-h-0 overflow-y-auto">
-                                {/* Все группы */}
                                 <Card
                                     key="all"
                                     className={`transition-all hover:bg-gray-50 m-1 ${
@@ -253,7 +242,6 @@ export function GroupReviewSetupDialog({
                             </div>
                         )}
 
-                        {/* Информация о количестве слов в группе удалена по требованиям */}
                         {showWarning && (
                             <p className="text-sm text-yellow-600">
                                 В группе только {maxWordsInGroup} слов. Будет
@@ -262,7 +250,6 @@ export function GroupReviewSetupDialog({
                         )}
                     </div>
 
-                    {/* Количество слов */}
                     <div className="flex items-center justify-between">
                         <Label className="mr-4">
                             {t('Number of words (5 - 50)')}

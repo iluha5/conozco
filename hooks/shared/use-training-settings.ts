@@ -15,15 +15,11 @@ import {
     type TrainingSettings,
 } from '@/lib/training-settings';
 
-/**
- * Хук для управления всеми настройками тренировки с автоматической загрузкой и сохранением
- */
 export function useTrainingSettings() {
     const { data: session } = useSession();
     const [isLoaded, setIsLoaded] = useState(false);
     const [settings, setSettings] = useState<TrainingSettings | null>(null);
 
-    // Load settings on mount or session change
     useEffect(() => {
         if (session?.user?.id) {
             const loadedSettings = getTrainingSettings(session.user.id);
@@ -32,7 +28,6 @@ export function useTrainingSettings() {
         }
     }, [session]);
 
-    // Save settings when they change (only after loading)
     useEffect(() => {
         if (session?.user?.id && isLoaded && settings) {
             saveTrainingSettings(session.user.id, settings);
@@ -81,9 +76,6 @@ export function useTrainingSettings() {
     };
 }
 
-/**
- * Хук для работы с настройками конкретного этапа 1
- */
 export function useStage1Settings() {
     const { data: session } = useSession();
     const [settings, setSettings] = useState<Stage1Settings>({
@@ -114,9 +106,6 @@ export function useStage1Settings() {
     };
 }
 
-/**
- * Хук для работы с настройками конкретного этапа 4
- */
 export function useStage4Settings() {
     const { data: session } = useSession();
     const [settings, setSettings] = useState<Stage4Settings>({
@@ -147,9 +136,6 @@ export function useStage4Settings() {
     };
 }
 
-/**
- * Хук для работы с настройками конкретного этапа 5
- */
 export function useStage5Settings() {
     const { data: session } = useSession();
     const [settings, setSettings] = useState<Stage5Settings>({
@@ -180,16 +166,11 @@ export function useStage5Settings() {
     };
 }
 
-/**
- * Хук для работы с выбранным языком (сохраняется в localStorage)
- * Выбранные слова теперь управляются через TrainingWordsContext
- */
 export function useTrainingSelection() {
     const { data: session } = useSession();
     const [selectedLanguage, setSelectedLanguage] = useState<string>('ALL');
     const [isLoaded, setIsLoaded] = useState(false);
 
-    // Load language on mount
     useEffect(() => {
         if (session?.user?.id) {
             const savedLanguage = localStorage.getItem(
@@ -202,7 +183,6 @@ export function useTrainingSelection() {
         }
     }, [session]);
 
-    // Save language when changed (only after loading)
     useEffect(() => {
         if (session?.user?.id && isLoaded) {
             localStorage.setItem(

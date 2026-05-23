@@ -1,8 +1,3 @@
-/**
- * Утилиты для работы с Google Analytics
- * Загружается только при согласии пользователя на аналитические куки
- */
-
 declare global {
     // eslint-disable-next-line no-unused-vars
     interface Window {
@@ -21,89 +16,55 @@ declare global {
 let isInitialized = false;
 let measurementId: string | null = null;
 
-/**
- * Инициализировать Google Analytics
- */
 export function initGoogleAnalytics(gaMeasurementId: string): void {
-    if (isInitialized || typeof window === 'undefined') {
-        return;
-    }
+    if (isInitialized || typeof window === 'undefined') return;
 
     measurementId = gaMeasurementId;
 
-    // Create dataLayer
     window.dataLayer = window.dataLayer || [];
     function gtag(...args: any[]) {
         window.dataLayer?.push(args);
     }
 
-    // Load Google Analytics script
     const script = document.createElement('script');
     script.async = true;
     script.src = `https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`;
     document.head.appendChild(script);
 
-    // Initialize gtag
     window.gtag = gtag as typeof window.gtag;
     gtag('js', new Date());
     gtag('config', gaMeasurementId, {
-        anonymize_ip: true, // Anonymize IP addresses for GDPR
+        anonymize_ip: true,
         cookie_flags: 'SameSite=None;Secure',
     });
 
     isInitialized = true;
 }
 
-/**
- * Отслеживать просмотр страницы
- */
 export function trackPageView(path: string): void {
-    if (!isInitialized || !measurementId || !window.gtag) {
-        return;
-    }
-
-    window.gtag('config', measurementId, {
-        page_path: path,
-    });
+    if (!isInitialized || !measurementId || !window.gtag) return;
+    window.gtag('config', measurementId, { page_path: path });
 }
 
-/**
- * Отслеживать событие
- */
 export function trackEvent(
     eventName: string,
     params?: Record<string, any>,
 ): void {
-    if (!isInitialized || !measurementId || !window.gtag) {
-        return;
-    }
-
+    if (!isInitialized || !measurementId || !window.gtag) return;
     window.gtag('event', eventName, params);
 }
 
-/**
- * Отключить Google Analytics
- */
 export function disableGoogleAnalytics(): void {
-    if (typeof window === 'undefined') {
-        return;
-    }
+    if (typeof window === 'undefined') return;
 
-    // Remove GA script
     const scripts = document.querySelectorAll(
         'script[src*="googletagmanager.com/gtag/js"]',
     );
     scripts.forEach(script => script.remove());
 
-    // Clear dataLayer
-    if (window.dataLayer) {
-        window.dataLayer = [];
-    }
-
-    // Remove gtag function
+    if (window.dataLayer) window.dataLayer = [];
     delete window.gtag;
 
-    // Remove Google Analytics cookies
     const cookies = document.cookie.split(';');
     cookies.forEach(cookie => {
         const eqPos = cookie.indexOf('=');
@@ -119,9 +80,6 @@ export function disableGoogleAnalytics(): void {
     measurementId = null;
 }
 
-/**
- * Проверить, включен ли Google Analytics
- */
 export function isGoogleAnalyticsEnabled(): boolean {
     return isInitialized && measurementId !== null;
 }

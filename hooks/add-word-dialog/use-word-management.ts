@@ -1,7 +1,3 @@
-/**
- * Хук для управления словами (добавление/удаление)
- */
-
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/shared';
 import { useTranslation } from '@/lib/i18n';
@@ -22,7 +18,6 @@ export function useWordManagement({
     const { toast } = useToast();
     const { t } = useTranslation();
 
-    // Automatically select words already added by user
     useEffect(() => {
         const addedWords = availableWords
             .filter(word => word.isAddedByUser)

@@ -6,10 +6,6 @@ interface TabBadgeSkeletonProps {
     className?: string;
 }
 
-/**
- * Скелетон для бейджа счетчика в табах
- * Используется во время загрузки данных счетчиков
- */
 export function TabBadgeSkeleton({ className }: TabBadgeSkeletonProps) {
     return (
         <div

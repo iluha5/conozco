@@ -1,7 +1,3 @@
-/**
- * Утилиты для работы с настройками тренировки в localStorage с привязкой к userId
- */
-
 export type Stage1Settings = {
     showExamples: boolean;
 };
@@ -24,32 +20,18 @@ export type TrainingSettings = {
 
 const DEFAULT_SETTINGS: TrainingSettings = {
     enabledStages: [1, 2, 3, 4, 5, 6],
-    stage1: {
-        showExamples: false,
-    },
-    stage4: {
-        difficulty: 'easy',
-    },
-    stage5: {
-        sentencesPerWord: 1,
-    },
+    stage1: { showExamples: false },
+    stage4: { difficulty: 'easy' },
+    stage5: { sentencesPerWord: 1 },
     stagesSettingsExpanded: true,
 };
 
-/**
- * Получить ключ для localStorage с привязкой к userId
- */
 const getStorageKey = (userId: string, key: string): string => {
     return `training_${userId}_${key}`;
 };
 
-/**
- * Получить все настройки тренировки для пользователя
- */
 export const getTrainingSettings = (userId: string): TrainingSettings => {
-    if (typeof window === 'undefined') {
-        return DEFAULT_SETTINGS;
-    }
+    if (typeof window === 'undefined') return DEFAULT_SETTINGS;
 
     try {
         const savedSettings = localStorage.getItem(
@@ -57,7 +39,7 @@ export const getTrainingSettings = (userId: string): TrainingSettings => {
         );
         if (savedSettings) {
             const parsed = JSON.parse(savedSettings);
-            // Merge with default settings in case new fields were added
+            // Shallow-merge with defaults so newly added fields fall back gracefully.
             return {
                 ...DEFAULT_SETTINGS,
                 ...parsed,
@@ -73,16 +55,11 @@ export const getTrainingSettings = (userId: string): TrainingSettings => {
     return DEFAULT_SETTINGS;
 };
 
-/**
- * Сохранить все настройки тренировки
- */
 export const saveTrainingSettings = (
     userId: string,
     settings: TrainingSettings,
 ): void => {
-    if (typeof window === 'undefined') {
-        return;
-    }
+    if (typeof window === 'undefined') return;
 
     try {
         localStorage.setItem(
@@ -94,17 +71,10 @@ export const saveTrainingSettings = (
     }
 };
 
-/**
- * Получить настройки 1 этапа
- */
 export const getStage1Settings = (userId: string): Stage1Settings => {
-    const settings = getTrainingSettings(userId);
-    return settings.stage1;
+    return getTrainingSettings(userId).stage1;
 };
 
-/**
- * Сохранить настройки 1 этапа
- */
 export const saveStage1Settings = (
     userId: string,
     stage1Settings: Stage1Settings,
@@ -113,17 +83,10 @@ export const saveStage1Settings = (
     saveTrainingSettings(userId, { ...settings, stage1: stage1Settings });
 };
 
-/**
- * Получить настройки 4 этапа
- */
 export const getStage4Settings = (userId: string): Stage4Settings => {
-    const settings = getTrainingSettings(userId);
-    return settings.stage4;
+    return getTrainingSettings(userId).stage4;
 };
 
-/**
- * Сохранить настройки 4 этапа
- */
 export const saveStage4Settings = (
     userId: string,
     stage4Settings: Stage4Settings,
@@ -132,17 +95,10 @@ export const saveStage4Settings = (
     saveTrainingSettings(userId, { ...settings, stage4: stage4Settings });
 };
 
-/**
- * Получить настройки 5 этапа
- */
 export const getStage5Settings = (userId: string): Stage5Settings => {
-    const settings = getTrainingSettings(userId);
-    return settings.stage5;
+    return getTrainingSettings(userId).stage5;
 };
 
-/**
- * Сохранить настройки 5 этапа
- */
 export const saveStage5Settings = (
     userId: string,
     stage5Settings: Stage5Settings,
@@ -151,9 +107,6 @@ export const saveStage5Settings = (
     saveTrainingSettings(userId, { ...settings, stage5: stage5Settings });
 };
 
-/**
- * Сохранить выбранные этапы
- */
 export const saveEnabledStages = (
     userId: string,
     enabledStages: number[],
@@ -162,9 +115,6 @@ export const saveEnabledStages = (
     saveTrainingSettings(userId, { ...settings, enabledStages });
 };
 
-/**
- * Сохранить состояние развернутости настроек этапов
- */
 export const saveStagesSettingsExpanded = (
     userId: string,
     expanded: boolean,
@@ -176,21 +126,15 @@ export const saveStagesSettingsExpanded = (
     });
 };
 
-/**
- * Получить выбранные слова для тренировки (устаревший метод для совместимости)
- */
+// Legacy keys kept for back-compat with TrainingWordsContext.
 export const getSelectedWords = (userId: string): string[] => {
-    if (typeof window === 'undefined') {
-        return [];
-    }
+    if (typeof window === 'undefined') return [];
 
     try {
         const saved = localStorage.getItem(
             getStorageKey(userId, 'selected-words'),
         );
-        if (saved) {
-            return JSON.parse(saved);
-        }
+        if (saved) return JSON.parse(saved);
     } catch (error) {
         console.error('Error loading selected words:', error);
     }
@@ -198,13 +142,8 @@ export const getSelectedWords = (userId: string): string[] => {
     return [];
 };
 
-/**
- * Сохранить выбранные слова для тренировки (устаревший метод для совместимости)
- */
 export const saveSelectedWords = (userId: string, wordIds: string[]): void => {
-    if (typeof window === 'undefined') {
-        return;
-    }
+    if (typeof window === 'undefined') return;
 
     try {
         localStorage.setItem(
@@ -216,21 +155,14 @@ export const saveSelectedWords = (userId: string, wordIds: string[]): void => {
     }
 };
 
-/**
- * Получить выбранный язык для тренировки (устаревший метод для совместимости)
- */
 export const getSelectedLanguage = (userId: string): string => {
-    if (typeof window === 'undefined') {
-        return 'ALL';
-    }
+    if (typeof window === 'undefined') return 'ALL';
 
     try {
         const saved = localStorage.getItem(
             getStorageKey(userId, 'selected-language'),
         );
-        if (saved) {
-            return saved;
-        }
+        if (saved) return saved;
     } catch (error) {
         console.error('Error loading selected language:', error);
     }
@@ -238,16 +170,11 @@ export const getSelectedLanguage = (userId: string): string => {
     return 'ALL';
 };
 
-/**
- * Сохранить выбранный язык для тренировки (устаревший метод для совместимости)
- */
 export const saveSelectedLanguage = (
     userId: string,
     language: string,
 ): void => {
-    if (typeof window === 'undefined') {
-        return;
-    }
+    if (typeof window === 'undefined') return;
 
     try {
         localStorage.setItem(

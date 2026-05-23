@@ -1,6 +1,3 @@
-/**
- * Параметры для загрузки слов для проверки
- */
 export interface FlashCardsReviewParams {
     status?: 'LEARNED' | 'NOT_LEARNED';
     limit?: number;
@@ -13,14 +10,8 @@ export interface FlashCardsReviewParams {
     returnUrl?: string; // URL to return after closing (pathname + search + hash)
 }
 
-/**
- * Результат действия с карточкой
- */
 export type CardAction = 'know' | 'dont-know' | 'delete' | 'skip';
 
-/**
- * Статистика тренировки
- */
 export interface FlashCardsReviewStats {
     total: number;
     known: number;
@@ -28,9 +19,6 @@ export interface FlashCardsReviewStats {
     deleted: number;
 }
 
-/**
- * Состояние карточки
- */
 export interface FlashCardState {
     isFlipped: boolean;
     isAnimating: boolean;
@@ -40,14 +28,8 @@ export interface FlashCardState {
     };
 }
 
-/**
- * Направление свайпа
- */
 export type SwipeDirection = 'left' | 'right' | 'down' | null;
 
-/**
- * Расширенный тип слова для проверки с информацией о принадлежности пользователю
- */
 export type FlashCardWord = import('@/types/training.types').Word & {
     belongsToUser?: boolean;
 };

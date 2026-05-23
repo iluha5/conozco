@@ -22,9 +22,6 @@ interface UseTrainingInitializationProps {
     }) => any;
 }
 
-/**
- * Хук для инициализации или восстановления тренировки
- */
 export function useTrainingInitialization({
     settingsLoaded,
     selectionLoaded,
@@ -50,10 +47,7 @@ export function useTrainingInitialization({
             enabledStages.length > 0
         ) {
             if (hasUnfinishedTraining && savedState) {
-                // Restore saved training
                 const saved = savedState;
-
-                // Restore original words by saved IDs maintaining order
                 const restoredWords = saved.selectedWordIds
                     .map((id: string) => allWords.find(w => w.id === id))
                     .filter(
@@ -63,61 +57,36 @@ export function useTrainingInitialization({
 
                 if (restoredWords.length > 0) {
                     setTrainingWords(restoredWords);
-                    // Check if saved stage is enabled
                     const savedStage = saved.currentStage;
-                    const isStageEnabled = enabledStages.includes(savedStage);
-                    if (isStageEnabled) {
-                        setCurrentStage(savedStage);
-                    } else {
-                        // If saved stage is disabled, switch to first enabled
-                        setCurrentStage(enabledStages[0]);
-                    }
-                    console.log(
-                        'Restored training session:',
-                        saved.sessionId,
-                        `(${restoredWords.length} words)`,
+                    setCurrentStage(
+                        enabledStages.includes(savedStage)
+                            ? savedStage
+                            : enabledStages[0],
                     );
                 } else {
-                    // If words not found, clear save and create new session
-                    console.warn('Saved words not found, creating new session');
                     clearProgress();
                     if (filteredWords.length > 0) {
-                        // Shuffle words before creating new session
                         const shuffledWords = shuffleArray(filteredWords);
                         setTrainingWords(shuffledWords);
-                        const newSession = createNewSession({
+                        createNewSession({
                             enabledStages,
                             selectedLanguage,
                             selectedWordIds: shuffledWords.map(w => w.id),
                             stageSettings: {},
                         });
-                        // Set first enabled stage
                         setCurrentStage(enabledStages[0]);
-                        console.log(
-                            'Created new training session:',
-                            newSession.sessionId,
-                        );
                     }
                 }
-            } else {
-                // Create new session
-                if (filteredWords.length > 0) {
-                    // Shuffle words before creating new session
-                    const shuffledWords = shuffleArray(filteredWords);
-                    setTrainingWords(shuffledWords);
-                    const newSession = createNewSession({
-                        enabledStages,
-                        selectedLanguage,
-                        selectedWordIds: shuffledWords.map(w => w.id),
-                        stageSettings: {},
-                    });
-                    // Set first enabled stage
-                    setCurrentStage(enabledStages[0]);
-                    console.log(
-                        'Created new training session:',
-                        newSession.sessionId,
-                    );
-                }
+            } else if (filteredWords.length > 0) {
+                const shuffledWords = shuffleArray(filteredWords);
+                setTrainingWords(shuffledWords);
+                createNewSession({
+                    enabledStages,
+                    selectedLanguage,
+                    selectedWordIds: shuffledWords.map(w => w.id),
+                    stageSettings: {},
+                });
+                setCurrentStage(enabledStages[0]);
             }
             setIsInitialized(true);
         }

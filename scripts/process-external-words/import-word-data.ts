@@ -5,11 +5,9 @@ import { fileURLToPath } from 'url';
 
 const prisma = new PrismaClient();
 
-// Получаем директорию текущего файла
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Счетчик пайплайна
 const counterFile = path.join(__dirname, 'temp', 'pipeline-counter.txt');
 
 // Type definitions
@@ -73,13 +71,11 @@ async function getCurrentCounter(): Promise<number> {
     try {
         const counterData = await fs.readFile(counterFile, 'utf8');
         return parseInt(counterData.trim());
-    } catch (error) {
-        // Файл не существует, начинаем с 1
+    } catch {
         return 1;
     }
 }
 
-// Глобальные переменные для логов (будут инициализированы асинхронно)
 let logFilePath = '';
 let currentCounter = 1;
 let timestamp = '';
@@ -92,8 +88,7 @@ async function ensureDateFolder(
     const datePath = path.join(basePath, dateStr);
     try {
         await fs.access(datePath);
-    } catch (error) {
-        // Папка не существует, создаем ее
+    } catch {
         await fs.mkdir(datePath, { recursive: true });
     }
     return datePath;
@@ -102,11 +97,10 @@ async function ensureDateFolder(
 async function initializeLogger(): Promise<void> {
     const now = new Date();
     timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, -5);
-    dateFolder = now.toISOString().slice(0, 10); // YYYY-MM-DD
+    dateFolder = now.toISOString().slice(0, 10);
 
     currentCounter = await getCurrentCounter();
 
-    // Создаем папки с датами
     const logsDatePath = await ensureDateFolder(
         path.join(__dirname, 'logs'),
         dateFolder,
@@ -124,7 +118,6 @@ async function log(message: string): Promise<void> {
     }
 }
 
-// Маппинг частей речи от Cursor к нашей БД
 const partOfSpeechMapping: Record<string, string> = {
     noun: 'NOUN',
     verb: 'VERB',
@@ -137,31 +130,23 @@ const partOfSpeechMapping: Record<string, string> = {
 };
 
 function transformCursorResultToWordData(cursorResult: CursorResult): WordData {
-    // Получаем язык слова из контекста
     const sourceLanguage = cursorResult.languageCode || 'es';
 
-    // Определяем целевые языки для переводов в зависимости от исходного языка
     const getTargetLanguages = (sourceLang: string): string[] => {
-        if (sourceLang === 'es') {
-            return ['ru', 'en']; // Испанский -> русский и английский
-        } else if (sourceLang === 'en') {
-            return ['ru', 'es']; // Английский -> русский и испанский
-        }
-        return ['ru']; // По умолчанию только русский
+        if (sourceLang === 'es') return ['ru', 'en'];
+        if (sourceLang === 'en') return ['ru', 'es'];
+        return ['ru'];
     };
 
     const targetLanguages = getTargetLanguages(sourceLanguage);
 
-    // Получаем часть речи из ответа Cursor с маппингом
     const cursorPOS = cursorResult.partOfSpeech || 'noun';
     const dbPartOfSpeech =
         partOfSpeechMapping[cursorPOS.toLowerCase()] || 'NOUN';
 
-    // Преобразуем предложения в формат импорта с множественными переводами
     const examples = cursorResult.sentences.map((sentence, index) => {
         const text = typeof sentence === 'object' ? sentence.text : sentence;
 
-        // Создаем переводы для всех целевых языков
         const translations = targetLanguages.map(lang => ({
             languageCode: lang,
             translation:
@@ -173,7 +158,7 @@ function transformCursorResultToWordData(cursorResult: CursorResult): WordData {
         }));
 
         return {
-            pronoun: 'yo', // Заглушка, можно улучшить
+            pronoun: 'yo',
             example: text,
             translations: translations,
             sentenceTypeCode: 'AFFIRMATIVE',
@@ -182,7 +167,6 @@ function transformCursorResultToWordData(cursorResult: CursorResult): WordData {
         };
     });
 
-    // Преобразуем grammaticalExamples, если они есть (для глаголов)
     let grammaticalExamples: {
         tenseName: string;
         examples: {
@@ -198,9 +182,7 @@ function transformCursorResultToWordData(cursorResult: CursorResult): WordData {
         }[];
     }[] = [];
     if (cursorResult.grammaticalExamples) {
-        // Обработка грамматических примеров
         if (sourceLanguage === 'es') {
-            // Обработка различных времен для испанского
             [
                 'Presente de indicativo',
                 'Futuro próximo',
@@ -217,7 +199,6 @@ function transformCursorResultToWordData(cursorResult: CursorResult): WordData {
                                 ? example.text
                                 : example;
 
-                        // Создаем переводы для всех целевых языков
                         const translations = targetLanguages.map(lang => ({
                             languageCode: lang,
                             translation:
@@ -246,7 +227,6 @@ function transformCursorResultToWordData(cursorResult: CursorResult): WordData {
                 }
             });
 
-            // Отрицательные и вопросительные примеры добавляем в основной массив examples
             if (cursorResult.grammaticalExamples.negative) {
                 const negativeExample =
                     cursorResult.grammaticalExamples.negative;
@@ -305,13 +285,11 @@ function transformCursorResultToWordData(cursorResult: CursorResult): WordData {
                 });
             }
         }
-        // Аналогично можно добавить обработку для английского языка
     }
 
-    // Создаем массив переводов слова для всех целевых языков
     const wordTranslations = targetLanguages.map(lang => ({
         languageCode: lang,
-        translations: cursorResult.translations, // Используем те же переводы для всех языков
+        translations: cursorResult.translations,
     }));
 
     return {
@@ -330,14 +308,13 @@ async function getOrCreateLanguage(languageCode: string) {
     });
 
     if (!language) {
-        // Создаем язык, если не существует
         language = await prisma.language.create({
             data: {
                 code: languageCode,
                 name: languageCode.toUpperCase(),
             },
         });
-        await log(`📝 Created new language: ${languageCode}`);
+        await log(`Created new language: ${languageCode}`);
     }
 
     return language;
@@ -347,7 +324,6 @@ async function getOrCreatePartOfSpeech(
     partOfSpeechName: string,
     _languageId: number,
 ) {
-    // Маппинг из нижнего регистра в верхний для совместимости с внешними источниками
     const posMapping: Record<string, string> = {
         noun: 'NOUN',
         verb: 'VERB',
@@ -357,7 +333,6 @@ async function getOrCreatePartOfSpeech(
         preposition: 'PREPOSITION',
         conjunction: 'CONJUNCTION',
         interjection: 'INTERJECTION',
-        // Отдельные части речи
         article: 'ARTICLE',
         determiner: 'DETERMINER',
         numeral: 'NUMERAL',
@@ -375,14 +350,11 @@ async function getOrCreatePartOfSpeech(
     });
 
     if (!partOfSpeech) {
-        // Создаем часть речи, если не существует (теперь глобально)
         partOfSpeech = await prisma.partOfSpeech.create({
-            data: {
-                name: normalizedName,
-            },
+            data: { name: normalizedName },
         });
         await log(
-            `📝 Created new part of speech: ${normalizedName} (from ${partOfSpeechName})`,
+            `Created new part of speech: ${normalizedName} (from ${partOfSpeechName})`,
         );
     }
 
@@ -399,7 +371,6 @@ async function getOrCreateSentenceType(
     });
 
     if (!sentenceType) {
-        // Создаем тип предложения, если не существует
         sentenceType = await prisma.sentenceType.create({
             data: {
                 code: sentenceTypeCode,
@@ -408,7 +379,7 @@ async function getOrCreateSentenceType(
                 isQuestion: isQuestion,
             },
         });
-        await log(`📝 Created new sentence type: ${sentenceTypeCode}`);
+        await log(`Created new sentence type: ${sentenceTypeCode}`);
     }
 
     return sentenceType;
@@ -425,16 +396,10 @@ async function getOrCreatePronoun(pronoun: string, languageId: number) {
     });
 
     if (!pronounRecord) {
-        // Создаем местоимение, если не существует
         pronounRecord = await prisma.pronoun.create({
-            data: {
-                pronoun: pronoun,
-                languageId: languageId,
-            },
+            data: { pronoun: pronoun, languageId: languageId },
         });
-        await log(
-            `📝 Created new pronoun: ${pronoun} for language ${languageId}`,
-        );
+        await log(`Created new pronoun: ${pronoun} for language ${languageId}`);
     }
 
     return pronounRecord;
@@ -451,16 +416,10 @@ async function getOrCreateTense(tenseName: string, languageId: number) {
     });
 
     if (!tense) {
-        // Создаем время, если не существует
         tense = await prisma.tense.create({
-            data: {
-                name: tenseName,
-                languageId: languageId,
-            },
+            data: { name: tenseName, languageId: languageId },
         });
-        await log(
-            `📝 Created new tense: ${tenseName} for language ${languageId}`,
-        );
+        await log(`Created new tense: ${tenseName} for language ${languageId}`);
     }
 
     return tense;
@@ -479,7 +438,6 @@ async function getWordSource(sourceCode: string = 'native') {
 }
 
 async function clearWordExamples(baseWordId: number) {
-    // Удаляем существующие примеры и грамматические примеры для слова
     await prisma.wordExample.deleteMany({
         where: { baseWordId: baseWordId },
     });
@@ -489,17 +447,15 @@ async function clearWordExamples(baseWordId: number) {
 }
 
 async function importWordData(wordData: WordData): Promise<boolean> {
-    await log(`🔄 Processing word: ${wordData.word}`);
+    await log(`Processing word: ${wordData.word}`);
 
-    // Получаем или создаем базовые сущности
     const language = await getOrCreateLanguage(wordData.languageCode);
     const partOfSpeech = await getOrCreatePartOfSpeech(
         wordData.partOfSpeech,
-        language.id, // Пока оставляем для совместимости, но не используем
+        language.id,
     );
-    const wordSource = await getWordSource('native'); // Используем native для импортированных данных
+    const wordSource = await getWordSource('native');
 
-    // Создаем или находим существующее слово
     let baseWord = await prisma.baseWord.findUnique({
         where: {
             word_languageId: {
@@ -510,7 +466,6 @@ async function importWordData(wordData: WordData): Promise<boolean> {
     });
 
     if (!baseWord) {
-        // Создаем новое слово
         baseWord = await prisma.baseWord.create({
             data: {
                 word: wordData.word,
@@ -518,22 +473,15 @@ async function importWordData(wordData: WordData): Promise<boolean> {
                 sourceId: wordSource.id,
             },
         });
-        await log(`➕ Created new word: ${wordData.word} (ID: ${baseWord.id})`);
+        await log(`Created word: ${wordData.word} (id=${baseWord.id})`);
     } else {
-        await log(
-            `📝 Found existing word: ${wordData.word} (ID: ${baseWord.id})`,
-        );
+        await log(`Found existing word: ${wordData.word} (id=${baseWord.id})`);
     }
 
-    // Удаляем все существующие переводы для этого слова
     await prisma.wordTranslation.deleteMany({
-        where: {
-            baseWordId: baseWord.id,
-        },
+        where: { baseWordId: baseWord.id },
     });
-    await log(`🗑️ Cleared existing translations for: ${wordData.word}`);
 
-    // Добавляем новые переводы (не более 3 на язык)
     for (const translationGroup of wordData.translations) {
         const translationLanguage = await getOrCreateLanguage(
             translationGroup.languageCode,
@@ -550,23 +498,14 @@ async function importWordData(wordData: WordData): Promise<boolean> {
                     partOfSpeechId: partOfSpeech.id,
                 },
             });
-            await log(
-                `➕ Added translation: "${translation}" for ${wordData.word} (${partOfSpeech.name})`,
-            );
         }
     }
 
-    await log(`✅ Processed translations for: ${wordData.word}`);
-
-    // Удаляем существующие примеры и грамматические примеры для этого слова
     await clearWordExamples(baseWord.id);
-    await log(`🗑️ Cleared existing examples for: ${wordData.word}`);
 
-    // Добавляем примеры (всегда новые, так как старые удалены)
     for (const example of wordData.examples) {
         const pronoun = await getOrCreatePronoun(example.pronoun, language.id);
 
-        // Определяем sentenceTypeCode
         let sentenceTypeCode = 'AFFIRMATIVE';
         if (example.sentenceTypeCode) {
             sentenceTypeCode = example.sentenceTypeCode;
@@ -584,7 +523,6 @@ async function importWordData(wordData: WordData): Promise<boolean> {
             example.isQuestion || false,
         );
 
-        // Создаем отдельную запись для каждого языка перевода
         for (const translation of example.translations) {
             const translationLanguage = await getOrCreateLanguage(
                 translation.languageCode,
@@ -604,11 +542,6 @@ async function importWordData(wordData: WordData): Promise<boolean> {
         }
     }
 
-    await log(
-        `✅ Added ${wordData.examples.length} examples for: ${wordData.word}`,
-    );
-
-    // Добавляем грамматические примеры (всегда новые, так как старые удалены)
     for (const grammaticalExample of wordData.grammaticalExamples) {
         const tense = await getOrCreateTense(
             grammaticalExample.tenseName,
@@ -621,7 +554,6 @@ async function importWordData(wordData: WordData): Promise<boolean> {
                 language.id,
             );
 
-            // Определяем sentenceTypeCode для грамматического примера
             let sentenceTypeCode = 'AFFIRMATIVE';
             if (example.sentenceTypeCode) {
                 sentenceTypeCode = example.sentenceTypeCode;
@@ -639,7 +571,6 @@ async function importWordData(wordData: WordData): Promise<boolean> {
                 example.isQuestion || false,
             );
 
-            // Создаем отдельную запись для каждого языка перевода
             for (const translation of example.translations) {
                 const translationLanguage = await getOrCreateLanguage(
                     translation.languageCode,
@@ -661,18 +592,15 @@ async function importWordData(wordData: WordData): Promise<boolean> {
         }
     }
 
-    await log(`✅ Added grammatical examples for: ${wordData.word}`);
-
-    // Обновляем source слова на 'native', чтобы оно не попадалось в следующий пайплайн
+    // Mark as 'native' so the next pipeline run skips it.
     const nativeSource = await getWordSource('native');
     await prisma.baseWord.update({
         where: { id: baseWord.id },
         data: { sourceId: nativeSource.id },
     });
-    await log(`🏷️ Updated source to 'native' for word: ${wordData.word}`);
 
     await log(
-        `🎉 Successfully updated word: ${wordData.word} (ID: ${baseWord.id})`,
+        `Imported "${wordData.word}" (id=${baseWord.id}, examples=${wordData.examples.length}).`,
     );
     return true;
 }
@@ -692,15 +620,12 @@ async function main() {
 
     const jsonFilePath = args[0];
 
-    await log('🚀 Starting word data import script');
-    await log(`📁 Input file: ${jsonFilePath}`);
+    await log(`Importing word data from ${jsonFilePath}`);
 
     try {
-        // Читаем JSON файл
         const jsonData = await fs.readFile(jsonFilePath, 'utf8');
-        let rawData = JSON.parse(jsonData);
+        const rawData = JSON.parse(jsonData);
 
-        // Преобразуем данные в массив, если пришел одиночный объект
         let wordDataArray: WordData[] = [];
         if (Array.isArray(rawData)) {
             wordDataArray = rawData;
@@ -711,45 +636,31 @@ async function main() {
             rawData.translations &&
             rawData.examples
         ) {
-            // Новый формат WordData от Cursor agent
             wordDataArray = [rawData as WordData];
         } else if (rawData.word && rawData.translations && rawData.sentences) {
-            // Старый формат CursorResult - преобразуем
-            const transformedData = transformCursorResultToWordData(rawData);
-            wordDataArray = [transformedData];
+            wordDataArray = [transformCursorResultToWordData(rawData)];
         } else {
             throw new Error(
                 'Invalid data format: expected array, WordData object, or Cursor result object',
             );
         }
 
-        await log(`📊 Found ${wordDataArray.length} words to process`);
-
         let processedCount = 0;
         let skippedCount = 0;
 
-        // Обрабатываем каждое слово
         for (const wordData of wordDataArray) {
             const success = await importWordData(wordData);
-            if (success) {
-                processedCount++;
-            } else {
-                skippedCount++;
-            }
+            if (success) processedCount++;
+            else skippedCount++;
         }
 
-        await log(`🎉 Import completed!`);
-        await log(`📊 Processed: ${processedCount} words`);
-        if (skippedCount > 0) {
-            await log(
-                `⚠️ Skipped: ${skippedCount} words (not found in database)`,
-            );
-        }
-        await log(`📝 Log saved to: ${logFilePath}`);
+        await log(
+            `Done. Imported: ${processedCount}. Skipped: ${skippedCount}. Log: ${logFilePath}.`,
+        );
     } catch (error) {
         const errorMessage =
             error instanceof Error ? error.message : String(error);
-        await log(`❌ Error importing word data: ${errorMessage}`);
+        await log(`Error importing word data: ${errorMessage}`);
         console.error('Full error:', error);
         process.exit(1);
     }
@@ -758,7 +669,7 @@ async function main() {
 main()
     .catch(async e => {
         const errorMessage = e instanceof Error ? e.message : String(e);
-        console.error(`❌ Script error: ${errorMessage}`);
+        console.error(`Script error: ${errorMessage}`);
         console.error('Full error:', e);
         process.exit(1);
     })

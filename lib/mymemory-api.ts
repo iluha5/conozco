@@ -1,6 +1,5 @@
 import { filterTranslations } from './translation-api';
 
-// Types for MyMemory Translation API
 interface MyMemoryResponse {
     responseData: {
         translatedText: string;
@@ -26,19 +25,13 @@ interface MyMemoryResponse {
     }>;
 }
 
-// API configuration
 const MYMEMORY_API_URL = 'https://api.mymemory.translated.net';
-const TRANSLATION_TIMEOUT = 10000; // 10 seconds
+const TRANSLATION_TIMEOUT = 10000;
 
-// Utility to get source ID by code
 async function getSourceId(sourceCode: string): Promise<number | null> {
     try {
         const { prisma } = await import('./prisma');
-
-        if (!prisma) {
-            console.error('[LOG] Prisma client is undefined!');
-            return null;
-        }
+        if (!prisma) return null;
 
         const source = await prisma.wordSource.findUnique({
             where: { code: sourceCode },
@@ -47,23 +40,15 @@ async function getSourceId(sourceCode: string): Promise<number | null> {
 
         return source?.id || null;
     } catch (error) {
-        console.error(
-            `[LOG] Failed to get sourceId for "${sourceCode}":`,
-            error,
-        );
+        console.error(`Failed to get sourceId for "${sourceCode}":`, error);
         return null;
     }
 }
 
-// Utility to get language ID by code
 async function getLanguageId(languageCode: string): Promise<number | null> {
     try {
         const { prisma } = await import('./prisma');
-
-        if (!prisma) {
-            console.error('[LOG] Prisma client is undefined!');
-            return null;
-        }
+        if (!prisma) return null;
 
         const language = await prisma.language.findUnique({
             where: { code: languageCode },
@@ -72,103 +57,64 @@ async function getLanguageId(languageCode: string): Promise<number | null> {
 
         return language?.id || null;
     } catch (error) {
-        console.error(
-            `[LOG] Failed to get languageId for "${languageCode}":`,
-            error,
-        );
+        console.error(`Failed to get languageId for "${languageCode}":`, error);
         return null;
     }
 }
 
-// Utility for logging API requests
 async function logApiRequest(
     userId: number | null,
-    sourceCode: string, // 'DEEPL', 'MYMEMORY', 'TATOEBA'
+    sourceCode: string,
     requestType: string,
     requestData: any,
     responseData: any | null,
     statusCode: number | null,
     errorMessage: string | null | undefined,
     duration: number,
-    sourceLanguageCode?: string, // Source language code (e.g.: 'es', 'en')
-    targetLanguageCode?: string, // Target language code (e.g.: 'ru')
+    sourceLanguageCode?: string,
+    targetLanguageCode?: string,
 ) {
     try {
-        console.log(
-            `[LOG] Attempting to log API request: ${sourceCode}/${requestType}`,
-        );
-
-        // Get sourceId
         const sourceId = await getSourceId(sourceCode);
+        if (!sourceId) return;
 
-        if (!sourceId) {
-            console.error(`[LOG] Failed to get sourceId for "${sourceCode}"`);
-            return;
-        }
-
-        // Get language IDs if specified
-        let sourceLanguageId: number | null | undefined = undefined;
-        let targetLanguageId: number | null | undefined = undefined;
+        let sourceLanguageId: number | null | undefined;
+        let targetLanguageId: number | null | undefined;
 
         if (sourceLanguageCode) {
             sourceLanguageId = await getLanguageId(sourceLanguageCode);
         }
-
         if (targetLanguageCode) {
             targetLanguageId = await getLanguageId(targetLanguageCode);
         }
 
-        // Import prisma inside function to guarantee server context
         const { prisma } = await import('./prisma');
+        if (!prisma) return;
 
-        if (!prisma) {
-            console.error('[LOG] Prisma client is undefined!');
-            return;
-        }
-
-        // Safe data serialization
-        let requestDataStr: string;
-        let responseDataStr: string | null = null;
-
-        try {
-            requestDataStr = JSON.stringify(requestData);
-        } catch (e) {
-            console.error('[LOG] Failed to stringify requestData:', e);
-            requestDataStr = JSON.stringify({ error: 'Failed to serialize' });
-        }
-
-        if (responseData) {
+        const safeStringify = (value: unknown): string => {
             try {
-                responseDataStr = JSON.stringify(responseData);
-            } catch (e) {
-                console.error('[LOG] Failed to stringify responseData:', e);
-                responseDataStr = JSON.stringify({
-                    error: 'Failed to serialize',
-                });
+                return JSON.stringify(value);
+            } catch {
+                return JSON.stringify({ error: 'Failed to serialize' });
             }
-        }
+        };
 
-        const logEntry = await prisma.apiRequestLog.create({
+        await prisma.apiRequestLog.create({
             data: {
                 userId,
                 sourceId,
                 sourceLanguageId,
                 targetLanguageId,
                 requestType,
-                requestData: requestDataStr,
-                responseData: responseDataStr,
+                requestData: safeStringify(requestData),
+                responseData: responseData ? safeStringify(responseData) : null,
                 statusCode,
                 errorMessage,
                 duration,
             },
         });
-
-        console.log(
-            `[LOG] Successfully logged API request with ID: ${logEntry.id}`,
-        );
     } catch (error) {
-        console.error('[LOG] Failed to log API request:', error);
-        console.error('[LOG] Request data:', {
+        console.error('Failed to log API request:', error, {
             userId,
             sourceCode,
             requestType,
@@ -179,9 +125,6 @@ async function logApiRequest(
     }
 }
 
-/**
- * Переводит слово через MyMemory Translation API
- */
 export async function translateWithMyMemory(
     word: string,
     sourceLanguage: string,
@@ -194,10 +137,7 @@ export async function translateWithMyMemory(
 }> {
     const startTime = Date.now();
     const langpair = `${sourceLanguage}|${targetLanguage}`;
-    const requestData = {
-        q: word,
-        langpair,
-    };
+    const requestData = { q: word, langpair };
 
     try {
         const controller = new AbortController();
@@ -206,10 +146,7 @@ export async function translateWithMyMemory(
             TRANSLATION_TIMEOUT,
         );
 
-        const params = new URLSearchParams({
-            q: word,
-            langpair,
-        });
+        const params = new URLSearchParams({ q: word, langpair });
 
         const response = await fetch(`${MYMEMORY_API_URL}/get?${params}`, {
             method: 'GET',
@@ -246,38 +183,31 @@ export async function translateWithMyMemory(
             );
         }
 
-        // Collect all translations (main + alternatives from matches)
-        // Remove trailing punctuation from translations
         const cleanMainTranslation = data.responseData.translatedText
             .trim()
             .replace(/[,.;:!?]+$/, '');
         const allTranslations: string[] = [cleanMainTranslation];
 
+        // Collect up to 2 alternative translations from `matches`, skipping the duplicate of the main one.
         if (data.matches && Array.isArray(data.matches)) {
             for (const match of data.matches) {
                 if (
                     match.translation &&
                     match.translation !== data.responseData.translatedText &&
-                    allTranslations.length < 3 // Limit to 3 translations
+                    allTranslations.length < 3
                 ) {
-                    const cleanTranslation = match.translation
-                        .trim()
-                        .replace(/[,.;:!?]+$/, '');
-                    allTranslations.push(cleanTranslation);
+                    allTranslations.push(
+                        match.translation.trim().replace(/[,.;:!?]+$/, ''),
+                    );
                 }
             }
         }
 
-        // Apply filtering
         const filteredTranslations = filterTranslations(allTranslations);
 
-        // Split into main and alternative
-        const mainTranslation = filteredTranslations[0];
-        const alternatives = filteredTranslations.slice(1);
-
         return {
-            mainTranslation,
-            alternatives,
+            mainTranslation: filteredTranslations[0],
+            alternatives: filteredTranslations.slice(1),
         };
     } catch (error: any) {
         const duration = Date.now() - startTime;

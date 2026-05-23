@@ -1,7 +1,3 @@
-/**
- * Маппинг градиентов к цветам для обводки и текста
- * Используется для генерации правильных классов Tailwind
- */
 const GRADIENT_TO_COLOR_MAP: Record<
     string,
     {
@@ -92,65 +88,42 @@ const GRADIENT_TO_COLOR_MAP: Record<
     },
 };
 
-/**
- * Извлекает цвет из градиента для использования в обводке
- * Пример: "from-green-400 to-emerald-500" -> "green-400"
- */
 export function extractColorFromGradient(gradient: string): string {
-    // Extract first color from gradient (after "from-")
     const match = gradient.match(/from-([a-z]+-\d+)/);
     if (match && match[1]) {
         return match[1];
     }
-    // Fallback: if extraction failed, return default color
     return 'gray-400';
 }
 
-/**
- * Получает класс для обводки на основе цвета градиента
- */
 export function getBorderColorClass(gradient: string): string {
     const colorMap = GRADIENT_TO_COLOR_MAP[gradient];
     if (colorMap) {
         return colorMap.border;
     }
-    // Fallback
     return 'border-gray-400';
 }
 
-/**
- * Получает класс для текста на основе цвета градиента
- */
 export function getTextColorClass(gradient: string): string {
     const colorMap = GRADIENT_TO_COLOR_MAP[gradient];
     if (colorMap) {
         return colorMap.text;
     }
-    // Fallback
     return 'text-gray-600';
 }
 
-/**
- * Получает класс для фона на основе цвета градиента (с прозрачностью 10%)
- */
 export function getBackgroundColorClass(gradient: string): string {
     const colorMap = GRADIENT_TO_COLOR_MAP[gradient];
     if (colorMap) {
         return colorMap.bgLight;
     }
-    // Fallback
     return 'bg-gray-400/10';
 }
 
-/**
- * Получает класс для засветленного фона на основе цвета градиента (с прозрачностью 10%)
- * Используется для фона карточки, чтобы цвет был заметен, но текст оставался читаемым
- */
 export function getLightBackgroundColorClass(gradient: string): string {
     const colorMap = GRADIENT_TO_COLOR_MAP[gradient];
     if (colorMap) {
         return colorMap.bgLightMedium;
     }
-    // Fallback
     return 'bg-gray-400/10';
 }

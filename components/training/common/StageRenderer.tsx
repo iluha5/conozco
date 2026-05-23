@@ -21,8 +21,7 @@ export function StageRenderer({
     onComplete,
     isLastStage = false,
 }: StageRendererProps) {
-    // Перемешиваем слова для каждого этапа отдельно
-    // Это гарантирует, что каждый этап получает свой случайный порядок слов
+    // Reshuffle on every stage change so each stage gets its own random order.
     const shuffledWords = useMemo(() => {
         return shuffleArray(words);
         // eslint-disable-next-line react-hooks/exhaustive-deps

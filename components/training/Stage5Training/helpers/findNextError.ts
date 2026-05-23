@@ -2,7 +2,6 @@ export function findNextErrorWithResults(
     currentExerciseIndex: number,
     results: (boolean | null)[],
 ): number {
-    // Ищем следующую ошибку после текущего индекса
     for (
         let errorIndex = currentExerciseIndex + 1;
         errorIndex < results.length;
@@ -12,13 +11,13 @@ export function findNextErrorWithResults(
             return errorIndex;
         }
     }
-    // Если не нашли, ищем с начала до текущего индекса
+    // Wrap to start when no error after currentExerciseIndex
     for (let errorIndex = 0; errorIndex <= currentExerciseIndex; errorIndex++) {
         if (results[errorIndex] === false) {
             return errorIndex;
         }
     }
-    return -1; // Ошибок больше нет
+    return -1;
 }
 
 export function findNextError(

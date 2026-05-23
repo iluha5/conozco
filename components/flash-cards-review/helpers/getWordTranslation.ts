@@ -1,10 +1,7 @@
 import { Word } from '@/types/training.types';
 import { tServerSync } from '@/lib/i18n';
 
-/**
- * Получить перевод слова для проверки
- * Приоритет: customTranslations -> baseWord.translations
- */
+// Priority: customTranslations -> baseWord.translations
 export function getWordTranslation(word: Word, lang: string = 'en'): string {
     if (word.customTranslations && word.customTranslations.length > 0) {
         return word.customTranslations[0].translation;
@@ -17,9 +14,6 @@ export function getWordTranslation(word: Word, lang: string = 'en'): string {
     return tServerSync('No translation', lang);
 }
 
-/**
- * Получить текст слова (baseWord.word или customWord)
- */
 export function getWordText(word: Word): string {
     return word.baseWord?.word || word.customWord || '';
 }

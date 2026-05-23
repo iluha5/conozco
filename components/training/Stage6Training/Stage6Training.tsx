@@ -37,11 +37,10 @@ export function Stage6Training({
     );
     const [isCompleting, setIsCompleting] = useState(false);
 
-    // Filter only base words (exclude custom words)
+    // Only base words (exclude custom words)
     const baseWords = words.filter(word => word.baseWordId && !word.customWord);
     const currentWord = baseWords[currentIndex];
 
-    // Используем новые хуки
     const { fadeIn, animationKey, triggerAnimation } = useFadeAnimation();
     const { exerciseResults, updateResult, setExerciseResults } =
         useExerciseResults({
@@ -84,7 +83,6 @@ export function Stage6Training({
         setLetters,
     });
 
-    // Функция для поиска следующей ошибки (использует текущее состояние)
     const findNextError = useCallback(
         (startIndex: number) => {
             return findNextErrorWithResults(startIndex, exerciseResults);
@@ -101,10 +99,8 @@ export function Stage6Training({
         setHasCompletedFirstRound,
     });
 
-    // Инициализируем буквы при смене слова
     useEffect(() => {
         if (currentWord) {
-            // Сбрасываем попап и фон сразу при переходе к новому слову
             setBackgroundFlash(null);
             setShowResultPopup(false);
             setCompletedWordId(null);
@@ -114,11 +110,11 @@ export function Stage6Training({
             resetLetters();
             resetWordBuilding();
 
-            // Автоматически проговариваем слово при открытии карточки
             if (speechSupported) {
+                // Slight delay so card animation has time to settle before TTS
                 const timer = setTimeout(() => {
                     speak(currentWordText);
-                }, 500); // Небольшая задержка для плавности появления карточки
+                }, 500);
                 return () => clearTimeout(timer);
             }
         }
@@ -133,7 +129,6 @@ export function Stage6Training({
         currentWordText,
     ]);
 
-    // Обновляем результаты упражнения при завершении слова
     useEffect(() => {
         if (
             isComplete &&
@@ -142,35 +137,29 @@ export function Stage6Training({
             completedWordId === null &&
             lastCompletedIndex !== currentIndex
         ) {
-            // Устанавливаем ID завершенного слова только если он еще не установлен
             setCompletedWordId(currentWord.id);
             setLastCompletedIndex(currentIndex);
 
             setExerciseResults(prevResults => {
                 const newResults = [...prevResults];
-                // В режиме retry всегда обновляем результат, даже если он уже был установлен
-                // В обычном режиме устанавливаем результат только если для этого индекса еще нет результата
+                // Retry mode overwrites existing results; normal mode only fills empty slots
                 if (isRetryMode || newResults[currentIndex] === null) {
                     newResults[currentIndex] = isCorrect;
                 }
                 return newResults;
             });
 
-            // Устанавливаем цвет фона и показываем попап с результатом
             setBackgroundFlash(isCorrect ? 'green' : 'red');
             setShowResultPopup(true);
 
-            // Обновляем результаты упражнения
             updateResult(currentIndex, isCorrect);
 
-            // Записываем результат (API + localStorage)
             recordResult(6, currentWord.id, isCorrect);
         } else if (
             currentWord &&
             completedWordId !== null &&
             currentWord.id !== completedWordId
         ) {
-            // Если перешли к новому слову, скрываем попап
             setShowResultPopup(false);
             setBackgroundFlash(null);
         }

@@ -43,13 +43,11 @@ export function useStage5AutoAdvance({
     setIsCompleting,
 }: UseStage5AutoAdvanceParams) {
     useEffect(() => {
-        // Автоматический переход только при правильном ответе
+        // Auto-advance only on a correct answer
         if (isComplete && isCorrect) {
             const delay = 1000;
             const timer = setTimeout(() => {
-                // Используем функциональное обновление для получения актуальных значений
                 setExerciseResults(currentResults => {
-                    // Вычисляем текущий индекс упражнения с актуальными значениями
                     const currentExerciseIndex =
                         wordPhrases
                             .slice(0, currentIndex)
@@ -59,36 +57,31 @@ export function useStage5AutoAdvance({
                             ) + currentPhraseIndex;
 
                     if (isRetryMode) {
-                        // В режиме исправления ошибок
-                        // Сначала обновляем результат текущего упражнения на правильный
                         const updatedResults = [...currentResults];
                         updatedResults[currentExerciseIndex] = true;
 
-                        // Ищем следующую ошибку с учетом обновленных результатов
                         const nextErrorIndex = findNextErrorWithResults(
                             currentExerciseIndex,
                             updatedResults,
                         );
 
                         if (nextErrorIndex === -1) {
-                            // Все ошибки исправлены - даем время увидеть все зеленые точки, затем завершаем этап
-                            // Если это последний этап, показываем лоадер
                             if (isLastStage) {
                                 setIsCompleting(true);
                                 setTimeout(() => {
                                     onComplete();
                                 }, 500);
                             } else {
+                                // Extra delay so user sees all green dots
                                 setTimeout(() => {
                                     onComplete();
                                     setCurrentIndex(0);
                                     setCurrentPhraseIndex(0);
                                     setIsRetryMode(false);
                                     setHasCompletedFirstRound(false);
-                                }, 1500); // Дополнительная задержка для визуального подтверждения
+                                }, 1500);
                             }
                         } else {
-                            // Переходим к следующей ошибке
                             const nextErrorPosition = getWordAndPhraseIndex(
                                 nextErrorIndex,
                                 wordPhrases,
@@ -101,26 +94,22 @@ export function useStage5AutoAdvance({
                             }
                         }
 
-                        // Возвращаем обновленные результаты
                         return updatedResults;
                     } else {
-                        // Обычный режим - проверяем актуальное состояние перед переходом
-                        // Это критично для последнего слова/фразы
+                        // Re-read state inside the updater so transitions on the
+                        // last phrase use up-to-date results
                         const currentWordPhrases =
                             wordPhrases[currentIndex] || [];
 
-                        // Если есть еще предложения для текущего слова
                         if (
                             currentPhraseIndex <
                             currentWordPhrases.length - 1
                         ) {
                             setCurrentPhraseIndex(currentPhraseIndex + 1);
                         } else if (currentIndex < wordsWithPhrasesLength - 1) {
-                            // Переходим к следующему слову
                             setCurrentPhraseIndex(0);
                             setCurrentIndex(currentIndex + 1);
                         } else {
-                            // Последнее слово/фраза - проверяем актуальное состояние на ошибки
                             setHasCompletedFirstRound(true);
 
                             const errorIndices = currentResults
@@ -130,7 +119,6 @@ export function useStage5AutoAdvance({
                                 .filter(idx => idx !== -1);
 
                             if (errorIndices.length > 0) {
-                                // Есть ошибки - переходим в режим исправления
                                 setIsRetryMode(true);
                                 const firstErrorPosition =
                                     getWordAndPhraseIndex(
@@ -146,8 +134,6 @@ export function useStage5AutoAdvance({
                                     );
                                 }
                             } else {
-                                // Все правильно - завершаем этап
-                                // Если это последний этап и последнее упражнение выполнено правильно
                                 const isLastExercise =
                                     currentIndex ===
                                         wordsWithPhrasesLength - 1 &&
@@ -160,12 +146,10 @@ export function useStage5AutoAdvance({
                                     isLastExercise &&
                                     isCorrect
                                 ) {
-                                    // Проверяем, что все упражнения выполнены правильно
                                     const allCorrect = currentResults.every(
                                         result => result === true,
                                     );
                                     if (allCorrect) {
-                                        // Показываем лоадер и завершаем тренировку
                                         setIsCompleting(true);
                                         setTimeout(() => {
                                             onComplete();
@@ -173,7 +157,6 @@ export function useStage5AutoAdvance({
                                         return currentResults;
                                     }
                                 }
-                                // Обычное завершение этапа
                                 onComplete();
                                 setCurrentIndex(0);
                                 setCurrentPhraseIndex(0);
@@ -183,7 +166,7 @@ export function useStage5AutoAdvance({
                         }
                     }
 
-                    return currentResults; // Возвращаем без изменений
+                    return currentResults;
                 });
             }, delay);
 

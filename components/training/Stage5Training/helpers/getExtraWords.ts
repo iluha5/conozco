@@ -6,13 +6,11 @@ export function getExtraWords(
     currentPhraseWords: string[],
     words: Word[],
 ): string[] {
-    // Собираем все слова из всех фраз всех слов
     const allWordsFromPhrases: string[] = [];
 
     words.forEach(word => {
         if (!word.baseWord) return;
 
-        // Собираем слова из примеров
         if (word.baseWord.examples) {
             word.baseWord.examples.forEach(example => {
                 allWordsFromPhrases.push(
@@ -25,7 +23,6 @@ export function getExtraWords(
             });
         }
 
-        // Собираем слова из грамматических примеров
         if (word.baseWord.grammaticalExamples) {
             word.baseWord.grammaticalExamples.forEach(example => {
                 allWordsFromPhrases.push(
@@ -39,7 +36,6 @@ export function getExtraWords(
         }
     });
 
-    // Фильтруем слова, исключая слова из текущей фразы и местоимения
     const filteredWords = allWordsFromPhrases.filter(word => {
         return (
             !currentPhraseWords.includes(word) &&
@@ -93,10 +89,8 @@ export function getExtraWords(
         );
     });
 
-    // Убираем дубликаты
     const uniqueWords = Array.from(new Set(filteredWords));
 
-    // Выбираем 5 случайных слов
     const shuffled = uniqueWords.sort(() => Math.random() - 0.5);
     return shuffled.slice(0, 5);
 }

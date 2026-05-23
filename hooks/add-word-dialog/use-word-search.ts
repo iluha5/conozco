@@ -1,7 +1,3 @@
-/**
- * Хук для поиска слов в словаре
- */
-
 import { useState, useEffect } from 'react';
 import { useDebounce } from 'react-use';
 import { useToast } from '@/hooks/shared';
@@ -37,7 +33,6 @@ export function useWordSearch({
     const [hasExactMatch, setHasExactMatch] = useState(false);
     const { toast } = useToast();
 
-    // Debounce search by 400ms
     useDebounce(
         () => {
             setDebouncedSearchTerm(searchTerm);
@@ -46,7 +41,6 @@ export function useWordSearch({
         [searchTerm],
     );
 
-    // Check for exact matches
     useEffect(() => {
         if (!searchTerm.trim()) {
             setHasExactMatch(false);
@@ -60,9 +54,7 @@ export function useWordSearch({
         setHasExactMatch(!!exactMatch);
     }, [searchTerm, availableWords]);
 
-    // Search words when parameters change
     useEffect(() => {
-        // Don't start search if search field is empty
         if (!debouncedSearchTerm.trim()) {
             setAvailableWords([]);
             setOffset(0);
@@ -110,7 +102,6 @@ export function useWordSearch({
                 params.set('search', debouncedSearchTerm.trim());
             }
 
-            // Add native language code for translation search
             if (ownLanguageCode) {
                 params.set('translationLanguageCode', ownLanguageCode);
             }

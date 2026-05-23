@@ -21,12 +21,10 @@ export function WordsGrid({
             {words.map((wordState, index) => (
                 <div key={index} className="relative">
                     {wordState.selected ? (
-                        // Светло-серый блок-заполнитель для выбранных слов
                         <div className="px-3 py-2 bg-gray-200 border-2 border-gray-300 rounded-lg text-gray-400 font-medium min-w-[60px] h-10 flex items-center justify-center">
                             {wordState.word}
                         </div>
                     ) : (
-                        // Активная кнопка для невыбранных слов
                         <button
                             onClick={() => onWordClick(index)}
                             disabled={isComplete}

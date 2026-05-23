@@ -1,50 +1,17 @@
-# Server Setup Scripts
+# Server Setup
 
-Скрипты для настройки production сервера.
+Scripts run on the production host.
 
-## backup-db-prod.sh
+| Script | Purpose |
+|---|---|
+| `setup-server.sh` | First-time provisioning: Docker, Certbot, s3cmd, UFW, 2 GB swap, cron jobs, `deploy` user. |
+| `backup-db-prod.sh` | Daily DB backup; uploads to DigitalOcean Spaces; rotates (14 days local, 30 days remote); logs to `/var/log/flashcards-backup.log`. |
+| `check-backups.sh` | Verifies the latest Spaces backup is < 24h old. |
 
-Автоматический скрипт бэкапа базы данных:
-- Создает бэкап в формате PostgreSQL custom format или plain SQL (gzip)
-- Загружает бэкап в DigitalOcean Spaces
-- Очищает старые бэкапы (14 дней локально, 30 дней в Spaces)
-- Логирует все операции в `/var/log/flashcards-backup.log`
-
-**Использование:**
 ```bash
+sudo ./scripts/server-setup/setup-server.sh   # one-time
 /opt/flashcards/scripts/server-setup/backup-db-prod.sh
-```
-
-**Требования:**
-- Настроенный `s3cmd` с доступом к DigitalOcean Spaces
-- Запущенный контейнер `flashcards-db`
-
-## setup-server.sh
-
-Скрипт первоначальной настройки сервера:
-- Устанавливает Docker, Certbot, s3cmd
-- Настраивает UFW firewall
-- Создает swap файл (2GB)
-- Настраивает cron задачи для бэкапов и SSL renewal
-- Создает пользователя `deploy` для безопасного деплоя
-
-**Использование:**
-```bash
-chmod +x scripts/server-setup/setup-server.sh
-sudo ./scripts/server-setup/setup-server.sh
-```
-
-## check-backups.sh
-
-Скрипт проверки свежести бэкапов:
-- Проверяет наличие бэкапов в DigitalOcean Spaces
-- Проверяет что последний бэкап не старше 24 часов
-- Проверяет количество бэкапов
-
-**Использование:**
-```bash
 /opt/flashcards/scripts/server-setup/check-backups.sh
 ```
 
-**Настройка cron:**
-Скрипт автоматически добавляется в cron при выполнении `setup-server.sh`.
+`setup-server.sh` registers the backup and check scripts in cron automatically. Requires `s3cmd` configured for DO Spaces and the `flashcards-db` container running.

@@ -134,12 +134,11 @@ export function GroupWordsDialog({
     const [displayedCount, setDisplayedCount] = useState(WORDS_PER_PAGE);
     const searchInputRef = useRef<HTMLInputElement>(null);
 
-    // Сбрасываем счетчик при открытии диалога
     useEffect(() => {
         if (open) {
             setDisplayedCount(WORDS_PER_PAGE);
             setSearchQuery('');
-            // Убираем фокус с поля ввода, если он был установлен
+            // Drop focus from the search input if it grabbed it on mount
             setTimeout(() => {
                 if (
                     searchInputRef.current &&
@@ -161,7 +160,7 @@ export function GroupWordsDialog({
         queryFn: async () => {
             const params = new URLSearchParams({
                 wordGroupIds: groupId.toString(),
-                limit: '1000', // Загружаем больше для поиска
+                limit: '1000', // larger page so client-side search has full set
                 offset: '0',
             });
 
@@ -178,7 +177,7 @@ export function GroupWordsDialog({
         enabled: open,
     });
 
-    // Фильтруем слова по поисковому запросу на клиенте (если поиск не был применен на сервере)
+    // Client-side filter as a fallback when server search is not applied
     const filteredWords =
         words?.filter(word => {
             if (!searchQuery) return true;
@@ -227,7 +226,6 @@ export function GroupWordsDialog({
                     </div>
                 </DialogHeader>
 
-                {/* Поиск */}
                 <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -243,7 +241,6 @@ export function GroupWordsDialog({
                     />
                 </div>
 
-                {/* Список слов */}
                 <div
                     className="flex-1 overflow-y-auto"
                     style={{
@@ -288,7 +285,6 @@ export function GroupWordsDialog({
                     )}
                 </div>
 
-                {/* Кнопка "Показать еще" */}
                 {hasMore && !isLoading && (
                     <div className="flex justify-center pt-2 border-t">
                         <button

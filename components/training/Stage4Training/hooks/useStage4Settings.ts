@@ -17,7 +17,7 @@ export function useStage4Settings({
     const handleSettingsChange = useCallback(
         (newSettings: Partial<Stage4Settings>) => {
             updateSettings({ ...currentSettings, ...newSettings });
-            // Сбрасываем прогресс при изменении сложности
+            // Reset progress when difficulty changes
             setCurrentIndex(0);
             setIsFirstCard(true);
         },

@@ -39,7 +39,6 @@ export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
     const learnLanguageCode = userSettings?.learnLanguage?.code || 'en';
     const ownLanguageCode = userSettings?.ownLanguage?.code || 'ru';
 
-    // Invalidate word counters on test completion or closure
     const invalidateWordCounters = useCallback(() => {
         const languageCode = userSettings?.learnLanguage?.code || null;
         if (languageCode) {
@@ -50,7 +49,6 @@ export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
     }, [queryClient, userSettings?.learnLanguage?.code]);
 
     const handleClose = () => {
-        // Invalidate counters on close
         invalidateWordCounters();
         if (params.returnUrl) {
             router.push(params.returnUrl);
@@ -58,14 +56,12 @@ export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
         onClose();
     };
 
-    // Invalidate counters on test completion
     useEffect(() => {
         if (isCompleted) {
             invalidateWordCounters();
         }
     }, [invalidateWordCounters, isCompleted]);
 
-    // Block body scroll when opening modal
     useEffect(() => {
         document.body.style.overflow = 'hidden';
         return () => {
@@ -177,7 +173,6 @@ export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
         return (
             <div className="fixed inset-0 top-0 left-0 right-0 bottom-0 m-0 bg-gradient-to-br from-purple-50 to-pink-100 z-50 overflow-y-auto">
                 <div className="container mx-auto px-4 py-8 max-w-2xl">
-                    {/* Заголовок */}
                     <div className="flex items-center justify-between mb-6">
                         <div>
                             <h1 className="text-2xl font-bold text-gray-900">
@@ -212,7 +207,6 @@ export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
                         </Button>
                     </div>
 
-                    {/* Прогресс бар */}
                     <div className="mb-6">
                         <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                             <div
@@ -222,7 +216,6 @@ export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
                         </div>
                     </div>
 
-                    {/* Карточка */}
                     {currentWord && !isCompleted && (
                         <div className="mb-6">
                             <div className="h-[400px] md:h-[500px] relative">
@@ -233,7 +226,6 @@ export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
                                     ownLanguageCode={ownLanguageCode}
                                 />
                             </div>
-                            {/* Кнопка удаления/пропуска для мобильной версии */}
                             <FlashCardDeleteButton
                                 onAction={() =>
                                     handleAction(
@@ -250,7 +242,6 @@ export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
                         </div>
                     )}
 
-                    {/* Кнопки действий (только на десктопе) */}
                     <div className="hidden md:block">
                         <FlashCardActions
                             onAction={handleAction}
@@ -263,7 +254,7 @@ export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
         );
     };
 
-    // Render through Portal directly to body to avoid parent style influence
+    // Render via portal directly into <body> to avoid parent style influence
     if (typeof window === 'undefined') {
         return null;
     }

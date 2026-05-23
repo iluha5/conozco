@@ -14,9 +14,6 @@ import {
 } from '@/types/cookie-consent.types';
 import { QUERY_STALE_TIME, QUERY_GC_TIME } from '@/config/react-query';
 
-/**
- * Загрузить согласие из localStorage
- */
 function loadFromLocalStorage(): LocalStorageConsent | null {
     if (typeof window === 'undefined') {
         return null;
@@ -34,9 +31,6 @@ function loadFromLocalStorage(): LocalStorageConsent | null {
     }
 }
 
-/**
- * Сохранить согласие в localStorage
- */
 function saveToLocalStorage(consent: LocalStorageConsent): void {
     if (typeof window === 'undefined') {
         return;
@@ -52,9 +46,6 @@ function saveToLocalStorage(consent: LocalStorageConsent): void {
     }
 }
 
-/**
- * Удалить согласие из localStorage
- */
 function _removeFromLocalStorage(): void {
     if (typeof window === 'undefined') {
         return;
@@ -67,9 +58,6 @@ function _removeFromLocalStorage(): void {
     }
 }
 
-/**
- * Преобразовать CookieConsentResponse в CookieConsent
- */
 function responseToConsent(
     response: CookieConsentResponse | null,
 ): CookieConsent | null {
@@ -92,9 +80,6 @@ function responseToConsent(
     };
 }
 
-/**
- * Преобразовать LocalStorageConsent в CookieConsent (для неавторизованных)
- */
 function localStorageToConsent(
     localStorageConsent: LocalStorageConsent | null,
 ): CookieConsent | null {
@@ -119,14 +104,10 @@ function localStorageToConsent(
     };
 }
 
-/**
- * Загрузить согласие из API (для авторизованных пользователей)
- */
 async function fetchCookieConsent(): Promise<CookieConsentResponse | null> {
     const response = await fetch('/api/user/cookie-consent');
 
     if (response.status === 401) {
-        // User not authorized
         return null;
     }
 
@@ -138,9 +119,6 @@ async function fetchCookieConsent(): Promise<CookieConsentResponse | null> {
     return data || null;
 }
 
-/**
- * Сохранить согласие через API
- */
 async function saveCookieConsent(
     request: CookieConsentRequest,
 ): Promise<CookieConsentResponse> {
@@ -160,9 +138,6 @@ async function saveCookieConsent(
     return response.json();
 }
 
-/**
- * Отозвать согласие через API
- */
 async function withdrawCookieConsent(): Promise<CookieConsentResponse> {
     const response = await fetch('/api/user/cookie-consent', {
         method: 'DELETE',
@@ -176,16 +151,12 @@ async function withdrawCookieConsent(): Promise<CookieConsentResponse> {
     return response.json();
 }
 
-/**
- * Хук для работы с согласием на использование куки
- * Поддерживает работу для авторизованных и неавторизованных пользователей
- */
+// For authenticated users the DB record is the source of truth; for guests it's localStorage.
 export function useCookieConsent() {
     const { data: session, status: sessionStatus } = useSession();
     const queryClient = useQueryClient();
     const isAuthenticated = !!session?.user?.id;
 
-    // Load consent from DB for authorized users
     const {
         data: dbConsent = null,
         isLoading: loadingDb,
@@ -198,12 +169,10 @@ export function useCookieConsent() {
         gcTime: QUERY_GC_TIME,
     });
 
-    // Mutation for saving consent
     const saveMutation = useMutation({
         mutationFn: saveCookieConsent,
         onSuccess: updatedConsent => {
             queryClient.setQueryData(['cookie-consent'], updatedConsent);
-            // Save to localStorage only for caching (DB is source of truth for registered)
             const localStorageConsent: LocalStorageConsent = {
                 version: updatedConsent.version,
                 given: updatedConsent.given,
@@ -215,12 +184,10 @@ export function useCookieConsent() {
         },
     });
 
-    // Mutation for withdrawing consent
     const withdrawMutation = useMutation({
         mutationFn: withdrawCookieConsent,
         onSuccess: updatedConsent => {
             queryClient.setQueryData(['cookie-consent'], updatedConsent);
-            // Save to localStorage for fast access (but DB is source of truth)
             const localStorageConsent: LocalStorageConsent = {
                 version: updatedConsent.version,
                 given: false,
@@ -233,25 +200,14 @@ export function useCookieConsent() {
         },
     });
 
-    // Get current consent
-    // For registered users - DB is source of truth
-    // For unregistered - localStorage is source of truth
     const getConsent = useCallback((): CookieConsent | null => {
-        // For registered users - use DB as source of truth
         if (isAuthenticated) {
-            if (dbConsent) {
-                return responseToConsent(dbConsent);
-            }
-            // If no data in DB - return null (banner will be shown)
-            return null;
+            return dbConsent ? responseToConsent(dbConsent) : null;
         }
-
-        // For unregistered users - use localStorage as source of truth
         const localStorageConsent = loadFromLocalStorage();
         return localStorageToConsent(localStorageConsent);
     }, [isAuthenticated, dbConsent]);
 
-    // Save consent
     const saveConsent = useCallback(
         async (
             preferences: CookiePreferences,
@@ -262,14 +218,12 @@ export function useCookieConsent() {
                 given,
                 preferences: {
                     ...preferences,
-                    necessary: true, // always true
+                    necessary: true,
                 },
             };
 
             if (isAuthenticated) {
-                // For registered users - save only to DB (source of truth)
                 await saveMutation.mutateAsync(request);
-                // Also save to localStorage for fast access (but DB is source of truth)
                 const now = new Date().toISOString();
                 const localStorageConsent: LocalStorageConsent = {
                     version: request.version,
@@ -280,7 +234,6 @@ export function useCookieConsent() {
                 };
                 saveToLocalStorage(localStorageConsent);
             } else {
-                // For unregistered users - save only to localStorage (source of truth)
                 const now = new Date().toISOString();
                 const currentConsent = getConsent();
                 const localStorageConsent: LocalStorageConsent = {
@@ -289,7 +242,7 @@ export function useCookieConsent() {
                     givenAt: given
                         ? now
                         : currentConsent?.givenAt?.toISOString() || now,
-                    withdrawnAt: given ? undefined : now, // Save withdrawal time if given: false
+                    withdrawnAt: given ? undefined : now,
                     preferences: request.preferences,
                 };
                 saveToLocalStorage(localStorageConsent);
@@ -299,12 +252,9 @@ export function useCookieConsent() {
         [isAuthenticated, saveMutation, getConsent, dbConsent],
     );
 
-    // Withdraw consent
     const withdrawConsent = useCallback(async (): Promise<void> => {
         if (isAuthenticated) {
-            // For registered users - update DB (source of truth)
             await withdrawMutation.mutateAsync();
-            // Also update localStorage for fast access
             const localStorageConsent = loadFromLocalStorage();
             if (localStorageConsent) {
                 const updated: LocalStorageConsent = {
@@ -315,13 +265,12 @@ export function useCookieConsent() {
                 saveToLocalStorage(updated);
             }
         } else {
-            // For unregistered users - update localStorage (source of truth)
             const localStorageConsent = loadFromLocalStorage();
             if (localStorageConsent) {
                 const updated: LocalStorageConsent = {
                     ...localStorageConsent,
                     given: false,
-                    withdrawnAt: new Date().toISOString(), // Save withdrawal time
+                    withdrawnAt: new Date().toISOString(),
                 };
                 saveToLocalStorage(updated);
                 setLocalStorageVersion(prev => prev + 1);
@@ -329,11 +278,6 @@ export function useCookieConsent() {
         }
     }, [isAuthenticated, withdrawMutation]);
 
-    // Removed sync on auth - DB is source of truth for registered users
-    // If user first gave consent as unregistered, then registered,
-    // they will see banner again and can give consent as registered user
-
-    // Consent type checking
     const canUseFunctional = useCallback((): boolean => {
         const consent = getConsent();
         return (
@@ -360,57 +304,35 @@ export function useCookieConsent() {
         return consent?.given === true;
     }, [getConsent]);
 
+    // Re-prompts a declined user only after 24h cool-down to avoid nagging.
     const needsConsent = useCallback((): boolean => {
-        // For registered users - wait for DB data loading
         if (isAuthenticated && loadingDb) {
-            return false; // Don't show until DB data loaded
-        }
-
-        // For unregistered users - localStorage data available immediately
-        const consent = getConsent();
-
-        // If no consent - show banner
-        if (!consent) {
-            return true;
-        }
-
-        // Check policy version
-        if (consent.version !== COOKIE_CONSENT_VERSION) {
-            return true;
-        }
-
-        // If consent given - don't show popup
-        if (consent.given) {
             return false;
         }
 
-        // If consent not given (declined), check time by withdrawnAt
-        // If less than 24 hours passed since decline - don't show popup
+        const consent = getConsent();
+        if (!consent) return true;
+        if (consent.version !== COOKIE_CONSENT_VERSION) return true;
+        if (consent.given) return false;
+
         if (!consent.given && consent.withdrawnAt) {
             const hoursSinceWithdrawal =
                 (Date.now() - consent.withdrawnAt.getTime()) / (1000 * 60 * 60);
-            if (hoursSinceWithdrawal < 24) {
-                return false; // Less than 24 hours passed - don't show
-            }
-            // 24 hours or more passed - show popup again
-            return true;
+            return hoursSinceWithdrawal >= 24;
         }
 
-        // If no withdrawal time info but given: false - show popup
         return !consent.given;
     }, [getConsent, isAuthenticated, loadingDb]);
 
-    // State for tracking localStorage changes (for unauthorized users)
     const [localStorageVersion, setLocalStorageVersion] = useState(0);
 
-    // Track localStorage changes via storage event
     useEffect(() => {
         if (typeof window === 'undefined' || isAuthenticated) {
             return;
         }
 
-        const handleStorageChange = (e: StorageEvent) => {
-            if (e.key === COOKIE_CONSENT_STORAGE_KEY) {
+        const handleStorageChange = (event: StorageEvent) => {
+            if (event.key === COOKIE_CONSENT_STORAGE_KEY) {
                 setLocalStorageVersion(prev => prev + 1);
             }
         };
@@ -421,19 +343,15 @@ export function useCookieConsent() {
         };
     }, [isAuthenticated]);
 
-    // Memoize consent to avoid creating new object on every render
-    // Use key fields for stable comparison
     const memoizedConsent = useMemo(() => {
         return getConsent();
     }, [
         isAuthenticated,
-        // Use primitive values for stable comparison
         dbConsent?.id,
         dbConsent?.version,
         dbConsent?.given,
         dbConsent?.givenAt,
         dbConsent?.withdrawnAt,
-        // For unauthorized users track changes via version
         localStorageVersion,
     ]);
 

@@ -39,7 +39,6 @@ export function WordBuilder({
                 )}
             </div>
 
-            {/* Попап с результатом */}
             {showResultPopup && (
                 <div className="absolute bottom-2 right-2 pointer-events-none">
                     <div

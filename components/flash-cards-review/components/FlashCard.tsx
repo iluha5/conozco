@@ -57,13 +57,12 @@ export function FlashCard({
     const wordText = getWordText(word);
     const translation = getWordTranslation(word, language || 'en');
 
-    // Get up to 2 random examples from database
     const examples = useMemo(
         () => getWordExamples(word, ownLanguageCode),
         [word, ownLanguageCode],
     );
 
-    // Automatically flip card back when changing word if it was flipped
+    // Flip back to front when the word changes
     useEffect(() => {
         if (isFlipped && !isAnimating) {
             setIsAnimating(true);
@@ -73,14 +72,12 @@ export function FlashCard({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [word.id]);
 
-    // Calculate transform for swipe
     const swipeTransform = isSwiping
         ? `translate(${swipeOffset.x}px, ${swipeOffset.y}px) rotate(${
               swipeOffset.x * 0.1
           }deg)`
         : '';
 
-    // Determine card color based on swipe direction
     const getCardColor = () => {
         if (!isSwiping) return '';
         if (swipeOffset.x < -20) return 'border-red-300 bg-red-50';
@@ -109,7 +106,6 @@ export function FlashCard({
                 onClick={handleFlip}
                 {...handlers}
             >
-                {/* Лицевая сторона - слово на изучаемом языке */}
                 <div
                     className={cn('absolute inset-0', isFlipped && 'hidden')}
                     style={{
@@ -132,7 +128,6 @@ export function FlashCard({
                     </WatermarkCardSide>
                 </div>
 
-                {/* Обратная сторона - перевод на родном языке */}
                 <div
                     className={cn('absolute inset-0', !isFlipped && 'hidden')}
                     style={{
@@ -150,7 +145,6 @@ export function FlashCard({
                                 {translation}
                             </div>
 
-                            {/* Примеры предложений */}
                             {examples.length > 0 && (
                                 <div className="mt-4 space-y-2.5 max-w-full px-4">
                                     {examples.map((example, exampleIndex) => (
@@ -177,7 +171,7 @@ export function FlashCard({
                 </div>
             </Card>
 
-            {/* Индикаторы направления свайпа - вне карточки, чтобы не переворачивались */}
+            {/* Swipe direction indicators rendered outside the card so they don't flip */}
             {isSwiping && (
                 <div className="absolute inset-x-0 bottom-8 flex items-center justify-center pointer-events-none z-10">
                     {swipeOffset.x < -20 && (

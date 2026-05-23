@@ -1,7 +1,3 @@
-/**
- * Диалог добавления слов из словаря (главный компонент)
- */
-
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -63,19 +59,16 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
     const { settings: userSettings } = useUserSettings();
     const { partsOfSpeech } = usePartsOfSpeech('ru');
 
-    // Use learnLanguage from user settings
     const languageCode: LearnLanguageCode = useMemo(() => {
         const code = userSettings?.learnLanguage?.code ?? 'en';
         return isLearnLanguageAvailable(code)
             ? code
-            : AVAILABLE_LEARN_LANGUAGES[0]; // fallback to first available language
+            : AVAILABLE_LEARN_LANGUAGES[0];
     }, [userSettings?.learnLanguage?.code]);
 
-    // Group filter
     const { selectedGroupIds, toggleGroup, toggleAll } =
         useWordGroupsFilter('addWordDialog');
 
-    // Hooks for business logic
     const {
         searchTerm,
         setSearchTerm,
@@ -115,20 +108,18 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
         languageCode,
         setAvailableWords,
         setOffset: (_value: React.SetStateAction<number>) => {
-            // This setState will be used inside useAiSearch
+            // setState reused inside useAiSearch
         },
         setHasMore: (_value: React.SetStateAction<boolean>) => {
-            // This setState will be used inside useAiSearch
+            // setState reused inside useAiSearch
         },
         addWord,
     });
 
-    // isClient initialization
     useEffect(() => {
         setIsClient(true);
     }, []);
 
-    // Check if popup needs scroll
     useEffect(() => {
         const checkViewportSize = () => {
             const estimatedDialogHeight = 600;
@@ -141,14 +132,11 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
         return () => window.removeEventListener('resize', checkViewportSize);
     }, []);
 
-    // Function to filter words by parts of speech
     const getFilteredWords = () => {
         let filtered = availableWords;
 
-        // Parts of speech filter (client-side filtering)
         if (selectedPartsOfSpeech.length > 0) {
             filtered = filtered.filter(word => {
-                // Check partOfSpeech in translations
                 const hasMatchingTranslation = word.translations?.some(
                     t =>
                         t.partOfSpeech &&
@@ -168,7 +156,6 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
         );
     };
 
-    // Transform BaseWord to Word format for TranslationSelectorDialog
     const convertBaseWordToWord = async (
         baseWord: BaseWord,
     ): Promise<any | null> => {
@@ -282,16 +269,13 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
         return 'partial';
     }, [filteredWords, selectedWords]);
 
-    // Count words that will actually be added or removed
     const wordsToProcessCount = useMemo(() => {
         if (!pendingToggleAllWords) return 0;
 
         if (selectionState === 'all') {
-            // Will delete - count only those already added by user
             return pendingToggleAllWords.filter(word => word.isAddedByUser)
                 .length;
         } else {
-            // Will add - count only those not yet added by user
             return pendingToggleAllWords.filter(word => !word.isAddedByUser)
                 .length;
         }
@@ -326,7 +310,6 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                     </DialogHeader>
 
                     <div className="space-y-4 py-4">
-                        {/* Фильтры */}
                         <AddWordDialogFilters
                             selectedPartsOfSpeech={selectedPartsOfSpeech}
                             onTogglePartOfSpeech={togglePartOfSpeech}
@@ -346,7 +329,6 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                             filteredWordsCount={filteredWords.length}
                         />
 
-                        {/* Список слов */}
                         <AddWordDialogWordsList
                             words={filteredWords}
                             searching={searching}
@@ -381,7 +363,6 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                 </DialogContent>
             </Dialog>
 
-            {/* Диалог подтверждения выбора всех слов */}
             <Dialog
                 open={confirmToggleAllDialogOpen}
                 onOpenChange={handleCloseToggleAllDialog}

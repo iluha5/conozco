@@ -1,6 +1,3 @@
-/**
- * Генерирует случайные буквы алфавита, исключая указанные буквы
- */
 export function getRandomLetters(
     count: number,
     excludeLetters: string[],

@@ -10,9 +10,6 @@ import {
     StageProgress,
 } from '@/types/training.types';
 
-/**
- * Хук с бизнес-логикой тренировки
- */
 export function useTrainingLogic() {
     const { toast } = useToast();
     const { t } = useTranslation();
@@ -27,26 +24,19 @@ export function useTrainingLogic() {
         ): Promise<StageCompletionResult> => {
             const stages = Array.from(enabledStages).sort();
 
-            // Check if all enabled stages will be completed after current
             const allStagesCompleted = stages.every(stage => {
                 const progress = stagesProgress.find(sp => sp.stage === stage);
-                // Stage is considered completed if already completed or this is current stage
                 return (
                     progress?.status === 'completed' || stage === currentStage
                 );
             });
 
-            // If all stages completed - training finished
             if (allStagesCompleted) {
-                // All stages completed - mark words as learned
                 try {
                     await trainingApi.markWordsAsLearned(
-                        trainingWords.map(w => w.id),
+                        trainingWords.map(word => word.id),
                     );
 
-                    // Invalidate React Query cache to update word lists
-                    // This ensures that on next opening /training/setup
-                    // current data will be loaded without already learned words
                     await queryClient.invalidateQueries({
                         queryKey: ['words'],
                     });
@@ -57,11 +47,10 @@ export function useTrainingLogic() {
                         ],
                     });
 
-                    // Get updated word list
                     const allWords = await trainingApi.fetchWords();
-                    const trainedWordIds = trainingWords.map(w => w.id);
-                    const learnedWords = allWords.filter(w =>
-                        trainedWordIds.includes(w.id),
+                    const trainedWordIds = trainingWords.map(word => word.id);
+                    const learnedWords = allWords.filter(word =>
+                        trainedWordIds.includes(word.id),
                     );
 
                     toast({
@@ -84,8 +73,6 @@ export function useTrainingLogic() {
                 }
             }
 
-            // Not all stages completed - find next unfinished
-            // First check next stage in order
             const currentIndex = stages.indexOf(currentStage);
             if (currentIndex < stages.length - 1) {
                 const nextStage = stages[currentIndex + 1] as TrainingStage;
@@ -93,20 +80,12 @@ export function useTrainingLogic() {
                     sp => sp.stage === nextStage,
                 );
 
-                // If next stage not yet completed - move to it
                 if (nextProgress?.status !== 'completed') {
-                    return {
-                        nextStage,
-                        completed: false,
-                    };
+                    return { nextStage, completed: false };
                 }
             }
 
-            // Next stage already completed or we are on last stage
-            // Find any unfinished stage
-            return {
-                completed: false,
-            };
+            return { completed: false };
         },
         [queryClient, toast, t],
     );

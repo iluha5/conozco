@@ -2,29 +2,23 @@ import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-// Получаем директорию текущего файла
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Пути к файлам
 let inputFilePath = '';
 let outputDir = '';
 
-// Счетчик пайплайна
 const counterFile = path.join(__dirname, 'temp', 'pipeline-counter.txt');
-let counter = 1;
 
 async function getCurrentCounter(): Promise<number> {
     try {
         const counterData = await fs.readFile(counterFile, 'utf8');
         return parseInt(counterData.trim());
-    } catch (error) {
-        // Файл не существует, начинаем с 1
+    } catch {
         return 1;
     }
 }
 
-// Глобальные переменные для логов (будут инициализированы асинхронно)
 let logFilePath = '';
 let currentCounter = 1;
 let timestamp = '';
@@ -37,8 +31,7 @@ async function ensureDateFolder(
     const datePath = path.join(basePath, dateStr);
     try {
         await fs.access(datePath);
-    } catch (error) {
-        // Папка не существует, создаем ее
+    } catch {
         await fs.mkdir(datePath, { recursive: true });
     }
     return datePath;
@@ -47,11 +40,10 @@ async function ensureDateFolder(
 async function initializeLogger(): Promise<void> {
     const now = new Date();
     timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, -5);
-    dateFolder = now.toISOString().slice(0, 10); // YYYY-MM-DD
+    dateFolder = now.toISOString().slice(0, 10);
 
     currentCounter = await getCurrentCounter();
 
-    // Создаем папки с датами
     const logsDatePath = await ensureDateFolder(
         path.join(__dirname, 'logs'),
         dateFolder,
@@ -64,7 +56,6 @@ async function initializeLogger(): Promise<void> {
     const logFileName = `${currentCounter}-process-word-cursor-${timestamp}.log`;
     logFilePath = path.join(logsDatePath, logFileName);
 
-    // Устанавливаем пути для входных и выходных файлов
     inputFilePath = path.join(tempDatePath, 'external-words-output.json');
     outputDir = tempDatePath;
 }
@@ -80,19 +71,9 @@ async function log(message: string): Promise<void> {
 interface WordData {
     id: string;
     word: string;
-    language: {
-        id: string;
-        code: string;
-        name: string;
-    };
-    translationLanguage: {
-        id: string;
-        code: string;
-        name: string;
-    };
-    partOfSpeech?: {
-        name: string;
-    };
+    language: { id: string; code: string; name: string };
+    translationLanguage: { id: string; code: string; name: string };
+    partOfSpeech?: { name: string };
 }
 
 interface ProcessResult {
@@ -106,7 +87,6 @@ async function readExternalWordsOutput(): Promise<WordData> {
         const data = await fs.readFile(inputFilePath, 'utf8');
         const words: WordData[] = JSON.parse(data);
 
-        // Проверяем структуру файла
         if (!Array.isArray(words) || words.length === 0) {
             throw new Error('File is empty or not an array');
         }
@@ -141,13 +121,12 @@ async function processWordWithCursor(
     const language = wordData.language.name;
     const languageCode = wordData.language.code;
     const translationLanguage = wordData.translationLanguage.name;
-    const partOfSpeech = wordData.partOfSpeech?.name || 'NOUN'; // По умолчанию существительное
+    const partOfSpeech = wordData.partOfSpeech?.name || 'NOUN';
 
     await log(
-        `🎯 Processing word: "${word}" (${language} -> ${translationLanguage}, POS: ${partOfSpeech})`,
+        `Processing "${word}" (${language} -> ${translationLanguage}, POS: ${partOfSpeech})`,
     );
 
-    // Читаем промпт из файла process-external-words-simple.txt
     const promptTemplatePath = path.join(
         __dirname,
         '..',
@@ -159,33 +138,26 @@ async function processWordWithCursor(
 
     try {
         prompt = await fs.readFile(promptTemplatePath, 'utf8');
-        await log(`📖 Read prompt template from: ${promptTemplatePath}`);
     } catch (error) {
-        await log(`❌ Error reading prompt template: ${error}`);
+        await log(`Error reading prompt template: ${error}`);
         throw new Error(`Failed to read prompt template: ${error}`);
     }
 
-    // Заменяем плейсхолдеры в промпте
     prompt = prompt.replace(/\$\{word\}/g, word);
     prompt = prompt.replace(/\$\{language\}/g, language);
     prompt = prompt.replace(/\$\{languageCode\}/g, languageCode);
 
-    // Создаем папку с датой для temp файлов
     const tempDatePath = await ensureDateFolder(
         path.join(__dirname, 'temp'),
         dateFolder,
     );
 
-    // Сохраняем промпт в файл
     const promptFile = path.join(
         tempDatePath,
         `${currentCounter}-${word}-prompt-${timestamp}.txt`,
     );
     await fs.writeFile(promptFile, prompt, 'utf8');
 
-    await log(`📝 Created prompt file: ${promptFile}`);
-
-    // Создаем инструкции для выполнения
     const instructionsFile = path.join(
         tempDatePath,
         `${currentCounter}-${word}-cursor-instructions-${timestamp}.txt`,
@@ -211,38 +183,24 @@ Prompt created at: ${new Date().toISOString()}
 Word: ${word} (${language} -> ${translationLanguage})`;
 
     await fs.writeFile(instructionsFile, instructions, 'utf8');
-    await log(`📋 Created instructions file: ${instructionsFile}`);
 
-    await log(`✅ Prompt preparation completed!`);
-    await log(`📋 Check instructions: ${instructionsFile}`);
-    await log(`📝 Use prompt file: ${promptFile}`);
+    await log(`Prompt: ${promptFile}`);
+    await log(`Instructions: ${instructionsFile}`);
 
-    return {
-        word,
-        promptFile,
-        instructionsFile,
-    };
+    return { word, promptFile, instructionsFile };
 }
 
 async function main(): Promise<void> {
     await initializeLogger();
-    await log('🚀 Starting word processing with Cursor CLI');
 
     try {
-        // Читаем входной файл
         const wordData = await readExternalWordsOutput();
-        await log(`📖 Successfully read word data from ${inputFilePath}`);
-
-        // Обрабатываем слово через Cursor CLI
         const result = await processWordWithCursor(wordData);
-
-        await log(`🎉 Processing completed successfully!`);
-        await log(`📝 Log saved to: ${logFilePath}`);
-        await log(`📄 Result file: ${result.promptFile}`);
+        await log(`Done. Result: ${result.promptFile}. Log: ${logFilePath}.`);
     } catch (error) {
         const errorMessage =
             error instanceof Error ? error.message : String(error);
-        await log(`❌ Script failed: ${errorMessage}`);
+        await log(`Script failed: ${errorMessage}`);
         console.error('Error details:', error);
         process.exit(1);
     }

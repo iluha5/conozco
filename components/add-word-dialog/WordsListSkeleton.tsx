@@ -1,7 +1,3 @@
-/**
- * Скелетон загрузки списка слов
- */
-
 'use client';
 
 import { Card, CardHeader } from '@/components/ui/card';
