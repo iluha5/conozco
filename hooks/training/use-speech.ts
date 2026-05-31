@@ -1,5 +1,14 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { getSpeechLanguageCode } from '@/lib/training-utils';
+import {
+    isSpeechApiAvailable,
+    loadVoices,
+    speakText,
+    cancelSpeech,
+    type SpeechError,
+} from '@/lib/speech-synthesis';
+
+export type { SpeechError };
 
 export interface UseSpeechOptions {
     languageCode: string;
@@ -16,7 +25,10 @@ export interface UseSpeechReturn {
     pause: () => void;
     resume: () => void;
     reset: () => void;
+    prime: () => void;
     isSupported: boolean;
+    isReady: boolean;
+    lastError: SpeechError | null;
 }
 
 export function useSpeech(options: UseSpeechOptions): UseSpeechReturn {
@@ -24,17 +36,25 @@ export function useSpeech(options: UseSpeechOptions): UseSpeechReturn {
 
     const [isPlaying, setIsPlaying] = useState(false);
     const [hasPlayedOnce, setHasPlayedOnce] = useState(false);
-    const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+    const [isReady, setIsReady] = useState(false);
+    const [lastError, setLastError] = useState<SpeechError | null>(null);
 
-    const isSupported =
-        typeof window !== 'undefined' && 'speechSynthesis' in window;
+    const utteranceIdRef = useRef(0);
+
+    const isSupported = isSpeechApiAvailable();
+
+    const invalidatePendingSpeech = useCallback(() => {
+        utteranceIdRef.current += 1;
+    }, []);
 
     const stop = useCallback(() => {
-        if (isSupported && window.speechSynthesis.speaking) {
-            window.speechSynthesis.cancel();
-            setIsPlaying(false);
+        if (!isSupported) {
+            return;
         }
-    }, [isSupported]);
+        invalidatePendingSpeech();
+        cancelSpeech();
+        setIsPlaying(false);
+    }, [isSupported, invalidatePendingSpeech]);
 
     const pause = useCallback(() => {
         if (isSupported && window.speechSynthesis.speaking) {
@@ -50,53 +70,80 @@ export function useSpeech(options: UseSpeechOptions): UseSpeechReturn {
         }
     }, [isSupported]);
 
+    const prime = useCallback(() => {
+        if (!isSupported) {
+            return;
+        }
+        void loadVoices().then(() => {
+            setIsReady(true);
+        });
+    }, [isSupported]);
+
     const speak = useCallback(
         (text: string) => {
-            if (!isSupported || !text) return;
-
-            if (autoStop && window.speechSynthesis.speaking) {
-                stop();
+            if (!isSupported || !text) {
+                return;
             }
 
-            try {
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = getSpeechLanguageCode(languageCode);
-                utterance.rate = rate;
-                utterance.pitch = pitch;
-
-                utterance.onstart = () => setIsPlaying(true);
-                utterance.onend = () => {
-                    setIsPlaying(false);
-                    setHasPlayedOnce(true);
-                };
-                utterance.onerror = event => {
-                    console.error('Speech synthesis error:', event);
-                    setIsPlaying(false);
-                    setHasPlayedOnce(true);
-                };
-
-                utteranceRef.current = utterance;
-                window.speechSynthesis.speak(utterance);
-            } catch (error) {
-                console.error('Error in speech synthesis:', error);
-                setIsPlaying(false);
+            if (autoStop) {
+                invalidatePendingSpeech();
+                cancelSpeech();
             }
+
+            const utteranceId = ++utteranceIdRef.current;
+            const lang = getSpeechLanguageCode(languageCode);
+
+            setIsPlaying(true);
+            setLastError(null);
+
+            void speakText(text, { lang, rate, pitch })
+                .then(() => {
+                    if (utteranceId !== utteranceIdRef.current) {
+                        return;
+                    }
+                    setIsPlaying(false);
+                    setHasPlayedOnce(true);
+                    setLastError(null);
+                })
+                .catch((error: SpeechError) => {
+                    if (utteranceId !== utteranceIdRef.current) {
+                        return;
+                    }
+                    setIsPlaying(false);
+                    setLastError(error);
+                });
         },
-        [isSupported, languageCode, rate, pitch, autoStop, stop],
+        [
+            isSupported,
+            languageCode,
+            rate,
+            pitch,
+            autoStop,
+            invalidatePendingSpeech,
+        ],
     );
 
     const reset = useCallback(() => {
         stop();
         setHasPlayedOnce(false);
+        setLastError(null);
     }, [stop]);
 
     useEffect(() => {
-        return () => {
-            if (isSupported && window.speechSynthesis.speaking) {
-                window.speechSynthesis.cancel();
-            }
-        };
+        if (!isSupported) {
+            return;
+        }
+        void loadVoices().then(() => {
+            setIsReady(true);
+        });
     }, [isSupported]);
+
+    useEffect(() => {
+        return () => {
+            invalidatePendingSpeech();
+            cancelSpeech();
+        };
+    }, [invalidatePendingSpeech]);
 
     return {
         isPlaying,
@@ -106,6 +153,9 @@ export function useSpeech(options: UseSpeechOptions): UseSpeechReturn {
         pause,
         resume,
         reset,
+        prime,
         isSupported,
+        isReady,
+        lastError,
     };
 }

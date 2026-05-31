@@ -22,4 +22,8 @@ export type {
     UseFadeAnimationReturn,
 } from './use-fade-animation';
 export type { UseRecordResultReturn } from './use-record-result';
-export type { UseSpeechOptions, UseSpeechReturn } from './use-speech';
+export type {
+    UseSpeechOptions,
+    UseSpeechReturn,
+    SpeechError,
+} from './use-speech';
