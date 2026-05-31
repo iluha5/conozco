@@ -58,6 +58,7 @@ export function Stage6Training({
         speak,
         isPlaying,
         isSupported: speechSupported,
+        isReady: speechReady,
     } = useSpeech({
         languageCode: currentWord?.language.code || 'en',
     });
@@ -110,11 +111,10 @@ export function Stage6Training({
             resetLetters();
             resetWordBuilding();
 
-            if (speechSupported) {
-                // Slight delay so card animation has time to settle before TTS
+            if (speechSupported && speechReady && currentWordText) {
                 const timer = setTimeout(() => {
                     speak(currentWordText);
-                }, 500);
+                }, 150);
                 return () => clearTimeout(timer);
             }
         }
@@ -126,6 +126,7 @@ export function Stage6Training({
         currentWord,
         speak,
         speechSupported,
+        speechReady,
         currentWordText,
     ]);
 
@@ -200,6 +201,8 @@ export function Stage6Training({
         setShowResultPopup,
         speak,
         currentWordText,
+        speechSupported,
+        speechReady,
     });
 
     const handleLetterClickWrapper = useCallback(

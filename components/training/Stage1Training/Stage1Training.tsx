@@ -47,6 +47,7 @@ export function Stage1Training({
         speak,
         isPlaying,
         isSupported: speechSupported,
+        isReady: speechReady,
     } = useSpeech({
         languageCode: currentWord?.language.code || 'en',
     });
@@ -71,6 +72,7 @@ export function Stage1Training({
         setShowTranslation,
         speak,
         speechSupported,
+        speechReady,
     });
 
     const { handleSettingsChange } = useSettingsManagement({

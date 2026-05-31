@@ -2,6 +2,8 @@ import { useEffect } from 'react';
 import { getWordText } from '@/lib/training-utils';
 import type { Word } from '@/types/training.types';
 
+const AUTO_SPEAK_DELAY_MS = 150;
+
 type UseWordInitializationParams = {
     currentWord: Word | undefined;
     currentIndex: number;
@@ -9,6 +11,7 @@ type UseWordInitializationParams = {
     setShowTranslation: (_show: boolean) => void;
     speak: (_text: string) => void;
     speechSupported: boolean;
+    speechReady: boolean;
 };
 
 export function useWordInitialization({
@@ -18,18 +21,30 @@ export function useWordInitialization({
     setShowTranslation,
     speak,
     speechSupported,
+    speechReady,
 }: UseWordInitializationParams) {
     useEffect(() => {
-        if (currentWord) {
-            triggerAnimation();
-            setShowTranslation(false);
-
-            // Pronounce word
-            const wordText = getWordText(currentWord);
-            if (speechSupported && wordText) {
-                speak(wordText);
-            }
+        if (!currentWord) {
+            return;
         }
+
+        triggerAnimation();
+        setShowTranslation(false);
+
+        if (!speechSupported || !speechReady) {
+            return;
+        }
+
+        const wordText = getWordText(currentWord);
+        if (!wordText) {
+            return;
+        }
+
+        const timer = setTimeout(() => {
+            speak(wordText);
+        }, AUTO_SPEAK_DELAY_MS);
+
+        return () => clearTimeout(timer);
     }, [
         currentIndex,
         currentWord,
@@ -37,5 +52,6 @@ export function useWordInitialization({
         setShowTranslation,
         speak,
         speechSupported,
+        speechReady,
     ]);
 }
