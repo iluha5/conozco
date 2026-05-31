@@ -56,6 +56,7 @@ export function Stage6Training({
     } = useRetryMode();
     const {
         speak,
+        prime,
         isPlaying,
         isSupported: speechSupported,
         isReady: speechReady,
@@ -213,8 +214,9 @@ export function Stage6Training({
     );
 
     const handlePlayWord = useCallback(() => {
-        speak(currentWordText);
-    }, [speak, currentWordText]);
+        prime();
+        speak(currentWordText, { showErrorToast: true });
+    }, [prime, speak, currentWordText]);
 
     if (!currentWord) {
         return (

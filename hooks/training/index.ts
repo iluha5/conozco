@@ -25,5 +25,6 @@ export type { UseRecordResultReturn } from './use-record-result';
 export type {
     UseSpeechOptions,
     UseSpeechReturn,
+    SpeakOptions,
     SpeechError,
 } from './use-speech';

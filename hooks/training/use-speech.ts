@@ -1,5 +1,9 @@
+'use client';
+
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { getSpeechLanguageCode } from '@/lib/training-utils';
+import { useTranslation } from '@/lib/i18n';
+import { showSpeechErrorToast } from '@/lib/show-speech-error-toast';
 import {
     isSpeechApiAvailable,
     loadVoices,
@@ -9,6 +13,10 @@ import {
 } from '@/lib/speech-synthesis';
 
 export type { SpeechError };
+
+export type SpeakOptions = {
+    showErrorToast?: boolean;
+};
 
 export interface UseSpeechOptions {
     languageCode: string;
@@ -20,7 +28,7 @@ export interface UseSpeechOptions {
 export interface UseSpeechReturn {
     isPlaying: boolean;
     hasPlayedOnce: boolean;
-    speak: (_text: string) => void;
+    speak: (_text: string, _speakOptions?: SpeakOptions) => void;
     stop: () => void;
     pause: () => void;
     resume: () => void;
@@ -33,6 +41,7 @@ export interface UseSpeechReturn {
 
 export function useSpeech(options: UseSpeechOptions): UseSpeechReturn {
     const { languageCode, rate = 0.8, pitch = 1, autoStop = true } = options;
+    const { t } = useTranslation();
 
     const [isPlaying, setIsPlaying] = useState(false);
     const [hasPlayedOnce, setHasPlayedOnce] = useState(false);
@@ -80,10 +89,12 @@ export function useSpeech(options: UseSpeechOptions): UseSpeechReturn {
     }, [isSupported]);
 
     const speak = useCallback(
-        (text: string) => {
+        (text: string, speakOptions?: SpeakOptions) => {
             if (!isSupported || !text) {
                 return;
             }
+
+            const showErrorToast = speakOptions?.showErrorToast ?? false;
 
             if (autoStop) {
                 invalidatePendingSpeech();
@@ -111,6 +122,9 @@ export function useSpeech(options: UseSpeechOptions): UseSpeechReturn {
                     }
                     setIsPlaying(false);
                     setLastError(error);
+                    if (showErrorToast) {
+                        showSpeechErrorToast(error, t);
+                    }
                 });
         },
         [
@@ -120,6 +134,7 @@ export function useSpeech(options: UseSpeechOptions): UseSpeechReturn {
             pitch,
             autoStop,
             invalidatePendingSpeech,
+            t,
         ],
     );
 

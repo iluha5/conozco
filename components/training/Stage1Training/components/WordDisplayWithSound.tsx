@@ -1,3 +1,5 @@
+'use client';
+
 import { Button } from '@/components/ui/button';
 import { Play, Pause } from 'lucide-react';
 import { getWordText } from '@/lib/training-utils';
