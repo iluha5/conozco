@@ -34,7 +34,11 @@ type UseStage6AutoAdvanceParams = {
     setShowResultPopup: React.Dispatch<React.SetStateAction<boolean>>;
     speak: (_text: string) => void;
     currentWordText: string;
+    speechSupported: boolean;
+    speechReady: boolean;
 };
+
+const AUTO_SPEAK_DELAY_MS = 150;
 
 export function useStage6AutoAdvance({
     isComplete,
@@ -60,6 +64,8 @@ export function useStage6AutoAdvance({
     setShowResultPopup,
     speak,
     currentWordText,
+    speechSupported,
+    speechReady,
 }: UseStage6AutoAdvanceParams) {
     useEffect(() => {
         if (isComplete && isCorrect !== null) {
@@ -100,13 +106,23 @@ export function useStage6AutoAdvance({
                             resetWordBuilding();
                             setBackgroundFlash(null);
                             setShowResultPopup(false);
-                            setTimeout(() => speak(currentWordText), 500);
+
+                            if (
+                                speechSupported &&
+                                speechReady &&
+                                currentWordText
+                            ) {
+                                setTimeout(() => {
+                                    speak(currentWordText);
+                                }, AUTO_SPEAK_DELAY_MS);
+                            }
                         } else {
                             setCurrentIndex(nextErrorIndex);
                         }
                     }
                 } else {
                     const result = handleNext();
+
                     if (result.type === 'next') {
                         setCurrentIndex(result.nextIndex);
                     } else if (result.type === 'retry') {
@@ -164,5 +180,7 @@ export function useStage6AutoAdvance({
         setShowResultPopup,
         speak,
         currentWordText,
+        speechSupported,
+        speechReady,
     ]);
 }

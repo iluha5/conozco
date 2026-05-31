@@ -56,8 +56,10 @@ export function Stage6Training({
     } = useRetryMode();
     const {
         speak,
+        prime,
         isPlaying,
         isSupported: speechSupported,
+        isReady: speechReady,
     } = useSpeech({
         languageCode: currentWord?.language.code || 'en',
     });
@@ -110,11 +112,10 @@ export function Stage6Training({
             resetLetters();
             resetWordBuilding();
 
-            if (speechSupported) {
-                // Slight delay so card animation has time to settle before TTS
+            if (speechSupported && speechReady && currentWordText) {
                 const timer = setTimeout(() => {
                     speak(currentWordText);
-                }, 500);
+                }, 150);
                 return () => clearTimeout(timer);
             }
         }
@@ -126,6 +127,7 @@ export function Stage6Training({
         currentWord,
         speak,
         speechSupported,
+        speechReady,
         currentWordText,
     ]);
 
@@ -200,6 +202,8 @@ export function Stage6Training({
         setShowResultPopup,
         speak,
         currentWordText,
+        speechSupported,
+        speechReady,
     });
 
     const handleLetterClickWrapper = useCallback(
@@ -210,8 +214,9 @@ export function Stage6Training({
     );
 
     const handlePlayWord = useCallback(() => {
-        speak(currentWordText);
-    }, [speak, currentWordText]);
+        prime();
+        speak(currentWordText, { showErrorToast: true });
+    }, [prime, speak, currentWordText]);
 
     if (!currentWord) {
         return (

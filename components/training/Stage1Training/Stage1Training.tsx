@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Stage1SettingsModal } from '../common/Stage1SettingsModal';
 import { useStage1Settings } from '@/hooks/shared/use-training-settings';
@@ -45,8 +45,10 @@ export function Stage1Training({
     const { recordResult } = useRecordResult();
     const {
         speak,
+        prime,
         isPlaying,
         isSupported: speechSupported,
+        isReady: speechReady,
     } = useSpeech({
         languageCode: currentWord?.language.code || 'en',
     });
@@ -71,6 +73,7 @@ export function Stage1Training({
         setShowTranslation,
         speak,
         speechSupported,
+        speechReady,
     });
 
     const { handleSettingsChange } = useSettingsManagement({
@@ -98,6 +101,14 @@ export function Stage1Training({
         setShowSettingsModal(false);
     };
 
+    const handleSpeakWord = useCallback(
+        (text: string) => {
+            prime();
+            speak(text, { showErrorToast: true });
+        },
+        [prime, speak],
+    );
+
     if (!currentWord) {
         return null;
     }
@@ -122,7 +133,7 @@ export function Stage1Training({
                     <div className="space-y-4 sm:space-y-6 md:space-y-5">
                         <WordDisplayWithSound
                             word={currentWord}
-                            onSpeak={speak}
+                            onSpeak={handleSpeakWord}
                             speechSupported={speechSupported}
                             isPlaying={isPlaying}
                         />

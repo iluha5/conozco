@@ -57,6 +57,7 @@ function WordCard({ word }: WordCardProps) {
     const { t } = useTranslation();
     const {
         speak,
+        prime,
         isPlaying,
         isSupported: speechSupported,
     } = useSpeech({
@@ -75,7 +76,8 @@ function WordCard({ word }: WordCardProps) {
 
     const handlePlayWord = (e: React.MouseEvent) => {
         e.stopPropagation();
-        speak(word.word);
+        prime();
+        speak(word.word, { showErrorToast: true });
     };
 
     return (
