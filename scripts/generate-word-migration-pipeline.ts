@@ -14,11 +14,71 @@ import {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-let DEFAULT_AI_MODEL = 'grok-code-fast-1';
+const CURSOR_AGENT_BIN =
+    '/Applications/Cursor.app/Contents/Resources/app/bin/cursor agent';
 
-async function generateWordData(
+let DEFAULT_AI_MODEL = 'composer-2.5';
+let FALLBACK_AI_MODEL = 'gpt-5-mini';
+
+function parseWordDataFromCursorOutput(
+    stdout: string,
     word: string,
     languageCode: string,
+): WordData {
+    const parsedResponse = JSON.parse(stdout);
+    if (!parsedResponse.result) {
+        throw new Error(
+            `No result field in Cursor response. Full response: ${stdout.substring(0, 500)}`,
+        );
+    }
+
+    const resultText = parsedResponse.result;
+    let cleanJson = '';
+
+    const jsonBlockMatch = resultText.match(/```json\s*(\{[\s\S]*?\})\s*```/);
+    if (jsonBlockMatch) {
+        cleanJson = jsonBlockMatch[1];
+    } else {
+        const jsonStart = resultText.indexOf('{');
+        const jsonEnd = resultText.lastIndexOf('}');
+        if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
+            cleanJson = resultText.substring(jsonStart, jsonEnd + 1);
+        } else {
+            throw new Error(
+                `No JSON found in Cursor result. Result text: ${resultText.substring(0, 500)}`,
+            );
+        }
+    }
+
+    const wordData: WordData = JSON.parse(cleanJson);
+    const generatedWord = wordData.word?.toLowerCase().trim();
+    const requestedWord = word.toLowerCase().trim();
+
+    if (!generatedWord) {
+        throw new Error(
+            `Generated data has no word field. Generated data: ${JSON.stringify(wordData).substring(0, 200)}`,
+        );
+    }
+
+    if (generatedWord !== requestedWord) {
+        throw new Error(
+            `Word mismatch: requested "${requestedWord}" but got "${generatedWord}".`,
+        );
+    }
+
+    if (wordData.languageCode !== languageCode) {
+        throw new Error(
+            `Language mismatch: requested "${languageCode}" but got "${wordData.languageCode}"`,
+        );
+    }
+
+    return wordData;
+}
+
+async function generateWordDataWithModel(
+    word: string,
+    languageCode: string,
+    modelSlug: string,
 ): Promise<WordData> {
     const promptTemplatePath =
         languageCode === 'en'
@@ -64,16 +124,16 @@ async function generateWordData(
     await fs.writeFile(promptFile, prompt, 'utf8');
 
     return new Promise<WordData>((resolve, reject) => {
-        const cursorCommand = `/Applications/Cursor.app/Contents/Resources/app/bin/cursor agent --print --output-format json --model ${DEFAULT_AI_MODEL}`;
+        const cursorCommand = `${CURSOR_AGENT_BIN} --print --output-format json --model ${modelSlug}`;
         const cursorProcess = spawn(cursorCommand, {
             cwd: tempDir,
             stdio: ['pipe', 'pipe', 'pipe'],
             shell: true,
             env: {
                 ...process.env,
-                CURSOR_MODEL: DEFAULT_AI_MODEL,
-                MODEL: DEFAULT_AI_MODEL,
-                AI_MODEL: DEFAULT_AI_MODEL,
+                CURSOR_MODEL: modelSlug,
+                MODEL: modelSlug,
+                AI_MODEL: modelSlug,
             },
         });
 
@@ -84,7 +144,7 @@ async function generateWordData(
             cursorProcess.kill('SIGTERM');
             reject(
                 new Error(
-                    `Cursor CLI timeout after 60 seconds for word "${word}"`,
+                    `Cursor CLI timeout after 60 seconds for word "${word}" (model=${modelSlug})`,
                 ),
             );
         }, 60000);
@@ -111,98 +171,66 @@ async function generateWordData(
             if (code !== 0) {
                 reject(
                     new Error(
-                        `Cursor CLI failed with exit code ${code}. Error: ${stderr}`,
+                        `Cursor CLI failed (model=${modelSlug}, exit=${code}): ${stderr}`,
                     ),
                 );
                 return;
             }
 
             try {
-                const parsedResponse = JSON.parse(stdout);
-                if (!parsedResponse.result) {
-                    reject(
-                        new Error(
-                            `No result field in Cursor response. Full response: ${stdout.substring(0, 500)}`,
-                        ),
-                    );
-                    return;
-                }
-
-                const resultText = parsedResponse.result;
-                let cleanJson = '';
-
-                const jsonBlockMatch = resultText.match(
-                    /```json\s*(\{[\s\S]*?\})\s*```/,
+                resolve(
+                    parseWordDataFromCursorOutput(stdout, word, languageCode),
                 );
-                if (jsonBlockMatch) {
-                    cleanJson = jsonBlockMatch[1];
-                } else {
-                    const jsonStart = resultText.indexOf('{');
-                    const jsonEnd = resultText.lastIndexOf('}');
-                    if (
-                        jsonStart !== -1 &&
-                        jsonEnd !== -1 &&
-                        jsonEnd > jsonStart
-                    ) {
-                        cleanJson = resultText.substring(
-                            jsonStart,
-                            jsonEnd + 1,
-                        );
-                    } else {
-                        reject(
-                            new Error(
-                                `No JSON found in Cursor result. Result text: ${resultText.substring(0, 500)}`,
-                            ),
-                        );
-                        return;
-                    }
-                }
-
-                const wordData: WordData = JSON.parse(cleanJson);
-                const generatedWord = wordData.word?.toLowerCase().trim();
-                const requestedWord = word.toLowerCase().trim();
-
-                if (!generatedWord) {
-                    reject(
-                        new Error(
-                            `Generated data has no word field. Generated data: ${JSON.stringify(wordData).substring(0, 200)}`,
-                        ),
-                    );
-                    return;
-                }
-
-                if (generatedWord !== requestedWord) {
-                    reject(
-                        new Error(
-                            `Word mismatch: requested "${requestedWord}" but got "${generatedWord}".`,
-                        ),
-                    );
-                    return;
-                }
-
-                if (wordData.languageCode !== languageCode) {
-                    reject(
-                        new Error(
-                            `Language mismatch: requested "${languageCode}" but got "${wordData.languageCode}"`,
-                        ),
-                    );
-                    return;
-                }
-
-                resolve(wordData);
             } catch (parseError) {
                 reject(
                     new Error(
-                        `Failed to parse Cursor CLI output: ${parseError}`,
+                        `Failed to parse Cursor CLI output (model=${modelSlug}): ${parseError}`,
                     ),
                 );
             }
         });
 
         cursorProcess.on('error', error => {
-            reject(new Error(`Failed to execute Cursor CLI: ${error.message}`));
+            reject(
+                new Error(
+                    `Failed to execute Cursor CLI (model=${modelSlug}): ${error.message}`,
+                ),
+            );
         });
     });
+}
+
+async function generateWordData(
+    word: string,
+    languageCode: string,
+): Promise<{ wordData: WordData; modelUsed: string }> {
+    try {
+        const wordData = await generateWordDataWithModel(
+            word,
+            languageCode,
+            DEFAULT_AI_MODEL,
+        );
+        return { wordData, modelUsed: DEFAULT_AI_MODEL };
+    } catch (primaryError) {
+        if (FALLBACK_AI_MODEL === DEFAULT_AI_MODEL) {
+            throw primaryError;
+        }
+
+        const primaryMessage =
+            primaryError instanceof Error
+                ? primaryError.message
+                : String(primaryError);
+        console.warn(
+            `Retrying "${word}" with fallback model ${FALLBACK_AI_MODEL} (${primaryMessage})`,
+        );
+
+        const wordData = await generateWordDataWithModel(
+            word,
+            languageCode,
+            FALLBACK_AI_MODEL,
+        );
+        return { wordData, modelUsed: FALLBACK_AI_MODEL };
+    }
 }
 
 async function readWordsFromFile(
@@ -244,9 +272,10 @@ async function readWordsFromFile(
 async function main() {
     try {
         const config = await import('./cursor/config.mjs');
-        DEFAULT_AI_MODEL = config.DEFAULT_AI_MODEL || 'grok-code-fast-1';
+        DEFAULT_AI_MODEL = config.DEFAULT_AI_MODEL || 'composer-2.5';
+        FALLBACK_AI_MODEL = config.FALLBACK_AI_MODEL || 'gpt-5-mini';
     } catch {
-        // fall back to default
+        // fall back to defaults above
     }
 
     const args = process.argv.slice(2);
@@ -265,10 +294,12 @@ async function main() {
     try {
         const words = await readWordsFromFile(filePath);
         const languageCode = words[0]?.languageCode || 'en';
-        console.log(`Loaded ${words.length} ${languageCode} words.`);
+        console.log(
+            `Loaded ${words.length} ${languageCode} words. ` +
+                `Models: primary=${DEFAULT_AI_MODEL}, fallback=${FALLBACK_AI_MODEL}`,
+        );
 
         if (checkOnly) {
-            // TODO: implement DB existence check.
             console.log('--check-only is not implemented yet.');
             return;
         }
@@ -283,9 +314,14 @@ async function main() {
         for (let i = 0; i < words.length; i++) {
             const { word } = words[i];
             try {
-                const wordData = await generateWordData(word, languageCode);
+                const { wordData, modelUsed } = await generateWordData(
+                    word,
+                    languageCode,
+                );
                 wordDataArray.push(wordData);
-                console.log(`[${i + 1}/${words.length}] OK: ${word}`);
+                console.log(
+                    `[${i + 1}/${words.length}] OK: ${word} [${modelUsed}]`,
+                );
             } catch (error) {
                 const message =
                     error instanceof Error ? error.message : String(error);
