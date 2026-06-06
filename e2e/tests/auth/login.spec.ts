@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test';
 import { LoginPage } from '../../page-objects/LoginPage';
-import { HomePage } from '../../page-objects/HomePage';
 import { createTestUser, cleanupTestDatabase } from '../../fixtures';
 import { generateUniqueEmail } from '../../utils/test-helpers';
 
@@ -28,17 +27,15 @@ test.describe('Авторизация - Вход', () => {
         // Выполняем вход
         await loginPage.login(user.email, 'password123');
 
-        // Ждем успешного входа - редирект на главную страницу
+        // Ждем успешного входа - редирект на страницу тренировок
         // Может потребоваться время на установку сессии NextAuth
-        await page.waitForURL('/', { timeout: 10000 });
+        await page.waitForURL('/training/list', { timeout: 10000 });
         await page.waitForLoadState('networkidle');
 
-        // Проверяем успешный вход (редирект на главную)
         await loginPage.expectSuccessfulLogin();
 
         // Проверяем, что Header виден (пользователь авторизован)
-        const homePage = new HomePage(page);
-        await homePage.expectPageLoaded();
+        await expect(page.getByRole('link', { name: 'conozco' })).toBeVisible();
     });
 
     test('вход с неверным email', async ({ page }) => {

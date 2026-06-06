@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter, Ubuntu } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
@@ -18,6 +18,11 @@ const ubuntu = Ubuntu({
     subsets: ['latin', 'cyrillic'],
     variable: '--font-ubuntu',
 });
+
+export const viewport: Viewport = {
+    width: 'device-width',
+    initialScale: 1,
+};
 
 export async function generateMetadata(): Promise<Metadata> {
     const userLanguage = await getUserInterfaceLanguage();

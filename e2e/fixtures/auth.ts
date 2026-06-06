@@ -67,7 +67,9 @@ export async function loginViaUI(
 
     // Wait for successful login - redirect to home page
     // May take time to establish NextAuth session
-    await page.waitForURL('/', { timeout: TIMEOUTS.SESSION_SETUP });
+    await page.waitForURL('/training/list', {
+        timeout: TIMEOUTS.SESSION_SETUP,
+    });
 
     // Additionally wait until page is fully loaded
     await page.waitForLoadState('networkidle');

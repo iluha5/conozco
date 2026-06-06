@@ -35,9 +35,9 @@ test.describe('Авторизация - Регистрация', () => {
         await loginPage.expectPageLoaded();
         await loginPage.login(email, password);
 
-        // Ждем успешного входа (редирект на главную)
+        // Ждем успешного входа (редирект на страницу тренировок)
         // Может потребоваться время на установку сессии
-        await page.waitForURL('/', { timeout: 10000 });
+        await page.waitForURL('/training/list', { timeout: 10000 });
         await page.waitForLoadState('networkidle');
         await loginPage.expectSuccessfulLogin();
     });

@@ -17,6 +17,7 @@ import { useToast } from '@/hooks/shared';
 import { Loader2 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton';
+import { POST_LOGIN_REDIRECT } from '@/config/routes';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -65,7 +66,7 @@ export default function LoginPage() {
                     });
                 }
             } else {
-                router.push('/');
+                router.push(POST_LOGIN_REDIRECT);
                 router.refresh();
             }
         } catch (error) {
@@ -153,7 +154,7 @@ export default function LoginPage() {
                             </div>
                         </div>
 
-                        <GoogleSignInButton />
+                        <GoogleSignInButton callbackUrl={POST_LOGIN_REDIRECT} />
 
                         <div className="text-center text-sm text-gray-600">
                             {t("Don't have an account?")}{' '}

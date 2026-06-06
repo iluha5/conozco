@@ -99,9 +99,9 @@ export class LoginPage extends BasePage {
     }
 
     /**
-     * Проверка успешного входа (редирект на главную)
+     * Проверка успешного входа (редирект на страницу тренировок)
      */
     async expectSuccessfulLogin() {
-        await this.expectUrl('/');
+        await this.expectUrl('/training/list');
     }
 }
