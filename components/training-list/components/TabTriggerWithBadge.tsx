@@ -25,7 +25,7 @@ export function TabTriggerWithBadge({
         <TabsTrigger
             value={config.id}
             className={cn(
-                'relative rounded-t-lg px-3 py-2 sm:px-6 sm:py-4 text-sm sm:text-base font-medium transition-all duration-200',
+                'relative shrink-0 rounded-t-lg px-2 py-2 sm:px-6 sm:py-4 text-sm sm:text-base font-medium transition-all duration-200',
                 isActive
                     ? [
                           colorScheme.active.text,

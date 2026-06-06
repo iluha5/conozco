@@ -31,11 +31,11 @@ export function TrainingTabs({
         <Tabs value={activeTab} onValueChange={onTabChange} className="w-full">
             <TabsList
                 className={cn(
-                    'grid w-full grid-cols-3 max-w-2xl mx-auto mb-8 h-auto bg-transparent p-0 gap-0.5 sm:gap-1',
+                    'max-w-2xl mx-auto mb-8 h-auto bg-transparent p-0 gap-0.5 sm:gap-1',
                     'border-b-2 border-gray-200',
-                    'overflow-x-auto',
-                    // flex layout enables horizontal scroll on very small screens
-                    'max-[480px]:flex max-[480px]:flex-nowrap max-[480px]:grid-cols-none',
+                    'overflow-x-auto scroll-px-4 px-1',
+                    'max-sm:flex max-sm:flex-nowrap max-sm:w-full',
+                    'sm:grid sm:w-full sm:grid-cols-3 sm:gap-1',
                 )}
             >
                 {tabsConfig.map(tabConfig => {

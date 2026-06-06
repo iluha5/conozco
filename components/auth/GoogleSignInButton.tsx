@@ -5,13 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from '@/lib/i18n';
+import { POST_LOGIN_REDIRECT } from '@/config/routes';
 
 interface GoogleSignInButtonProps {
     callbackUrl?: string;
 }
 
 export function GoogleSignInButton({
-    callbackUrl = '/',
+    callbackUrl = POST_LOGIN_REDIRECT,
 }: GoogleSignInButtonProps) {
     const [loading, setLoading] = useState(false);
     const { t } = useTranslation();

@@ -48,7 +48,7 @@ export function ActiveTrainingCard({
         <div
             onClick={handleClick}
             className={cn(
-                'relative aspect-square rounded-2xl p-6',
+                'relative aspect-square rounded-2xl p-4 sm:p-6',
                 'bg-white border-2 border-green-400',
                 'shadow-md hover:shadow-xl',
                 'hover:border-green-500',
@@ -56,7 +56,7 @@ export function ActiveTrainingCard({
                 'cursor-pointer flex flex-col overflow-hidden group',
             )}
         >
-            <div className="relative z-10 flex items-center justify-between mb-3">
+            <div className="relative z-10 flex items-center justify-between mb-2 sm:mb-3">
                 <div
                     className={cn(
                         'p-2 sm:p-3 rounded-xl transition-all duration-300',
@@ -84,10 +84,10 @@ export function ActiveTrainingCard({
                 )}
             </div>
 
-            <div className="relative z-10 flex-1 flex flex-col justify-center">
+            <div className="relative z-10 flex-1 flex flex-col justify-center min-h-0">
                 <Ellipsis
                     className={cn(
-                        'text-xl font-bold mb-1 sm:mb-2',
+                        'text-lg sm:text-xl font-bold mb-1 sm:mb-2',
                         'text-gray-900 transition-all duration-300',
                         'group-hover:scale-105 origin-center',
                     )}
