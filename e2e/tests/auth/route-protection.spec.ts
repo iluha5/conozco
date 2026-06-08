@@ -3,74 +3,72 @@ import { LoginPage } from '../../page-objects/LoginPage';
 import { cleanupTestDatabase } from '../../fixtures';
 
 /**
- * Тесты защиты роутов (редирект на логин для неавторизованных пользователей)
+ * Route protection tests (redirect to login for unauthenticated users)
  */
-test.describe('Авторизация - Защита роутов', () => {
+test.describe('Auth - Route protection', () => {
     test.beforeEach(async () => {
-        // Очищаем БД перед каждым тестом для изоляции
+        // Clean DB before each test for isolation
         await cleanupTestDatabase();
     });
 
-    test('редирект на логин при попытке доступа к главной странице', async ({
-        page,
-    }) => {
-        // Пытаемся перейти на главную страницу без авторизации
+    test('redirects to login when accessing home page', async ({ page }) => {
+        // Try home page without authentication
         await page.goto('/');
 
-        // Проверяем, что произошел редирект на страницу входа
+        // Should redirect to login
         await expect(page).toHaveURL(/\/auth\/login/);
 
-        // Проверяем, что страница логина загрузилась
+        // Login page should load
         const loginPage = new LoginPage(page);
         await loginPage.expectPageLoaded();
     });
 
-    test('редирект на логин при попытке доступа к странице слов', async ({
-        page,
-    }) => {
-        // Пытаемся перейти на страницу слов без авторизации
+    test('redirects to login when accessing words page', async ({ page }) => {
+        // Try words page without authentication
         await page.goto('/words');
 
-        // Проверяем, что произошел редирект на страницу входа
+        // Should redirect to login
         await expect(page).toHaveURL(/\/auth\/login/);
     });
 
-    test('редирект на логин при попытке доступа к странице тренировки', async ({
+    test('redirects to login when accessing training page', async ({
         page,
     }) => {
-        // Пытаемся перейти на страницу тренировки без авторизации
+        // Try training page without authentication
         await page.goto('/training');
 
-        // Проверяем, что произошел редирект на страницу входа
+        // Should redirect to login
         await expect(page).toHaveURL(/\/auth\/login/);
     });
 
-    test('редирект на логин при попытке доступа к странице настроек', async ({
+    test('redirects to login when accessing settings page', async ({
         page,
     }) => {
-        // Пытаемся перейти на страницу настроек без авторизации
+        // Try settings page without authentication
         await page.goto('/settings');
 
-        // Проверяем, что произошел редирект на страницу входа
+        // Should redirect to login
         await expect(page).toHaveURL(/\/auth\/login/);
     });
 
-    test('доступ к странице логина без авторизации', async ({ page }) => {
-        // Страница логина должна быть доступна без авторизации
+    test('allows login page without authentication', async ({ page }) => {
+        // Login page should be public
         await page.goto('/auth/login');
 
-        // Проверяем, что остались на странице логина
+        // Should stay on login page
         await expect(page).toHaveURL(/\/auth\/login/);
 
         const loginPage = new LoginPage(page);
         await loginPage.expectPageLoaded();
     });
 
-    test('доступ к странице регистрации без авторизации', async ({ page }) => {
-        // Страница регистрации должна быть доступна без авторизации
+    test('allows registration page without authentication', async ({
+        page,
+    }) => {
+        // Registration page should be public
         await page.goto('/auth/register');
 
-        // Проверяем, что остались на странице регистрации
+        // Should stay on registration page
         await expect(page).toHaveURL(/\/auth\/register/);
     });
 });

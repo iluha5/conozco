@@ -1,11 +1,10 @@
 /**
- * Утилиты для генерации уникальных тестовых данных
+ * Utilities for generating unique test data
  */
 
 /**
- * Генерирует уникальный email для тестов
- * Использует комбинацию timestamp и random для гарантированной уникальности
- * даже при параллельном запуске тестов
+ * Generate a unique email for tests
+ * Uses timestamp + random for uniqueness even when tests run in parallel
  */
 export function generateUniqueEmail(prefix: string = 'test'): string {
     const timestamp = Date.now();
@@ -14,7 +13,7 @@ export function generateUniqueEmail(prefix: string = 'test'): string {
 }
 
 /**
- * Генерирует уникальное имя пользователя для тестов
+ * Generate a unique user name for tests
  */
 export function generateUniqueName(prefix: string = 'Test User'): string {
     const timestamp = Date.now();
@@ -23,7 +22,7 @@ export function generateUniqueName(prefix: string = 'Test User'): string {
 }
 
 /**
- * Генерирует уникальное имя группы для тестов
+ * Generate a unique group name for tests
  */
 export function generateUniqueGroupName(prefix: string = 'test-group'): string {
     const timestamp = Date.now();

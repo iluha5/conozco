@@ -9,21 +9,21 @@ import {
 import { generateUniqueEmail } from '../../utils/test-helpers';
 
 /**
- * Тесты настройки тренировки (упрощенные)
+ * Training setup tests (simplified)
  */
-test.describe('Тренировки - Настройка', () => {
+test.describe('Training - Setup', () => {
     test.beforeEach(async () => {
         await cleanupTestDatabase();
     });
 
-    test('загрузка страницы настройки тренировки', async ({ page }) => {
-        // Создаем пользователя и авторизуем его
+    test('loads training setup page', async ({ page }) => {
+        // Create and log in user
         const user = await createAndLoginUser(page, {
             email: generateUniqueEmail(),
             password: 'password123',
         });
 
-        // Создаем базовое слово
+        // Create base word
         const baseWord = await createTestBaseWord(
             'hello',
             'en',
@@ -32,7 +32,7 @@ test.describe('Тренировки - Настройка', () => {
         );
         if (!baseWord) throw new Error('Failed to create base word');
 
-        // Создаем слово для пользователя
+        // Create user word
         await createTestWord(user.id, {
             baseWordId: baseWord.id,
             languageCode: 'en',
@@ -42,18 +42,18 @@ test.describe('Тренировки - Настройка', () => {
         await trainingSetupPage.goto();
         await trainingSetupPage.expectPageLoaded();
 
-        // Упрощенная проверка: просто проверяем, что страница загрузилась
+        // Simplified check: page loaded successfully
         await trainingSetupPage.waitForLoading();
     });
 
-    test('отображение страницы настройки тренировки', async ({ page }) => {
-        // Создаем пользователя и авторизуем его
+    test('displays training setup page', async ({ page }) => {
+        // Create and log in user
         const user = await createAndLoginUser(page, {
             email: generateUniqueEmail(),
             password: 'password123',
         });
 
-        // Создаем базовое слово
+        // Create base word
         const baseWord = await createTestBaseWord(
             'hello',
             'en',
@@ -62,7 +62,7 @@ test.describe('Тренировки - Настройка', () => {
         );
         if (!baseWord) throw new Error('Failed to create base word');
 
-        // Создаем слово для пользователя
+        // Create user word
         await createTestWord(user.id, {
             baseWordId: baseWord.id,
             languageCode: 'en',
@@ -72,7 +72,7 @@ test.describe('Тренировки - Настройка', () => {
         await trainingSetupPage.goto();
         await trainingSetupPage.expectPageLoaded();
 
-        // Упрощенная проверка: просто проверяем, что страница загрузилась
+        // Simplified check: page loaded successfully
         await trainingSetupPage.waitForLoading();
     });
 });

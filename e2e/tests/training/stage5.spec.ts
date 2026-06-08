@@ -7,15 +7,15 @@ import {
 import { STAGE_TITLES } from '../../utils/training-constants';
 
 /**
- * Тесты этапа 5 тренировки - Составление предложения
+ * Training stage 5 tests — build sentence from words
  */
-test.describe('Тренировки - Этап 5', () => {
+test.describe('Training - Stage 5', () => {
     test.beforeEach(async () => {
         await cleanupTestDatabase();
     });
 
-    test('загрузка и запуск этапа 5 тренировки', async ({ page }) => {
-        // Создаем слово с примерами предложений для этапа 5
+    test('loads and runs training stage 5', async ({ page }) => {
+        // Create word with example sentences for stage 5
         const { trainingPage } = await setupTrainingWithWords(page, [
             {
                 word: 'hello',

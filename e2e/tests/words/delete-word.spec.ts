@@ -9,21 +9,21 @@ import {
 import { generateUniqueEmail } from '../../utils/test-helpers';
 
 /**
- * Тесты удаления слов (упрощенные)
+ * Delete word tests (simplified)
  */
-test.describe('Управление словами - Удаление', () => {
+test.describe('Words - Delete word', () => {
     test.beforeEach(async () => {
         await cleanupTestDatabase();
     });
 
-    test('удаление одного слова', async ({ page }) => {
-        // Создаем пользователя и авторизуем его
+    test('loads words page for single word deletion', async ({ page }) => {
+        // Create and log in user
         const user = await createAndLoginUser(page, {
             email: generateUniqueEmail(),
             password: 'password123',
         });
 
-        // Создаем базовое слово
+        // Create base word
         const baseWord = await createTestBaseWord(
             'hello',
             'en',
@@ -32,7 +32,7 @@ test.describe('Управление словами - Удаление', () => {
         );
         if (!baseWord) throw new Error('Failed to create base word');
 
-        // Создаем слово для пользователя
+        // Create user word
         await createTestWord(user.id, {
             baseWordId: baseWord.id,
             languageCode: 'en',
@@ -42,8 +42,8 @@ test.describe('Управление словами - Удаление', () => {
         await wordsPage.goto();
         await wordsPage.expectPageLoaded();
 
-        // Упрощенная проверка: просто проверяем, что страница загрузилась
-        // В реальном тесте нужно найти кнопку удаления и кликнуть по ней
+        // Simplified check: page loaded
+        // Full test would find delete button and click it
         await wordsPage.waitForLoading();
     });
 });

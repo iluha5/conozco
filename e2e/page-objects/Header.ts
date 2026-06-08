@@ -3,8 +3,8 @@ import { BasePage } from './BasePage';
 import { TIMEOUTS, SELECTORS } from '../utils/constants';
 
 /**
- * Page Object для Header компонента
- * Используется на всех страницах после авторизации
+ * Page Object for the Header component
+ * Used on all pages after authentication
  */
 export class HeaderPage extends BasePage {
     // Selectors
@@ -25,14 +25,14 @@ export class HeaderPage extends BasePage {
     }
 
     /**
-     * Проверка, что Header виден
+     * Assert the Header is visible
      */
     async expectHeaderVisible() {
         await expect(this.page.locator(SELECTORS.HEADER)).toBeVisible();
     }
 
     /**
-     * Клик по логотипу (переход на главную)
+     * Click the logo (navigate to home)
      */
     async clickLogo() {
         await this.click(this.logo);
@@ -40,7 +40,7 @@ export class HeaderPage extends BasePage {
     }
 
     /**
-     * Выход из системы
+     * Log out
      */
     async logout() {
         // Try desktop version first
@@ -66,7 +66,7 @@ export class HeaderPage extends BasePage {
     }
 
     /**
-     * Открытие мобильного меню
+     * Open the mobile menu
      */
     async openMobileMenu() {
         if (await this.page.locator(this.mobileMenuButton).isVisible()) {
@@ -75,7 +75,7 @@ export class HeaderPage extends BasePage {
     }
 
     /**
-     * Переход на страницу тренировки
+     * Navigate to the training page
      */
     async goToTraining() {
         await this.click(this.trainingLink);
@@ -83,7 +83,7 @@ export class HeaderPage extends BasePage {
     }
 
     /**
-     * Переход на страницу слов
+     * Navigate to the words page
      */
     async goToWords() {
         await this.click(this.wordsLink);
@@ -91,7 +91,7 @@ export class HeaderPage extends BasePage {
     }
 
     /**
-     * Переход на страницу групп слов
+     * Navigate to the word groups page
      */
     async goToWordGroups() {
         await this.click(this.wordGroupsLink);
@@ -99,7 +99,7 @@ export class HeaderPage extends BasePage {
     }
 
     /**
-     * Переход на страницу настроек
+     * Navigate to the settings page
      */
     async goToSettings() {
         await this.click(this.settingsLink);
@@ -107,14 +107,14 @@ export class HeaderPage extends BasePage {
     }
 
     /**
-     * Проверка email пользователя в Header
+     * Assert user email is shown in the Header
      */
     async expectUserEmail(email: string) {
         await expect(this.page.locator(this.userEmail)).toContainText(email);
     }
 
     /**
-     * Проверка роли Admin
+     * Assert Admin role badge is visible
      */
     async expectAdminRole() {
         const adminBadge = this.page.locator('text=Admin');

@@ -7,14 +7,14 @@ import { generateUniqueEmail, generateUniqueName } from '../utils/test-helpers';
 import { DEFAULT_TEST_VALUES, TIMEOUTS } from '../utils/constants';
 
 /**
- * Админ пароль для регистрации (по умолчанию из кода)
+ * Admin password for registration (default from app config)
  */
 const ADMIN_REGISTRATION_PASSWORD =
     process.env.ADMIN_REGISTRATION_PASSWORD ||
     DEFAULT_TEST_VALUES.ADMIN_PASSWORD;
 
 /**
- * Данные тестового пользователя
+ * Test user credentials
  */
 export interface TestUserCredentials {
     email: string;
@@ -23,10 +23,10 @@ export interface TestUserCredentials {
 }
 
 /**
- * Создает пользователя через API регистрации
- * @param apiContext API контекст Playwright
- * @param credentials Данные пользователя
- * @returns Созданный пользователь
+ * Register a user via the registration API
+ * @param apiContext Playwright API context
+ * @param credentials user credentials
+ * @returns created user payload
  */
 export async function registerUserViaAPI(
     apiContext: APIRequestContext,
@@ -52,9 +52,9 @@ export async function registerUserViaAPI(
 }
 
 /**
- * Авторизует пользователя через UI (используя Page Object)
- * @param page Страница Playwright
- * @param credentials Данные пользователя
+ * Log in via UI (using Page Object)
+ * @param page Playwright page
+ * @param credentials user credentials
  */
 export async function loginViaUI(
     page: Page,
@@ -78,10 +78,10 @@ export async function loginViaUI(
 }
 
 /**
- * Авторизует пользователя через API (получает сессию)
- * @param apiContext API контекст Playwright
- * @param credentials Данные пользователя
- * @returns Сессионные cookies
+ * Log in via API (obtain session)
+ * @param apiContext Playwright API context
+ * @param credentials user credentials
+ * @returns session cookies
  */
 export async function loginViaAPI(
     apiContext: APIRequestContext,
@@ -110,11 +110,11 @@ export async function loginViaAPI(
 }
 
 /**
- * Создает пользователя в БД и авторизует его через UI
- * Удобная функция для быстрой подготовки авторизованного пользователя в тестах
- * @param page Страница Playwright
- * @param credentials Опциональные данные пользователя (если не указаны, создаются автоматически)
- * @returns Данные созданного пользователя
+ * Create a user in the DB and log in via UI
+ * Convenience helper to prepare an authenticated user in tests
+ * @param page Playwright page
+ * @param credentials optional user credentials (generated if omitted)
+ * @returns created user credentials with id
  */
 export async function createAndLoginUser(
     page: Page,
@@ -166,12 +166,12 @@ export async function createAndLoginUser(
 }
 
 /**
- * Создает пользователя через API и авторизует его через UI
- * Альтернативный способ создания пользователя (через API вместо прямой записи в БД)
- * @param page Страница Playwright
- * @param apiContext API контекст Playwright
- * @param credentials Опциональные данные пользователя
- * @returns Данные созданного пользователя
+ * Register a user via API and log in via UI
+ * Alternative to direct DB user creation
+ * @param page Playwright page
+ * @param apiContext Playwright API context
+ * @param credentials optional user credentials
+ * @returns created user credentials with id
  */
 export async function registerAndLoginUser(
     page: Page,
@@ -201,8 +201,8 @@ export async function registerAndLoginUser(
 }
 
 /**
- * Выход из системы через UI
- * @param page Страница Playwright
+ * Log out via UI
+ * @param page Playwright page
  */
 export async function logoutViaUI(page: Page): Promise<void> {
     const header = new HeaderPage(page);

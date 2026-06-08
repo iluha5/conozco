@@ -2,8 +2,8 @@ import { Page, expect } from '@playwright/test';
 import { TIMEOUTS, SELECTORS } from '../utils/constants';
 
 /**
- * Базовый класс для всех Page Objects
- * Содержит общие методы для навигации и ожидания
+ * Base class for all Page Objects
+ * Contains common navigation and wait helpers
  */
 export class BasePage {
     readonly page: Page;
@@ -13,14 +13,14 @@ export class BasePage {
     }
 
     /**
-     * Переход на страницу
+     * Navigate to a page
      */
     async goto(path: string = '') {
         await this.page.goto(path);
     }
 
     /**
-     * Ожидание загрузки страницы
+     * Wait for page load state
      */
     async waitForLoadState(
         state: 'load' | 'domcontentloaded' | 'networkidle' = 'networkidle',
@@ -29,14 +29,14 @@ export class BasePage {
     }
 
     /**
-     * Ожидание появления элемента
+     * Wait for an element to appear
      */
     async waitForElement(selector: string, timeout: number = TIMEOUTS.ELEMENT) {
         await this.page.waitForSelector(selector, { timeout });
     }
 
     /**
-     * Ожидание исчезновения элемента
+     * Wait for an element to disappear
      */
     async waitForElementHidden(
         selector: string,
@@ -46,7 +46,7 @@ export class BasePage {
     }
 
     /**
-     * Проверка наличия элемента на странице
+     * Check whether an element is visible on the page
      */
     async isElementVisible(selector: string): Promise<boolean> {
         try {
@@ -59,63 +59,63 @@ export class BasePage {
     }
 
     /**
-     * Получение текста элемента
+     * Get element text content
      */
     async getText(selector: string): Promise<string> {
         return (await this.page.locator(selector).textContent()) || '';
     }
 
     /**
-     * Клик по элементу
+     * Click an element
      */
     async click(selector: string) {
         await this.page.locator(selector).click();
     }
 
     /**
-     * Ввод текста в поле
+     * Fill a text input
      */
     async fill(selector: string, text: string) {
         await this.page.locator(selector).fill(text);
     }
 
     /**
-     * Проверка URL страницы
+     * Assert page URL
      */
     async expectUrl(url: string | RegExp) {
         await expect(this.page).toHaveURL(url);
     }
 
     /**
-     * Проверка заголовка страницы
+     * Assert page title
      */
     async expectTitle(title: string | RegExp) {
         await expect(this.page).toHaveTitle(title);
     }
 
     /**
-     * Ожидание навигации
+     * Wait for navigation to complete
      */
     async waitForNavigation() {
         await this.page.waitForURL('**', { waitUntil: 'networkidle' });
     }
 
     /**
-     * Получение текущего URL
+     * Get current URL
      */
     getCurrentUrl(): string {
         return this.page.url();
     }
 
     /**
-     * Скролл к элементу
+     * Scroll to an element
      */
     async scrollTo(selector: string) {
         await this.page.locator(selector).scrollIntoViewIfNeeded();
     }
 
     /**
-     * Ожидание загрузки (исчезновение loading индикатора)
+     * Wait for loading to finish (loading indicator disappears)
      */
     async waitForLoading(timeout: number = TIMEOUTS.ELEMENT) {
         try {
@@ -131,7 +131,7 @@ export class BasePage {
     }
 
     /**
-     * Заполнение формы (последовательный ввод в несколько полей)
+     * Fill a form (sequential input into multiple fields)
      */
     async fillForm(fields: Array<{ selector: string; value: string }>) {
         for (const field of fields) {
@@ -140,7 +140,7 @@ export class BasePage {
     }
 
     /**
-     * Ожидание появления toast сообщения
+     * Wait for a toast message to appear
      */
     async waitForToast(timeout: number = TIMEOUTS.TOAST) {
         await this.page.waitForSelector(SELECTORS.TOAST_ERROR, {

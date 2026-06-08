@@ -1,16 +1,16 @@
 import { APIRequestContext } from '@playwright/test';
 
 /**
- * Базовый URL API (берется из baseURL конфигурации Playwright)
+ * Base API URL (from Playwright baseURL config)
  */
 const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:8001';
 
 /**
- * Выполняет GET запрос к API
- * @param apiContext API контекст Playwright
- * @param endpoint Endpoint API (например, '/api/words')
- * @param options Опциональные параметры запроса
- * @returns Ответ API
+ * Perform a GET request to the API
+ * @param apiContext Playwright API context
+ * @param endpoint API endpoint (e.g. '/api/words')
+ * @param options optional request parameters
+ * @returns API response body
  */
 export async function apiGet<T = any>(
     apiContext: APIRequestContext,
@@ -22,7 +22,7 @@ export async function apiGet<T = any>(
 ): Promise<T> {
     let url = endpoint.startsWith('/') ? `${BASE_URL}${endpoint}` : endpoint;
 
-    // Добавляем query параметры если есть
+    // Append query parameters when provided
     if (options?.params) {
         const searchParams = new URLSearchParams();
         Object.entries(options.params).forEach(([key, value]) => {
@@ -51,12 +51,12 @@ export async function apiGet<T = any>(
 }
 
 /**
- * Выполняет POST запрос к API
- * @param apiContext API контекст Playwright
- * @param endpoint Endpoint API
- * @param data Данные для отправки
- * @param options Опциональные параметры запроса
- * @returns Ответ API
+ * Perform a POST request to the API
+ * @param apiContext Playwright API context
+ * @param endpoint API endpoint
+ * @param data request body
+ * @param options optional request parameters
+ * @returns API response body
  */
 export async function apiPost<T = any>(
     apiContext: APIRequestContext,
@@ -89,12 +89,12 @@ export async function apiPost<T = any>(
 }
 
 /**
- * Выполняет PUT запрос к API
- * @param apiContext API контекст Playwright
- * @param endpoint Endpoint API
- * @param data Данные для отправки
- * @param options Опциональные параметры запроса
- * @returns Ответ API
+ * Perform a PUT request to the API
+ * @param apiContext Playwright API context
+ * @param endpoint API endpoint
+ * @param data request body
+ * @param options optional request parameters
+ * @returns API response body
  */
 export async function apiPut<T = any>(
     apiContext: APIRequestContext,
@@ -127,11 +127,11 @@ export async function apiPut<T = any>(
 }
 
 /**
- * Выполняет DELETE запрос к API
- * @param apiContext API контекст Playwright
- * @param endpoint Endpoint API
- * @param options Опциональные параметры запроса
- * @returns Ответ API
+ * Perform a DELETE request to the API
+ * @param apiContext Playwright API context
+ * @param endpoint API endpoint
+ * @param options optional request parameters
+ * @returns API response body
  */
 export async function apiDelete<T = any>(
     apiContext: APIRequestContext,
@@ -158,7 +158,7 @@ export async function apiDelete<T = any>(
         );
     }
 
-    // DELETE может не возвращать тело ответа
+    // DELETE may not return a response body
     try {
         return await response.json();
     } catch {
@@ -167,11 +167,11 @@ export async function apiDelete<T = any>(
 }
 
 /**
- * Получает список слов пользователя через API
- * @param apiContext API контекст Playwright
- * @param userId ID пользователя
- * @param options Опции фильтрации
- * @returns Список слов
+ * Get user words via API
+ * @param apiContext Playwright API context
+ * @param userId user ID
+ * @param options filter options
+ * @returns list of words
  */
 export async function getWordsViaAPI(
     apiContext: APIRequestContext,
@@ -191,10 +191,10 @@ export async function getWordsViaAPI(
 }
 
 /**
- * Создает слово через API
- * @param apiContext API контекст Playwright
- * @param wordData Данные слова
- * @returns Созданное слово
+ * Create a word via API
+ * @param apiContext Playwright API context
+ * @param wordData word data
+ * @returns created word
  */
 export async function createWordViaAPI(
     apiContext: APIRequestContext,
@@ -209,11 +209,11 @@ export async function createWordViaAPI(
 }
 
 /**
- * Обновляет слово через API
- * @param apiContext API контекст Playwright
- * @param wordId ID слова
- * @param wordData Данные для обновления
- * @returns Обновленное слово
+ * Update a word via API
+ * @param apiContext Playwright API context
+ * @param wordId word ID
+ * @param wordData update payload
+ * @returns updated word
  */
 export async function updateWordViaAPI(
     apiContext: APIRequestContext,
@@ -227,9 +227,9 @@ export async function updateWordViaAPI(
 }
 
 /**
- * Удаляет слово через API
- * @param apiContext API контекст Playwright
- * @param wordId ID слова
+ * Delete a word via API
+ * @param apiContext Playwright API context
+ * @param wordId word ID
  */
 export async function deleteWordViaAPI(
     apiContext: APIRequestContext,
@@ -239,10 +239,10 @@ export async function deleteWordViaAPI(
 }
 
 /**
- * Получает группы слов пользователя через API
- * @param apiContext API контекст Playwright
- * @param userId ID пользователя
- * @returns Список групп слов
+ * Get user word groups via API
+ * @param apiContext Playwright API context
+ * @param userId user ID
+ * @returns list of word groups
  */
 export async function getWordGroupsViaAPI(
     apiContext: APIRequestContext,
@@ -256,10 +256,10 @@ export async function getWordGroupsViaAPI(
 }
 
 /**
- * Создает группу слов через API
- * @param apiContext API контекст Playwright
- * @param groupData Данные группы
- * @returns Созданная группа
+ * Create a word group via API
+ * @param apiContext Playwright API context
+ * @param groupData group data
+ * @returns created group
  */
 export async function createWordGroupViaAPI(
     apiContext: APIRequestContext,

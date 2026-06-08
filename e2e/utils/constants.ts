@@ -1,45 +1,45 @@
 /**
- * Константы для E2E тестов
+ * Constants for E2E tests
  */
 
 /**
- * Таймауты для различных операций (в миллисекундах)
+ * Timeouts for various operations (milliseconds)
  */
 export const TIMEOUTS = {
-    /** Таймаут для навигации и загрузки страниц */
+    /** Navigation and page load timeout */
     NAVIGATION: 10000,
-    /** Таймаут для ожидания элементов */
+    /** Element wait timeout */
     ELEMENT: 5000,
-    /** Таймаут для API запросов */
+    /** API request timeout */
     API: 10000,
-    /** Таймаут для установки сессии после авторизации */
+    /** Session setup timeout after login */
     SESSION_SETUP: 10000,
-    /** Таймаут для появления toast сообщений */
+    /** Toast message appearance timeout */
     TOAST: 5000,
 } as const;
 
 /**
- * Дефолтные значения для тестовых данных
+ * Default values for test data
  */
 export const DEFAULT_TEST_VALUES = {
-    /** Дефолтный пароль для тестовых пользователей */
+    /** Default password for test users */
     PASSWORD: 'testpassword123',
-    /** Дефолтный admin пароль для регистрации */
+    /** Default admin password for registration */
     ADMIN_PASSWORD: 'admin123',
-    /** Дефолтный язык для тестов */
+    /** Default language code for tests */
     LANGUAGE_CODE: 'en',
-    /** Дефолтный статус слова */
+    /** Default word status */
     WORD_STATUS: 'NOT_LEARNED' as const,
 } as const;
 
 /**
- * Селекторы для общих элементов
+ * Selectors for shared UI elements
  */
 export const SELECTORS = {
-    /** Селектор для toast сообщений */
+    /** Toast message selector */
     TOAST_ERROR: 'text=/Error|Invalid|error/i',
-    /** Селектор для loading индикаторов */
+    /** Loading indicator selector */
     LOADING: '[data-testid="loading"], .loading, [aria-busy="true"]',
-    /** Селектор для header */
+    /** Header selector */
     HEADER: '[data-test="header-wrapper"]',
 } as const;

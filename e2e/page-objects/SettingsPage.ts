@@ -2,10 +2,10 @@ import { Page, expect } from '@playwright/test';
 import { BasePage } from './BasePage';
 
 /**
- * Page Object для страницы настроек
+ * Page Object for the settings page
  */
 export class SettingsPage extends BasePage {
-    // Селекторы
+    // Selectors
     private readonly pageTitle = 'h1:has-text("Settings")';
     private readonly backButton = 'button:has-text("Back")';
     private readonly saveButton = 'button:has-text("Save")';
@@ -21,7 +21,7 @@ export class SettingsPage extends BasePage {
     }
 
     /**
-     * Переход на страницу настроек
+     * Navigate to the settings page
      */
     async goto() {
         await super.goto('/settings');
@@ -29,14 +29,14 @@ export class SettingsPage extends BasePage {
     }
 
     /**
-     * Проверка, что страница загружена
+     * Assert the page is loaded
      */
     async expectPageLoaded() {
         await expect(this.page.locator(this.pageTitle)).toBeVisible();
     }
 
     /**
-     * Клик по кнопке "Назад"
+     * Click the "Back" button
      */
     async clickBack() {
         await this.click(this.backButton);
@@ -44,14 +44,14 @@ export class SettingsPage extends BasePage {
     }
 
     /**
-     * Ввод имени
+     * Enter name
      */
     async enterName(name: string) {
         await this.fill(this.nameInput, name);
     }
 
     /**
-     * Выбор родного языка
+     * Select native language
      */
     async selectOwnLanguage(languageName: string) {
         await this.click(this.ownLanguageSelect);
@@ -59,7 +59,7 @@ export class SettingsPage extends BasePage {
     }
 
     /**
-     * Выбор изучаемого языка
+     * Select language to learn
      */
     async selectLearnLanguage(languageName: string) {
         await this.click(this.learnLanguageSelect);
@@ -67,7 +67,7 @@ export class SettingsPage extends BasePage {
     }
 
     /**
-     * Выбор языка интерфейса
+     * Select interface language
      */
     async selectInterfaceLanguage(languageName: string) {
         await this.click(this.interfaceLanguageSelect);
@@ -75,7 +75,7 @@ export class SettingsPage extends BasePage {
     }
 
     /**
-     * Сохранение настроек
+     * Save settings
      */
     async saveSettings() {
         await this.click(this.saveButton);
@@ -83,7 +83,7 @@ export class SettingsPage extends BasePage {
     }
 
     /**
-     * Проверка успешного сохранения
+     * Assert settings were saved successfully
      */
     async expectSettingsSaved() {
         const successMessage = this.page.locator(

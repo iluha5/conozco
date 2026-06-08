@@ -1,5 +1,5 @@
 /**
- * Константы для тестов тренировок
+ * Constants for training tests
  */
 
 export const STAGE_TITLES: Record<1 | 2 | 3 | 4 | 5 | 6, string> = {

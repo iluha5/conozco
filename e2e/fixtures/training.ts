@@ -12,7 +12,7 @@ import { TrainingSetupPage } from '../page-objects/TrainingSetupPage';
 import { STAGE_TITLES } from '../utils/training-constants';
 
 /**
- * Пара слов для тренировки
+ * Word pair for training setup
  */
 export interface TrainingWordPair {
     baseWord: Awaited<ReturnType<typeof createTestBaseWord>>;
@@ -20,7 +20,7 @@ export interface TrainingWordPair {
 }
 
 /**
- * Результат настройки тренировки
+ * Result of training setup
  */
 export interface TrainingSetupResult {
     user: TestUserCredentials & { id: number };
@@ -32,7 +32,7 @@ export interface TrainingSetupResult {
 }
 
 /**
- * Получает или создает местоимение для языка
+ * Get or create a pronoun for a language
  */
 async function getOrCreatePronoun(
     languageId: number,
@@ -68,7 +68,7 @@ async function getOrCreatePronoun(
 }
 
 /**
- * Получает ID типа предложения по коду
+ * Get sentence type ID by code
  */
 async function getSentenceTypeId(
     code: string = 'AFFIRMATIVE',
@@ -91,7 +91,7 @@ async function getSentenceTypeId(
 }
 
 /**
- * Создает базовое слово с примерами предложений
+ * Create a base word with example sentences
  */
 async function createBaseWordWithExamples(
     word: string,
@@ -234,14 +234,14 @@ async function createBaseWordWithExamples(
 }
 
 /**
- * Создает пару базовое слово + слово пользователя
- * @param userId ID пользователя
- * @param word Текст слова
- * @param translation Перевод
- * @param wordLang Код языка слова (по умолчанию 'en')
- * @param translationLang Код языка перевода (по умолчанию 'ru')
- * @param examples Опциональные примеры предложений для этапа 5
- * @returns Пара базовое слово и слово пользователя
+ * Create a base word + user word pair
+ * @param userId user ID
+ * @param word word text
+ * @param translation translation text
+ * @param wordLang word language code (default 'en')
+ * @param translationLang translation language code (default 'ru')
+ * @param examples optional example sentences for stage 5
+ * @returns base word and user word pair
  */
 export async function createTrainingWordPair(
     userId: number,
@@ -294,10 +294,10 @@ export async function createTrainingWordPair(
 }
 
 /**
- * Настраивает тренировку: создает пользователя, слова и запускает тренировку
- * @param page Страница Playwright
- * @param words Массив слов для создания (по умолчанию одно слово "hello"/"привет")
- * @returns Результат настройки тренировки
+ * Set up training: create user, words, and start training
+ * @param page Playwright page
+ * @param words words to create (default single hello word with Russian translation)
+ * @returns training setup result
  */
 export async function setupTrainingWithWords(
     page: Page,
@@ -362,11 +362,11 @@ export async function setupTrainingWithWords(
 }
 
 /**
- * Открывает конкретный этап тренировки
- * @param page Страница Playwright
- * @param stage Номер этапа (1-6)
- * @param trainingPage Опциональный объект TrainingPage (если уже создан)
- * @returns Объект TrainingPage
+ * Open a specific training stage
+ * @param page Playwright page
+ * @param stage stage number (1-6)
+ * @param trainingPage optional existing TrainingPage instance
+ * @returns TrainingPage instance
  */
 export async function openTrainingStage(
     page: Page,

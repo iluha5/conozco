@@ -1,5 +1,5 @@
 /**
- * Экспорт всех Page Objects для удобного импорта
+ * Re-export all Page Objects for convenient imports
  */
 export { BasePage } from './BasePage';
 export { LoginPage } from './LoginPage';
