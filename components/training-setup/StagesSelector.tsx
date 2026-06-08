@@ -1,5 +1,6 @@
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { TRAINING_STAGES } from '@/config/training-stages';
+import { useTranslation } from '@/lib/i18n';
 import { StageCard } from './StageCard';
 
 interface StagesSelectorProps {
@@ -17,15 +18,15 @@ export const StagesSelector = ({
     onToggleStage,
     onOpenStageSettings,
 }: StagesSelectorProps) => {
+    const { t } = useTranslation();
+
     return (
         <div>
             <button
                 onClick={onToggleVisibility}
                 className="flex items-center justify-between w-full text-left"
             >
-                <h3 className="text-lg font-semibold">
-                    Настройки этапов тренировки
-                </h3>
+                <h3 className="text-lg font-semibold">{t('Stage settings')}</h3>
                 {showStagesSettings ? (
                     <ChevronUp className="w-5 h-5" />
                 ) : (

@@ -62,7 +62,7 @@ export function LandingContent() {
                 </section>
             </ScrollAnimation>
 
-            {/* Scroll Indicator - абсолютно позиционирован между секциями */}
+            {/* Scroll indicator between sections */}
             <div className="absolute h-12 w-full flex justify-center">
                 <ScrollIndicator />
             </div>

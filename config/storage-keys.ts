@@ -1,5 +1,5 @@
 /**
- * Ключи для localStorage и sessionStorage
+ * Keys for localStorage and sessionStorage
  */
 export const STORAGE_KEYS = {
     // localStorage

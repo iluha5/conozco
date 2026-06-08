@@ -54,7 +54,9 @@ export function useTrainingLogic() {
                     );
 
                     toast({
-                        description: `Выучено слов: ${learnedWords.length}`,
+                        description: t('Words learned: {{count}}', {
+                            count: learnedWords.length,
+                        }),
                         variant: 'success',
                     });
 

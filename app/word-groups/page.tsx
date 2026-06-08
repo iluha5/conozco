@@ -224,7 +224,6 @@ export default function WordGroupsManagementPage() {
                             </p>
                         </CardHeader>
                         <CardContent className="space-y-6">
-                            {/* Поле поиска */}
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                 <Input
@@ -237,7 +236,6 @@ export default function WordGroupsManagementPage() {
                                 />
                             </div>
 
-                            {/* Фильтры и счетчик */}
                             <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                                 <div className="flex items-center gap-4">
                                     <Select
@@ -283,7 +281,6 @@ export default function WordGroupsManagementPage() {
                                         </SelectContent>
                                     </Select>
 
-                                    {/* Кнопка сброса фильтров */}
                                     {(visibilityFilter !== 'ALL' ||
                                         activityFilter !== 'ALL' ||
                                         searchQuery) && (
@@ -310,7 +307,6 @@ export default function WordGroupsManagementPage() {
                                 </div>
                             </div>
 
-                            {/* Список групп */}
                             {loadingActive || loadingAvailable ? (
                                 <div className="flex items-center justify-center py-12">
                                     <Loader2 className="h-6 w-6 animate-spin" />
@@ -433,7 +429,6 @@ export default function WordGroupsManagementPage() {
                 </div>
             </div>
 
-            {/* Диалог просмотра слов группы */}
             {selectedGroupForView && (
                 <GroupWordsDialog
                     open={groupViewDialogOpen}

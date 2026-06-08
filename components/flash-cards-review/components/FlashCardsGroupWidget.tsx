@@ -14,8 +14,10 @@ import { useHashDialog } from '@/hooks/shared';
 import { useUserSettings } from '@/hooks/settings/use-user-settings';
 import { FlashCardsReviewParams } from '../typing';
 import { GroupReviewSetupDialog } from './GroupReviewSetupDialog';
+import { useTranslation } from '@/lib/i18n';
 
 export function FlashCardsGroupWidget() {
+    const { t } = useTranslation();
     const { settings: userSettings } = useUserSettings();
     const { open: reviewOpen, setOpen: setReviewOpen } = useHashDialog(
         'flash-cards-group-review',
@@ -72,10 +74,12 @@ export function FlashCardsGroupWidget() {
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <span className="text-2xl">📚</span>
-                        Проверка по группам слов
+                        {t('Group check')}
                     </CardTitle>
                     <CardDescription>
-                        Проверьте слова из выбранной группы слов
+                        {t(
+                            'Check words from selected group through flashcards',
+                        )}
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -85,7 +89,7 @@ export function FlashCardsGroupWidget() {
                         variant="secondary"
                         onClick={handleStartSetup}
                     >
-                        Начать проверку
+                        {t('Start review')}
                     </Button>
                 </CardContent>
             </Card>

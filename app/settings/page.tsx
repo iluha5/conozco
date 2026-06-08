@@ -177,7 +177,6 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="max-w-2xl mx-auto space-y-6">
-                    {/* Личная информация */}
                     <Card>
                         <CardHeader>
                             <CardTitle>{t('Personal information')}</CardTitle>
@@ -227,7 +226,6 @@ export default function SettingsPage() {
                         </CardContent>
                     </Card>
 
-                    {/* Настройки языков */}
                     <Card>
                         <CardHeader>
                             <CardTitle>{t('Language settings')}</CardTitle>
@@ -391,7 +389,6 @@ export default function SettingsPage() {
                     {/* Privacy & Cookies */}
                     <CookieConsentSection />
 
-                    {/* Кнопка сохранения */}
                     <div className="flex justify-end pt-4">
                         <Button
                             onClick={handleSave}

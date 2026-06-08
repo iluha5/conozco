@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: flashcards_test_password
       POSTGRES_DB: flashcards_test
     ports:
-      - '5434:5432' # Другой порт, чтобы не конфликтовать с основной БД
+      - '5434:5432' # Different port to avoid conflict with main DB
     volumes:
       - postgres_test_data:/var/lib/postgresql/data
     networks:

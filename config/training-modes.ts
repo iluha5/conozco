@@ -1,5 +1,5 @@
 /**
- * Константы для режимов тренировок
+ * Constants for training modes
  */
 
 // Constants for A1 group

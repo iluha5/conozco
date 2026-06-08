@@ -294,7 +294,6 @@ export default function WordsPage() {
                     </Card>
                 </div>
 
-                {/* Команды (Удалить, Выучено и т.д.) */}
                 {!loading && (
                     <div className="mb-6">
                         <BulkActions
@@ -311,7 +310,6 @@ export default function WordsPage() {
                     </div>
                 )}
 
-                {/* Фильтры (Выбрать все, Группы и т.д.) */}
                 {!loading && (
                     <div className="flex items-center gap-4 mb-4">
                         <Button
@@ -388,7 +386,6 @@ export default function WordsPage() {
                     />
                 )}
 
-                {/* Диалоги подтверждения */}
                 <ConfirmationDialogs
                     deleteDialogOpen={confirmations.confirmDeleteDialogOpen}
                     statusDialogOpen={confirmations.confirmStatusDialogOpen}

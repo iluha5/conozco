@@ -1,20 +1,19 @@
 #!/bin/bash
 
-echo "🧹 Очистка Docker ресурсов..."
+echo "🧹 Cleaning up Docker resources..."
 echo ""
 
-# Показываем текущее использование
-echo "📊 Текущее использование диска Docker:"
+# Show current usage
+echo "📊 Current Docker disk usage:"
 docker system df
 echo ""
 
-# Очистка неиспользуемых образов, контейнеров, сетей и кэша сборки
-echo "🗑️  Удаление неиспользуемых ресурсов..."
+# Remove unused images, containers, networks, and build cache
+echo "🗑️  Removing unused resources..."
 docker system prune -a --volumes -f
 
 echo ""
-echo "✅ Очистка завершена!"
+echo "✅ Cleanup complete!"
 echo ""
-echo "📊 Использование диска после очистки:"
+echo "📊 Disk usage after cleanup:"
 docker system df
-

@@ -422,7 +422,6 @@ export default function PrivacyPolicyPage() {
                         </CardContent>
                     </Card>
 
-                    {/* Кнопка отзыва согласия */}
                     {consent?.given && (
                         <div className="mt-8 pt-8 border-t">
                             <div className="text-center">
@@ -454,7 +453,6 @@ export default function PrivacyPolicyPage() {
                 </div>
             </div>
 
-            {/* Диалог подтверждения отзыва согласия */}
             <Dialog
                 open={showWithdrawDialog}
                 onOpenChange={setShowWithdrawDialog}

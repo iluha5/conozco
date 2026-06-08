@@ -1,42 +1,41 @@
 #!/bin/bash
 
-echo "🚀 Запуск Flash Cards приложения..."
+echo "🚀 Starting Conozco application..."
 echo ""
 
-# Проверка Docker
+# Check Docker
 if ! command -v docker &> /dev/null; then
-    echo "❌ Docker не установлен. Пожалуйста, установите Docker и Docker Compose."
+    echo "❌ Docker is not installed. Please install Docker and Docker Compose."
     exit 1
 fi
 
 if ! command -v docker compose &> /dev/null; then
-    echo "❌ Docker Compose не установлен. Пожалуйста, установите Docker Compose."
+    echo "❌ Docker Compose is not installed. Please install Docker Compose."
     exit 1
 fi
 
-echo "✅ Docker и Docker Compose найдены"
+echo "✅ Docker and Docker Compose found"
 echo ""
 
-# Остановка существующих контейнеров
-echo "🛑 Остановка существующих контейнеров..."
+# Stop existing containers
+echo "🛑 Stopping existing containers..."
 docker compose down
 
 echo ""
-echo "🔨 Сборка и запуск контейнеров..."
+echo "🔨 Building and starting containers..."
 docker compose up --build -d
 
 echo ""
-echo "⏳ Ожидание запуска сервисов..."
+echo "⏳ Waiting for services to start..."
 sleep 5
 
 echo ""
-echo "✅ Приложение запущено!"
+echo "✅ Application is running!"
 echo ""
-echo "📱 Откройте в браузере: http://localhost:8000"
+echo "📱 Open in browser: http://localhost:8000"
 echo ""
-echo "🛠  Полезные команды:"
-echo "  - Просмотр логов: docker compose logs -f"
-echo "  - Остановка: docker compose down"
+echo "🛠  Useful commands:"
+echo "  - View logs: docker compose logs -f"
+echo "  - Stop: docker compose down"
 echo "  - Prisma Studio: docker compose exec app npx prisma studio"
 echo ""
-

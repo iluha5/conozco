@@ -184,7 +184,7 @@ export function GroupReviewSetupDialog({
                                                         variant="outline"
                                                         className="text-xs"
                                                     >
-                                                        Разные типы
+                                                        {t('Mixed types')}
                                                     </Badge>
                                                 </div>
                                             </div>
@@ -215,8 +215,12 @@ export function GroupReviewSetupDialog({
                                                     </div>
                                                     <div className="flex items-center gap-2 text-sm text-gray-600">
                                                         <span>
-                                                            {group.wordsCount}{' '}
-                                                            слов
+                                                            {t(
+                                                                '{{count}} words',
+                                                                {
+                                                                    count: group.wordsCount,
+                                                                },
+                                                            )}
                                                         </span>
                                                         <Badge
                                                             variant="outline"
@@ -244,8 +248,10 @@ export function GroupReviewSetupDialog({
 
                         {showWarning && (
                             <p className="text-sm text-yellow-600">
-                                В группе только {maxWordsInGroup} слов. Будет
-                                использовано доступное количество.
+                                {t(
+                                    'Only {{count}} words in the group. The available count will be used.',
+                                    { count: maxWordsInGroup },
+                                )}
                             </p>
                         )}
                     </div>
