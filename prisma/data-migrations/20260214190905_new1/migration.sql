@@ -23,7 +23,7 @@ INSERT INTO "WordSource" ("code", "displayName") VALUES ('native', 'Native'), ('
 ON CONFLICT ("code") DO NOTHING;
 
 -- UPSERT BaseWord records
--- Новые слова получают sourceId = dm_...; существующие слова не меняют sourceId (чтобы rollback не удалил их)
+-- New words get sourceId = dm_...; existing words keep their sourceId (so rollback does not delete them)
 INSERT INTO "BaseWord" ("word", "languageId", "sourceId") VALUES
   ('act on', (SELECT "id" FROM "Language" WHERE "code" = 'en'), (SELECT "id" FROM "WordSource" WHERE "code" = 'dm_20260214190905_new1')),
   ('add up', (SELECT "id" FROM "Language" WHERE "code" = 'en'), (SELECT "id" FROM "WordSource" WHERE "code" = 'dm_20260214190905_new1')),
@@ -125,7 +125,7 @@ INSERT INTO "BaseWord" ("word", "languageId", "sourceId") VALUES
   ('fall off', (SELECT "id" FROM "Language" WHERE "code" = 'en'), (SELECT "id" FROM "WordSource" WHERE "code" = 'dm_20260214190905_new1'))
 ON CONFLICT ("word", "languageId") DO NOTHING;
 
--- UPSERT WordTranslation records (используем подзапрос для получения baseWordId)
+-- UPSERT WordTranslation records (subquery resolves baseWordId)
 INSERT INTO "WordTranslation" ("baseWordId", "languageId", "translation", "priority", "partOfSpeechId") VALUES
   ((SELECT "id" FROM "BaseWord" WHERE "word" = 'act on' AND "languageId" = (SELECT "id" FROM "Language" WHERE "code" = 'en')), (SELECT "id" FROM "Language" WHERE "code" = 'ru'), 'действовать на основании', 1, (SELECT "id" FROM "PartOfSpeech" WHERE "name" = 'verb')),
   ((SELECT "id" FROM "BaseWord" WHERE "word" = 'act on' AND "languageId" = (SELECT "id" FROM "Language" WHERE "code" = 'en')), (SELECT "id" FROM "Language" WHERE "code" = 'ru'), 'реагировать на', 2, (SELECT "id" FROM "PartOfSpeech" WHERE "name" = 'verb')),
@@ -699,8 +699,8 @@ ON CONFLICT ("baseWordId", "languageId", "priority") DO UPDATE SET
   "translation" = EXCLUDED."translation",
   "partOfSpeechId" = EXCLUDED."partOfSpeechId";
 
--- Заменяем примеры: удаляем старые и вставляем новые.
--- Новые примеры помечаем sourceId = dm_... (для выборочного удаления при rollback)
+-- Replace examples: delete old rows and insert new ones.
+-- Tag new examples with sourceId = dm_... (for selective rollback deletion)
 DELETE FROM "WordExample"
 WHERE "baseWordId" IN (
   SELECT "id" FROM "BaseWord"
@@ -12537,7 +12537,7 @@ INSERT INTO "GrammaticalExample" ("baseWordId", "tenseId", "pronounId", "example
   ((SELECT "id" FROM "BaseWord" WHERE "word" = 'fall off' AND "languageId" = (SELECT "id" FROM "Language" WHERE "code" = 'en')), (SELECT "id" FROM "Tense" WHERE "name" = 'Future Simple' AND "languageId" = (SELECT "id" FROM "Language" WHERE "code" = 'en')), (SELECT "id" FROM "Pronoun" WHERE "pronoun" = 'they' AND "languageId" = (SELECT "id" FROM "Language" WHERE "code" = 'en')), 'They won''t fall off', 'Ellos no caerán', (SELECT "id" FROM "Language" WHERE "code" = 'es'), (SELECT "id" FROM "SentenceType" WHERE "code" = 'NEGATIVE'), (SELECT "id" FROM "WordSource" WHERE "code" = 'dm_20260214190905_new1'))
 ON CONFLICT DO NOTHING;
 
--- Запись о применении, времени, checksum и gitSha выполняется apply-скриптом параметрами после успешного выполнения
+-- Apply script records migration metadata (time, checksum, gitSha) after successful execution
 
 SELECT pg_advisory_unlock(hashtext('data_migrations_global_lock'));
 COMMIT;

@@ -1,14 +1,14 @@
 import { PrismaClient } from '@prisma/client';
 
 /**
- * URL тестовой базы данных
+ * Test database URL
  */
 export const TEST_DATABASE_URL =
     process.env.TEST_DATABASE_URL ||
     'postgresql://flashcards_test:flashcards_test_password@localhost:5434/flashcards_test';
 
 /**
- * Создает новый экземпляр Prisma Client для тестовой БД
+ * Create a new Prisma Client instance for the test database
  */
 export function createTestPrismaClient(): PrismaClient {
     return new PrismaClient({
@@ -21,8 +21,8 @@ export function createTestPrismaClient(): PrismaClient {
 }
 
 /**
- * Очищает тестовую базу данных
- * Удаляет все данные из всех таблиц (кроме справочных данных)
+ * Clean up the test database
+ * Deletes all data from tables (except reference data)
  */
 export async function cleanupTestDatabase(): Promise<void> {
     const prisma = createTestPrismaClient();
@@ -50,7 +50,7 @@ export async function cleanupTestDatabase(): Promise<void> {
 }
 
 /**
- * Выполняет транзакцию для изоляции тестов
+ * Run a transaction for test isolation
  */
 export async function withTransaction<T>(
     callback: (_prisma: PrismaClient) => Promise<T>,

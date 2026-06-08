@@ -7,84 +7,84 @@ import {
 import { STAGE_TITLES } from '../../utils/training-constants';
 
 /**
- * Тесты переходов между этапами тренировки
+ * Training stage transition tests
  */
-test.describe('Тренировки - Переходы между этапами', () => {
+test.describe('Training - Stage transitions', () => {
     test.beforeEach(async () => {
         await cleanupTestDatabase();
     });
 
-    test('переход с этапа 2 на этап 3', async ({ page }) => {
-        // Создаем тренировку с одним словом
+    test('transitions from stage 2 to stage 3', async ({ page }) => {
+        // Create training with a single word
         const { trainingPage } = await setupTrainingWithWords(page, [
             { word: 'hello', translation: 'привет' },
         ]);
 
-        // Открываем этап 2
+        // Open stage 2
         await openTrainingStage(page, 2, trainingPage);
         await trainingPage.expectStageLoaded(2, STAGE_TITLES[2]);
 
-        // Выбираем правильный перевод
+        // Select correct translation
         await trainingPage.selectCorrectTranslationStage2('привет');
 
-        // Ждем перехода на этап 3
+        // Wait for transition to stage 3
         await trainingPage.expectStageTitle(STAGE_TITLES[3], {
             timeout: 10000,
         });
 
-        // Проверяем, что мы действительно на этапе 3
+        // Assert we are on stage 3
         await trainingPage.expectStage(3);
         await trainingPage.expectStageLoaded(3, STAGE_TITLES[3]);
     });
 
-    test('переход с этапа 3 на этап 4', async ({ page }) => {
-        // Создаем тренировку с одним словом
+    test('transitions from stage 3 to stage 4', async ({ page }) => {
+        // Create training with a single word
         const { trainingPage } = await setupTrainingWithWords(page, [
             { word: 'hello', translation: 'привет' },
         ]);
 
-        // Открываем этап 3
+        // Open stage 3
         await openTrainingStage(page, 3, trainingPage);
         await trainingPage.expectStageLoaded(3, STAGE_TITLES[3]);
 
-        // Сопоставляем все пары
+        // Match all pairs
         await trainingPage.matchAllPairsStage3();
 
-        // Ждем перехода на этап 4
+        // Wait for transition to stage 4
         await trainingPage.expectStageTitle(STAGE_TITLES[4], {
             timeout: 10000,
         });
 
-        // Проверяем, что мы действительно на этапе 4
+        // Assert we are on stage 4
         await trainingPage.expectStage(4);
         await trainingPage.expectStageLoaded(4, STAGE_TITLES[4]);
     });
 
-    test('переход с этапа 4 на этап 5', async ({ page }) => {
-        // Создаем тренировку с одним словом
+    test('transitions from stage 4 to stage 5', async ({ page }) => {
+        // Create training with a single word
         const { trainingPage } = await setupTrainingWithWords(page, [
             { word: 'hello', translation: 'привет' },
         ]);
 
-        // Открываем этап 4
+        // Open stage 4
         await openTrainingStage(page, 4, trainingPage);
         await trainingPage.expectStageLoaded(4, STAGE_TITLES[4]);
 
-        // Составляем слово по буквам
+        // Build word from letters
         await trainingPage.buildWordStage4('hello');
 
-        // Ждем перехода на этап 5
+        // Wait for transition to stage 5
         await trainingPage.expectStageTitle(STAGE_TITLES[5], {
             timeout: 10000,
         });
 
-        // Проверяем, что мы действительно на этапе 5
+        // Assert we are on stage 5
         await trainingPage.expectStage(5);
         await trainingPage.expectStageLoaded(5, STAGE_TITLES[5]);
     });
 
-    test('переход с этапа 5 на этап 6', async ({ page }) => {
-        // Создаем тренировку с одним словом и примерами предложений
+    test('transitions from stage 5 to stage 6', async ({ page }) => {
+        // Create training with one word and example sentences
         const { trainingPage } = await setupTrainingWithWords(page, [
             {
                 word: 'hello',
@@ -99,19 +99,19 @@ test.describe('Тренировки - Переходы между этапами
             },
         ]);
 
-        // Открываем этап 5
+        // Open stage 5
         await openTrainingStage(page, 5, trainingPage);
         await trainingPage.expectStageLoaded(5, STAGE_TITLES[5]);
 
-        // Составляем предложение (слова в правильном порядке)
+        // Build sentence (words in correct order)
         await trainingPage.buildSentenceStage5(['Hello', 'world']);
 
-        // Ждем перехода на этап 6
+        // Wait for transition to stage 6
         await trainingPage.expectStageTitle(STAGE_TITLES[6], {
             timeout: 10000,
         });
 
-        // Проверяем, что мы действительно на этапе 6
+        // Assert we are on stage 6
         await trainingPage.expectStage(6);
         await trainingPage.expectStageLoaded(6, STAGE_TITLES[6]);
     });

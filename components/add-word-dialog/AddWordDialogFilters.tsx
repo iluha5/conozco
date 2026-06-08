@@ -137,7 +137,7 @@ export function AddWordDialogFilters({
                                 <span className="text-sm truncate">
                                     {selectedPartsOfSpeech.length === 0
                                         ? t('Parts of speech')
-                                        : `${selectedPartsOfSpeech.length} шт.`}
+                                        : `${selectedPartsOfSpeech.length} ${t('sel.')}`}
                                 </span>
                             </SelectTrigger>
                             <SelectContent>

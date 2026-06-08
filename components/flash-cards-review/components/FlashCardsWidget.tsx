@@ -68,10 +68,12 @@ export function FlashCardsWidget() {
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <span className="text-2xl">🃏</span>
-                        Проверка изученных слов
+                        {t('Review learned words')}
                     </CardTitle>
                     <CardDescription>
-                        Повторите изученные слова с помощью карточек
+                        {t(
+                            'Quick check of 10 random learned words through flashcards',
+                        )}
                     </CardDescription>
                 </CardHeader>
                 <CardContent>

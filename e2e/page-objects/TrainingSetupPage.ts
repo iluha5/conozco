@@ -2,10 +2,10 @@ import { Page, expect } from '@playwright/test';
 import { BasePage } from './BasePage';
 
 /**
- * Page Object для страницы настройки тренировки
+ * Page Object for the training setup page
  */
 export class TrainingSetupPage extends BasePage {
-    // Селекторы
+    // Selectors
     private readonly pageTitle = 'text=Training setup';
     private readonly backButton = 'button:has-text("Back")';
     private readonly startTrainingButton = 'button:has-text("Start training")';
@@ -20,7 +20,7 @@ export class TrainingSetupPage extends BasePage {
     }
 
     /**
-     * Переход на страницу настройки тренировки
+     * Navigate to the training setup page
      */
     async goto() {
         await super.goto('/training/setup');
@@ -28,14 +28,14 @@ export class TrainingSetupPage extends BasePage {
     }
 
     /**
-     * Проверка, что страница загружена
+     * Assert the page is loaded
      */
     async expectPageLoaded() {
         await expect(this.page.locator(this.pageTitle)).toBeVisible();
     }
 
     /**
-     * Клик по кнопке "Назад"
+     * Click the "Back" button
      */
     async clickBack() {
         await this.click(this.backButton);
@@ -43,7 +43,7 @@ export class TrainingSetupPage extends BasePage {
     }
 
     /**
-     * Открытие секции настроек этапов (если она закрыта)
+     * Open the stage settings section if collapsed
      */
     async openStagesSettings() {
         const toggleButton = this.page.locator(
@@ -63,13 +63,13 @@ export class TrainingSetupPage extends BasePage {
     }
 
     /**
-     * Включение/выключение этапа тренировки
+     * Toggle a training stage on/off
      */
     async toggleStage(stage: number) {
-        // Сначала открываем секцию настроек этапов, если она закрыта
+        // Open stage settings section if collapsed
         await this.openStagesSettings();
 
-        // Ищем чекбокс этапа по id или кликаем по карточке этапа
+        // Find stage checkbox by id or click the stage card
         const stageCheckbox = this.page.locator(
             `input[type="checkbox"][id="setup-stage-${stage}"]`,
         );
@@ -77,13 +77,13 @@ export class TrainingSetupPage extends BasePage {
             `div:has(input[id="setup-stage-${stage}"])`,
         );
 
-        // Пробуем кликнуть по чекбоксу или карточке
+        // Try checkbox or card click
         if ((await stageCheckbox.count()) > 0) {
             await stageCheckbox.click();
         } else if ((await stageCard.count()) > 0) {
             await stageCard.click();
         } else {
-            // Fallback: ищем по тексту этапа
+            // Fallback: find by stage text
             const stageText = this.page.locator(`text=/Stage ${stage}/i`);
             await stageText.first().click();
         }
@@ -91,43 +91,42 @@ export class TrainingSetupPage extends BasePage {
     }
 
     /**
-     * Выбор слова для тренировки по тексту слова
+     * Select a word for training by word text
      */
     async selectWordByText(wordText: string) {
-        // Ищем слово по тексту - используем более широкий поиск
-        // Слово может быть в span внутри div с чекбоксом
+        // Broad search — word may be in a span inside a checkbox row
         const wordCard = this.page
             .locator(`div.cursor-pointer:has-text("${wordText}")`)
             .first();
 
-        // Ждем появления слова
+        // Wait for word to appear
         await wordCard.waitFor({ state: 'visible', timeout: 5000 });
         await wordCard.click();
         await this.waitForLoading();
     }
 
     /**
-     * Выбор слова для тренировки по ID
+     * Select a word for training by ID
      */
     async selectWord(wordId: string) {
-        // Ищем чекбокс слова по ID
+        // Find word checkbox by ID
         const checkbox = this.page.locator(
             `input[type="checkbox"][id="word-${wordId}"]`,
         );
 
-        // Ждем появления чекбокса
+        // Wait for checkbox
         try {
             await checkbox.waitFor({ state: 'visible', timeout: 5000 });
             await checkbox.click();
         } catch (error) {
-            // Fallback: кликаем по карточке слова, которая содержит этот чекбокс
+            // Fallback: click word card containing this checkbox
             const wordCard = this.page
                 .locator(`div:has(input[id="word-${wordId}"])`)
                 .first();
             if ((await wordCard.count()) > 0) {
                 await wordCard.click();
             } else {
-                // Если не нашли, пробуем найти по тексту или просто кликнуть по первому слову
+                // If not found, try first word card
                 const firstWordCard = this.page
                     .locator('div.cursor-pointer:has(input[type="checkbox"])')
                     .first();
@@ -140,14 +139,14 @@ export class TrainingSetupPage extends BasePage {
     }
 
     /**
-     * Выбор всех слов
+     * Select all words
      */
     async selectAllWords() {
         await this.click(this.selectAllWordsButton);
     }
 
     /**
-     * Запуск тренировки
+     * Start training
      */
     async startTraining() {
         await this.click(this.startTrainingButton);
@@ -155,7 +154,7 @@ export class TrainingSetupPage extends BasePage {
     }
 
     /**
-     * Проверка, что кнопка запуска активна
+     * Assert start button is enabled
      */
     async expectStartButtonEnabled() {
         const button = this.page.locator(this.startTrainingButton);
@@ -163,7 +162,7 @@ export class TrainingSetupPage extends BasePage {
     }
 
     /**
-     * Проверка, что кнопка запуска неактивна
+     * Assert start button is disabled
      */
     async expectStartButtonDisabled() {
         const button = this.page.locator(this.startTrainingButton);
@@ -171,14 +170,14 @@ export class TrainingSetupPage extends BasePage {
     }
 
     /**
-     * Ждет загрузки списка слов и запускает тренировку
-     * @returns true если тренировка успешно запущена, false если кнопка не активна
+     * Wait for word list to load and start training
+     * @returns true if training started, false if start button is not active
      */
     async waitAndStartTraining(): Promise<boolean> {
-        // Ждем загрузки списка слов (приложение автоматически выбирает первые слова)
+        // Wait for word list (app auto-selects first words)
         await this.page.waitForTimeout(2000);
 
-        // Проверяем, что кнопка запуска существует и видна
+        // Ensure start button exists and is visible
         const startButton = this.page.locator(this.startTrainingButton);
         const buttonVisible = await startButton
             .isVisible({ timeout: 5000 })
@@ -188,14 +187,14 @@ export class TrainingSetupPage extends BasePage {
             return false;
         }
 
-        // Проверяем, что кнопка активна (если слова выбраны автоматически)
+        // Check button is enabled (words may be auto-selected)
         const isEnabled = await startButton.isEnabled().catch(() => false);
 
         if (!isEnabled) {
             return false;
         }
 
-        // Запускаем тренировку
+        // Start training
         await this.startTraining();
         await this.page.waitForTimeout(3000);
 

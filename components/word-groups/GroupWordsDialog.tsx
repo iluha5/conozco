@@ -209,7 +209,7 @@ export function GroupWordsDialog({
                     <DialogTitle>{groupName}</DialogTitle>
                     <div className="flex items-center justify-center sm:justify-start gap-2 mt-4 mb-2">
                         <span className="text-sm text-gray-600 mt-2 mb-2">
-                            Слов в группе:{' '}
+                            {t('Words in group:')}{' '}
                         </span>
                         <Badge
                             variant="outline"
@@ -265,7 +265,7 @@ export function GroupWordsDialog({
                                 minHeight: 'min(66vh, 400px)',
                             }}
                         >
-                            Ошибка при загрузке слов
+                            {t('Failed to load words')}
                         </div>
                     ) : visibleWords.length === 0 ? (
                         <div

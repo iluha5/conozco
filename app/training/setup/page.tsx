@@ -176,7 +176,6 @@ export default function TrainingSetupPage() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-8">
-                            {/* Выбор слов */}
                             <WordsSelector
                                 filteredWords={filteredWords}
                                 selectedWords={selectedWords}
@@ -197,7 +196,6 @@ export default function TrainingSetupPage() {
                                 hasMoreWords={hasMoreWords}
                             />
 
-                            {/* Настройки этапов тренировки */}
                             <StagesSelector
                                 enabledStages={enabledStages}
                                 showStagesSettings={showStagesSettings}
@@ -206,7 +204,6 @@ export default function TrainingSetupPage() {
                                 onOpenStageSettings={openStageModal}
                             />
 
-                            {/* Кнопка начать */}
                             <div className="flex justify-center pt-4">
                                 <Button
                                     onClick={startTraining}
@@ -226,7 +223,6 @@ export default function TrainingSetupPage() {
                 </div>
             </div>
 
-            {/* Модальные окна настроек этапов */}
             <Stage1SettingsModal
                 isOpen={openModal === 1}
                 onClose={closeModal}

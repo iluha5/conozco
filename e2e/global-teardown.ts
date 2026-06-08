@@ -1,8 +1,8 @@
 import { execSync } from 'child_process';
 
 /**
- * Global teardown для E2E тестов
- * Останавливает тестовую БД (опционально - можно оставить запущенной для ускорения)
+ * Global teardown for E2E tests
+ * Optionally stops the test DB (can be left running for faster reruns)
  */
 async function globalTeardown() {
     console.log('🧹 Starting E2E test environment teardown...');
@@ -10,9 +10,9 @@ async function globalTeardown() {
     const composeFile = 'docker-compose.test.yml';
 
     try {
-        // Проверяем, нужно ли останавливать контейнер
-        // По умолчанию оставляем запущенным для ускорения последующих тестов
-        // Можно остановить через переменную окружения CLEANUP_TEST_DB=true
+        // Check whether to stop the container
+        // By default leave it running for faster subsequent test runs
+        // Set CLEANUP_TEST_DB=true to stop it
         const shouldCleanup = process.env.CLEANUP_TEST_DB === 'true';
 
         if (shouldCleanup) {
@@ -30,7 +30,7 @@ async function globalTeardown() {
         console.log('✅ E2E test environment teardown completed!');
     } catch (error) {
         console.error('❌ Error during global teardown:', error);
-        // Не бросаем ошибку, чтобы не блокировать завершение тестов
+        // Do not throw — avoid blocking test runner shutdown
     }
 }
 

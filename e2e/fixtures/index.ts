@@ -1,5 +1,5 @@
 /**
- * Экспорт всех фикстур и утилит для E2E тестов
+ * Re-export all E2E fixtures and utilities
  */
 
 // Database utilities

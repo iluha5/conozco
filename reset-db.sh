@@ -1,17 +1,16 @@
 #!/bin/bash
 set -e
 
-echo "🛑 Останавливаем контейнеры..."
+echo "🛑 Stopping containers..."
 docker compose down
 
-echo "🗑️  Удаляем volume с базой данных..."
+echo "🗑️  Removing database volume..."
 docker volume rm flash-cards_postgres_data 2>/dev/null || true
 
-echo "✅ База данных удалена!"
+echo "✅ Database removed!"
 echo ""
-echo "Теперь запустите приложение командой:"
+echo "Start the application with:"
 echo "  docker-compose up -d"
 echo ""
-echo "Или сразу запустите с билдом:"
+echo "Or build and start in one step:"
 echo "  docker-compose up --build -d"
-

@@ -4,50 +4,48 @@ import { createAndLoginUser, cleanupTestDatabase } from '../../fixtures';
 import { generateUniqueEmail } from '../../utils/test-helpers';
 
 /**
- * Тесты выхода из системы
+ * Logout tests
  */
-test.describe('Авторизация - Выход', () => {
+test.describe('Auth - Logout', () => {
     test.beforeEach(async () => {
-        // Очищаем БД перед каждым тестом для изоляции
+        // Clean DB before each test for isolation
         await cleanupTestDatabase();
     });
 
-    test('успешный выход из системы', async ({ page }) => {
-        // Создаем пользователя и авторизуем его
+    test('logs out successfully', async ({ page }) => {
+        // Create and log in user
         await createAndLoginUser(page, {
             email: generateUniqueEmail(),
             password: 'password123',
         });
 
-        // Проверяем, что пользователь авторизован (Header виден)
+        // User should be authenticated (Header visible)
         const header = new HeaderPage(page);
         await header.expectHeaderVisible();
 
-        // Выполняем выход
+        // Log out
         await header.logout();
 
-        // Проверяем, что произошел редирект на страницу входа
+        // Should redirect to login page
         await expect(page).toHaveURL(/\/auth\/login/);
 
-        // Проверяем, что Header больше не виден
+        // Header should no longer be visible
         const headerElement = page.locator('[data-test="header-wrapper"]');
         await expect(headerElement).not.toBeVisible();
     });
 
-    test('невозможность доступа к защищенным роутам после выхода', async ({
-        page,
-    }) => {
-        // Создаем пользователя и авторизуем его
+    test('blocks protected routes after logout', async ({ page }) => {
+        // Create and log in user
         await createAndLoginUser(page);
 
-        // Выполняем выход
+        // Log out
         const header = new HeaderPage(page);
         await header.logout();
 
-        // Пытаемся перейти на защищенную страницу
+        // Try to access protected page
         await page.goto('/words');
 
-        // Проверяем, что произошел редирект на страницу входа
+        // Should redirect to login page
         await expect(page).toHaveURL(/\/auth\/login/);
     });
 });

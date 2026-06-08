@@ -5,15 +5,15 @@ import { createTestUser, cleanupTestDatabase } from '../../fixtures';
 import { generateUniqueEmail } from '../../utils/test-helpers';
 
 /**
- * Тесты страницы регистрации
+ * Registration page tests
  */
-test.describe('Авторизация - Регистрация', () => {
+test.describe('Auth - Registration', () => {
     test.beforeEach(async () => {
-        // Очищаем БД перед каждым тестом для изоляции
+        // Clean DB before each test for isolation
         await cleanupTestDatabase();
     });
 
-    test('успешная регистрация нового пользователя', async ({ page }) => {
+    test('registers a new user successfully', async ({ page }) => {
         const registerPage = new RegisterPage(page);
         await registerPage.goto();
         await registerPage.expectPageLoaded();
@@ -21,28 +21,28 @@ test.describe('Авторизация - Регистрация', () => {
         const email = generateUniqueEmail();
         const password = 'password123';
         const name = 'Test User';
-        const adminPassword = 'admin123'; // Дефолтный admin пароль
+        const adminPassword = 'admin123'; // Default admin password
 
-        // Выполняем регистрацию
+        // Perform registration
         await registerPage.register(email, password, adminPassword, name);
 
-        // Проверяем успешную регистрацию (редирект на страницу входа)
+        // Assert successful registration (redirect to login)
         await registerPage.expectSuccessfulRegistration();
 
-        // Проверяем, что можем войти с новыми данными
+        // Should be able to log in with new credentials
         const loginPage = new LoginPage(page);
-        // Ждем, пока страница логина загрузится после редиректа
+        // Wait for login page after redirect
         await loginPage.expectPageLoaded();
         await loginPage.login(email, password);
 
-        // Ждем успешного входа (редирект на страницу тренировок)
-        // Может потребоваться время на установку сессии
+        // Wait for successful login (redirect to training list)
+        // Session setup may take a moment
         await page.waitForURL('/training/list', { timeout: 10000 });
         await page.waitForLoadState('networkidle');
         await loginPage.expectSuccessfulLogin();
     });
 
-    test('регистрация с неверным admin паролем', async ({ page }) => {
+    test('shows error with wrong admin password', async ({ page }) => {
         const registerPage = new RegisterPage(page);
         await registerPage.goto();
 
@@ -50,78 +50,78 @@ test.describe('Авторизация - Регистрация', () => {
         const password = 'password123';
         const wrongAdminPassword = 'wrongadmin';
 
-        // Пытаемся зарегистрироваться с неверным admin паролем
+        // Try registration with wrong admin password
         await registerPage.register(email, password, wrongAdminPassword);
 
-        // Ожидаем ошибку (текст может быть разным, проверяем только наличие ошибки)
+        // Expect error (message may vary — only assert error is shown)
         await registerPage.expectError();
 
-        // Проверяем, что остались на странице регистрации
+        // Should stay on registration page
         await expect(page).toHaveURL(/\/auth\/register/);
     });
 
-    test('регистрация с существующим email', async ({ page }) => {
-        // Создаем пользователя заранее
+    test('shows error when email already exists', async ({ page }) => {
+        // Create user beforehand
         const existingEmail = 'existing@example.com';
         await createTestUser(existingEmail, 'password123');
 
         const registerPage = new RegisterPage(page);
         await registerPage.goto();
 
-        // Пытаемся зарегистрироваться с существующим email
+        // Try registration with existing email
         await registerPage.register(
             existingEmail,
             'newpassword123',
             'admin123',
         );
 
-        // Ожидаем ошибку
+        // Expect error
         await registerPage.expectError();
 
-        // Проверяем, что остались на странице регистрации
+        // Should stay on registration page
         await expect(page).toHaveURL(/\/auth\/register/);
     });
 
-    test('регистрация с коротким паролем', async ({ page }) => {
+    test('shows error with short password', async ({ page }) => {
         const registerPage = new RegisterPage(page);
         await registerPage.goto();
 
         const email = generateUniqueEmail();
-        const shortPassword = '12345'; // Меньше 6 символов
+        const shortPassword = '12345'; // Less than 6 characters
         const adminPassword = 'admin123';
 
-        // Пытаемся зарегистрироваться с коротким паролем
+        // Try registration with short password
         await registerPage.register(email, shortPassword, adminPassword);
 
-        // Ожидаем ошибку валидации (текст может быть разным, проверяем только наличие ошибки)
+        // Expect validation error (message may vary)
         await registerPage.expectError();
 
-        // Проверяем, что остались на странице регистрации
+        // Should stay on registration page
         await expect(page).toHaveURL(/\/auth\/register/);
     });
 
-    test('регистрация с пустыми обязательными полями', async ({ page }) => {
+    test('shows error with empty required fields', async ({ page }) => {
         const registerPage = new RegisterPage(page);
         await registerPage.goto();
 
-        // Пытаемся зарегистрироваться без заполнения полей
+        // Try registration without filling fields
         await registerPage.clickSubmit();
 
-        // Ожидаем ошибку валидации (текст может быть разным, проверяем только наличие ошибки)
+        // Expect validation error (message may vary)
         await registerPage.expectError();
 
-        // Проверяем, что остались на странице регистрации
+        // Should stay on registration page
         await expect(page).toHaveURL(/\/auth\/register/);
     });
 
-    test('переход на страницу входа', async ({ page }) => {
+    test('navigates to login page', async ({ page }) => {
         const registerPage = new RegisterPage(page);
         await registerPage.goto();
 
-        // Кликаем по ссылке входа
+        // Click login link
         await registerPage.clickLoginLink();
 
-        // Проверяем, что перешли на страницу входа
+        // Should navigate to login page
         await expect(page).toHaveURL(/\/auth\/login/);
     });
 });

@@ -3,23 +3,23 @@ import { BasePage } from './BasePage';
 import { TIMEOUTS, SELECTORS } from '../utils/constants';
 
 /**
- * Page Object для страницы регистрации
+ * Page Object for the registration page
  */
 export class RegisterPage extends BasePage {
-    // Селекторы
+    // Selectors
     private readonly emailInput = 'input[type="email"]';
     private readonly nameInput = 'input[type="text"]';
     private readonly passwordInputs = 'input[type="password"]';
     private readonly submitButton = 'button[type="submit"]';
     private readonly loginLink = 'a[href="/auth/login"]';
-    private readonly cardTitle = 'h3:has-text("Registration")'; // Используем более специфичный селектор
+    private readonly cardTitle = 'h3:has-text("Registration")'; // More specific selector
 
     constructor(page: Page) {
         super(page);
     }
 
     /**
-     * Переход на страницу регистрации
+     * Navigate to the registration page
      */
     async goto() {
         await super.goto('/auth/register');
@@ -27,14 +27,14 @@ export class RegisterPage extends BasePage {
     }
 
     /**
-     * Проверка, что страница загружена
+     * Assert the page is loaded
      */
     async expectPageLoaded() {
         await expect(this.page.locator(this.cardTitle)).toBeVisible();
     }
 
     /**
-     * Ввод email
+     * Enter email
      */
     async enterEmail(email: string) {
         const emailField = this.page.locator(this.emailInput).first();
@@ -42,14 +42,14 @@ export class RegisterPage extends BasePage {
     }
 
     /**
-     * Ввод имени
+     * Enter name
      */
     async enterName(name: string) {
         await this.fill(this.nameInput, name);
     }
 
     /**
-     * Ввод пароля (первое поле)
+     * Enter password (first field)
      */
     async enterPassword(password: string) {
         const passwordFields = this.page.locator(this.passwordInputs);
@@ -57,7 +57,7 @@ export class RegisterPage extends BasePage {
     }
 
     /**
-     * Ввод пароля администратора (второе поле)
+     * Enter admin password (second field)
      */
     async enterAdminPassword(adminPassword: string) {
         const passwordFields = this.page.locator(this.passwordInputs);
@@ -65,14 +65,14 @@ export class RegisterPage extends BasePage {
     }
 
     /**
-     * Клик по кнопке отправки формы
+     * Click the form submit button
      */
     async clickSubmit() {
         await this.click(this.submitButton);
     }
 
     /**
-     * Выполнение регистрации
+     * Perform registration
      */
     async register(
         email: string,
@@ -86,7 +86,7 @@ export class RegisterPage extends BasePage {
         }
         await this.enterPassword(password);
         await this.enterAdminPassword(adminPassword);
-        // Ждем либо редирект на логин (успех), либо остаемся на странице регистрации (ошибка)
+        // Wait for redirect to login (success) or stay on register page (error)
         await Promise.all([
             this.page.waitForURL(/\/auth\/(login|register)/, {
                 timeout: 5000,
@@ -96,7 +96,7 @@ export class RegisterPage extends BasePage {
     }
 
     /**
-     * Клик по ссылке входа
+     * Click the login link
      */
     async clickLoginLink() {
         await this.click(this.loginLink);
@@ -104,21 +104,21 @@ export class RegisterPage extends BasePage {
     }
 
     /**
-     * Проверка наличия ошибки
-     * Ищет ошибку в toast сообщении (description), а не в заголовке
+     * Assert an error is shown
+     * Looks for the error in the toast description, not the title
      */
     async expectError(message?: string) {
-        // Ищем toast с ошибкой
-        // Toast может быть в разных местах, используем более широкий поиск
+        // Find error toast
+        // Toast may appear in different places — use a broad search
         const errorText = this.page.locator(SELECTORS.TOAST_ERROR);
 
-        // Ждем появления toast с ошибкой (может появиться с задержкой)
+        // Wait for error toast (may appear with a delay)
         await expect(errorText.first()).toBeVisible({
             timeout: TIMEOUTS.TOAST,
         });
 
         if (message) {
-            // Проверяем текст ошибки в toast
+            // Assert error text in toast
             await expect(errorText.first()).toContainText(message, {
                 ignoreCase: true,
             });
@@ -126,7 +126,7 @@ export class RegisterPage extends BasePage {
     }
 
     /**
-     * Проверка успешной регистрации (редирект на страницу входа)
+     * Assert successful registration (redirect to login page)
      */
     async expectSuccessfulRegistration() {
         await this.expectUrl('/auth/login');

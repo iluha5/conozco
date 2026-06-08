@@ -2,22 +2,21 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Установка необходимых системных зависимостей для Prisma
+# Install system dependencies required by Prisma
 RUN apk add --no-cache openssl libc6-compat
 
-# Установка зависимостей
+# Install npm dependencies
 COPY package*.json ./
 RUN npm install
 
-# Копирование остальных файлов
+# Copy remaining project files
 COPY . .
 
-# Генерация Prisma Client
+# Generate Prisma Client
 RUN npx prisma generate
 
-# Экспонирование порта
+# Expose application port
 EXPOSE 8000
 
-# Запуск приложения
+# Start application
 CMD ["sh", "-c", "npx prisma migrate deploy && npm run dev"]
-

@@ -60,7 +60,7 @@ else
   fi
 fi
 
-# Функция загрузки в DigitalOcean Spaces
+# Upload helper for DigitalOcean Spaces
 upload_to_spaces() {
   local FILE="$1"
   log "Uploading backup to DigitalOcean Spaces..."

@@ -1,5 +1,5 @@
 /**
- * Глобальные настройки для React Query
+ * Global React Query settings
  */
 
 // Time during which data is considered fresh (will not be refetched)

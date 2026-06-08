@@ -228,6 +228,7 @@
     "Stage settings": "Stage settings",
     "Select words for training": "Select words for training",
     "selected": "selected",
+    "sel.": "sel.",
     "No words for training.": "No words for training.",
     "Add words on the": "Add words on the",
     "page": "page",
@@ -350,5 +351,13 @@
     "Progress saving": "Progress saving",
     "Access to advanced features": "Access to advanced features",
     "Free forever": "Free forever",
-    "Create Account": "Create Account"
+    "Create Account": "Create Account",
+    "Start review": "Start review",
+    "Next sentence": "Next sentence",
+    "Finishing training...": "Finishing training...",
+    "Words learned: {{count}}": "Words learned: {{count}}",
+    "Mixed types": "Mixed types",
+    "Only {{count}} words in the group. The available count will be used.": "Only {{count}} words in the group. The available count will be used.",
+    "Words in group:": "Words in group:",
+    "No base words for training. Add words from the dictionary!": "No base words for training. Add words from the dictionary!"
 }

@@ -7,14 +7,14 @@ import {
 import { STAGE_TITLES } from '../../utils/training-constants';
 
 /**
- * Тесты этапа 4 тренировки - Составление слова из букв
+ * Training stage 4 tests — build word from letters
  */
-test.describe('Тренировки - Этап 4', () => {
+test.describe('Training - Stage 4', () => {
     test.beforeEach(async () => {
         await cleanupTestDatabase();
     });
 
-    test('загрузка и запуск этапа 4 тренировки', async ({ page }) => {
+    test('loads and runs training stage 4', async ({ page }) => {
         const { trainingPage } = await setupTrainingWithWords(page);
         await openTrainingStage(page, 4, trainingPage);
         await trainingPage.expectStageLoaded(4, STAGE_TITLES[4]);

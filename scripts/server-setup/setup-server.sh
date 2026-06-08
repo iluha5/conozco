@@ -3,13 +3,13 @@ set -e
 
 echo "=== Flash Cards Server Setup ==="
 
-# Обновление системы
+# Update system packages
 apt update && apt upgrade -y
 
-# Установка базовых пакетов
+# Install base packages
 apt install -y curl git ufw
 
-# Настройка swap (для 1GB RAM)
+# Configure swap (for 1GB RAM hosts)
 if [ ! -f /swapfile ]; then
     fallocate -l 2G /swapfile
     chmod 600 /swapfile
@@ -18,7 +18,7 @@ if [ ! -f /swapfile ]; then
     echo '/swapfile none swap sw 0 0' >> /etc/fstab
 fi
 
-# Установка Docker из официального apt-репозитория
+# Install Docker from official apt repository
 apt-get install -y ca-certificates gnupg
 install -m 0755 -d /etc/apt/keyrings
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
@@ -31,13 +31,13 @@ apt update
 apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 systemctl enable docker && systemctl start docker
 
-# Установка Certbot
+# Install Certbot
 apt install -y certbot
 
-# Установка s3cmd для работы с DigitalOcean Spaces
+# Install s3cmd for DigitalOcean Spaces
 apt install -y s3cmd python3-magic
 
-# Настройка UFW
+# Configure UFW
 ufw default deny incoming
 ufw default allow outgoing
 ufw allow 22/tcp   # SSH
@@ -45,36 +45,36 @@ ufw allow 80/tcp   # HTTP
 ufw allow 443/tcp  # HTTPS
 ufw --force enable
 
-# Создание директорий
+# Create directories
 mkdir -p /opt/flashcards
 mkdir -p /opt/flashcards/backups
 mkdir -p /var/www/certbot
 
-# Создание пользователя для деплоя (безопаснее, чем root)
+# Create deploy user (safer than running as root)
 if ! id -u deploy >/dev/null 2>&1; then
   useradd -m -s /bin/bash deploy
   usermod -aG docker deploy
   echo "Created user 'deploy' and added to docker group"
 fi
 
-# Клонирование репозитория (замените на ваш URL)
+# Clone repository (replace with your URL)
 # git clone git@github.com:YOUR_USERNAME/flash-cards.git /opt/flashcards
 
-# Настройка cron для бэкапов
+# Configure backup cron
 cat > /etc/cron.d/flashcards-backup << 'EOF'
-# Бэкап БД дважды в сутки
+# Database backup twice daily
 0 3 * * * root /opt/flashcards/scripts/server-setup/backup-db-prod.sh >> /var/log/flashcards-backup.log 2>&1
 0 15 * * * root /opt/flashcards/scripts/server-setup/backup-db-prod.sh >> /var/log/flashcards-backup.log 2>&1
 EOF
 
-# Настройка cron для SSL renewal
+# Configure SSL renewal cron
 cat > /etc/cron.d/certbot-renewal << 'EOF'
 30 2 * * * root certbot renew --quiet --post-hook "docker exec flashcards-nginx nginx -s reload" >> /var/log/certbot-renewal.log 2>&1
 EOF
 
-# Настройка cron для проверки бэкапов
+# Configure backup freshness check cron
 cat > /etc/cron.d/flashcards-backup-check << 'EOF'
-# Проверка свежести бэкапов каждый день в 9:00
+# Check backup freshness daily at 09:00
 0 9 * * * root /opt/flashcards/scripts/server-setup/check-backups.sh >> /var/log/flashcards-backup-check.log 2>&1
 EOF
 

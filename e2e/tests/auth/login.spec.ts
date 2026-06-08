@@ -4,16 +4,16 @@ import { createTestUser, cleanupTestDatabase } from '../../fixtures';
 import { generateUniqueEmail } from '../../utils/test-helpers';
 
 /**
- * Тесты страницы входа
+ * Login page tests
  */
-test.describe('Авторизация - Вход', () => {
+test.describe('Auth - Login', () => {
     test.beforeEach(async () => {
-        // Очищаем БД перед каждым тестом для изоляции
+        // Clean DB before each test for isolation
         await cleanupTestDatabase();
     });
 
-    test('успешный вход с валидными данными', async ({ page }) => {
-        // Создаем тестового пользователя с уникальным email
+    test('logs in successfully with valid credentials', async ({ page }) => {
+        // Create test user with unique email
         const user = await createTestUser(
             generateUniqueEmail(),
             'password123',
@@ -24,40 +24,40 @@ test.describe('Авторизация - Вход', () => {
         await loginPage.goto();
         await loginPage.expectPageLoaded();
 
-        // Выполняем вход
+        // Perform login
         await loginPage.login(user.email, 'password123');
 
-        // Ждем успешного входа - редирект на страницу тренировок
-        // Может потребоваться время на установку сессии NextAuth
+        // Wait for successful login — redirect to training list
+        // NextAuth session setup may take a moment
         await page.waitForURL('/training/list', { timeout: 10000 });
         await page.waitForLoadState('networkidle');
 
         await loginPage.expectSuccessfulLogin();
 
-        // Проверяем, что Header виден (пользователь авторизован)
+        // Header should be visible (user is authenticated)
         await expect(page.getByRole('link', { name: 'conozco' })).toBeVisible();
     });
 
-    test('вход с неверным email', async ({ page }) => {
-        // Создаем пользователя с другим email
+    test('shows error with wrong email', async ({ page }) => {
+        // Create user with a different email
         await createTestUser('correct@example.com', 'password123');
 
         const loginPage = new LoginPage(page);
         await loginPage.goto();
 
-        // Пытаемся войти с неверным email
+        // Try login with wrong email
         await loginPage.enterEmail('wrong@example.com');
         await loginPage.enterPassword('password123');
         await loginPage.clickSubmit();
 
-        // Ожидаем ошибку
+        // Expect error
         await loginPage.expectError();
-        // Проверяем, что остались на странице логина
+        // Should stay on login page
         await expect(page).toHaveURL(/\/auth\/login/);
     });
 
-    test('вход с неверным паролем', async ({ page }) => {
-        // Создаем тестового пользователя с уникальным email
+    test('shows error with wrong password', async ({ page }) => {
+        // Create test user with unique email
         const user = await createTestUser(
             generateUniqueEmail(),
             'correctpassword',
@@ -66,38 +66,38 @@ test.describe('Авторизация - Вход', () => {
         const loginPage = new LoginPage(page);
         await loginPage.goto();
 
-        // Пытаемся войти с неверным паролем
+        // Try login with wrong password
         await loginPage.enterEmail(user.email);
         await loginPage.enterPassword('wrongpassword');
         await loginPage.clickSubmit();
 
-        // Ожидаем ошибку
+        // Expect error
         await loginPage.expectError();
-        // Проверяем, что остались на странице логина
+        // Should stay on login page
         await expect(page).toHaveURL(/\/auth\/login/);
     });
 
-    test('вход с пустыми полями', async ({ page }) => {
+    test('shows error with empty fields', async ({ page }) => {
         const loginPage = new LoginPage(page);
         await loginPage.goto();
 
-        // Пытаемся войти без заполнения полей
+        // Try login without filling fields
         await loginPage.clickSubmit();
 
-        // Ожидаем ошибку валидации
+        // Expect validation error
         await loginPage.expectError();
-        // Проверяем, что остались на странице логина
+        // Should stay on login page
         await expect(page).toHaveURL(/\/auth\/login/);
     });
 
-    test('переход на страницу регистрации', async ({ page }) => {
+    test('navigates to registration page', async ({ page }) => {
         const loginPage = new LoginPage(page);
         await loginPage.goto();
 
-        // Кликаем по ссылке регистрации
+        // Click registration link
         await loginPage.clickRegisterLink();
 
-        // Проверяем, что перешли на страницу регистрации
+        // Should navigate to registration page
         await expect(page).toHaveURL(/\/auth\/register/);
     });
 });

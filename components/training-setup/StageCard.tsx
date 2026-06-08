@@ -23,7 +23,7 @@ export const StageCard = ({
             <Checkbox
                 id={`setup-stage-${stage.id}`}
                 checked={enabled}
-                onChange={() => {}} // Пустой обработчик, чтобы предотвратить warnings
+                onChange={() => {}} // No-op handler to avoid React warnings
                 onClick={() => onToggle(stage.id)}
                 className="cursor-pointer"
             />
@@ -32,10 +32,10 @@ export const StageCard = ({
                 onClick={() => onToggle(stage.id)}
             >
                 <div className="text-sm font-medium leading-none">
-                    {stage.name}
+                    {t(stage.nameKey, { number: stage.id })}
                 </div>
                 <p className="text-xs text-gray-600 mt-1">
-                    {stage.description}
+                    {t(stage.descriptionKey)}
                 </p>
             </div>
             {stage.hasSettings && onOpenSettings && (

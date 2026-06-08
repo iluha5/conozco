@@ -1,12 +1,12 @@
 /**
- * Конфигурация языков, доступных для обучения
+ * Configuration for languages available for learning
  */
 
 export type LearnLanguageCode = 'en' | 'es';
 
 /**
- * Массив кодов языков, доступных для обучения
- * Для добавления нового языка просто добавьте его код в этот массив
+ * Language codes available for learning
+ * To add a new language, append its code to this array
  */
 export const AVAILABLE_LEARN_LANGUAGES: readonly LearnLanguageCode[] = [
     'en',
@@ -14,7 +14,7 @@ export const AVAILABLE_LEARN_LANGUAGES: readonly LearnLanguageCode[] = [
 ] as const;
 
 /**
- * Проверяет, доступен ли язык для обучения
+ * Check whether a language is available for learning
  */
 export function isLearnLanguageAvailable(
     code: string,

@@ -64,7 +64,7 @@ export function FlashCardActions({
                 className="flex items-center gap-2 bg-white text-gray-900 hover:bg-gray-50"
             >
                 <X className="w-5 h-5" />
-                Не знаю
+                {t("Don't know")}
             </Button>
             <Button
                 variant="default"
@@ -74,7 +74,7 @@ export function FlashCardActions({
                 className="flex items-center gap-2 bg-black text-white hover:bg-gray-800"
             >
                 <Check className="w-5 h-5" />
-                Знаю
+                {t('Know')}
             </Button>
         </div>
     );

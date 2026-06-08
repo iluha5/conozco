@@ -7,11 +7,11 @@ TABLES="BaseWord,WordTranslation,WordExample,WordGroup,BaseWordOnWordGroup,Prono
 
 echo "=== Syncing data to production ==="
 
-# 1. Создать бэкап на сервере
+# 1. Create backup on server
 echo "Creating backup on server..."
 ssh "$SERVER" "$REMOTE_DIR/scripts/server-setup/backup-db-prod.sh"
 
-# 2. Экспорт локальных данных (только указанные таблицы)
+# 2. Export local data (selected tables only)
 TMP_FILE="/tmp/sync-data.sql"
 rm -f "$TMP_FILE"
 echo "Exporting local data..."
@@ -20,15 +20,15 @@ for TABLE in ${TABLES//,/ }; do
     --data-only --inserts -t "\"$TABLE\"" >> "$TMP_FILE"
 done
 
-# 3. Отправить на сервер
+# 3. Upload to server
 echo "Uploading to server..."
 scp "$TMP_FILE" "$SERVER:/tmp/"
 
-# 4. Импортировать данные
+# 4. Import data on server
 echo "Importing data on server..."
 ssh "$SERVER" "docker exec -i flashcards-db psql -U flashcards -d flashcards < /tmp/$(basename "$TMP_FILE")"
 
-# 5. Очистка
+# 5. Cleanup
 rm -f "$TMP_FILE"
 ssh "$SERVER" "rm -f /tmp/$(basename "$TMP_FILE")"
 

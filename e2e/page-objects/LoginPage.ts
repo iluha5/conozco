@@ -3,22 +3,22 @@ import { BasePage } from './BasePage';
 import { TIMEOUTS, SELECTORS } from '../utils/constants';
 
 /**
- * Page Object для страницы входа
+ * Page Object for the login page
  */
 export class LoginPage extends BasePage {
-    // Селекторы
+    // Selectors
     private readonly emailInput = 'input[type="email"]';
     private readonly passwordInput = 'input[type="password"]';
     private readonly submitButton = 'button[type="submit"]';
     private readonly registerLink = 'a[href="/auth/register"]';
-    private readonly cardTitle = 'h3:has-text("Login")'; // Используем более специфичный селектор
+    private readonly cardTitle = 'h3:has-text("Login")'; // More specific selector
 
     constructor(page: Page) {
         super(page);
     }
 
     /**
-     * Переход на страницу входа
+     * Navigate to the login page
      */
     async goto() {
         await super.goto('/auth/login');
@@ -26,50 +26,50 @@ export class LoginPage extends BasePage {
     }
 
     /**
-     * Проверка, что страница загружена
+     * Assert the page is loaded
      */
     async expectPageLoaded() {
         await expect(this.page.locator(this.cardTitle)).toBeVisible();
     }
 
     /**
-     * Ввод email
+     * Enter email
      */
     async enterEmail(email: string) {
         await this.fill(this.emailInput, email);
     }
 
     /**
-     * Ввод пароля
+     * Enter password
      */
     async enterPassword(password: string) {
         await this.fill(this.passwordInput, password);
     }
 
     /**
-     * Клик по кнопке отправки формы
+     * Click the form submit button
      */
     async clickSubmit() {
         await this.click(this.submitButton);
     }
 
     /**
-     * Выполнение входа
+     * Perform login
      */
     async login(email: string, password: string) {
         await this.enterEmail(email);
         await this.enterPassword(password);
 
-        // Кликаем по кнопке отправки
+        // Click submit
         await this.clickSubmit();
 
-        // Ждем обработки формы (может быть редирект или ошибка)
-        // Не ждем конкретного URL здесь, так как это зависит от результата
+        // Wait for form handling (redirect or error)
+        // Do not wait for a specific URL here — outcome depends on result
         await this.page.waitForLoadState('networkidle', { timeout: 5000 });
     }
 
     /**
-     * Клик по ссылке регистрации
+     * Click the registration link
      */
     async clickRegisterLink() {
         await this.click(this.registerLink);
@@ -77,21 +77,21 @@ export class LoginPage extends BasePage {
     }
 
     /**
-     * Проверка наличия ошибки
-     * Ищет ошибку в toast сообщении (description), а не в заголовке
+     * Assert an error is shown
+     * Looks for the error in the toast description, not the title
      */
     async expectError(message?: string) {
-        // Ищем toast с ошибкой
-        // Toast может быть в разных местах, используем более широкий поиск
+        // Find error toast
+        // Toast may appear in different places — use a broad search
         const errorText = this.page.locator(SELECTORS.TOAST_ERROR);
 
-        // Ждем появления toast с ошибкой (может появиться с задержкой)
+        // Wait for error toast (may appear with a delay)
         await expect(errorText.first()).toBeVisible({
             timeout: TIMEOUTS.TOAST,
         });
 
         if (message) {
-            // Проверяем текст ошибки в toast
+            // Assert error text in toast
             await expect(errorText.first()).toContainText(message, {
                 ignoreCase: true,
             });
@@ -99,7 +99,7 @@ export class LoginPage extends BasePage {
     }
 
     /**
-     * Проверка успешного входа (редирект на страницу тренировок)
+     * Assert successful login (redirect to training list)
      */
     async expectSuccessfulLogin() {
         await this.expectUrl('/training/list');

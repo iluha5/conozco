@@ -20,12 +20,14 @@ import { useStage6WordBuilding } from './hooks/useStage6WordBuilding';
 import { useStage6Navigation } from './hooks/useStage6Navigation';
 import { useStage6AutoAdvance } from './hooks/useStage6AutoAdvance';
 import type { Stage6Props } from './typing';
+import { useTranslation } from '@/lib/i18n';
 
 export function Stage6Training({
     words,
     onComplete,
     isLastStage = false,
 }: Stage6Props) {
+    const { t } = useTranslation();
     const [currentIndex, setCurrentIndex] = useState(0);
     const [backgroundFlash, setBackgroundFlash] = useState<
         'green' | 'red' | null
@@ -223,8 +225,9 @@ export function Stage6Training({
             <Card>
                 <CardContent className="pt-6">
                     <p className="text-center text-gray-600">
-                        Нет основных слов для тренировки. Добавьте слова из
-                        словаря!
+                        {t(
+                            'No base words for training. Add words from the dictionary!',
+                        )}
                     </p>
                 </CardContent>
             </Card>

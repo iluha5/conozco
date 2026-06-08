@@ -9,21 +9,21 @@ import {
 import { generateUniqueEmail } from '../../utils/test-helpers';
 
 /**
- * Тесты работы с группами слов (упрощенные)
+ * Word groups tests (simplified)
  */
-test.describe('Управление словами - Группы слов', () => {
+test.describe('Words - Word groups', () => {
     test.beforeEach(async () => {
         await cleanupTestDatabase();
     });
 
-    test('отображение слов на странице', async ({ page }) => {
-        // Создаем пользователя и авторизуем его
+    test('displays words on the page', async ({ page }) => {
+        // Create and log in user
         const user = await createAndLoginUser(page, {
             email: generateUniqueEmail(),
             password: 'password123',
         });
 
-        // Создаем базовое слово
+        // Create base word
         const baseWord = await createTestBaseWord(
             'hello',
             'en',
@@ -32,7 +32,7 @@ test.describe('Управление словами - Группы слов', () 
         );
         if (!baseWord) throw new Error('Failed to create base word');
 
-        // Создаем слово для пользователя
+        // Create user word
         await createTestWord(user.id, {
             baseWordId: baseWord.id,
             languageCode: 'en',
@@ -42,7 +42,7 @@ test.describe('Управление словами - Группы слов', () 
         await wordsPage.goto();
         await wordsPage.expectPageLoaded();
 
-        // Упрощенная проверка: просто проверяем, что страница загрузилась без ошибок
+        // Simplified check: page loaded without errors
         await wordsPage.waitForLoading();
     });
 });

@@ -2,8 +2,8 @@ import { Page, expect } from '@playwright/test';
 import { BasePage } from './BasePage';
 
 /**
- * Page Object для страницы тренировки
- * Базовая реализация для всех этапов тренировки
+ * Page Object for the training page
+ * Base implementation shared by all training stages
  */
 export class TrainingPage extends BasePage {
     // Selectors
@@ -19,7 +19,7 @@ export class TrainingPage extends BasePage {
     }
 
     /**
-     * Переход на страницу тренировки
+     * Navigate to the training page
      */
     async goto() {
         await super.goto('/training');
@@ -27,7 +27,7 @@ export class TrainingPage extends BasePage {
     }
 
     /**
-     * Проверка, что страница загружена
+     * Assert the page is loaded
      */
     async expectPageLoaded() {
         // Check presence of training elements
@@ -61,7 +61,7 @@ export class TrainingPage extends BasePage {
     }
 
     /**
-     * Клик по кнопке "Далее"
+     * Click the "Next word" button
      */
     async clickNext() {
         await this.click(this.nextButton);
@@ -69,21 +69,21 @@ export class TrainingPage extends BasePage {
     }
 
     /**
-     * Клик по кнопке "Выход"
+     * Click the "Home" button
      */
     async clickExit() {
         await this.click(this.exitButton);
     }
 
     /**
-     * Клик по кнопке "Пауза"
+     * Click the "Pause" button
      */
     async clickPause() {
         await this.click(this.pauseButton);
     }
 
     /**
-     * Проверка текущего этапа тренировки
+     * Assert current training stage
      */
     async expectStage(stage: number) {
         const stageIndicator = this.page.locator(`text=/Stage ${stage}/i`);
@@ -91,8 +91,8 @@ export class TrainingPage extends BasePage {
     }
 
     /**
-     * Клик на этап в селекторе этапов
-     * @param stage - номер этапа (1-6)
+     * Click a stage in the stage selector
+     * @param stage - stage number (1-6)
      */
     async clickStage(stage: number) {
         // Find stage card by text "Stage {stage}" (desktop) or just "{stage}" (mobile)
@@ -148,9 +148,9 @@ export class TrainingPage extends BasePage {
     }
 
     /**
-     * Проверка заголовка этапа
-     * @param expectedTitle - ожидаемый заголовок этапа
-     * @param options - опции для проверки (timeout)
+     * Assert stage title
+     * @param expectedTitle - expected stage title
+     * @param options - assertion options (timeout)
      */
     async expectStageTitle(
         expectedTitle: string,
@@ -163,7 +163,7 @@ export class TrainingPage extends BasePage {
     }
 
     /**
-     * Ждет запуска тренировки и загрузки страницы
+     * Wait for training to start and the page to load
      */
     async waitForTrainingStart() {
         // Wait for navigation to /training URL
@@ -175,9 +175,9 @@ export class TrainingPage extends BasePage {
     }
 
     /**
-     * Проверяет, что этап загружен и отображается
-     * @param stage - номер этапа
-     * @param expectedTitle - ожидаемый заголовок этапа
+     * Assert stage is loaded and visible
+     * @param stage - stage number
+     * @param expectedTitle - expected stage title
      */
     async expectStageLoaded(stage: number, expectedTitle: string) {
         // Check stage number
@@ -209,7 +209,7 @@ export class TrainingPage extends BasePage {
     }
 
     /**
-     * Проверяет наличие специфичных элементов этапа 1 (просмотр и запоминание)
+     * Assert stage 1 specific elements (view and memorize)
      */
     async expectStage1Content() {
         // Check presence of word display with play button
@@ -234,7 +234,7 @@ export class TrainingPage extends BasePage {
     }
 
     /**
-     * Показывает перевод на этапе 1
+     * Show translation on stage 1
      */
     async showTranslationStage1() {
         const showTranslationButton = this.page.locator(
@@ -253,7 +253,7 @@ export class TrainingPage extends BasePage {
     }
 
     /**
-     * Нажимает кнопку "Следующее слово" или "Завершить" на этапе 1
+     * Click stage 1 next button ([data-testid="stage1-next-button"])
      */
     async clickNextStage1() {
         const nextButton = this.page.locator(
@@ -266,8 +266,8 @@ export class TrainingPage extends BasePage {
     }
 
     /**
-     * Выбирает правильный перевод на этапе 2
-     * @param correctTranslation Правильный перевод слова
+     * Select the correct translation on stage 2
+     * @param correctTranslation correct word translation
      */
     async selectCorrectTranslationStage2(correctTranslation: string) {
         const translationOptions = this.page.locator(
@@ -287,8 +287,8 @@ export class TrainingPage extends BasePage {
     }
 
     /**
-     * Сопоставляет все пары на этапе 3
-     * Для упрощения, сопоставляет первую пару
+     * Match all pairs on stage 3
+     * Simplified: matches pairs in order
      */
     async matchAllPairsStage3() {
         const foreignWordsColumn = this.page.locator(
@@ -332,8 +332,8 @@ export class TrainingPage extends BasePage {
     }
 
     /**
-     * Составляет слово по буквам на этапе 4
-     * @param word Текст слова для составления
+     * Build a word from letters on stage 4
+     * @param word word text to build
      */
     async buildWordStage4(word: string) {
         const lettersGrid = this.page.locator(
@@ -358,8 +358,8 @@ export class TrainingPage extends BasePage {
     }
 
     /**
-     * Составляет предложение на этапе 5
-     * @param sentenceWords Массив слов предложения в правильном порядке
+     * Build a sentence on stage 5
+     * @param sentenceWords sentence words in correct order
      */
     async buildSentenceStage5(sentenceWords: string[]) {
         const wordsGrid = this.page.locator(
@@ -382,8 +382,8 @@ export class TrainingPage extends BasePage {
     }
 
     /**
-     * Составляет слово по голосу на этапе 6
-     * @param word Текст слова для составления
+     * Build a word from audio on stage 6
+     * @param word word text to build
      */
     async buildWordStage6(word: string) {
         // Play word (if needed)
@@ -420,7 +420,7 @@ export class TrainingPage extends BasePage {
     }
 
     /**
-     * Проверяет наличие специфичных элементов этапа 2 (выбор правильного перевода)
+     * Assert stage 2 specific elements (pick correct translation)
      */
     async expectStage2Content() {
         // Check presence of word display
@@ -442,7 +442,7 @@ export class TrainingPage extends BasePage {
     }
 
     /**
-     * Проверяет наличие специфичных элементов этапа 3 (сопоставление слов)
+     * Assert stage 3 specific elements (word matching)
      */
     async expectStage3Content() {
         // Check presence of foreign words column
@@ -467,7 +467,7 @@ export class TrainingPage extends BasePage {
     }
 
     /**
-     * Проверяет наличие специфичных элементов этапа 4 (составление слова по буквам)
+     * Assert stage 4 specific elements (build word from letters)
      */
     async expectStage4Content() {
         // Check presence of translation display
@@ -495,7 +495,7 @@ export class TrainingPage extends BasePage {
     }
 
     /**
-     * Проверяет наличие специфичных элементов этапа 5 (составление предложения)
+     * Assert stage 5 specific elements (build sentence)
      */
     async expectStage5Content() {
         // Check presence of sentence translation display (must be present if examples exist)
@@ -537,7 +537,7 @@ export class TrainingPage extends BasePage {
     }
 
     /**
-     * Проверяет наличие специфичных элементов этапа 6 (составление слова по голосу)
+     * Assert stage 6 specific elements (build word from audio)
      */
     async expectStage6Content() {
         // Check presence of "Listen to word" button

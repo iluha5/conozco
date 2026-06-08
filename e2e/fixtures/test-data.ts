@@ -7,11 +7,11 @@ import {
 import { DEFAULT_TEST_VALUES } from '../utils/constants';
 
 /**
- * Генераторы тестовых данных для E2E тестов
+ * Test data generators for E2E tests
  */
 
 /**
- * Получает ID роли пользователя по коду
+ * Get user role ID by code
  */
 export async function getRoleId(code: 'USER' | 'ADMIN'): Promise<number> {
     const prisma = createTestPrismaClient();
@@ -32,7 +32,7 @@ export async function getRoleId(code: 'USER' | 'ADMIN'): Promise<number> {
 }
 
 /**
- * Получает ID статуса слова по коду
+ * Get word status ID by code
  */
 export async function getWordStatusId(
     code: 'NOT_LEARNED' | 'LEARNED',
@@ -55,7 +55,7 @@ export async function getWordStatusId(
 }
 
 /**
- * Получает ID языка по коду
+ * Get language ID by code
  */
 export async function getLanguageId(code: string): Promise<number> {
     const prisma = createTestPrismaClient();
@@ -76,10 +76,7 @@ export async function getLanguageId(code: string): Promise<number> {
 }
 
 /**
- * Создает тестового пользователя
- */
-/**
- * Опции для создания тестового пользователя
+ * Options for creating a test user
  */
 export interface CreateTestUserOptions {
     roleId?: number;
@@ -89,7 +86,7 @@ export interface CreateTestUserOptions {
 }
 
 /**
- * Создает тестового пользователя
+ * Create a test user
  */
 export async function createTestUser(
     email: string = generateUniqueEmail(),
@@ -104,7 +101,7 @@ export async function createTestUser(
         const hashedPassword = await bcrypt.hash(password, 10);
         const roleId = options?.roleId || (await getRoleId('USER'));
 
-        // Создаем пользователя с минимальными полями (без языков, если они не поддерживаются в БД)
+        // Create user with minimal fields (languages omitted unless provided)
         const userData: any = {
             email,
             password: hashedPassword,
@@ -112,7 +109,7 @@ export async function createTestUser(
             roleId,
         };
 
-        // Добавляем языки только если они указаны
+        // Add language fields only when provided
         if (options?.ownLanguageId !== undefined) {
             userData.ownLanguageId = options.ownLanguageId;
         }
@@ -137,7 +134,7 @@ export async function createTestUser(
 }
 
 /**
- * Создает тестовое слово для пользователя
+ * Create a test word for a user
  */
 export async function createTestWord(
     userId: number,
@@ -145,16 +142,16 @@ export async function createTestWord(
         baseWordId?: number;
         customWord?: string;
         languageId?: number;
-        languageCode?: string; // Альтернатива languageId
+        languageCode?: string; // Alternative to languageId
         statusId?: number;
-        statusCode?: 'NOT_LEARNED' | 'LEARNED'; // Альтернатива statusId
+        statusCode?: 'NOT_LEARNED' | 'LEARNED'; // Alternative to statusId
         selectedTranslationId?: number;
     } = {},
 ) {
     const prisma = createTestPrismaClient();
 
     try {
-        // Определяем languageId
+        // Resolve languageId
         let languageId = options.languageId;
         if (!languageId && options.languageCode) {
             languageId = await getLanguageId(options.languageCode);
@@ -163,7 +160,7 @@ export async function createTestWord(
             languageId = await getLanguageId(DEFAULT_TEST_VALUES.LANGUAGE_CODE);
         }
 
-        // Определяем statusId
+        // Resolve statusId
         let statusId = options.statusId;
         if (!statusId && options.statusCode) {
             statusId = await getWordStatusId(options.statusCode);
@@ -200,21 +197,21 @@ export async function createTestWord(
 }
 
 /**
- * Создает тестовую группу слов
+ * Create a test word group
  */
 export async function createTestWordGroup(
     createdByUserId: number,
     name: string,
     options?: {
         languageId?: number;
-        languageCode?: string; // Альтернатива languageId
+        languageCode?: string; // Alternative to languageId
         visibility?: 'PRIVATE' | 'PUBLIC';
     },
 ) {
     const prisma = createTestPrismaClient();
 
     try {
-        // Определяем languageId
+        // Resolve languageId
         let languageId = options?.languageId;
         if (!languageId && options?.languageCode) {
             languageId = await getLanguageId(options.languageCode);
@@ -242,11 +239,11 @@ export async function createTestWordGroup(
 }
 
 /**
- * Создает несколько тестовых слов для пользователя
- * @param userId ID пользователя
- * @param count Количество слов для создания
- * @param options Опции для всех слов
- * @returns Массив созданных слов
+ * Create multiple test words for a user
+ * @param userId user ID
+ * @param count number of words to create
+ * @param options options applied to each word
+ * @returns array of created words
  */
 export async function createTestWords(
     userId: number,
@@ -272,12 +269,12 @@ export async function createTestWords(
 }
 
 /**
- * Создает базовое слово с переводом (для использования в тестах)
- * @param word Текст слова
- * @param languageCode Код языка слова
- * @param translation Текст перевода
- * @param translationLanguageCode Код языка перевода
- * @returns Созданное базовое слово с переводом
+ * Create a base word with translation (for use in tests)
+ * @param word word text
+ * @param languageCode word language code
+ * @param translation translation text
+ * @param translationLanguageCode translation language code
+ * @returns created base word with translation
  */
 export async function createTestBaseWord(
     word: string,
@@ -293,7 +290,7 @@ export async function createTestBaseWord(
             translationLanguageCode,
         );
 
-        // Получаем источник 'native'
+        // Get 'native' word source
         const source = await prisma.wordSource.findUnique({
             where: { code: 'native' },
         });
@@ -302,7 +299,7 @@ export async function createTestBaseWord(
             throw new Error('Word source "native" not found');
         }
 
-        // Проверяем, существует ли уже базовое слово
+        // Check if base word already exists
         let baseWord = await prisma.baseWord.findUnique({
             where: {
                 word_languageId: {
@@ -317,7 +314,7 @@ export async function createTestBaseWord(
         });
 
         if (!baseWord) {
-            // Создаем новое базовое слово
+            // Create new base word
             baseWord = await prisma.baseWord.create({
                 data: {
                     word,
@@ -337,7 +334,7 @@ export async function createTestBaseWord(
                 },
             });
         } else {
-            // Проверяем, существует ли уже перевод
+            // Check if translation already exists
             const existingTranslation = await prisma.wordTranslation.findFirst({
                 where: {
                     baseWordId: baseWord.id,
@@ -346,7 +343,7 @@ export async function createTestBaseWord(
             });
 
             if (!existingTranslation) {
-                // Добавляем перевод к существующему слову
+                // Add translation to existing word
                 await prisma.wordTranslation.create({
                     data: {
                         baseWordId: baseWord.id,
@@ -356,7 +353,7 @@ export async function createTestBaseWord(
                     },
                 });
 
-                // Обновляем объект baseWord с новым переводом
+                // Refresh baseWord with new translation
                 baseWord = await prisma.baseWord.findUnique({
                     where: { id: baseWord.id },
                     include: {

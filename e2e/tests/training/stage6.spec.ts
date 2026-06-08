@@ -7,14 +7,14 @@ import {
 import { STAGE_TITLES } from '../../utils/training-constants';
 
 /**
- * Тесты этапа 6 тренировки - Составление слова по голосу
+ * Training stage 6 tests — build word from audio
  */
-test.describe('Тренировки - Этап 6', () => {
+test.describe('Training - Stage 6', () => {
     test.beforeEach(async () => {
         await cleanupTestDatabase();
     });
 
-    test('загрузка и запуск этапа 6 тренировки', async ({ page }) => {
+    test('loads and runs training stage 6', async ({ page }) => {
         const { trainingPage } = await setupTrainingWithWords(page);
         await openTrainingStage(page, 6, trainingPage);
         await trainingPage.expectStageLoaded(6, STAGE_TITLES[6]);

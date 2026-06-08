@@ -4,41 +4,41 @@ import { createAndLoginUser } from '../fixtures';
 import { generateUniqueEmail } from '../utils/test-helpers';
 
 /**
- * Пример теста для проверки конфигурации Playwright
- * Демонстрирует использование Page Object Model и фикстур
+ * Example test to verify Playwright configuration
+ * Demonstrates Page Object Model and fixtures usage
  */
-test.describe('Примеры использования фикстур', () => {
+test.describe('Fixture usage examples', () => {
     test.beforeEach(async () => {
-        // Очистка БД перед каждым тестом (опционально)
-        // В реальных тестах можно использовать beforeEach или beforeAll
+        // Optional DB cleanup before each test
+        // In real tests use beforeEach or beforeAll
         // await cleanupTestDatabase();
     });
 
-    test('проверка базовой конфигурации', async ({ page }) => {
-        // Главная страница защищена middleware, поэтому редиректит на логин
-        // Проверяем, что редирект работает корректно
+    test('verifies basic configuration', async ({ page }) => {
+        // Home page is protected by middleware and redirects to login
+        // Verify redirect works
         await page.goto('/');
 
-        // Ожидаем редирект на страницу логина
+        // Expect redirect to login page
         await expect(page).toHaveURL(/\/auth\/login/);
 
-        // Проверяем заголовок страницы логина
+        // Verify login page title
         await expect(page).toHaveTitle(/conozco/i);
     });
 
-    test('пример использования фикстур авторизации', async ({ page }) => {
-        // Создаем пользователя и авторизуем его через UI
+    test('demonstrates auth fixture usage', async ({ page }) => {
+        // Create user and log in via UI
         const user = await createAndLoginUser(page, {
             email: generateUniqueEmail(),
             password: 'testpassword123',
             name: 'Test User',
         });
 
-        // Проверяем, что пользователь авторизован (Header виден)
+        // User should be authenticated (home page loads)
         const homePage = new HomePage(page);
         await homePage.expectPageLoaded();
 
-        // Можно использовать user.id для дальнейших операций
+        // user.id can be used for further setup
         expect(user.id).toBeGreaterThan(0);
         expect(user.email).toContain('@example.com');
     });

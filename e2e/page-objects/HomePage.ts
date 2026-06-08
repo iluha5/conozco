@@ -2,7 +2,7 @@ import { Page, expect } from '@playwright/test';
 import { BasePage } from './BasePage';
 
 /**
- * Page Object для главной страницы
+ * Page Object for the home page
  */
 export class HomePage extends BasePage {
     // Selectors
@@ -18,7 +18,7 @@ export class HomePage extends BasePage {
     }
 
     /**
-     * Переход на главную страницу
+     * Navigate to the home page
      */
     async goto() {
         await super.goto('/');
@@ -26,14 +26,14 @@ export class HomePage extends BasePage {
     }
 
     /**
-     * Проверка, что страница загружена
+     * Assert the page is loaded
      */
     async expectPageLoaded() {
         await expect(this.page.locator(this.pageTitle)).toBeVisible();
     }
 
     /**
-     * Клик по кнопке "Начать тренировку"
+     * Click the "Start training" button
      */
     async clickStartTraining() {
         await this.click(this.startTrainingButton);
@@ -41,7 +41,7 @@ export class HomePage extends BasePage {
     }
 
     /**
-     * Клик по кнопке "Перейти к словам"
+     * Click the "Go to words" button
      */
     async clickGoToWords() {
         await this.click(this.goToWordsButton);
@@ -49,7 +49,7 @@ export class HomePage extends BasePage {
     }
 
     /**
-     * Клик по кнопке "Выбрать режим"
+     * Click the training mode selection button
      */
     async clickTrainingMode() {
         await this.click(this.trainingModeButton);
@@ -57,7 +57,7 @@ export class HomePage extends BasePage {
     }
 
     /**
-     * Продолжить незавершенную тренировку
+     * Continue an unfinished training session
      */
     async continueTraining() {
         if (await this.isElementVisible(this.continueTrainingCard)) {
@@ -70,7 +70,7 @@ export class HomePage extends BasePage {
     }
 
     /**
-     * Проверка наличия карточки продолжения тренировки
+     * Assert the continue-training card is visible
      */
     async expectContinueTrainingCard() {
         await expect(
@@ -79,7 +79,7 @@ export class HomePage extends BasePage {
     }
 
     /**
-     * Проверка отсутствия карточки продолжения тренировки
+     * Assert the continue-training card is not visible
      */
     async expectNoContinueTrainingCard() {
         const card = this.page.locator(this.continueTrainingCard);

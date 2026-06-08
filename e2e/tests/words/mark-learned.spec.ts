@@ -9,21 +9,21 @@ import {
 import { generateUniqueEmail } from '../../utils/test-helpers';
 
 /**
- * Тесты изменения статуса слов (упрощенные)
+ * Word status change tests (simplified)
  */
-test.describe('Управление словами - Изменение статуса', () => {
+test.describe('Words - Change status', () => {
     test.beforeEach(async () => {
         await cleanupTestDatabase();
     });
 
-    test('загрузка страницы со словами', async ({ page }) => {
-        // Создаем пользователя и авторизуем его
+    test('loads words page with a single word', async ({ page }) => {
+        // Create and log in user
         const user = await createAndLoginUser(page, {
             email: generateUniqueEmail(),
             password: 'password123',
         });
 
-        // Создаем базовое слово
+        // Create base word
         const baseWord = await createTestBaseWord(
             'hello',
             'en',
@@ -32,7 +32,7 @@ test.describe('Управление словами - Изменение стат
         );
         if (!baseWord) throw new Error('Failed to create base word');
 
-        // Создаем слово со статусом "Не выучено"
+        // Create word with NOT_LEARNED status
         await createTestWord(user.id, {
             baseWordId: baseWord.id,
             languageCode: 'en',
@@ -43,18 +43,18 @@ test.describe('Управление словами - Изменение стат
         await wordsPage.goto();
         await wordsPage.expectPageLoaded();
 
-        // Упрощенная проверка: просто проверяем, что страница загрузилась
+        // Simplified check: page loaded
         await wordsPage.waitForLoading();
     });
 
-    test('загрузка страницы с несколькими словами', async ({ page }) => {
-        // Создаем пользователя и авторизуем его
+    test('loads words page with multiple words', async ({ page }) => {
+        // Create and log in user
         const user = await createAndLoginUser(page, {
             email: generateUniqueEmail(),
             password: 'password123',
         });
 
-        // Создаем несколько базовых слов
+        // Create multiple base words
         const baseWord1 = await createTestBaseWord(
             'hello',
             'en',
@@ -65,7 +65,7 @@ test.describe('Управление словами - Изменение стат
         if (!baseWord1 || !baseWord2)
             throw new Error('Failed to create base words');
 
-        // Создаем слова с разными статусами
+        // Create words with different statuses
         await createTestWord(user.id, {
             baseWordId: baseWord1.id,
             languageCode: 'en',
@@ -81,7 +81,7 @@ test.describe('Управление словами - Изменение стат
         await wordsPage.goto();
         await wordsPage.expectPageLoaded();
 
-        // Упрощенная проверка: просто проверяем, что страница загрузилась
+        // Simplified check: page loaded
         await wordsPage.waitForLoading();
     });
 });

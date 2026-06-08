@@ -5,17 +5,17 @@ BEGIN;
 SET LOCAL statement_timeout = '10min';
 SET LOCAL lock_timeout = '60s';
 
--- Удаляем только записи, созданные этой миграцией (помечены source = dm_...)
--- Примеры
+-- Delete only records created by this migration (tagged with source = dm_...)
+-- Examples
 DELETE FROM "GrammaticalExample"
 WHERE "sourceId" = (SELECT "id" FROM "WordSource" WHERE "code" = 'dm_20260123205923_words_to_fix');
 
 DELETE FROM "WordExample"
 WHERE "sourceId" = (SELECT "id" FROM "WordSource" WHERE "code" = 'dm_20260123205923_words_to_fix');
 
--- Переводы: явной маркировки нет в схеме, откат переводов не выполняется в v1
+-- Translations: no explicit marker in schema; translation rollback is not performed in v1
 
--- Новые BaseWord, созданные этой миграцией
+-- New BaseWord rows created by this migration
 DELETE FROM "BaseWord"
 WHERE "sourceId" = (SELECT "id" FROM "WordSource" WHERE "code" = 'dm_20260123205923_words_to_fix');
 

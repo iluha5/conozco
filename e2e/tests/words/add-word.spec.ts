@@ -9,45 +9,45 @@ import {
 import { generateUniqueEmail } from '../../utils/test-helpers';
 
 /**
- * Тесты добавления слов (упрощенные)
+ * Add word tests (simplified)
  */
-test.describe('Управление словами - Добавление', () => {
+test.describe('Words - Add word', () => {
     test.beforeEach(async () => {
         await cleanupTestDatabase();
     });
 
-    test('открытие диалога и поиск слова', async ({ page }) => {
-        // Создаем пользователя и авторизуем его
+    test('opens dialog and searches for a word', async ({ page }) => {
+        // Create and log in user
         await createAndLoginUser(page, {
             email: generateUniqueEmail(),
             password: 'password123',
         });
 
-        // Создаем базовое слово в справочнике
+        // Create base word in dictionary
         await createTestBaseWord('hello', 'en', 'привет', 'ru');
 
         const wordsPage = new WordsPage(page);
         await wordsPage.goto();
         await wordsPage.expectPageLoaded();
 
-        // Открываем диалог добавления слова
+        // Open add-word dialog
         await wordsPage.clickAddWord();
 
         const addWordDialog = new AddWordDialogPage(page);
-        // Упрощенная проверка: просто проверяем, что диалог открылся
+        // Simplified check: dialog opened
         await addWordDialog.expectDialogOpen();
 
-        // Пробуем найти слово (но не проверяем результат строго)
+        // Try search (result not asserted strictly)
         try {
             await addWordDialog.searchWord('hello');
             await page.waitForTimeout(2000);
         } catch (error) {
-            // Игнорируем ошибки поиска - это нормально для упрощенного теста
+            // Search errors are acceptable in this simplified test
         }
     });
 
-    test('открытие диалога добавления слова', async ({ page }) => {
-        // Создаем пользователя и авторизуем его
+    test('opens add-word dialog', async ({ page }) => {
+        // Create and log in user
         await createAndLoginUser(page, {
             email: generateUniqueEmail(),
             password: 'password123',
@@ -57,11 +57,11 @@ test.describe('Управление словами - Добавление', () =
         await wordsPage.goto();
         await wordsPage.expectPageLoaded();
 
-        // Открываем диалог добавления слова
+        // Open add-word dialog
         await wordsPage.clickAddWord();
 
         const addWordDialog = new AddWordDialogPage(page);
-        // Упрощенная проверка: просто проверяем, что диалог открылся
+        // Simplified check: dialog opened
         await addWordDialog.expectDialogOpen();
     });
 });

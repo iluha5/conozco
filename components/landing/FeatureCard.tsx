@@ -33,12 +33,12 @@ const gradients = [
 ];
 
 const icons: LucideIcon[] = [
-    Target, // 6 интерактивных этапов тренировки
-    BookCheck, // Классические флеш-карточки
-    Layers, // Организация слов по тематическим группам
-    TrendingUp, // Сохранение прогресса обучения
-    Settings, // Полная свобода в управлении словами
-    Gift, // Весь функционал сервиса бесплатен
+    Target,
+    BookCheck,
+    Layers,
+    TrendingUp,
+    Settings,
+    Gift,
 ];
 
 export function FeatureCard({

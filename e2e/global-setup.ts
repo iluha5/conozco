@@ -1,8 +1,8 @@
 import { execSync } from 'child_process';
 
 /**
- * Global setup для E2E тестов
- * Запускает тестовую БД в Docker и выполняет миграции
+ * Global setup for E2E tests
+ * Starts the test DB in Docker and runs migrations
  */
 async function globalSetup() {
     console.log('🚀 Starting E2E test environment setup...');
@@ -11,7 +11,7 @@ async function globalSetup() {
     const containerName = 'flashcards-db-test';
 
     try {
-        // Проверяем, запущен ли уже контейнер
+        // Check if container is already running
         try {
             const status = execSync(
                 `docker ps -a --filter "name=${containerName}" --format "{{.Status}}"`,
@@ -32,14 +32,14 @@ async function globalSetup() {
                 });
             }
         } catch (error) {
-            // Контейнер не существует, создаем новый
+            // Container does not exist — create a new one
             console.log('📦 Creating new test database container...');
             execSync(`docker compose -f ${composeFile} up -d`, {
                 stdio: 'inherit',
             });
         }
 
-        // Ждем, пока БД станет доступной
+        // Wait until the database is ready
         console.log('⏳ Waiting for database to be ready...');
         const maxAttempts = 30;
         let attempts = 0;
@@ -61,7 +61,7 @@ async function globalSetup() {
             }
         }
 
-        // Выполняем миграции
+        // Run migrations
         console.log('🔄 Running database migrations...');
         const testDatabaseUrl =
             'postgresql://flashcards_test:flashcards_test_password@localhost:5434/flashcards_test';
@@ -79,7 +79,7 @@ async function globalSetup() {
 
         console.log('✅ Database migrations completed');
 
-        // Синхронизируем схему с БД (на случай если миграции не полностью применились)
+        // Sync schema with DB (in case migrations did not fully apply)
         console.log('🔄 Syncing database schema...');
         execSync(
             `DATABASE_URL="${testDatabaseUrl}" npx prisma db push --accept-data-loss --skip-generate`,
@@ -92,7 +92,7 @@ async function globalSetup() {
             },
         );
 
-        // Генерируем Prisma Client для тестовой БД
+        // Generate Prisma Client for the test database
         console.log('🔧 Generating Prisma Client...');
         execSync(`DATABASE_URL="${testDatabaseUrl}" npx prisma generate`, {
             stdio: 'inherit',
@@ -102,7 +102,7 @@ async function globalSetup() {
             },
         });
 
-        // Заполняем справочные данные (роли, статусы, языки)
+        // Seed reference data (roles, statuses, languages)
         console.log('🌱 Seeding reference data...');
         execSync(
             `DATABASE_URL="${testDatabaseUrl}" npx tsx e2e/seed-reference-data.ts`,

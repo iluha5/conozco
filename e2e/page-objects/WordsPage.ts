@@ -3,10 +3,10 @@ import { BasePage } from './BasePage';
 import { TIMEOUTS } from '../utils/constants';
 
 /**
- * Page Object для страницы управления словами
+ * Page Object for the words management page
  */
 export class WordsPage extends BasePage {
-    // Селекторы
+    // Selectors
     private readonly pageTitle = 'h1:has-text("My words")';
     private readonly addWordButton =
         'button:has-text("Add word"), button:has-text("Add")';
@@ -35,7 +35,7 @@ export class WordsPage extends BasePage {
     }
 
     /**
-     * Переход на страницу слов
+     * Navigate to the words page
      */
     async goto() {
         await super.goto('/words');
@@ -43,21 +43,21 @@ export class WordsPage extends BasePage {
     }
 
     /**
-     * Проверка, что страница загружена
+     * Assert the page is loaded
      */
     async expectPageLoaded() {
         await expect(this.page.locator(this.pageTitle)).toBeVisible();
     }
 
     /**
-     * Клик по кнопке "Добавить слово"
+     * Click the "Add word" button
      */
     async clickAddWord() {
         await this.click(this.addWordButton);
     }
 
     /**
-     * Клик по кнопке "Назад"
+     * Click the "Back" button
      */
     async clickBack() {
         await this.click(this.backButton);
@@ -65,7 +65,7 @@ export class WordsPage extends BasePage {
     }
 
     /**
-     * Выбор фильтра по статусу
+     * Select status filter
      */
     async selectStatusFilter(status: 'ALL' | 'NOT_LEARNED' | 'LEARNED') {
         switch (status) {
@@ -83,7 +83,7 @@ export class WordsPage extends BasePage {
     }
 
     /**
-     * Получение количества слов в списке
+     * Get word count in the list
      */
     async getWordsCount(): Promise<number> {
         const words = this.page.locator(this.wordItem);
@@ -91,7 +91,7 @@ export class WordsPage extends BasePage {
     }
 
     /**
-     * Проверка наличия слова в списке
+     * Assert a word is present in the list
      */
     async expectWordInList(wordText: string) {
         const wordElement = this.page.locator(
@@ -101,7 +101,7 @@ export class WordsPage extends BasePage {
     }
 
     /**
-     * Выбор слова по тексту
+     * Select a word by text
      */
     async selectWord(wordText: string) {
         const wordElement = this.page.locator(
@@ -111,7 +111,7 @@ export class WordsPage extends BasePage {
     }
 
     /**
-     * Проверка пустого состояния
+     * Assert empty state is shown
      */
     async expectEmptyState() {
         const emptyMessage = this.page.locator(
@@ -121,7 +121,7 @@ export class WordsPage extends BasePage {
     }
 
     /**
-     * Выбор слова по тексту (клик по карточке)
+     * Click a word card by text
      */
     async clickWord(wordText: string) {
         const wordElement = this.page.locator(
@@ -131,7 +131,7 @@ export class WordsPage extends BasePage {
     }
 
     /**
-     * Клик по переводу слова для редактирования
+     * Click a word translation to edit it
      */
     async clickWordTranslation(wordText: string) {
         const wordCard = this.page.locator(
@@ -143,7 +143,7 @@ export class WordsPage extends BasePage {
     }
 
     /**
-     * Выбор перевода из списка (по индексу)
+     * Select a translation from the list (by index)
      */
     async selectTranslation(index: number = 0) {
         const translationOptions = this.page.locator(
@@ -153,14 +153,14 @@ export class WordsPage extends BasePage {
     }
 
     /**
-     * Ввод кастомного перевода
+     * Enter a custom translation
      */
     async enterCustomTranslation(translation: string) {
         await this.fill(this.customTranslationInput, translation);
     }
 
     /**
-     * Сохранение перевода
+     * Save translation
      */
     async saveTranslation() {
         await this.click(this.saveTranslationButton);
@@ -168,7 +168,7 @@ export class WordsPage extends BasePage {
     }
 
     /**
-     * Удаление слова (клик по кнопке удаления в карточке)
+     * Delete a word (click delete button on the card)
      */
     async deleteWord(wordText: string) {
         const wordCard = this.page.locator(
@@ -182,7 +182,7 @@ export class WordsPage extends BasePage {
     }
 
     /**
-     * Изменение статуса слова (клик по иконке статуса)
+     * Toggle word status (click status icon on the card)
      */
     async toggleWordStatus(wordText: string) {
         const wordCard = this.page.locator(
@@ -196,7 +196,7 @@ export class WordsPage extends BasePage {
     }
 
     /**
-     * Выбор всех слов
+     * Select all words
      */
     async selectAllWords() {
         await this.click(this.selectAllButton);
@@ -204,7 +204,7 @@ export class WordsPage extends BasePage {
     }
 
     /**
-     * Массовое удаление выбранных слов
+     * Bulk delete selected words
      */
     async bulkDelete() {
         await this.click(this.deleteButton);
@@ -214,7 +214,7 @@ export class WordsPage extends BasePage {
     }
 
     /**
-     * Массовое изменение статуса на "Выучено"
+     * Bulk mark selected words as "Learned"
      */
     async bulkMarkAsLearned() {
         await this.click(this.markLearnedButton);
@@ -224,7 +224,7 @@ export class WordsPage extends BasePage {
     }
 
     /**
-     * Массовое изменение статуса на "Не выучено"
+     * Bulk mark selected words as "Not learned"
      */
     async bulkMarkAsNotLearned() {
         await this.click(this.markNotLearnedButton);
@@ -234,7 +234,7 @@ export class WordsPage extends BasePage {
     }
 
     /**
-     * Проверка статуса слова (выучено/не выучено)
+     * Assert word status (learned / not learned)
      */
     async expectWordStatus(
         wordText: string,
@@ -257,7 +257,7 @@ export class WordsPage extends BasePage {
     }
 
     /**
-     * Проверка отсутствия слова в списке
+     * Assert a word is not in the list
      */
     async expectWordNotInList(wordText: string) {
         const wordElement = this.page.locator(

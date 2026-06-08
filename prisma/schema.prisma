@@ -66,14 +66,14 @@ model Language {
 model User {
   id                  Int                  @id @default(autoincrement())
   email               String               @unique
-  password            String?              // nullable для OAuth пользователей
+  password            String?              // nullable for OAuth users
   name                String?
   image               String?              // Avatar URL from OAuth providers
   roleId              Int                  @default(1)
-  emailVerified       DateTime?            // null = не верифицирован
-  emailBounced        Boolean              @default(false) // true если email недоступен
+  emailVerified       DateTime?            // null = not verified
+  emailBounced        Boolean              @default(false) // true if email is unreachable
   registrationMethod  RegistrationMethod   @default(EMAIL_PASSWORD)
-  passwordChangedAt   DateTime?            // для инвалидации старых JWT токенов
+  passwordChangedAt   DateTime?            // used to invalidate old JWT tokens
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
   interfaceLanguageId Int?
@@ -464,9 +464,9 @@ enum WordGroupVisibility {
 }
 
 enum RegistrationMethod {
-  ADMIN_CREATED    // Создан администратором
-  EMAIL_PASSWORD   // Публичная регистрация через email
-  OAUTH_GOOGLE     // Регистрация через Google
+  ADMIN_CREATED    // Created by administrator
+  EMAIL_PASSWORD   // Public registration via email
+  OAUTH_GOOGLE     // Registration via Google
 }
 
 enum RateLimitAction {
@@ -529,7 +529,7 @@ model AuditLog {
   action    String   // 'PASSWORD_CHANGED', 'EMAIL_VERIFIED', 'LOGIN_FAILED', etc.
   ipAddress String?
   userAgent String?
-  metadata  Json?    // Дополнительная информация
+  metadata  Json?    // Additional metadata
   createdAt DateTime @default(now())
   user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
