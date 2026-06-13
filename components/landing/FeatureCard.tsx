@@ -15,6 +15,7 @@ import {
     getTextColorClass,
     getBackgroundColorClass,
 } from '@/components/training-list/helpers/gradient-utils';
+import { AutoScrollText } from '@/components/ui/auto-scroll-text';
 import { cn } from '@/lib/utils';
 
 interface FeatureCardProps {
@@ -69,7 +70,7 @@ export function FeatureCard({
                     'shadow-md hover:shadow-xl',
                     'hover:border-opacity-100',
                     'transition-all duration-300',
-                    'flex flex-col h-full min-h-[180px]',
+                    'flex flex-col h-full min-h-[180px] overflow-hidden',
                 )}
             >
                 <div className="relative z-10 flex items-start justify-between mb-3">
@@ -86,10 +87,14 @@ export function FeatureCard({
                     </div>
                 </div>
 
-                <div className="relative z-10 flex-1 flex flex-col justify-center">
-                    <h3 className="text-lg font-bold mb-1 text-gray-900">
+                <div className="relative z-10 flex-1 flex flex-col justify-center min-h-0 overflow-hidden">
+                    <AutoScrollText
+                        as="h3"
+                        className="text-lg font-bold mb-1 text-gray-900"
+                        maxLines={3}
+                    >
                         {title}
-                    </h3>
+                    </AutoScrollText>
                 </div>
             </div>
         </motion.div>

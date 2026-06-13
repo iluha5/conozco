@@ -82,6 +82,22 @@ const config = {
                     '0%, 100%': { transform: 'scale(1)' },
                     '50%': { transform: 'scale(1.1)' },
                 },
+                'auto-scroll-y': {
+                    '0%, 15%': { transform: 'translateY(0)' },
+                    '40%, 60%': {
+                        transform:
+                            'translateY(calc(-1 * var(--scroll-distance, 0px)))',
+                    },
+                    '85%, 100%': { transform: 'translateY(0)' },
+                },
+                'auto-scroll-x': {
+                    '0%, 15%': { transform: 'translateX(0)' },
+                    '40%, 60%': {
+                        transform:
+                            'translateX(calc(-1 * var(--scroll-distance, 0px)))',
+                    },
+                    '85%, 100%': { transform: 'translateX(0)' },
+                },
             },
             animation: {
                 'accordion-down': 'accordion-down 0.2s ease-out',
@@ -89,6 +105,10 @@ const config = {
                 'fade-in': 'fade-in 0.2s ease-out',
                 'slide-in': 'slide-in-from-right 0.2s ease-out',
                 'pulse-scale': 'pulse-scale 2s ease-in-out infinite',
+                'auto-scroll-y':
+                    'auto-scroll-y var(--scroll-duration, 4s) ease-in-out infinite',
+                'auto-scroll-x':
+                    'auto-scroll-x var(--scroll-duration, 4s) ease-in-out infinite',
             },
         },
     },
