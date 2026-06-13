@@ -4,7 +4,7 @@ import { SavedTrainingState } from '@/types/training.types';
 import { formatDate } from '@/components/training/common/helpers/formatDate';
 import { useTranslation, useI18n } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
-import { Ellipsis } from '@/components/ui/ellipsis';
+import { AutoScrollText } from '@/components/ui/auto-scroll-text';
 import { Trash2, PlayCircle } from 'lucide-react';
 
 interface ActiveTrainingCardProps {
@@ -85,7 +85,7 @@ export function ActiveTrainingCard({
             </div>
 
             <div className="relative z-10 flex-1 flex flex-col justify-center min-h-0">
-                <Ellipsis
+                <AutoScrollText
                     className={cn(
                         'text-lg sm:text-xl font-bold mb-1 sm:mb-2',
                         'text-gray-900 transition-all duration-300',
@@ -95,15 +95,15 @@ export function ActiveTrainingCard({
                     {t('{{count}} words', {
                         count: savedState.totalWords,
                     })}
-                </Ellipsis>
-                <Ellipsis
+                </AutoScrollText>
+                <AutoScrollText
                     className={cn(
                         'text-sm text-gray-600 transition-all duration-300',
                         'group-hover:scale-105 origin-center',
                     )}
                 >
                     {getContinueText()}
-                </Ellipsis>
+                </AutoScrollText>
             </div>
         </div>
     );

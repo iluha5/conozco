@@ -1,6 +1,6 @@
 import { TrainingModeConfig } from '../types/typing';
 import { TrainingModeTooltip } from './TrainingModeTooltip';
-import { Ellipsis } from '@/components/ui/ellipsis';
+import { AutoScrollText } from '@/components/ui/auto-scroll-text';
 import {
     getBorderColorClass,
     getTextColorClass,
@@ -71,7 +71,7 @@ export function TrainingModeCard({
                 </div>
 
                 <div className="relative z-10 flex-1 flex flex-col justify-center min-h-0">
-                    <Ellipsis
+                    <AutoScrollText
                         className={cn(
                             'text-lg sm:text-xl font-bold mb-1 sm:mb-2',
                             'text-gray-900 transition-all duration-300',
@@ -79,8 +79,8 @@ export function TrainingModeCard({
                         )}
                     >
                         {mode.title}
-                    </Ellipsis>
-                    <Ellipsis
+                    </AutoScrollText>
+                    <AutoScrollText
                         className={cn(
                             'text-sm text-gray-600 transition-all duration-300',
                             'group-hover:scale-105 origin-center',
@@ -89,7 +89,7 @@ export function TrainingModeCard({
                         maxLinesDesktop={2}
                     >
                         {mode.shortDescription}
-                    </Ellipsis>
+                    </AutoScrollText>
                 </div>
             </div>
         );
@@ -132,16 +132,16 @@ export function TrainingModeCard({
             </div>
 
             <div className="relative z-10 flex-1 flex flex-col justify-center min-h-0 text-white">
-                <Ellipsis className="text-lg sm:text-xl font-bold mb-1 sm:mb-2 transition-all duration-300 group-hover:scale-105 origin-center">
+                <AutoScrollText className="text-lg sm:text-xl font-bold mb-1 sm:mb-2 transition-all duration-300 group-hover:scale-105 origin-center">
                     {mode.title}
-                </Ellipsis>
-                <Ellipsis
+                </AutoScrollText>
+                <AutoScrollText
                     className="text-sm text-white/90 transition-all duration-300 group-hover:scale-105 origin-center"
                     maxLinesMobile={3}
                     maxLinesDesktop={2}
                 >
                     {mode.shortDescription}
-                </Ellipsis>
+                </AutoScrollText>
             </div>
         </div>
     );
