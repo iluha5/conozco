@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo } from 'react';
+import Link from 'next/link';
 import { useQueryClient } from '@tanstack/react-query';
 import { NoWordsDialog } from './components/NoWordsDialog';
 import { NewTrainingConfirmationDialog } from '@/components/training/common/NewTrainingConfirmationDialog';
@@ -18,7 +19,7 @@ import { TrainingModeGroupId } from './types/typing';
 import { useTranslation } from '@/lib/i18n';
 import { useTrainingStorage } from '@/hooks/training';
 import { useRouter } from 'next/navigation';
-import { useUserSettings } from '@/hooks/settings';
+import { useEffectiveSettings } from '@/hooks/settings';
 import { useTestModes } from './hooks/useTestModes';
 import { useHashDialog } from '@/hooks/shared';
 import { DeleteTrainingConfirmationDialog } from './components/DeleteTrainingConfirmationDialog';
@@ -27,22 +28,9 @@ export function TrainingList() {
     const { t } = useTranslation();
     const router = useRouter();
     const queryClient = useQueryClient();
-    const { settings: userSettings } = useUserSettings();
+    const { settings: userSettings } = useEffectiveSettings();
     const languageCode = userSettings?.learnLanguage?.code || null;
 
-    const { testModes, isLoading: isLoadingTests } = useTestModes(
-        languageCode,
-        t,
-    );
-
-    const trainingModeGroups = useMemo(
-        () => getTrainingModeGroups(t, testModes),
-        [t, testModes],
-    );
-    const { savedState, hasUnfinishedTraining, clearProgress } =
-        useTrainingStorage();
-    const { open: deleteDialogOpen, setOpen: setDeleteDialogOpen } =
-        useHashDialog('delete-training-confirmation');
     const {
         startMode,
         isLoading,
@@ -65,7 +53,23 @@ export function TrainingList() {
         handleFlashCardsOpen,
         handleFlashCardsClose,
         handleGroupSetupClose,
+        isGuest,
     } = useTrainingModes();
+
+    const { testModes, isLoading: isLoadingTests } = useTestModes(
+        languageCode,
+        t,
+        isGuest,
+    );
+
+    const trainingModeGroups = useMemo(
+        () => getTrainingModeGroups(t, testModes),
+        [t, testModes],
+    );
+    const { savedState, hasUnfinishedTraining, clearProgress } =
+        useTrainingStorage();
+    const { open: deleteDialogOpen, setOpen: setDeleteDialogOpen } =
+        useHashDialog('delete-training-confirmation');
 
     useEffect(() => {
         queryClient.invalidateQueries({
@@ -137,6 +141,17 @@ export function TrainingList() {
                 )}
             />
 
+            {isGuest && (
+                <div className="rounded-lg border border-purple-100 bg-purple-50 px-4 py-3 text-sm text-gray-700">
+                    <Link href="/auth/login" className="underline">
+                        {t('Log in')}
+                    </Link>
+                    {t(
+                        ' to unlock all training modes and save your progress. No paid features. No ads.',
+                    )}
+                </div>
+            )}
+
             <TrainingTabs
                 activeTab={activeTab}
                 onTabChange={handleTabChange}
@@ -149,8 +164,10 @@ export function TrainingList() {
                             modes={trainingModeGroups.new.modes}
                             onModeClick={handleModeClick}
                             disabled={isStarting}
+                            locked={isGuest}
+                            lockedDimmed={isGuest}
                             activeTraining={
-                                hasUnfinishedTraining && savedState
+                                !isGuest && hasUnfinishedTraining && savedState
                                     ? savedState
                                     : null
                             }
@@ -164,11 +181,14 @@ export function TrainingList() {
                                 modes={trainingModeGroups.learned.modes}
                                 onModeClick={handleModeClick}
                                 disabled={
-                                    isStarting || learnedWords.length === 0
+                                    !isGuest &&
+                                    (isStarting || learnedWords.length === 0)
                                 }
+                                locked={isGuest}
+                                lockedDimmed={false}
                                 variant="learned"
                             />
-                            {learnedWords.length === 0 && (
+                            {!isGuest && learnedWords.length === 0 && (
                                 <EmptyState
                                     message={t(
                                         'No learned words for reinforcement',
@@ -213,6 +233,8 @@ export function TrainingList() {
             <GroupReviewSetupDialog
                 open={showGroupReviewSetup}
                 onOpenChange={handleGroupSetupClose}
+                isGuest={isGuest}
+                learnLanguageCode={languageCode}
                 onStart={params => {
                     handleFlashCardsOpen(params);
                     handleGroupSetupClose(false);

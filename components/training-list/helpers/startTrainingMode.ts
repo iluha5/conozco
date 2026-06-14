@@ -26,8 +26,14 @@ export async function startTrainingMode(
     onFlashCardsOpen?: (_params: FlashCardsReviewParams) => void,
     onGroupSetupOpen?: () => void,
     lang: string = 'en',
+    options?: { isGuest?: boolean },
 ): Promise<{ success: boolean; noWords?: boolean }> {
+    const isGuest = options?.isGuest ?? false;
+
     if (modeId === 'custom') {
+        if (isGuest) {
+            return { success: false };
+        }
         router.push('/training/setup');
         return { success: true };
     }
@@ -39,36 +45,37 @@ export async function startTrainingMode(
         }
 
         if (config.groupId) {
-            const groupInfo = await checkGroupAvailability(config.groupId);
+            if (!isGuest) {
+                const groupInfo = await checkGroupAvailability(config.groupId);
 
-            if (!groupInfo.found || !groupInfo.isActive) {
-                // Try to auto-activate the group on the user's behalf
-                const activated = await activateGroup(config.groupId);
+                if (!groupInfo.found || !groupInfo.isActive) {
+                    const activated = await activateGroup(config.groupId);
 
-                if (!activated) {
-                    toast({
-                        title: tServerSync('Group unavailable', lang),
-                        description: tServerSync(
-                            'Group "{{name}}" is unavailable. Add it in "Word groups" section.',
-                            lang,
-                            { name: config.groupName || 'A1' },
-                        ),
-                        variant: 'destructive',
-                    });
-                    return { success: false };
-                }
+                    if (!activated) {
+                        toast({
+                            title: tServerSync('Group unavailable', lang),
+                            description: tServerSync(
+                                'Group "{{name}}" is unavailable. Add it in "Word groups" section.',
+                                lang,
+                                { name: config.groupName || 'A1' },
+                            ),
+                            variant: 'destructive',
+                        });
+                        return { success: false };
+                    }
 
-                if (!groupInfo.isActive) {
-                    toast({
-                        title: tServerSync(
-                            'Group "{{name}}" has been automatically added to your word groups',
-                            lang,
-                            { name: config.groupName || 'A1' },
-                        ),
-                        description: '',
-                        variant: 'default',
-                        duration: 3000,
-                    });
+                    if (!groupInfo.isActive) {
+                        toast({
+                            title: tServerSync(
+                                'Group "{{name}}" has been automatically added to your word groups',
+                                lang,
+                                { name: config.groupName || 'A1' },
+                            ),
+                            description: '',
+                            variant: 'default',
+                            duration: 3000,
+                        });
+                    }
                 }
             }
 
@@ -78,6 +85,7 @@ export async function startTrainingMode(
                 limit: config.wordCount,
                 random: true,
                 selectedGroupName: config.groupName,
+                readOnly: isGuest,
             };
 
             onFlashCardsOpen?.(params);
@@ -88,10 +96,15 @@ export async function startTrainingMode(
             status: 'LEARNED',
             limit: config.wordCount,
             random: true,
+            readOnly: isGuest,
         };
 
         onFlashCardsOpen?.(params);
         return { success: true };
+    }
+
+    if (isGuest) {
+        return { success: false };
     }
 
     const wordStatus =

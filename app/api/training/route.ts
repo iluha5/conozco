@@ -1,8 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
 export async function POST(request: NextRequest) {
     try {
+        const session = await getServerSession(authOptions);
+
+        if (!session?.user?.id) {
+            return NextResponse.json(
+                { error: 'Unauthorized' },
+                { status: 401 },
+            );
+        }
+
         const { wordId, stage, isCorrect } = await request.json();
 
         if (!wordId || stage === undefined || isCorrect === undefined) {
@@ -12,7 +23,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const session = await prisma.trainingSession.create({
+        const trainingSession = await prisma.trainingSession.create({
             data: {
                 wordId,
                 stage,
@@ -20,7 +31,7 @@ export async function POST(request: NextRequest) {
             },
         });
 
-        return NextResponse.json(session, { status: 201 });
+        return NextResponse.json(trainingSession, { status: 201 });
     } catch (error) {
         console.error('Error creating training session:', error);
         return NextResponse.json(
@@ -32,6 +43,15 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
     try {
+        const session = await getServerSession(authOptions);
+
+        if (!session?.user?.id) {
+            return NextResponse.json(
+                { error: 'Unauthorized' },
+                { status: 401 },
+            );
+        }
+
         const { searchParams } = new URL(request.url);
         const wordId = searchParams.get('wordId');
 

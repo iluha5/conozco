@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Check, Sparkles } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -20,10 +20,7 @@ export function RegistrationCallToAction({
     return (
         <Card className="bg-gradient-to-br from-purple-50 to-indigo-50 border-purple-200">
             <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-purple-600" />
-                    {content.title}
-                </CardTitle>
+                <CardTitle>{content.title}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
                 <ul className="space-y-2">

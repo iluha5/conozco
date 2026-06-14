@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSession } from 'next-auth/react';
 import { QUERY_STALE_TIME, QUERY_GC_TIME } from '@/config/react-query';
 
 export interface Language {
@@ -59,6 +60,8 @@ async function patchUserSettings(
 
 export function useUserSettings() {
     const queryClient = useQueryClient();
+    const { status } = useSession();
+    const isAuthenticated = status === 'authenticated';
 
     const {
         data: settings = null,
@@ -70,6 +73,7 @@ export function useUserSettings() {
         queryFn: fetchUserSettings,
         staleTime: QUERY_STALE_TIME,
         gcTime: QUERY_GC_TIME,
+        enabled: isAuthenticated,
     });
 
     const mutation = useMutation({

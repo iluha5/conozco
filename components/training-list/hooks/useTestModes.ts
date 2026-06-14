@@ -11,25 +11,29 @@ interface WordGroup {
     isActive: boolean;
 }
 
-// Builds test mode list filtered by the user's learn language, joining group
-// names from DB onto the static test configs.
 export function useTestModes(
     languageCode: string | null | undefined,
     t: I18n['t'],
+    isGuest: boolean = false,
 ): {
     testModes: TrainingModeConfig[];
     isLoading: boolean;
     error: Error | null;
 } {
+    const groupsEndpoint = isGuest
+        ? `/api/public/word-groups?languageCode=${languageCode || ''}`
+        : '/api/user/word-groups/all-accessible';
+
     const { data: groups = [], isLoading: groupsLoading } = useQuery<
         WordGroup[]
     >({
-        queryKey: ['allAccessibleWordGroups'],
+        queryKey: ['allAccessibleWordGroups', isGuest, languageCode],
         queryFn: async () => {
-            const res = await fetch('/api/user/word-groups/all-accessible');
+            const res = await fetch(groupsEndpoint);
             if (!res.ok) throw new Error('Failed to fetch groups');
             return res.json();
         },
+        enabled: !!languageCode,
     });
 
     const groupNameMap = useMemo(() => {
@@ -46,10 +50,11 @@ export function useTestModes(
     }, [languageCode]);
 
     const missingGroupIds = useMemo(() => {
+        if (isGuest) return [];
         return testConfigs
             .map(config => config.groupId)
             .filter(groupId => !groupNameMap.has(groupId));
-    }, [testConfigs, groupNameMap]);
+    }, [testConfigs, groupNameMap, isGuest]);
 
     const { data: missingGroups = [], isLoading: isLoadingMissingGroups } =
         useQuery<WordGroup[]>({
@@ -84,7 +89,6 @@ export function useTestModes(
 
         const configs = getTestConfigsForLanguage(languageCode);
         const modes: TrainingModeConfig[] = [
-            // Always include "Group check" first
             {
                 id: 'learned-group-check',
                 title: t('Group check'),

@@ -3,59 +3,49 @@ import { LoginPage } from '../../page-objects/LoginPage';
 import { cleanupTestDatabase } from '../../fixtures';
 
 /**
- * Route protection tests (redirect to login for unauthenticated users)
+ * Route access tests for guest and authenticated users
  */
-test.describe('Auth - Route protection', () => {
+test.describe('Auth - Route access', () => {
     test.beforeEach(async () => {
-        // Clean DB before each test for isolation
         await cleanupTestDatabase();
     });
 
-    test('redirects to login when accessing home page', async ({ page }) => {
-        // Try home page without authentication
+    test('allows home page without authentication', async ({ page }) => {
         await page.goto('/');
 
-        // Should redirect to login
-        await expect(page).toHaveURL(/\/auth\/login/);
-
-        // Login page should load
-        const loginPage = new LoginPage(page);
-        await loginPage.expectPageLoaded();
+        await expect(page).toHaveURL('/');
+        await expect(page.getByRole('link', { name: 'conozco' })).toBeVisible();
     });
 
-    test('redirects to login when accessing words page', async ({ page }) => {
-        // Try words page without authentication
+    test('allows words page without authentication', async ({ page }) => {
         await page.goto('/words');
 
-        // Should redirect to login
-        await expect(page).toHaveURL(/\/auth\/login/);
+        await expect(page).toHaveURL('/words');
     });
 
-    test('redirects to login when accessing training page', async ({
+    test('allows training list without authentication', async ({ page }) => {
+        await page.goto('/training/list');
+
+        await expect(page).toHaveURL('/training/list');
+    });
+
+    test('redirects guest from active training page to training list', async ({
         page,
     }) => {
-        // Try training page without authentication
         await page.goto('/training');
 
-        // Should redirect to login
-        await expect(page).toHaveURL(/\/auth\/login/);
+        await expect(page).toHaveURL(/\/training\/list/);
     });
 
-    test('redirects to login when accessing settings page', async ({
-        page,
-    }) => {
-        // Try settings page without authentication
+    test('allows settings page without authentication', async ({ page }) => {
         await page.goto('/settings');
 
-        // Should redirect to login
-        await expect(page).toHaveURL(/\/auth\/login/);
+        await expect(page).toHaveURL('/settings');
     });
 
     test('allows login page without authentication', async ({ page }) => {
-        // Login page should be public
         await page.goto('/auth/login');
 
-        // Should stay on login page
         await expect(page).toHaveURL(/\/auth\/login/);
 
         const loginPage = new LoginPage(page);
@@ -65,10 +55,8 @@ test.describe('Auth - Route protection', () => {
     test('allows registration page without authentication', async ({
         page,
     }) => {
-        // Registration page should be public
         await page.goto('/auth/register');
 
-        // Should stay on registration page
         await expect(page).toHaveURL(/\/auth\/register/);
     });
 });

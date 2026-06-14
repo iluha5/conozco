@@ -95,6 +95,8 @@ export function TrainingModeTooltip({
                         </button>
                     </TooltipTrigger>
                     <TooltipContent
+                        side="top"
+                        align="end"
                         className="max-w-xs whitespace-pre-line"
                         onClick={handleTooltipClick}
                     >

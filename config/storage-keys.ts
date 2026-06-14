@@ -3,6 +3,7 @@
  */
 export const STORAGE_KEYS = {
     // localStorage
+    GUEST_SETTINGS: 'guest_settings',
     TRAINING_PROGRESS: 'flashcards_training_progress',
     // sessionStorage
     TRAINING_FROM_SETUP: 'training_from_setup',

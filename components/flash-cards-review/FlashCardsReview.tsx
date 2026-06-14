@@ -3,6 +3,7 @@
 import { useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -11,7 +12,7 @@ import { FlashCard, FlashCardDeleteButton } from './components/FlashCard';
 import { FlashCardActions } from './components/FlashCardActions';
 import { useFlashCardsReview } from './hooks/useFlashCardsReview';
 import { FlashCardsReviewParams } from './typing';
-import { useUserSettings } from '@/hooks/settings/use-user-settings';
+import { useEffectiveSettings } from '@/hooks/settings/useEffectiveSettings';
 import { useTranslation } from '@/lib/i18n';
 
 interface FlashCardsReviewProps {
@@ -23,7 +24,7 @@ export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
     const router = useRouter();
     const { t } = useTranslation();
     const queryClient = useQueryClient();
-    const { settings: userSettings } = useUserSettings();
+    const { settings: userSettings } = useEffectiveSettings();
     const {
         currentWord,
         currentIndex,
@@ -34,6 +35,7 @@ export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
         stats,
         progress,
         handleAction,
+        readOnly,
     } = useFlashCardsReview(params, true);
 
     const learnLanguageCode = userSettings?.learnLanguage?.code || 'en';
@@ -157,6 +159,21 @@ export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
                                     </span>
                                 </div>
                             </div>
+                            {readOnly && (
+                                <div className="w-full rounded-lg bg-purple-50 border border-purple-100 p-4 text-center">
+                                    <p className="text-sm text-gray-700">
+                                        <Link
+                                            href="/auth/login"
+                                            className="underline"
+                                        >
+                                            {t('Log in')}
+                                        </Link>
+                                        {t(
+                                            ' to save your progress and add words to your dictionary. No paid features. No ads.',
+                                        )}
+                                    </p>
+                                </div>
+                            )}
                             <Button
                                 onClick={handleClose}
                                 size="lg"

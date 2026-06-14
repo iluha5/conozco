@@ -13,6 +13,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { Header } from '@/components/Header';
 import { useToast } from '@/hooks/shared';
 import { Loader2 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
@@ -82,92 +83,97 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
-            <Card className="w-full max-w-md">
-                <CardHeader className="space-y-1">
-                    <CardTitle className="text-2xl font-bold text-center">
-                        {t('Login')}
-                    </CardTitle>
-                    <CardDescription className="text-center">
-                        {t('Enter email and password to login')}
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">
-                                {t('Email')}
-                            </label>
-                            <Input
-                                type="email"
-                                placeholder={t('your@email.com')}
-                                value={email}
-                                onChange={e => setEmail(e.target.value)}
-                                disabled={loading}
-                            />
-                        </div>
-
-                        <div className="space-y-2">
-                            <div className="flex items-center justify-between">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+            <Header />
+            <div className="flex items-center justify-center px-4 py-8">
+                <Card className="w-full max-w-md">
+                    <CardHeader className="space-y-1">
+                        <CardTitle className="text-2xl font-bold text-center">
+                            {t('Login')}
+                        </CardTitle>
+                        <CardDescription className="text-center">
+                            {t('Enter email and password to login')}
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div className="space-y-2">
                                 <label className="text-sm font-medium">
-                                    {t('Password')}
+                                    {t('Email')}
                                 </label>
+                                <Input
+                                    type="email"
+                                    placeholder={t('your@email.com')}
+                                    value={email}
+                                    onChange={e => setEmail(e.target.value)}
+                                    disabled={loading}
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                    <label className="text-sm font-medium">
+                                        {t('Password')}
+                                    </label>
+                                    <Link
+                                        href="/auth/forgot-password"
+                                        className="text-sm text-blue-600 hover:underline"
+                                    >
+                                        {t('Forgot password?')}
+                                    </Link>
+                                </div>
+                                <Input
+                                    type="password"
+                                    placeholder="••••••••"
+                                    value={password}
+                                    onChange={e => setPassword(e.target.value)}
+                                    disabled={loading}
+                                />
+                            </div>
+
+                            <Button
+                                type="submit"
+                                className="w-full"
+                                disabled={loading}
+                            >
+                                {loading ? (
+                                    <>
+                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                        {t('Logging in...')}
+                                    </>
+                                ) : (
+                                    t('Sign in')
+                                )}
+                            </Button>
+
+                            <div className="relative">
+                                <div className="absolute inset-0 flex items-center">
+                                    <span className="w-full border-t" />
+                                </div>
+                                <div className="relative flex justify-center text-xs uppercase">
+                                    <span className="bg-white px-2 text-gray-500">
+                                        {t('Or')}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <GoogleSignInButton
+                                callbackUrl={POST_LOGIN_REDIRECT}
+                            />
+
+                            <div className="text-center text-sm text-gray-600">
+                                {t("Don't have an account?")}{' '}
                                 <Link
-                                    href="/auth/forgot-password"
-                                    className="text-sm text-blue-600 hover:underline"
+                                    href="/auth/register-public"
+                                    className="text-blue-600 hover:underline"
                                 >
-                                    {t('Forgot password?')}
+                                    {t('Sign up')}
                                 </Link>
                             </div>
-                            <Input
-                                type="password"
-                                placeholder="••••••••"
-                                value={password}
-                                onChange={e => setPassword(e.target.value)}
-                                disabled={loading}
-                            />
-                        </div>
-
-                        <Button
-                            type="submit"
-                            className="w-full"
-                            disabled={loading}
-                        >
-                            {loading ? (
-                                <>
-                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                    {t('Logging in...')}
-                                </>
-                            ) : (
-                                t('Sign in')
-                            )}
-                        </Button>
-
-                        <div className="relative">
-                            <div className="absolute inset-0 flex items-center">
-                                <span className="w-full border-t" />
-                            </div>
-                            <div className="relative flex justify-center text-xs uppercase">
-                                <span className="bg-white px-2 text-gray-500">
-                                    {t('Or')}
-                                </span>
-                            </div>
-                        </div>
-
-                        <GoogleSignInButton callbackUrl={POST_LOGIN_REDIRECT} />
-
-                        <div className="text-center text-sm text-gray-600">
-                            {t("Don't have an account?")}{' '}
-                            <Link
-                                href="/auth/register-public"
-                                className="text-blue-600 hover:underline"
-                            >
-                                {t('Sign up')}
-                            </Link>
-                        </div>
-                    </form>
-                </CardContent>
-            </Card>
+                        </form>
+                    </CardContent>
+                </Card>
+            </div>
         </div>
     );
 }

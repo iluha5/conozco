@@ -336,7 +336,7 @@
     "Failed to mark words as learned": "No se pudieron marcar las palabras como aprendidas",
     "Stage {{number}}": "Etapa {{number}}",
     "Learn words with Conozco": "Aprende palabras con Conozco",
-    "From the author:\n\nPlatform for learning foreign words through interactive training and flash cards. Expand your vocabulary and strengthen your language knowledge in practice.\n\nCurrently available: English and Spanish languages. The platform is completely free.": "Del autor:\n\nPlataforma para aprender palabras extranjeras a través de entrenamientos interactivos y tarjetas flash. Expande tu vocabulario y fortalece tus conocimientos del idioma en la práctica.\n\nActualmente disponibles: inglés y español. La plataforma es completamente gratuita.",
+    "Platform for learning foreign words through interactive training and flash cards. Expand your vocabulary and strengthen your language knowledge in practice.\n\nCurrently available: English and Spanish languages. The platform is completely free.": "Plataforma para aprender palabras extranjeras a través de entrenamientos interactivos y tarjetas flash. Expande tu vocabulario y fortalece tus conocimientos del idioma en la práctica.\n\nActualmente disponibles: inglés y español. La plataforma es completamente gratuita.",
     "Start Learning": "Comenzar a Aprender",
     "Learning Process": "Proceso de Aprendizaje",
     "Stage 1: Word Selection": "Etapa 1: Selección de Palabras",
@@ -368,5 +368,17 @@
     "Mixed types": "Tipos mixtos",
     "Only {{count}} words in the group. The available count will be used.": "Solo hay {{count}} palabras en el grupo. Se usará la cantidad disponible.",
     "Words in group:": "Palabras en el grupo:",
-    "No base words for training. Add words from the dictionary!": "No hay palabras base para entrenar. ¡Añade palabras del diccionario!"
+    "No base words for training. Add words from the dictionary!": "No hay palabras base para entrenar. ¡Añade palabras del diccionario!",
+    "Completely free and without ads": "Completamente gratis y sin anuncios",
+    "Log in": "Iniciar sesión",
+    "Create an account": "Crear una cuenta",
+    "Log in to use this training mode and save your progress. No paid features. No ads.": "Inicia sesión para usar este modo de entrenamiento y guardar tu progreso. Sin funciones de pago. Sin anuncios.",
+    " to save your progress and add words to your dictionary. No paid features. No ads.": " para guardar tu progreso y añadir palabras a tu diccionario. Sin funciones de pago. Sin anuncios.",
+    "Log in to manage your words, track progress, and build your personal dictionary. No paid features. No ads.": "Inicia sesión para gestionar tus palabras, seguir el progreso y crear tu diccionario personal. Sin funciones de pago. Sin anuncios.",
+    " to activate word groups and save your learning progress. No paid features. No ads.": " para activar grupos de palabras y guardar tu progreso de aprendizaje. Sin funciones de pago. Sin anuncios.",
+    " to save your profile and sync settings across devices.": " para guardar tu perfil y sincronizar la configuración entre dispositivos.",
+    " to unlock all training modes and save your progress. No paid features. No ads.": " para desbloquear todos los modos de entrenamiento y guardar tu progreso. Sin funciones de pago. Sin anuncios.",
+    "Your language preferences have been saved locally.": "Tus preferencias de idioma se han guardado localmente.",
+    "Manage your vocabulary": "Gestiona tu vocabulario",
+    "Create an account to save your progress and manage your vocabulary": "Crea una cuenta para guardar tu progreso y gestionar tu vocabulario"
 }

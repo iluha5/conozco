@@ -1,6 +1,9 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
+import Link from 'next/link';
+import { useSession } from 'next-auth/react';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -25,6 +28,7 @@ import { toast } from 'sonner';
 import { GroupWordsDialog } from '@/components/word-groups/GroupWordsDialog';
 import { useHashDialog } from '@/hooks/shared';
 import { useTranslation } from '@/lib/i18n';
+import { useEffectiveSettings } from '@/hooks/settings';
 
 // Combined group type for display
 type CombinedWordGroup = {
@@ -40,6 +44,10 @@ type CombinedWordGroup = {
 
 export default function WordGroupsManagementPage() {
     const { t } = useTranslation();
+    const { status } = useSession();
+    const isGuest = status === 'unauthenticated';
+    const { settings } = useEffectiveSettings();
+    const learnLanguageCode = settings?.learnLanguage?.code || null;
     const [searchQuery, setSearchQuery] = useState('');
     const [loadingGroups, setLoadingGroups] = useState<Set<number>>(new Set());
     const [optimisticActiveGroups, setOptimisticActiveGroups] = useState<
@@ -65,9 +73,25 @@ export default function WordGroupsManagementPage() {
     const [activityFilter, setActivityFilter] = useState<string>('ALL');
 
     const { data: activeGroups, isLoading: loadingActive } =
-        useActiveWordGroups();
+        useActiveWordGroups(!isGuest);
     const { data: availableGroups, isLoading: loadingAvailable } =
-        useAvailableWordGroups();
+        useAvailableWordGroups(!isGuest);
+
+    const { data: publicGroups = [], isLoading: loadingPublic } = useQuery<
+        CombinedWordGroup[]
+    >({
+        queryKey: ['publicWordGroups', learnLanguageCode],
+        queryFn: async () => {
+            const response = await fetch(
+                `/api/public/word-groups?languageCode=${learnLanguageCode || ''}`,
+            );
+            if (!response.ok) {
+                throw new Error('Failed to fetch public word groups');
+            }
+            return response.json();
+        },
+        enabled: isGuest && !!learnLanguageCode,
+    });
 
     const activateMutation = useActivateWordGroup();
     const deactivateMutation = useDeactivateWordGroup();
@@ -81,6 +105,21 @@ export default function WordGroupsManagementPage() {
 
     // Combine active and available groups into one list
     const combinedGroups = useMemo<CombinedWordGroup[]>(() => {
+        if (isGuest) {
+            return (publicGroups || [])
+                .map(group => ({
+                    id: group.id,
+                    name: group.name,
+                    wordsCount: group.wordsCount,
+                    visibility: group.visibility,
+                    createdBy: group.createdBy,
+                    isActive: false,
+                    isOwner: false,
+                    canRemove: false,
+                }))
+                .sort((first, second) => first.name.localeCompare(second.name));
+        }
+
         const groups: CombinedWordGroup[] = [];
 
         // Add active groups
@@ -119,13 +158,16 @@ export default function WordGroupsManagementPage() {
         }
 
         return groups.sort((a, b) => a.name.localeCompare(b.name));
-    }, [activeGroups, availableGroups, t]);
+    }, [activeGroups, availableGroups, publicGroups, isGuest, t]);
 
     const handleToggleGroup = async (
         groupId: number,
         groupName: string,
         currentlyActive: boolean,
     ) => {
+        if (isGuest) {
+            return;
+        }
         // Optimistic state update
         setOptimisticActiveGroups(prev => {
             const newSet = new Set(prev);
@@ -224,6 +266,20 @@ export default function WordGroupsManagementPage() {
                             </p>
                         </CardHeader>
                         <CardContent className="space-y-6">
+                            {isGuest && (
+                                <div className="rounded-lg border border-purple-100 bg-purple-50 px-4 py-3 text-sm text-gray-700">
+                                    <Link
+                                        href="/auth/login"
+                                        className="underline"
+                                    >
+                                        {t('Log in')}
+                                    </Link>
+                                    {t(
+                                        ' to activate word groups and save your learning progress. No paid features. No ads.',
+                                    )}
+                                </div>
+                            )}
+
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                 <Input
@@ -307,7 +363,9 @@ export default function WordGroupsManagementPage() {
                                 </div>
                             </div>
 
-                            {loadingActive || loadingAvailable ? (
+                            {loadingActive ||
+                            loadingAvailable ||
+                            (isGuest && loadingPublic) ? (
                                 <div className="flex items-center justify-center py-12">
                                     <Loader2 className="h-6 w-6 animate-spin" />
                                 </div>
@@ -338,15 +396,25 @@ export default function WordGroupsManagementPage() {
                                                 <CardContent className="p-4">
                                                     <div className="flex items-center justify-between gap-2">
                                                         <div
-                                                            className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer"
-                                                            onClick={() =>
-                                                                !isLoading &&
+                                                            className={`flex items-center gap-3 flex-1 min-w-0 ${
+                                                                isGuest
+                                                                    ? ''
+                                                                    : 'cursor-pointer'
+                                                            }`}
+                                                            onClick={() => {
+                                                                if (
+                                                                    isGuest ||
+                                                                    isLoading
+                                                                ) {
+                                                                    return;
+                                                                }
+
                                                                 handleToggleGroup(
                                                                     group.id,
                                                                     group.name,
                                                                     isCurrentlyActive,
-                                                                )
-                                                            }
+                                                                );
+                                                            }}
                                                         >
                                                             <div className="flex items-center gap-2">
                                                                 {isLoading ? (
@@ -355,6 +423,9 @@ export default function WordGroupsManagementPage() {
                                                                     <Checkbox
                                                                         checked={
                                                                             isCurrentlyActive
+                                                                        }
+                                                                        disabled={
+                                                                            isGuest
                                                                         }
                                                                         onChange={() => {}}
                                                                         className="shrink-0"
@@ -440,6 +511,7 @@ export default function WordGroupsManagementPage() {
                     groupId={selectedGroupForView.id}
                     groupName={selectedGroupForView.name}
                     wordsCount={selectedGroupForView.wordsCount}
+                    isGuest={isGuest}
                 />
             )}
         </div>

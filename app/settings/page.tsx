@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/select';
 import { Header } from '@/components/Header';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
-import { useUserSettings, useLanguages } from '@/hooks/settings';
+import { useEffectiveSettings, useLanguages } from '@/hooks/settings';
 import { useToast, useHashDialog } from '@/hooks/shared';
 import { useI18n, useTranslation } from '@/lib/i18n';
 import { isLearnLanguageAvailable } from '@/config/learn-languages';
@@ -31,7 +31,8 @@ export default function SettingsPage() {
         loading: settingsLoading,
         saving,
         updateSettings,
-    } = useUserSettings();
+        isGuest,
+    } = useEffectiveSettings();
     const { languages, loading: languagesLoading } = useLanguages();
     const { toast } = useToast();
     const i18n = useI18n();
@@ -69,19 +70,31 @@ export default function SettingsPage() {
 
     const performSave = async () => {
         try {
-            const updates = {
-                name: formData.name.trim() || null,
-                ownLanguageId: formData.ownLanguageId
-                    ? parseInt(formData.ownLanguageId)
-                    : null,
-                learnLanguageId: formData.learnLanguageId
-                    ? parseInt(formData.learnLanguageId)
-                    : null,
-                interfaceLanguageId: formData.interfaceLanguageId
-                    ? parseInt(formData.interfaceLanguageId)
-                    : null,
-                hasConfigured: true, // Mark that user completed setup
-            };
+            const updates = isGuest
+                ? {
+                      ownLanguageId: formData.ownLanguageId
+                          ? parseInt(formData.ownLanguageId)
+                          : null,
+                      learnLanguageId: formData.learnLanguageId
+                          ? parseInt(formData.learnLanguageId)
+                          : null,
+                      interfaceLanguageId: formData.interfaceLanguageId
+                          ? parseInt(formData.interfaceLanguageId)
+                          : null,
+                  }
+                : {
+                      name: formData.name.trim() || null,
+                      ownLanguageId: formData.ownLanguageId
+                          ? parseInt(formData.ownLanguageId)
+                          : null,
+                      learnLanguageId: formData.learnLanguageId
+                          ? parseInt(formData.learnLanguageId)
+                          : null,
+                      interfaceLanguageId: formData.interfaceLanguageId
+                          ? parseInt(formData.interfaceLanguageId)
+                          : null,
+                      hasConfigured: true,
+                  };
 
             const updatedSettings = await updateSettings(updates);
 
@@ -93,7 +106,6 @@ export default function SettingsPage() {
                 const newLanguageCode = updatedSettings.interfaceLanguage.code;
                 await i18n.changeLanguage(newLanguageCode);
 
-                // Update HTML lang attribute
                 if (typeof document !== 'undefined') {
                     document.documentElement.lang = newLanguageCode;
                 }
@@ -101,7 +113,9 @@ export default function SettingsPage() {
 
             toast({
                 title: t('Settings saved'),
-                description: t('Your settings have been successfully updated.'),
+                description: isGuest
+                    ? t('Your language preferences have been saved locally.')
+                    : t('Your settings have been successfully updated.'),
                 variant: 'success',
             });
         } catch (error) {
@@ -177,54 +191,83 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="max-w-2xl mx-auto space-y-6">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>{t('Personal information')}</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="email">{t('Email')}</Label>
-                                    <Input
-                                        id="email"
-                                        type="email"
-                                        value={
-                                            session?.user?.email ||
-                                            settings?.email ||
-                                            ''
-                                        }
-                                        disabled
-                                        className="bg-gray-50"
-                                    />
-                                    <p className="text-xs text-gray-500">
-                                        {t('Email cannot be changed')}
-                                    </p>
-                                </div>
+                    {isGuest ? (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>
+                                    {t('Personal information')}
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <p className="text-sm text-gray-600">
+                                    <Link
+                                        href="/auth/login"
+                                        className="underline"
+                                    >
+                                        {t('Log in')}
+                                    </Link>
+                                    {t(
+                                        ' to save your profile and sync settings across devices.',
+                                    )}
+                                </p>
+                            </CardContent>
+                        </Card>
+                    ) : (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>
+                                    {t('Personal information')}
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="email">
+                                            {t('Email')}
+                                        </Label>
+                                        <Input
+                                            id="email"
+                                            type="email"
+                                            value={
+                                                session?.user?.email ||
+                                                settings?.email ||
+                                                ''
+                                            }
+                                            disabled
+                                            className="bg-gray-50"
+                                        />
+                                        <p className="text-xs text-gray-500">
+                                            {t('Email cannot be changed')}
+                                        </p>
+                                    </div>
 
-                                <div className="space-y-2">
-                                    <Label htmlFor="name">{t('Name')}</Label>
-                                    <Input
-                                        id="name"
-                                        type="text"
-                                        value={formData.name}
-                                        onChange={e => {
-                                            setIsInitialized(true);
-                                            setFormData(prev => ({
-                                                ...prev,
-                                                name: e.target.value,
-                                            }));
-                                        }}
-                                        placeholder={
-                                            settingsLoading
-                                                ? t('Loading...')
-                                                : t('Enter your name')
-                                        }
-                                        disabled={settingsLoading}
-                                    />
+                                    <div className="space-y-2">
+                                        <Label htmlFor="name">
+                                            {t('Name')}
+                                        </Label>
+                                        <Input
+                                            id="name"
+                                            type="text"
+                                            value={formData.name}
+                                            onChange={e => {
+                                                setIsInitialized(true);
+                                                setFormData(prev => ({
+                                                    ...prev,
+                                                    name: e.target.value,
+                                                }));
+                                            }}
+                                            placeholder={
+                                                settingsLoading
+                                                    ? t('Loading...')
+                                                    : t('Enter your name')
+                                            }
+                                            disabled={settingsLoading}
+                                        />
+                                    </div>
                                 </div>
-                            </div>
-                        </CardContent>
-                    </Card>
+                            </CardContent>
+                        </Card>
+                    )}
 
                     <Card>
                         <CardHeader>

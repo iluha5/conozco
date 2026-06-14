@@ -10,6 +10,8 @@ interface TrainingModeCardsGridProps {
     modes: TrainingModeConfig[];
     onModeClick: (_modeId: string) => void;
     disabled?: boolean;
+    locked?: boolean;
+    lockedDimmed?: boolean;
     variant?: 'default' | 'learned';
     showEmptyState?: boolean;
     emptyStateMessage?: string;
@@ -22,6 +24,8 @@ export function TrainingModeCardsGrid({
     modes,
     onModeClick,
     disabled = false,
+    locked = false,
+    lockedDimmed = true,
     variant = 'default',
     showEmptyState = false,
     emptyStateMessage,
@@ -56,6 +60,8 @@ export function TrainingModeCardsGrid({
                         mode={mode}
                         onClick={() => onModeClick(mode.id)}
                         disabled={disabled}
+                        locked={locked}
+                        lockedDimmed={lockedDimmed}
                         variant={variant}
                     />
                 </div>

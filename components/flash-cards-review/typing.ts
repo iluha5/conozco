@@ -4,10 +4,12 @@ export interface FlashCardsReviewParams {
     random?: boolean;
     groupIds?: number[];
     languageCode?: string;
+    translationLanguageCode?: string;
     source?: 'user' | 'base'; // Word source: 'user' - from user vocabulary, 'base' - from BaseWord by groups
     includeAllGroups?: boolean; // Include all user available groups (works only with source='base')
     selectedGroupName?: string; // Selected group name for display
     returnUrl?: string; // URL to return after closing (pathname + search + hash)
+    readOnly?: boolean; // Guest mode: no DB writes
 }
 
 export type CardAction = 'know' | 'dont-know' | 'delete' | 'skip';

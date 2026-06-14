@@ -6,10 +6,11 @@ import {
     FlashCardWord,
 } from '../typing';
 import { useFlashCardsMutations } from './useFlashCardsMutations';
-import { useUserSettings } from '@/hooks/settings/use-user-settings';
+import { useEffectiveSettings } from '@/hooks/settings';
 
 async function fetchReviewWords(
     params: FlashCardsReviewParams,
+    reviewEndpoint: string,
 ): Promise<FlashCardWord[]> {
     const searchParams = new URLSearchParams();
 
@@ -28,6 +29,12 @@ async function fetchReviewWords(
     if (params.languageCode) {
         searchParams.append('languageCode', params.languageCode);
     }
+    if (params.translationLanguageCode) {
+        searchParams.append(
+            'translationLanguageCode',
+            params.translationLanguageCode,
+        );
+    }
     if (params.source) {
         searchParams.append('source', params.source);
     }
@@ -39,7 +46,7 @@ async function fetchReviewWords(
     }
 
     const response = await fetch(
-        `/api/words/review?${searchParams.toString()}`,
+        `${reviewEndpoint}?${searchParams.toString()}`,
     );
 
     if (!response.ok) {
@@ -53,7 +60,7 @@ export function useFlashCardsReview(
     params: FlashCardsReviewParams,
     enabled: boolean = true,
 ) {
-    const { settings: userSettings } = useUserSettings();
+    const { settings: userSettings } = useEffectiveSettings();
     const [currentIndex, setCurrentIndex] = useState(0);
     const [stats, setStats] = useState<FlashCardsReviewStats>({
         total: 0,
@@ -64,23 +71,31 @@ export function useFlashCardsReview(
     const [isCompleted, setIsCompleted] = useState(false);
     const [sessionId] = useState(() => Date.now().toString());
 
+    const readOnly = params.readOnly ?? false;
+    const reviewEndpoint = readOnly
+        ? '/api/public/words/review'
+        : '/api/words/review';
+
     const reviewParams: FlashCardsReviewParams = {
         ...params,
         languageCode:
             params.languageCode ||
             userSettings?.learnLanguage?.code ||
             undefined,
+        translationLanguageCode:
+            params.translationLanguageCode ||
+            userSettings?.ownLanguage?.code ||
+            undefined,
+        source: readOnly ? 'base' : params.source,
     };
 
-    // Use sessionId so each open re-shuffles the set
     const {
         data: words = [],
         isLoading,
         error,
-        refetch,
     } = useQuery({
-        queryKey: ['flash-cards-words', reviewParams, sessionId],
-        queryFn: () => fetchReviewWords(reviewParams),
+        queryKey: ['flash-cards-words', reviewParams, sessionId, readOnly],
+        queryFn: () => fetchReviewWords(reviewParams, reviewEndpoint),
         staleTime: 0,
         gcTime: 0,
         enabled: enabled && !!userSettings?.learnLanguage?.code,
@@ -110,8 +125,6 @@ export function useFlashCardsReview(
         if (currentIndex >= words.length && words.length > 0) {
             setIsCompleted(true);
         }
-        // Do not reset isCompleted back to false: prevents completion screen
-        // flickering on optimistic updates
     }, [currentIndex, words.length, stats.total]);
 
     const handleAction = useCallback(
@@ -142,6 +155,10 @@ export function useFlashCardsReview(
                 setIsCompleted(true);
             } else {
                 setCurrentIndex(currentIndex + 1);
+            }
+
+            if (readOnly) {
+                return;
             }
 
             try {
@@ -190,7 +207,14 @@ export function useFlashCardsReview(
                 }
             }
         },
-        [currentIndex, words, deleteWord, updateWordStatus, isCompleted],
+        [
+            currentIndex,
+            words,
+            deleteWord,
+            updateWordStatus,
+            isCompleted,
+            readOnly,
+        ],
     );
 
     const currentWord = useMemo(() => {
@@ -216,6 +240,6 @@ export function useFlashCardsReview(
         stats,
         progress,
         handleAction,
-        refetch,
+        readOnly,
     };
 }
