@@ -37,7 +37,7 @@ export function LandingContent() {
                         <div className="border-l-4 border-purple-500 pl-4 md:pl-6 bg-purple-50/50 rounded-r-lg py-4 md:py-5">
                             <div className="text-base md:text-lg text-gray-700 leading-relaxed whitespace-pre-line">
                                 {t(
-                                    'From the author:\n\nPlatform for learning foreign words through interactive training and flash cards. Expand your vocabulary and strengthen your language knowledge in practice.\n\nCurrently available: English and Spanish languages. The platform is completely free.',
+                                    'Platform for learning foreign words through interactive training and flash cards. Expand your vocabulary and strengthen your language knowledge in practice.\n\nCurrently available: English and Spanish languages. The platform is completely free.',
                                 )}
                             </div>
                         </div>
