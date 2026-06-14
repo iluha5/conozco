@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { useSession } from 'next-auth/react';
 import { useTrainingStorage } from './use-training-storage';
 import type { TrainingStage } from '@/types/training.types';
 
@@ -17,6 +18,8 @@ export interface UseRecordResultReturn {
 
 export function useRecordResult(): UseRecordResultReturn {
     const storage = useTrainingStorage();
+    const { status } = useSession();
+    const isGuest = status === 'unauthenticated';
 
     const recordApiResult = useCallback(
         async (
@@ -62,9 +65,14 @@ export function useRecordResult(): UseRecordResultReturn {
             isCorrect: boolean,
         ): Promise<boolean> => {
             recordLocalResult(stage, wordId, isCorrect);
+
+            if (isGuest) {
+                return true;
+            }
+
             return recordApiResult(stage, wordId, isCorrect);
         },
-        [recordApiResult, recordLocalResult],
+        [recordApiResult, recordLocalResult, isGuest],
     );
 
     return { recordResult, recordLocalResult };

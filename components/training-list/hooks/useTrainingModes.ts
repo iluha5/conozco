@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { useUserSettings } from '@/hooks/settings';
+import { useEffectiveSettings } from '@/hooks/settings';
 import { useTrainingWords } from '@/contexts/training-words-context';
 import { useToast, useHashDialog } from '@/hooks/shared';
 import { useTrainingStorage } from '@/hooks/training';
@@ -18,15 +18,15 @@ export function useTrainingModes() {
     const { t } = useTranslation();
     const i18n = useI18n();
     const router = useRouter();
-    const { data: session } = useSession();
-    const { settings: userSettings } = useUserSettings();
+    const { data: session, status } = useSession();
+    const isGuest = status === 'unauthenticated';
+    const { settings: userSettings } = useEffectiveSettings();
     const { setSelectedWords } = useTrainingWords();
     const { toast } = useToast();
     const { hasUnfinishedTraining, clearProgress } = useTrainingStorage();
     const { open: showConfirmDialog, setOpen: setShowConfirmDialog } =
         useHashDialog('new-training-confirm');
 
-    // Load words via React Query with language filtering
     const languageCode = userSettings?.learnLanguage?.code || null;
     const { words: allWords, isLoading } = useTrainingListWords(languageCode);
 
@@ -37,21 +37,18 @@ export function useTrainingModes() {
     );
     const [isContinueLoading, setIsContinueLoading] = useState(false);
 
-    // New state for tabs and FlashCards
     const [activeTab, setActiveTab] = useState<TrainingModeGroupId>('new');
     const [flashCardsParams, setFlashCardsParams] =
         useState<FlashCardsReviewParams | null>(null);
     const [showFlashCardsReview, setShowFlashCardsReview] = useState(false);
     const [showGroupReviewSetup, setShowGroupReviewSetup] = useState(false);
 
-    // Memoization of words by status
     const { learnedWords, notLearnedWords } = useMemo(() => {
-        const learned = allWords.filter(w => w.status === 'LEARNED');
-        const notLearned = allWords.filter(w => w.status !== 'LEARNED');
+        const learned = allWords.filter(word => word.status === 'LEARNED');
+        const notLearned = allWords.filter(word => word.status !== 'LEARNED');
         return { learnedWords: learned, notLearnedWords: notLearned };
     }, [allWords]);
 
-    // FlashCards open handler
     const handleFlashCardsOpen = (params: FlashCardsReviewParams) => {
         const returnUrl =
             window.location.pathname +
@@ -60,29 +57,22 @@ export function useTrainingModes() {
         setFlashCardsParams({
             ...params,
             returnUrl,
+            readOnly: params.readOnly ?? isGuest,
         });
         setShowFlashCardsReview(true);
     };
 
-    // Group selection dialog open handler
     const handleGroupSetupOpen = () => {
         setShowGroupReviewSetup(true);
     };
 
     const handleStartMode = async (modeId: TrainingModeId) => {
-        if (!session?.user?.id || !userSettings?.learnLanguage?.id) {
+        if (!userSettings?.learnLanguage?.id) {
             toast({
                 title: t('Error'),
                 description: t('Failed to get user settings'),
                 variant: 'destructive',
             });
-            return;
-        }
-
-        // Check for unfinished training
-        if (hasUnfinishedTraining) {
-            setPendingModeId(modeId);
-            setShowConfirmDialog(true);
             return;
         }
 
@@ -92,13 +82,32 @@ export function useTrainingModes() {
             return;
         }
 
+        if (isGuest && config.modeType !== 'flashCards') {
+            return;
+        }
+
+        if (!isGuest && !session?.user?.id) {
+            toast({
+                title: t('Error'),
+                description: t('Failed to get user settings'),
+                variant: 'destructive',
+            });
+            return;
+        }
+
+        if (!isGuest && hasUnfinishedTraining) {
+            setPendingModeId(modeId);
+            setShowConfirmDialog(true);
+            return;
+        }
+
         setIsStarting(true);
 
         try {
             const result = await startTrainingMode(
                 modeId,
                 config,
-                session.user.id,
+                session?.user?.id || 'guest',
                 userSettings.learnLanguage.id,
                 allWords,
                 router,
@@ -107,6 +116,7 @@ export function useTrainingModes() {
                 handleFlashCardsOpen,
                 handleGroupSetupOpen,
                 i18n.language || 'en',
+                { isGuest },
             );
 
             if (!result.success && result.noWords) {
@@ -130,7 +140,6 @@ export function useTrainingModes() {
         setShowConfirmDialog(false);
         setIsContinueLoading(true);
 
-        // Wait for dialog close animation and hash removal
         await new Promise(resolve => setTimeout(resolve, 100));
 
         router.push('/training');
@@ -150,7 +159,6 @@ export function useTrainingModes() {
         setPendingModeId(null);
         setShowConfirmDialog(false);
 
-        // Wait for dialog close animation and hash removal
         await new Promise(resolve => setTimeout(resolve, 100));
 
         const config = getTrainingModeConfig(modeIdToStart, t);
@@ -193,13 +201,11 @@ export function useTrainingModes() {
         }
     };
 
-    // FlashCards close handler
     const handleFlashCardsClose = () => {
         setShowFlashCardsReview(false);
         setIsStarting(false);
     };
 
-    // Group selection dialog close handler
     const handleGroupSetupClose = (open: boolean) => {
         setShowGroupReviewSetup(open);
         if (!open) {
@@ -223,7 +229,6 @@ export function useTrainingModes() {
         handleContinueExisting,
         handleStartNew,
         isContinueLoading,
-        // New return values
         activeTab,
         setActiveTab,
         learnedWords,
@@ -237,5 +242,6 @@ export function useTrainingModes() {
         handleFlashCardsClose,
         handleGroupSetupOpen,
         handleGroupSetupClose,
+        isGuest,
     };
 }

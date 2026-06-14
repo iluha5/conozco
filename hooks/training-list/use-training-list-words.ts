@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { useSession } from 'next-auth/react';
 import { Word } from '@/types/training.types';
 import { QUERY_STALE_TIME, QUERY_GC_TIME } from '@/config/react-query';
 import { trainingApi } from '@/lib/api/training.api';
@@ -6,13 +7,16 @@ import { trainingApi } from '@/lib/api/training.api';
 const EMPTY_WORDS: Word[] = [];
 
 export function useTrainingListWords(languageCode: string | null) {
+    const { status } = useSession();
+    const isAuthenticated = status === 'authenticated';
+
     const { data, isLoading, isFetching, error } = useQuery({
         queryKey: ['training-list-words', languageCode],
         queryFn: async () => {
             if (!languageCode) return EMPTY_WORDS;
             return trainingApi.fetchWords(undefined, languageCode);
         },
-        enabled: !!languageCode,
+        enabled: !!languageCode && isAuthenticated,
         staleTime: QUERY_STALE_TIME,
         gcTime: QUERY_GC_TIME,
         refetchOnMount: true,

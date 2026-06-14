@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
-import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,7 +14,7 @@ import {
     Activity,
     LogIn,
 } from 'lucide-react';
-import { MobileSidebar } from './MobileSidebar';
+import { AppSidebar } from './AppSidebar';
 import { NavigationLink } from './Header/components/NavigationLink';
 import { useTranslation } from '@/lib/i18n';
 import { useTrainingStorage } from '@/hooks/training';
@@ -24,10 +23,8 @@ function HeaderSkeleton() {
     return (
         <header className="border-b bg-white">
             <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-                {/* Logo skeleton */}
                 <div className="h-7 w-32 bg-gray-200 rounded animate-pulse" />
 
-                {/* Desktop version skeleton */}
                 <div className="hidden lg:flex items-center gap-4">
                     <div className="flex items-center gap-2">
                         <div className="w-4 h-4 bg-gray-200 rounded-full animate-pulse" />
@@ -36,7 +33,6 @@ function HeaderSkeleton() {
                     <div className="h-9 w-20 bg-gray-200 rounded animate-pulse" />
                 </div>
 
-                {/* Mobile hamburger skeleton */}
                 <div className="lg:hidden">
                     <div className="w-10 h-10 bg-gray-200 rounded animate-pulse" />
                 </div>
@@ -45,22 +41,28 @@ function HeaderSkeleton() {
     );
 }
 
+function handleCloseSidebar(setIsMobileSidebarOpen: (_open: boolean) => void) {
+    setIsMobileSidebarOpen(false);
+}
+
 export function Header() {
     const { data: session, status } = useSession();
-    const pathname = usePathname();
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-    const isHomePage = pathname === '/';
     const { t } = useTranslation();
     const { hasUnfinishedTraining } = useTrainingStorage();
+    const isAuthenticated = !!session;
 
     if (status === 'loading') {
         return <HeaderSkeleton />;
     }
 
-    // Show Header for unregistered users only on home page
-    if (!session && !isHomePage) {
-        return null;
-    }
+    const handleMobileMenuOpen = () => {
+        setIsMobileSidebarOpen(true);
+    };
+
+    const handleMobileMenuClose = () => {
+        handleCloseSidebar(setIsMobileSidebarOpen);
+    };
 
     return (
         <>
@@ -78,42 +80,39 @@ export function Header() {
 
                     {/* Desktop version */}
                     <nav className="hidden lg:flex items-center justify-between gap-4 w-full">
-                        {session ? (
-                            <>
-                                <div className="flex items-center gap-4">
-                                    <NavigationLink
-                                        href="/training/list"
-                                        icon={Activity}
-                                        className="mr-6"
-                                        showActiveIndicator={
-                                            hasUnfinishedTraining
-                                        }
-                                    >
-                                        {t('Training')}
-                                    </NavigationLink>
-                                    <NavigationLink
-                                        href="/words"
-                                        icon={BookOpen}
-                                        className="mr-6"
-                                    >
-                                        {t('Words')}
-                                    </NavigationLink>
-                                    <NavigationLink
-                                        href="/word-groups"
-                                        icon={Layers}
-                                        className="mr-6"
-                                    >
-                                        {t('Word groups')}
-                                    </NavigationLink>
-                                    <NavigationLink
-                                        href="/settings"
-                                        icon={Settings}
-                                    >
-                                        {t('Settings')}
-                                    </NavigationLink>
-                                </div>
+                        <div className="flex items-center gap-4">
+                            <NavigationLink
+                                href="/training/list"
+                                icon={Activity}
+                                className="mr-6"
+                                showActiveIndicator={
+                                    isAuthenticated && hasUnfinishedTraining
+                                }
+                            >
+                                {t('Training')}
+                            </NavigationLink>
+                            <NavigationLink
+                                href="/words"
+                                icon={BookOpen}
+                                className="mr-6"
+                            >
+                                {t('Words')}
+                            </NavigationLink>
+                            <NavigationLink
+                                href="/word-groups"
+                                icon={Layers}
+                                className="mr-6"
+                            >
+                                {t('Word groups')}
+                            </NavigationLink>
+                            <NavigationLink href="/settings" icon={Settings}>
+                                {t('Settings')}
+                            </NavigationLink>
+                        </div>
 
-                                <div className="hidden lg:flex items-center justify-end gap-6">
+                        <div className="hidden lg:flex items-center justify-end gap-6">
+                            {isAuthenticated ? (
+                                <>
                                     <div className="flex items-center gap-2 text-sm">
                                         <User className="w-4 h-4 text-gray-600" />
                                         <span className="text-gray-700">
@@ -138,57 +137,43 @@ export function Header() {
                                         <LogOut className="w-4 h-4 mr-2" />
                                         {t('Logout')}
                                     </Button>
-                                </div>
-                            </>
-                        ) : (
-                            <div className="flex items-center justify-end gap-4 w-full">
-                                <Link href="/auth/login">
-                                    <Button variant="ghost" size="sm">
-                                        <LogIn className="w-4 h-4 mr-2" />
-                                        {t('Login')}
-                                    </Button>
-                                </Link>
-                                <Link href="/auth/register">
-                                    <Button size="sm">{t('Register')}</Button>
-                                </Link>
-                            </div>
-                        )}
+                                </>
+                            ) : (
+                                <>
+                                    <Link href="/auth/login">
+                                        <Button variant="ghost" size="sm">
+                                            <LogIn className="w-4 h-4 mr-2" />
+                                            {t('Login')}
+                                        </Button>
+                                    </Link>
+                                    <Link href="/auth/register-public">
+                                        <Button size="sm">
+                                            {t('Register')}
+                                        </Button>
+                                    </Link>
+                                </>
+                            )}
+                        </div>
                     </nav>
 
-                    {/* Mobile hamburger menu */}
                     <div className="lg:hidden">
-                        {session ? (
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => setIsMobileSidebarOpen(true)}
-                            >
-                                <Menu className="w-6 h-6" />
-                            </Button>
-                        ) : (
-                            <div className="flex items-center gap-2">
-                                <Link href="/auth/login">
-                                    <Button variant="ghost" size="sm">
-                                        {t('Login')}
-                                    </Button>
-                                </Link>
-                                <Link href="/auth/register">
-                                    <Button size="sm">{t('Register')}</Button>
-                                </Link>
-                            </div>
-                        )}
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={handleMobileMenuOpen}
+                        >
+                            <Menu className="w-6 h-6" />
+                        </Button>
                     </div>
                 </div>
             </header>
 
-            {/* Mobile Sidebar */}
-            {session && (
-                <MobileSidebar
-                    isOpen={isMobileSidebarOpen}
-                    onClose={() => setIsMobileSidebarOpen(false)}
-                    session={session}
-                />
-            )}
+            <AppSidebar
+                isOpen={isMobileSidebarOpen}
+                onClose={handleMobileMenuClose}
+                mode={isAuthenticated ? 'authenticated' : 'guest'}
+                session={session ?? undefined}
+            />
         </>
     );
 }

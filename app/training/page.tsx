@@ -2,6 +2,7 @@
 
 import { useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { Header } from '@/components/Header';
 import { TrainingHeader } from '@/components/training/common/TrainingHeader';
 import { ExitConfirmationDialog } from '@/components/training/common/ExitConfirmationDialog';
@@ -36,6 +37,7 @@ const STORAGE_KEY = STORAGE_KEYS.TRAINING_PROGRESS;
 export default function TrainingPage() {
     const { t } = useTranslation();
     const router = useRouter();
+    const { status } = useSession();
     const { open: isExitDialogOpen, setOpen: setIsExitDialogOpen } =
         useHashDialog('exit-training-confirm');
 
@@ -48,6 +50,12 @@ export default function TrainingPage() {
     const state = useTrainingState();
     const { handleStageComplete } = useTrainingLogic();
     const storage = useTrainingStorage();
+
+    useEffect(() => {
+        if (status === 'unauthenticated') {
+            router.replace('/training/list');
+        }
+    }, [status, router]);
 
     // Check for unfinished training and redirect
     const { isStorageChecked, shouldRedirect } = useTrainingStorageCheck({
@@ -232,6 +240,11 @@ export default function TrainingPage() {
         if (stage === state.currentStage) return 'current';
         return 'pending';
     };
+
+    // Guest users are redirected to training list
+    if (status === 'unauthenticated' || status === 'loading') {
+        return null;
+    }
 
     // Show loader while localStorage is checked or redirect is performed
     if (!isStorageChecked || shouldRedirect) {

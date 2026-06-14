@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useSpeech } from '@/hooks/training';
 import { useTranslation } from '@/lib/i18n';
+import { useEffectiveSettings } from '@/hooks/settings';
 
 interface BaseWord {
     id: number;
@@ -45,6 +46,7 @@ interface GroupWordsDialogProps {
     groupId: number;
     groupName: string;
     wordsCount: number;
+    isGuest?: boolean;
 }
 
 const WORDS_PER_PAGE = 50;
@@ -130,8 +132,12 @@ export function GroupWordsDialog({
     groupId,
     groupName,
     wordsCount,
+    isGuest = false,
 }: GroupWordsDialogProps) {
     const { t } = useTranslation();
+    const { settings, loading: settingsLoading } = useEffectiveSettings();
+    const learnLanguageCode = settings?.learnLanguage?.code;
+    const translationLanguageCode = settings?.ownLanguage?.code || 'en';
     const [searchQuery, setSearchQuery] = useState('');
     const [displayedCount, setDisplayedCount] = useState(WORDS_PER_PAGE);
     const searchInputRef = useRef<HTMLInputElement>(null);
@@ -158,25 +164,39 @@ export function GroupWordsDialog({
         isLoading,
         isError,
     } = useQuery<BaseWord[]>({
-        queryKey: ['group-words', groupId, searchQuery],
+        queryKey: [
+            'group-words',
+            groupId,
+            searchQuery,
+            isGuest,
+            learnLanguageCode,
+            translationLanguageCode,
+        ],
         queryFn: async () => {
             const params = new URLSearchParams({
                 wordGroupIds: groupId.toString(),
-                limit: '1000', // larger page so client-side search has full set
+                limit: '1000',
                 offset: '0',
+                translationLanguageCode,
             });
+
+            if (learnLanguageCode) {
+                params.set('languageCode', learnLanguageCode);
+            }
 
             if (searchQuery) {
                 params.set('search', searchQuery);
             }
 
-            const response = await fetch(`/api/base-words?${params}`);
+            const response = await fetch(
+                `${isGuest ? '/api/public/base-words' : '/api/base-words'}?${params}`,
+            );
             if (!response.ok) {
                 throw new Error('Failed to fetch words');
             }
             return response.json();
         },
-        enabled: open,
+        enabled: open && !!learnLanguageCode && !settingsLoading,
     });
 
     // Client-side filter as a fallback when server search is not applied

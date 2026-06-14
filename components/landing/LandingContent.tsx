@@ -153,7 +153,7 @@ export function LandingContent() {
                                         t('Progress saving'),
                                         t('Access to advanced features'),
                                     ],
-                                    free: t('Free forever'),
+                                    free: t('Completely free and without ads'),
                                     cta: t('Create Account'),
                                 }}
                             />

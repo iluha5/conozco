@@ -32,6 +32,8 @@ interface GroupReviewSetupDialogProps {
     open: boolean;
     onOpenChange: (_open: boolean) => void;
     onStart: (_params: FlashCardsReviewParams) => void;
+    isGuest?: boolean;
+    learnLanguageCode?: string | null;
 }
 
 const STORAGE_KEY = 'group-review-settings';
@@ -40,16 +42,22 @@ export function GroupReviewSetupDialog({
     open,
     onOpenChange,
     onStart,
+    isGuest = false,
+    learnLanguageCode,
 }: GroupReviewSetupDialogProps) {
     const { t } = useTranslation();
     const [selectedGroupId, setSelectedGroupId] = useState<string>('all');
     const [wordCount, setWordCount] = useState(20);
     const [searchQuery, setSearchQuery] = useState('');
 
+    const groupsEndpoint = isGuest
+        ? `/api/public/word-groups?languageCode=${learnLanguageCode || ''}`
+        : '/api/user/word-groups/all-accessible';
+
     const { data: groups = [], isLoading } = useQuery<AccessibleWordGroup[]>({
-        queryKey: ['allAccessibleWordGroups'],
+        queryKey: ['allAccessibleWordGroups', isGuest, learnLanguageCode],
         queryFn: async () => {
-            const res = await fetch('/api/user/word-groups/all-accessible');
+            const res = await fetch(groupsEndpoint);
             if (!res.ok) throw new Error('Failed to fetch groups');
             return res.json();
         },
@@ -82,19 +90,24 @@ export function GroupReviewSetupDialog({
     }, [groups, searchQuery]);
 
     const handleStart = () => {
+        const selectedGroupIds =
+            selectedGroupId === 'all'
+                ? groups.map(group => group.id)
+                : [parseInt(selectedGroupId)];
+
         const params: FlashCardsReviewParams = {
             source: 'base',
             limit: wordCount,
             random: true,
-            includeAllGroups: selectedGroupId === 'all',
-            ...(selectedGroupId !== 'all' && {
-                groupIds: [parseInt(selectedGroupId)],
-            }),
+            groupIds: selectedGroupIds,
+            includeAllGroups: false,
+            readOnly: isGuest,
             selectedGroupName:
                 selectedGroupId === 'all'
                     ? t('All groups')
-                    : groups.find(g => g.id === parseInt(selectedGroupId))
-                          ?.name,
+                    : groups.find(
+                          group => group.id === parseInt(selectedGroupId),
+                      )?.name,
         };
 
         if (typeof window !== 'undefined') {

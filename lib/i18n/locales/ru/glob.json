@@ -377,5 +377,17 @@
     "Mixed types": "Разные типы",
     "Only {{count}} words in the group. The available count will be used.": "В группе только {{count}} слов. Будет использовано доступное количество.",
     "Words in group:": "Слов в группе:",
-    "No base words for training. Add words from the dictionary!": "Нет основных слов для тренировки. Добавьте слова из словаря!"
+    "No base words for training. Add words from the dictionary!": "Нет основных слов для тренировки. Добавьте слова из словаря!",
+    "Completely free and without ads": "Полностью бесплатно и без рекламы",
+    "Log in": "Войти",
+    "Create an account": "Создать аккаунт",
+    "Log in to use this training mode and save your progress. No paid features. No ads.": "Войдите, чтобы использовать этот режим тренировки и сохранять прогресс. Без платных функций. Без рекламы.",
+    " to save your progress and add words to your dictionary. No paid features. No ads.": ", чтобы сохранять прогресс и добавлять слова в свой словарь. Без платных функций. Без рекламы.",
+    "Log in to manage your words, track progress, and build your personal dictionary. No paid features. No ads.": "Войдите, чтобы управлять словами, отслеживать прогресс и вести личный словарь. Без платных функций. Без рекламы.",
+    " to activate word groups and save your learning progress. No paid features. No ads.": ", чтобы активировать группы слов и сохранять прогресс обучения. Без платных функций. Без рекламы.",
+    " to save your profile and sync settings across devices.": ", чтобы сохранить профиль и синхронизировать настройки между устройствами.",
+    " to unlock all training modes and save your progress. No paid features. No ads.": ", чтобы открыть все режимы тренировки и сохранять прогресс. Без платных функций. Без рекламы.",
+    "Your language preferences have been saved locally.": "Настройки языка сохранены локально.",
+    "Manage your vocabulary": "Управление словарём",
+    "Create an account to save your progress and manage your vocabulary": "Создайте аккаунт, чтобы сохранять прогресс и управлять словарём"
 }

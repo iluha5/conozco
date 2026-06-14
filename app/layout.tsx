@@ -11,6 +11,7 @@ import { getUserInterfaceLanguage } from '@/lib/i18n/utils/getUserInterfaceLangu
 import { tServerSync } from '@/lib/i18n';
 import { CookieConsent } from '@/components/cookie-consent/CookieConsent';
 import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics';
+import { GuestLanguageSync } from '@/components/GuestLanguageSync';
 
 const inter = Inter({ subsets: ['latin', 'cyrillic'] });
 const ubuntu = Ubuntu({
@@ -65,6 +66,7 @@ export default async function RootLayout({
                         <QueryProvider>
                             <TrainingWordsProvider>
                                 {children}
+                                <GuestLanguageSync />
                                 <Toaster />
                                 <CookieConsent />
                                 <GoogleAnalytics />
