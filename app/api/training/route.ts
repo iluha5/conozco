@@ -23,9 +23,31 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        const parsedWordId = parseInt(wordId);
+        if (isNaN(parsedWordId)) {
+            return NextResponse.json(
+                { error: 'Invalid word ID' },
+                { status: 400 },
+            );
+        }
+
+        const word = await prisma.word.findFirst({
+            where: {
+                id: parsedWordId,
+                userId: parseInt(session.user.id),
+            },
+        });
+
+        if (!word) {
+            return NextResponse.json(
+                { error: 'Word not found' },
+                { status: 404 },
+            );
+        }
+
         const trainingSession = await prisma.trainingSession.create({
             data: {
-                wordId,
+                wordId: parsedWordId,
                 stage,
                 isCorrect,
             },
@@ -62,8 +84,30 @@ export async function GET(request: NextRequest) {
             );
         }
 
+        const parsedWordId = parseInt(wordId);
+        if (isNaN(parsedWordId)) {
+            return NextResponse.json(
+                { error: 'Invalid word ID' },
+                { status: 400 },
+            );
+        }
+
+        const word = await prisma.word.findFirst({
+            where: {
+                id: parsedWordId,
+                userId: parseInt(session.user.id),
+            },
+        });
+
+        if (!word) {
+            return NextResponse.json(
+                { error: 'Word not found' },
+                { status: 404 },
+            );
+        }
+
         const sessions = await prisma.trainingSession.findMany({
-            where: { wordId: parseInt(wordId) },
+            where: { wordId: parsedWordId },
             orderBy: {
                 createdAt: 'desc',
             },

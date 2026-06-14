@@ -224,6 +224,23 @@ export async function PATCH(
 
         const body = await request.json();
 
+        const allowedFields = [
+            'status',
+            'languageCode',
+            'customTranslation',
+            'selectedTranslationId',
+        ] as const;
+        const unknownFields = Object.keys(body).filter(
+            key =>
+                !allowedFields.includes(key as (typeof allowedFields)[number]),
+        );
+        if (unknownFields.length > 0) {
+            return NextResponse.json(
+                { error: `Unknown fields: ${unknownFields.join(', ')}` },
+                { status: 400 },
+            );
+        }
+
         // Check that word belongs to user
         const existingWord = await prisma.word.findFirst({
             where: {
@@ -242,9 +259,13 @@ export async function PATCH(
             );
         }
 
-        // If languageCode is passed, get language ID
-        const data: any = { ...body };
-        if (body.languageCode) {
+        const data: {
+            languageId?: number;
+            statusId?: number;
+            selectedTranslationId?: number | null;
+        } = {};
+
+        if (body.languageCode !== undefined) {
             const language = await prisma.language.findUnique({
                 where: { code: body.languageCode },
             });
@@ -257,10 +278,9 @@ export async function PATCH(
             }
 
             data.languageId = language.id;
-            delete data.languageCode;
         }
 
-        if (body.status) {
+        if (body.status !== undefined) {
             const statusRecord = await prisma.wordStatus.findUnique({
                 where: { code: body.status },
             });
@@ -273,7 +293,20 @@ export async function PATCH(
             }
 
             data.statusId = statusRecord.id;
-            delete data.status;
+        }
+
+        if (body.selectedTranslationId !== undefined) {
+            if (
+                body.selectedTranslationId !== null &&
+                typeof body.selectedTranslationId !== 'number'
+            ) {
+                return NextResponse.json(
+                    { error: 'Invalid selectedTranslationId' },
+                    { status: 400 },
+                );
+            }
+
+            data.selectedTranslationId = body.selectedTranslationId;
         }
 
         // Custom translation processing
@@ -348,9 +381,6 @@ export async function PATCH(
                     },
                 });
             }
-
-            // Remove customTranslation from data to avoid trying to update Word
-            delete data.customTranslation;
         }
 
         const word = await prisma.word.update({
