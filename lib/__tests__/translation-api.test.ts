@@ -5,6 +5,9 @@ import {
     areSentencesDifferent,
     filterDuplicateExamples,
     isSingleWord,
+    countWords,
+    isSentenceWithinWordLimit,
+    TATOEBA_MAX_SENTENCE_WORDS,
 } from '../translation-api';
 
 describe('Translation API Utilities', () => {
@@ -121,6 +124,50 @@ describe('Translation API Utilities', () => {
 
         it('should handle empty string', () => {
             expect(isSingleWord('')).toBe(false);
+        });
+    });
+
+    describe('countWords', () => {
+        it('should count words ignoring punctuation', () => {
+            expect(countWords('Hola amigo')).toBe(2);
+            expect(countWords('¡Por favor, ayúdame!')).toBe(3);
+            expect(countWords('¿Cómo estás hoy?')).toBe(3);
+        });
+
+        it('should return 0 for empty string', () => {
+            expect(countWords('')).toBe(0);
+            expect(countWords('   ')).toBe(0);
+        });
+    });
+
+    describe('isSentenceWithinWordLimit', () => {
+        it('should accept short sentences', () => {
+            expect(isSentenceWithinWordLimit('Hola amigo')).toBe(true);
+            expect(isSentenceWithinWordLimit('¡Por favor, ayúdame!')).toBe(
+                true,
+            );
+        });
+
+        it('should accept sentences with exactly max words', () => {
+            const tenWords = 'one two three four five six seven eight nine ten';
+            expect(countWords(tenWords)).toBe(TATOEBA_MAX_SENTENCE_WORDS);
+            expect(isSentenceWithinWordLimit(tenWords)).toBe(true);
+        });
+
+        it('should reject sentences with more than max words', () => {
+            const elevenWords =
+                'one two three four five six seven eight nine ten eleven';
+            expect(countWords(elevenWords)).toBe(11);
+            expect(isSentenceWithinWordLimit(elevenWords)).toBe(false);
+        });
+
+        it('should accept empty string', () => {
+            expect(isSentenceWithinWordLimit('')).toBe(true);
+        });
+
+        it('should respect custom max words', () => {
+            expect(isSentenceWithinWordLimit('one two three', 2)).toBe(false);
+            expect(isSentenceWithinWordLimit('one two', 2)).toBe(true);
         });
     });
 
