@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { getWordText, getWordTranslation } from '../helpers/getWordTranslation';
 import { getWordExamples } from '../helpers/getWordExamples';
 import { useSwipeGesture } from '../hooks/useSwipeGesture';
@@ -8,10 +8,13 @@ import { SwipeDirection, FlashCardWord } from '../typing';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, SkipForward } from 'lucide-react';
+import { Trash2, SkipForward, Play, Pause } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { WatermarkCardSide } from './FlashCardBackgrounds';
 import { useTranslation, useI18n } from '@/lib/i18n';
+import { useSpeech } from '@/hooks/training';
+
+const AUTO_SPEAK_DELAY_MS = 150;
 
 interface FlashCardProps {
     word: FlashCardWord;
@@ -57,10 +60,55 @@ export function FlashCard({
     const wordText = getWordText(word);
     const translation = getWordTranslation(word, language || 'en');
 
+    const {
+        speak,
+        prime,
+        isPlaying,
+        isSupported: speechSupported,
+        isReady: speechReady,
+    } = useSpeech({
+        languageCode: learnLanguageCode,
+    });
+
     const examples = useMemo(
         () => getWordExamples(word, ownLanguageCode),
         [word, ownLanguageCode],
     );
+
+    const handleSpeakWord = useCallback(
+        (text: string) => {
+            prime();
+            speak(text, { showErrorToast: true });
+        },
+        [prime, speak],
+    );
+
+    const handleSpeakClick = useCallback(
+        (e: React.MouseEvent<HTMLButtonElement>) => {
+            e.stopPropagation();
+            handleSpeakWord(wordText);
+        },
+        [handleSpeakWord, wordText],
+    );
+
+    const handleSpeakTouchEnd = useCallback(
+        (e: React.TouchEvent<HTMLButtonElement>) => {
+            e.currentTarget.blur();
+        },
+        [],
+    );
+
+    useEffect(() => {
+        if (!wordText || !speechSupported || !speechReady) {
+            return;
+        }
+
+        const timer = setTimeout(() => {
+            speak(wordText);
+        }, AUTO_SPEAK_DELAY_MS);
+
+        return () => clearTimeout(timer);
+    }, [word.id, wordText, speak, speechSupported, speechReady]);
 
     // Flip back to front when the word changes
     useEffect(() => {
@@ -118,8 +166,30 @@ export function FlashCard({
                             <div className="text-sm text-gray-500 mb-2">
                                 {learnLanguageCode.toUpperCase()}
                             </div>
-                            <div className="text-4xl font-bold text-gray-900">
-                                {wordText}
+                            <div className="flex items-center justify-center flex-wrap gap-2">
+                                <div className="text-4xl font-bold text-gray-900 break-words">
+                                    {wordText}
+                                </div>
+                                {speechSupported && (
+                                    <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        onClick={handleSpeakClick}
+                                        onTouchEnd={handleSpeakTouchEnd}
+                                        className={cn(
+                                            'rounded-full w-10 h-10 bg-gray-800 hover:bg-gray-700 text-white border-0 shadow-md hover:shadow-lg transition-all duration-200 shrink-0 inline-flex active:scale-95',
+                                            isPlaying && 'opacity-90',
+                                        )}
+                                        title={t('Listen to word')}
+                                        data-testid="flashcard-play-button"
+                                    >
+                                        {isPlaying ? (
+                                            <Pause className="w-4 h-4" />
+                                        ) : (
+                                            <Play className="w-4 h-4" />
+                                        )}
+                                    </Button>
+                                )}
                             </div>
                             <div className="text-sm text-gray-400 mt-4">
                                 {t('Press to flip')}

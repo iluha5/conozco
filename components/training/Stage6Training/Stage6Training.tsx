@@ -14,6 +14,7 @@ import { StageHeader } from './components/StageHeader';
 import { PlayWordButton } from './components/PlayWordButton';
 import { WordBuilder } from './components/WordBuilder';
 import { LettersGrid } from './components/LettersGrid';
+import { TranslationDisplay } from './components/TranslationDisplay';
 import { LoadingOverlay } from '../common/LoadingOverlay';
 import { useStage6Letters } from './hooks/useStage6Letters';
 import { useStage6WordBuilding } from './hooks/useStage6WordBuilding';
@@ -268,12 +269,16 @@ export function Stage6Training({
                         isCorrect={isCorrect}
                         onRemoveLetter={handleRemoveFromWord}
                     />
-                    <LettersGrid
-                        letters={letters}
-                        flashingLetter={flashingLetter}
-                        isComplete={isComplete}
-                        onLetterClick={handleLetterClickWrapper}
-                    />
+                    {isComplete ? (
+                        <TranslationDisplay word={currentWord} />
+                    ) : (
+                        <LettersGrid
+                            letters={letters}
+                            flashingLetter={flashingLetter}
+                            isComplete={isComplete}
+                            onLetterClick={handleLetterClickWrapper}
+                        />
+                    )}
                 </CardContent>
             </Card>
         </div>

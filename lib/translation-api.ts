@@ -50,6 +50,7 @@ export interface TranslationResult {
 const TATOEBA_API_URL = 'https://tatoeba.org/en/api_v0';
 const TATOEBA_MAX_RETRIES = 3;
 const TATOEBA_RETRY_DELAY = 2000;
+export const TATOEBA_MAX_SENTENCE_WORDS = 10;
 
 const LANGUAGE_CODE_MAP: { [key: string]: string } = {
     en: 'eng',
@@ -200,6 +201,17 @@ export function areSentencesDifferent(
 export function isSingleWord(text: string): boolean {
     const normalized = removePunctuation(text);
     return !normalized.includes(' ') && normalized.length > 0;
+}
+
+export function countWords(text: string): number {
+    return removePunctuation(text).split(/\s+/).filter(Boolean).length;
+}
+
+export function isSentenceWithinWordLimit(
+    text: string,
+    maxWords: number = TATOEBA_MAX_SENTENCE_WORDS,
+): boolean {
+    return countWords(text) <= maxWords;
 }
 
 // Drops single-word "examples", any that just repeat the source word, and de-duplicates by sentence and translation.
@@ -366,7 +378,9 @@ export async function searchExamples(
                     const translation = result.translations[1][0];
                     if (
                         translation?.text &&
-                        areSentencesDifferent(result.text, translation.text)
+                        areSentencesDifferent(result.text, translation.text) &&
+                        isSentenceWithinWordLimit(result.text) &&
+                        isSentenceWithinWordLimit(translation.text)
                     ) {
                         examples.push({
                             sentence: result.text,
