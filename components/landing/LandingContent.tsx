@@ -11,6 +11,8 @@ import { FeatureCard } from './FeatureCard';
 import { RegistrationCallToAction } from './RegistrationCallToAction';
 import { useTranslation } from '@/lib/i18n/commonTranslation/hooks/useTranslation';
 
+const GITHUB_REPO_URL = 'https://github.com/iluha5/conozco';
+
 export function LandingContent() {
     const { data: session } = useSession();
     const { t } = useTranslation();
@@ -37,8 +39,17 @@ export function LandingContent() {
                         <div className="border-l-4 border-purple-500 pl-4 md:pl-6 bg-purple-50/50 rounded-r-lg py-4 md:py-5">
                             <div className="text-base md:text-lg text-gray-700 leading-relaxed whitespace-pre-line">
                                 {t(
-                                    'Platform for learning foreign words through interactive training and flash cards. Expand your vocabulary and strengthen your language knowledge in practice.\n\nCurrently available: English and Spanish languages. The platform is completely free.',
+                                    'Platform for learning foreign words through interactive training and flash cards. Expand your vocabulary and strengthen your language knowledge in practice.\n\nCurrently available: English and Spanish. No payments, no ads.',
                                 )}
+                                {'\n\n'}
+                                <a
+                                    href={GITHUB_REPO_URL}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-purple-600 hover:text-purple-800 hover:underline font-medium"
+                                >
+                                    {t('View on GitHub')}
+                                </a>
                             </div>
                         </div>
                     </motion.div>
