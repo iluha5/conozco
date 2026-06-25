@@ -1,5 +1,5 @@
 import { Word } from '@/types/training.types';
-import { tServerSync } from '@/lib/i18n';
+import { tServerSync } from '@/lib/i18n/utils/tServerSync';
 
 // Priority: customTranslations -> baseWord.translations
 export function getWordTranslation(word: Word, lang: string = 'en'): string {

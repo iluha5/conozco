@@ -8,7 +8,7 @@ import { TrainingWordsProvider } from '@/contexts/training-words-context';
 import { TranslationProvider } from '@/lib/i18n';
 import { getStaticResources } from '@/lib/i18n/utils/getStaticResources';
 import { getUserInterfaceLanguage } from '@/lib/i18n/utils/getUserInterfaceLanguage';
-import { tServerSync } from '@/lib/i18n';
+import { tServerSync } from '@/lib/i18n/utils/tServerSync';
 import { CookieConsent } from '@/components/cookie-consent/CookieConsent';
 import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics';
 import { GuestLanguageSync } from '@/components/GuestLanguageSync';

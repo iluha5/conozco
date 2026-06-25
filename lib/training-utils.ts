@@ -1,6 +1,6 @@
 import { Word } from '@/types/training.types';
 import { shuffle } from 'lodash-es';
-import { tServerSync } from '@/lib/i18n';
+import { tServerSync } from '@/lib/i18n/utils/tServerSync';
 
 // Returns the user's preferred translation: customTranslations[0] takes priority over baseWord.translations[0].
 export function getWordTranslation(word: Word, lang: string = 'en'): string {
