@@ -20,9 +20,12 @@ Without Docker:
 npm install
 docker compose up -d postgres
 cp .env.example .env.local        # then fill in values
+npm run prisma:generate
 npx prisma migrate dev
 npm run dev
 ```
+
+Run `npm run prisma:generate` after installing dependencies so `@prisma/client` is generated from the local Prisma schema before the app starts.
 
 ## Common scripts
 
