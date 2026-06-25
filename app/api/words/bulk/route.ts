@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { tServer } from '@/lib/i18n/utils/tServer';
+import { tServer } from '@/lib/i18n/server';
 
 /**
  * PATCH /api/words/bulk - Bulk update word status

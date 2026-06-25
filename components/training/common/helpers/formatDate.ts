@@ -1,4 +1,4 @@
-import { tServerSync } from '@/lib/i18n';
+import { tServerSync } from '@/lib/i18n/utils/tServerSync';
 
 export function formatDate(dateString: string, lang: string = 'en'): string {
     const date = new Date(dateString);

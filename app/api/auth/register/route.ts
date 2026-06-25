@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
-import { tServer } from '@/lib/i18n/utils/tServer';
+import { tServer } from '@/lib/i18n/server';
 
 // Admin password for registration - should be in env variable in production
 const ADMIN_REGISTRATION_PASSWORD =

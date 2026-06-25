@@ -7,4 +7,3 @@ export { useTranslation } from './commonTranslation/hooks/useTranslation';
 export { useI18n } from './commonTranslation/hooks/useI18n';
 export { default as i18n } from 'i18next';
 export { localTranslationsDict } from './constants/localTranslationsDict';
-export { tServer, tServerSync } from './utils/tServer';

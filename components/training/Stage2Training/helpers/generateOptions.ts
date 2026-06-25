@@ -1,5 +1,5 @@
 import { getWordTranslation } from '@/lib/training-utils';
-import { tServerSync } from '@/lib/i18n';
+import { tServerSync } from '@/lib/i18n/utils/tServerSync';
 import type { Word } from '@/types/training.types';
 
 /**

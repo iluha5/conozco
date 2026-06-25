@@ -8,7 +8,15 @@ const nextConfig = {
             bodySizeLimit: '2mb',
             allowedOrigins: ['conozco.net', 'www.conozco.net'],
         },
+        optimizePackageImports: ['lucide-react', 'lodash-es'],
     },
 };
 
-module.exports = nextConfig;
+module.exports =
+    process.env.ANALYZE === 'true'
+        ? require('@next/bundle-analyzer')({
+              enabled: true,
+              analyzerMode: 'static',
+              openAnalyzer: true,
+          })(nextConfig)
+        : nextConfig;

@@ -9,7 +9,7 @@ import {
 } from '@/lib/training-settings';
 import { STORAGE_KEYS } from '@/config/storage-keys';
 import { FlashCardsReviewParams } from '@/components/flash-cards-review/typing';
-import { tServerSync } from '@/lib/i18n';
+import { tServerSync } from '@/lib/i18n/utils/tServerSync';
 
 // IMPORTANT: this function is responsible for persisting training config to
 // localStorage. When a training is paused these settings are picked up by

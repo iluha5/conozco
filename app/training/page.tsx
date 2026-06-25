@@ -1,16 +1,36 @@
 'use client';
 
 import { useMemo, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Header } from '@/components/Header';
 import { TrainingHeader } from '@/components/training/common/TrainingHeader';
-import { ExitConfirmationDialog } from '@/components/training/common/ExitConfirmationDialog';
 import { StageSelector } from '@/components/training/common/StageSelector';
-import { StageRenderer } from '@/components/training/common/StageRenderer';
 import { TrainingEmptyState } from '@/components/training/common/TrainingEmptyState';
-import { TrainingResults } from '@/components/training/common/TrainingResults';
 import { TrainingLoading } from '@/components/training/common/TrainingLoading';
+
+const ExitConfirmationDialog = dynamic(() =>
+    import('@/components/training/common/ExitConfirmationDialog').then(
+        module => ({ default: module.ExitConfirmationDialog }),
+    ),
+);
+
+const StageRenderer = dynamic(
+    () =>
+        import('@/components/training/common/StageRenderer').then(module => ({
+            default: module.StageRenderer,
+        })),
+    { loading: () => <TrainingLoading /> },
+);
+
+const TrainingResults = dynamic(
+    () =>
+        import('@/components/training/common/TrainingResults').then(module => ({
+            default: module.TrainingResults,
+        })),
+    { loading: () => <TrainingLoading /> },
+);
 import {
     useTrainingState,
     useTrainingLogic,

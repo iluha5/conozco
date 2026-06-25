@@ -1,11 +1,27 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Header } from '@/components/Header';
-import { ArrowLeft } from 'lucide-react';
-import { TrainingList } from '@/components/training-list/TrainingList';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
+
+const TrainingList = dynamic(
+    () =>
+        import('@/components/training-list/TrainingList').then(module => ({
+            default: module.TrainingList,
+        })),
+    {
+        loading: function TrainingListLoading() {
+            return (
+                <div className="flex justify-center py-16">
+                    <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
+                </div>
+            );
+        },
+    },
+);
 
 export default function TrainingListPage() {
     const { t } = useTranslation();
