@@ -8,6 +8,7 @@ export const STORAGE_KEYS = {
     // sessionStorage
     TRAINING_FROM_SETUP: 'training_from_setup',
     TRAINING_WORD_SOURCE: 'training_word_source', // 'LEARNED' | 'NOT_LEARNED'
+    TRAINING_WORDS_CACHE: 'training_words_cache',
     // Events
     TRAINING_STORAGE_CHANGE_EVENT: 'training-storage-changed',
 } as const;

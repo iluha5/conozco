@@ -3,12 +3,12 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { WordGroupsFilter } from '@/components/word-groups/WordGroupsFilter';
 import { Square, CheckSquare, MinusSquare } from 'lucide-react';
-import { Word } from '@/types/words.types';
+import { SetupWord } from '@/types/words.types';
 import { SelectionState } from '@/hooks/training-setup/use-words-selection';
 import { useTranslation } from '@/lib/i18n';
 
 interface WordsSelectorProps {
-    filteredWords: Word[];
+    filteredWords: SetupWord[];
     selectedWords: Set<string>;
     isLoading: boolean;
     onToggleWord: (_wordId: number) => void;
@@ -19,7 +19,7 @@ interface WordsSelectorProps {
     onToggleAllGroups: (_groupIds: number[]) => void;
     selectionState: SelectionState;
     getBulkSelectText: () => string;
-    visibleWords: Word[];
+    visibleWords: SetupWord[];
     visibleWordsCount: number;
     loadMoreWords: () => void;
     hasMoreWords: boolean;
@@ -123,12 +123,17 @@ export const WordsSelector = ({
                                             →
                                         </span>
                                         <span className="text-sm text-purple-600 truncate">
-                                            {word.baseWord?.translations &&
-                                            word.baseWord.translations.length >
-                                                0
-                                                ? word.baseWord.translations[0]
+                                            {word.customTranslations &&
+                                            word.customTranslations.length > 0
+                                                ? word.customTranslations[0]
                                                       .translation
-                                                : t('No translation')}
+                                                : word.baseWord?.translations &&
+                                                    word.baseWord.translations
+                                                        .length > 0
+                                                  ? word.baseWord
+                                                        .translations[0]
+                                                        .translation
+                                                  : t('No translation')}
                                         </span>
                                     </div>
                                 </div>

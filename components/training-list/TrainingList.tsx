@@ -44,9 +44,8 @@ export function TrainingList() {
         isContinueLoading,
         activeTab,
         setActiveTab,
-        learnedWords,
-        notLearnedWords: _notLearnedWords,
-        allWords,
+        hasLearnedWords,
+        stats,
         flashCardsParams,
         showFlashCardsReview,
         showGroupReviewSetup,
@@ -73,7 +72,7 @@ export function TrainingList() {
 
     useEffect(() => {
         queryClient.invalidateQueries({
-            queryKey: ['training-list-words', languageCode],
+            queryKey: ['training-stats', languageCode],
         });
     }, [queryClient, languageCode]);
 
@@ -155,7 +154,7 @@ export function TrainingList() {
             <TrainingTabs
                 activeTab={activeTab}
                 onTabChange={handleTabChange}
-                words={allWords}
+                stats={stats}
                 isLoading={isLoading}
             >
                 {{
@@ -181,14 +180,13 @@ export function TrainingList() {
                                 modes={trainingModeGroups.learned.modes}
                                 onModeClick={handleModeClick}
                                 disabled={
-                                    !isGuest &&
-                                    (isStarting || learnedWords.length === 0)
+                                    !isGuest && (isStarting || !hasLearnedWords)
                                 }
                                 locked={isGuest}
                                 lockedDimmed={false}
                                 variant="learned"
                             />
-                            {!isGuest && learnedWords.length === 0 && (
+                            {!isGuest && !hasLearnedWords && (
                                 <EmptyState
                                     message={t(
                                         'No learned words for reinforcement',

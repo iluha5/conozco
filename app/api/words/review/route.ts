@@ -2,6 +2,20 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { getWordIncludeForTraining } from '@/lib/words/getWordIncludeForTraining';
+import { getBaseWordIncludeForReview } from '@/lib/words/getBaseWordIncludeForReview';
+import { selectWordIds } from '@/lib/words/selectWordIds';
+import { fetchWordsByIds } from '@/lib/words/fetchWordsByIds';
+import {
+    resolveBaseWordIdsFromGroups,
+    selectBaseWordIds,
+} from '@/lib/words/selectBaseWordIds';
+import { fetchBaseWordsByIds } from '@/lib/words/fetchBaseWordsByIds';
+import {
+    buildReviewWordsFromBase,
+    serializeReviewWord,
+    serializeUserReviewWord,
+} from '@/lib/words/reviewWordFormat';
 
 /**
  * GET /api/words/review - Universal endpoint for getting words by various criteria
@@ -10,10 +24,11 @@ import { prisma } from '@/lib/prisma';
  * - status: LEARNED | NOT_LEARNED (optional)
  * - limit: number of words (default 10, maximum 50)
  * - random: true | false (default true)
+ * - selection: latest | random (optional; latest = random=false + createdAt desc)
  * - groupIds: array of group IDs separated by comma (optional)
  * - languageCode: language code for filtering (optional, defaults to user's learnLanguage)
- * - source: user | base (default 'user') - word source: 'user' - from user's vocabulary, 'base' - from BaseWord by groups
- * - includeAllGroups: true | false (default false) - include all available groups (works only with source='base')
+ * - source: user | base (default 'user')
+ * - includeAllGroups: true | false (default false, source=base only)
  */
 export async function GET(request: NextRequest) {
     try {
@@ -47,24 +62,22 @@ export async function GET(request: NextRequest) {
         const statusParam = searchParams.get('status');
         const limitParam = searchParams.get('limit');
         const randomParam = searchParams.get('random');
+        const selectionParam = searchParams.get('selection');
         const groupIdsParam = searchParams.get('groupIds');
         const languageCodeParam = searchParams.get('languageCode');
         const sourceParam = searchParams.get('source') || 'user';
         const includeAllGroupsParam = searchParams.get('includeAllGroups');
 
-        // Determine language for filtering
         const languageCode =
             languageCodeParam || user.learnLanguage?.code || null;
-
-        // Determine translation language (user's ownLanguage)
         const translationLanguageCode = user.ownLanguage?.code || 'ru';
 
-        // Parse parameters
         const limit = Math.min(
             Math.max(parseInt(limitParam || '10') || 10, 1),
             50,
         );
-        const random = randomParam !== 'false';
+        const random =
+            selectionParam === 'latest' ? false : randomParam !== 'false';
         const source = sourceParam === 'base' ? 'base' : 'user';
         const includeAllGroups = includeAllGroupsParam === 'true';
         const groupIds = groupIdsParam
@@ -74,480 +87,27 @@ export async function GET(request: NextRequest) {
                   .filter(id => !isNaN(id))
             : null;
 
-        // Build WHERE condition
-        const where: any = {
-            userId,
-        };
-
-        // Filter by status
-        if (statusParam && ['LEARNED', 'NOT_LEARNED'].includes(statusParam)) {
-            const wordStatus = await prisma.wordStatus.findUnique({
-                where: { code: statusParam },
-            });
-            if (wordStatus) {
-                where.statusId = wordStatus.id;
-            }
-        }
-
-        // Filter by language
-        if (languageCode) {
-            const language = await prisma.language.findUnique({
-                where: { code: languageCode },
-            });
-            if (language) {
-                where.languageId = language.id;
-            }
-        }
-
-        // If source='base', get words from BaseWord by groups
         if (source === 'base') {
-            // Determine groups for query
-            let targetGroupIds: number[] = [];
-
-            if (includeAllGroups) {
-                // Get all user available groups
-                const availableGroups = await prisma.wordGroup.findMany({
-                    where: {
-                        OR: [
-                            { visibility: 'PUBLIC', isApproved: true },
-                            {
-                                visibility: 'SHARED',
-                                sharedWith: { some: { userId } },
-                            },
-                            { createdByUserId: userId },
-                        ],
-                        ...(languageCode
-                            ? {
-                                  language: { code: languageCode },
-                              }
-                            : {}),
-                    },
-                    select: { id: true },
-                });
-                targetGroupIds = availableGroups.map(g => g.id);
-            } else if (groupIds && groupIds.length > 0) {
-                // Check access to specified groups
-                const accessibleGroups = await prisma.wordGroup.findMany({
-                    where: {
-                        id: { in: groupIds },
-                        OR: [
-                            { visibility: 'PUBLIC', isApproved: true },
-                            {
-                                visibility: 'SHARED',
-                                sharedWith: { some: { userId } },
-                            },
-                            { createdByUserId: userId },
-                        ],
-                    },
-                    select: { id: true },
-                });
-                targetGroupIds = accessibleGroups.map(g => g.id);
-            }
-
-            if (targetGroupIds.length === 0) {
-                return NextResponse.json([]);
-            }
-
-            // Get BaseWord from selected groups
-            const baseWordsInGroups = await prisma.baseWordOnWordGroup.findMany(
-                {
-                    where: {
-                        wordGroupId: { in: targetGroupIds },
-                    },
-                    select: {
-                        baseWordId: true,
-                    },
-                },
-            );
-
-            const baseWordIds = Array.from(
-                new Set(baseWordsInGroups.map(bw => bw.baseWordId)),
-            );
-
-            if (baseWordIds.length === 0) {
-                return NextResponse.json([]);
-            }
-
-            // Get BaseWord with translations and examples
-            const baseWords = await prisma.baseWord.findMany({
-                where: {
-                    id: { in: baseWordIds },
-                    ...(languageCode
-                        ? {
-                              language: { code: languageCode },
-                          }
-                        : {}),
-                },
-                include: {
-                    language: true,
-                    translations: {
-                        where: {
-                            language: { code: translationLanguageCode },
-                        },
-                        orderBy: { priority: 'asc' },
-                        include: {
-                            partOfSpeech: true,
-                        },
-                    },
-                    examples: {
-                        where: {
-                            translationLanguage: {
-                                code: translationLanguageCode,
-                            },
-                        },
-                        include: {
-                            pronoun: true,
-                            sentenceType: true,
-                            translationLanguage: true,
-                        },
-                    },
-                    grammaticalExamples: {
-                        where: {
-                            translationLanguage: {
-                                code: translationLanguageCode,
-                            },
-                        },
-                        include: {
-                            pronoun: true,
-                            tense: true,
-                            sentenceType: true,
-                        },
-                    },
-                    wordGroups: {
-                        select: {
-                            wordGroupId: true,
-                        },
-                    },
-                    userWords: {
-                        where: { userId },
-                        select: {
-                            id: true,
-                            statusId: true,
-                            selectedTranslationId: true,
-                        },
-                        take: 1,
-                    },
-                },
+            return handleBaseSourceReview({
+                userId,
+                languageCode,
+                translationLanguageCode,
+                limit,
+                random,
+                groupIds,
+                includeAllGroups,
             });
-
-            // Get existing user words for belongsToUser check
-            const userWordsMap = new Map(
-                (
-                    await prisma.word.findMany({
-                        where: {
-                            userId,
-                            baseWordId: { in: baseWordIds },
-                        },
-                        select: {
-                            id: true,
-                            baseWordId: true,
-                            statusId: true,
-                            selectedTranslationId: true,
-                        },
-                    })
-                ).map(w => [w.baseWordId, w]),
-            );
-
-            // Transform BaseWord to Word format for compatibility
-            const wordStatusNotLearned = await prisma.wordStatus.findFirst({
-                where: { code: 'NOT_LEARNED' },
-            });
-            const wordStatusLearned = await prisma.wordStatus.findUnique({
-                where: { code: 'LEARNED' },
-            });
-
-            let words = baseWords.map(baseWord => {
-                const userWord = userWordsMap.get(baseWord.id);
-                const belongsToUser = !!userWord;
-
-                return {
-                    id: userWord?.id?.toString() || `base-${baseWord.id}`,
-                    userId: userId.toString(),
-                    baseWordId: baseWord.id.toString(),
-                    customWord: null,
-                    languageId: baseWord.languageId.toString(),
-                    language: {
-                        id: baseWord.language.id.toString(),
-                        code: baseWord.language.code,
-                        name: baseWord.language.name,
-                    },
-                    status: userWord
-                        ? userWord.statusId === wordStatusLearned?.id
-                            ? 'LEARNED'
-                            : 'NOT_LEARNED'
-                        : 'NOT_LEARNED',
-                    statusId:
-                        userWord?.statusId || wordStatusNotLearned?.id || 1,
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString(),
-                    belongsToUser,
-                    baseWord: {
-                        ...baseWord,
-                        id: baseWord.id.toString(),
-                        languageId: baseWord.languageId.toString(),
-                        examples: baseWord.examples.map((example: any) => ({
-                            ...example,
-                            sentenceType: example.sentenceType,
-                            translationLanguage: example.translationLanguage
-                                ? {
-                                      id: example.translationLanguage.id,
-                                      code: example.translationLanguage.code,
-                                      name: example.translationLanguage.name,
-                                  }
-                                : null,
-                        })),
-                        grammaticalExamples: baseWord.grammaticalExamples.map(
-                            (example: any) => ({
-                                ...example,
-                                sentenceType: example.sentenceType,
-                            }),
-                        ),
-                    },
-                    customTranslations: [],
-                    trainingSessions: [],
-                };
-            });
-
-            // Apply random order if needed
-            if (random && words.length > 0) {
-                // Fisher-Yates shuffle
-                for (let index = words.length - 1; index > 0; index--) {
-                    const randomIndex = Math.floor(Math.random() * (index + 1));
-                    [words[index], words[randomIndex]] = [
-                        words[randomIndex],
-                        words[index],
-                    ];
-                }
-            }
-
-            // Limit quantity
-            words = words.slice(0, limit);
-
-            // Serialize words
-            const serializedWords = words.map((word: any) => {
-                const {
-                    status,
-                    baseWord,
-                    customTranslations: _customTranslations,
-                    ...restWord
-                } = word;
-
-                return {
-                    ...restWord,
-                    status: typeof status === 'string' ? status : status.code,
-                    baseWord: baseWord
-                        ? {
-                              ...baseWord,
-                              examples: baseWord.examples.map(
-                                  (example: any) => ({
-                                      ...example,
-                                      sentenceType: example.sentenceType,
-                                      translationLanguage:
-                                          example.translationLanguage
-                                              ? {
-                                                    id: example
-                                                        .translationLanguage.id,
-                                                    code: example
-                                                        .translationLanguage
-                                                        .code,
-                                                    name: example
-                                                        .translationLanguage
-                                                        .name,
-                                                }
-                                              : null,
-                                  }),
-                              ),
-                              grammaticalExamples:
-                                  baseWord.grammaticalExamples.map(
-                                      (example: any) => ({
-                                          ...example,
-                                          sentenceType: example.sentenceType,
-                                      }),
-                                  ),
-                          }
-                        : undefined,
-                    customTranslations: [],
-                };
-            });
-
-            return NextResponse.json(serializedWords);
         }
 
-        // Original logic for source='user'
-        // Filter by word groups
-        if (groupIds && groupIds.length > 0) {
-            // Get baseWordId from groups
-            const baseWordsInGroups = await prisma.baseWordOnWordGroup.findMany(
-                {
-                    where: {
-                        wordGroupId: { in: groupIds },
-                    },
-                    select: {
-                        baseWordId: true,
-                    },
-                },
-            );
-
-            const baseWordIds = baseWordsInGroups.map(bw => bw.baseWordId);
-
-            if (baseWordIds.length > 0) {
-                where.baseWordId = { in: baseWordIds };
-            } else {
-                // If no words in groups, return empty array
-                return NextResponse.json([]);
-            }
-        }
-
-        // Get words
-        let words = await prisma.word.findMany({
-            where,
-            include: {
-                status: true,
-                language: true,
-                baseWord: {
-                    include: {
-                        translations: {
-                            where: {
-                                language: { code: translationLanguageCode },
-                            },
-                            orderBy: { priority: 'asc' },
-                            include: {
-                                partOfSpeech: true,
-                            },
-                        },
-                        examples: {
-                            where: {
-                                translationLanguage: {
-                                    code: translationLanguageCode,
-                                },
-                            },
-                            include: {
-                                pronoun: true,
-                                sentenceType: true,
-                                translationLanguage: true,
-                            },
-                        },
-                        grammaticalExamples: {
-                            where: {
-                                translationLanguage: {
-                                    code: translationLanguageCode,
-                                },
-                            },
-                            include: {
-                                pronoun: true,
-                                tense: true,
-                                sentenceType: true,
-                            },
-                        },
-                        wordGroups: {
-                            select: {
-                                wordGroupId: true,
-                            },
-                        },
-                    },
-                },
-                customTranslations: {
-                    where: {
-                        userId,
-                        translationLanguage: {
-                            code: translationLanguageCode,
-                        },
-                    },
-                    include: {
-                        partOfSpeech: true,
-                        originalLanguage: true,
-                        translationLanguage: true,
-                    },
-                    take: 1,
-                },
-                trainingSessions: {
-                    orderBy: {
-                        createdAt: 'desc',
-                    },
-                    take: 5,
-                },
-            },
+        return handleUserSourceReview({
+            userId,
+            languageCode,
+            translationLanguageCode,
+            statusParam,
+            limit,
+            random,
+            groupIds,
         });
-
-        // Apply random order if needed
-        if (random && words.length > 0) {
-            // Fisher-Yates shuffle
-            for (let index = words.length - 1; index > 0; index--) {
-                const randomIndex = Math.floor(Math.random() * (index + 1));
-                [words[index], words[randomIndex]] = [
-                    words[randomIndex],
-                    words[index],
-                ];
-            }
-        }
-
-        // Limit quantity
-        words = words.slice(0, limit);
-
-        // Serialize words
-        const serializedWords = words.map((word: any) => {
-            const { status, baseWord, customTranslations, ...restWord } = word;
-
-            // Determine if word belongs to user (calculate before starting exercise)
-            const belongsToUser = word.userId === userId;
-
-            return {
-                ...restWord,
-                status: status.code,
-                belongsToUser,
-                baseWord: baseWord
-                    ? {
-                          ...baseWord,
-                          examples: baseWord.examples.map((example: any) => ({
-                              ...example,
-                              sentenceType: example.sentenceType,
-                              translationLanguage: example.translationLanguage
-                                  ? {
-                                        id: example.translationLanguage.id,
-                                        code: example.translationLanguage.code,
-                                        name: example.translationLanguage.name,
-                                    }
-                                  : null,
-                          })),
-                          grammaticalExamples: baseWord.grammaticalExamples.map(
-                              (example: any) => ({
-                                  ...example,
-                                  sentenceType: example.sentenceType,
-                              }),
-                          ),
-                      }
-                    : undefined,
-                customTranslations: Array.isArray(customTranslations)
-                    ? customTranslations.map((ct: any) => ({
-                          id: ct.id,
-                          translation: ct.translation,
-                          partOfSpeechId: ct.partOfSpeechId,
-                          partOfSpeech: ct.partOfSpeech
-                              ? {
-                                    id: ct.partOfSpeech.id,
-                                    name: ct.partOfSpeech.name,
-                                }
-                              : null,
-                          originalLanguage: ct.originalLanguage
-                              ? {
-                                    id: ct.originalLanguage.id,
-                                    code: ct.originalLanguage.code,
-                                    name: ct.originalLanguage.name,
-                                }
-                              : null,
-                          translationLanguage: ct.translationLanguage
-                              ? {
-                                    id: ct.translationLanguage.id,
-                                    code: ct.translationLanguage.code,
-                                    name: ct.translationLanguage.name,
-                                }
-                              : null,
-                      }))
-                    : [],
-            };
-        });
-
-        return NextResponse.json(serializedWords);
     } catch (error: any) {
         console.error('Error fetching review words:', error);
         console.error('Error details:', {
@@ -566,4 +126,190 @@ export async function GET(request: NextRequest) {
             { status: 500 },
         );
     }
+}
+
+async function handleBaseSourceReview({
+    userId,
+    languageCode,
+    translationLanguageCode,
+    limit,
+    random,
+    groupIds,
+    includeAllGroups,
+}: {
+    userId: number;
+    languageCode: string | null;
+    translationLanguageCode: string;
+    limit: number;
+    random: boolean;
+    groupIds: number[] | null;
+    includeAllGroups: boolean;
+}) {
+    let targetGroupIds: number[] = [];
+
+    if (includeAllGroups) {
+        const availableGroups = await prisma.wordGroup.findMany({
+            where: {
+                OR: [
+                    { visibility: 'PUBLIC', isApproved: true },
+                    {
+                        visibility: 'SHARED',
+                        sharedWith: { some: { userId } },
+                    },
+                    { createdByUserId: userId },
+                ],
+                ...(languageCode
+                    ? {
+                          language: { code: languageCode },
+                      }
+                    : {}),
+            },
+            select: { id: true },
+        });
+        targetGroupIds = availableGroups.map(group => group.id);
+    } else if (groupIds && groupIds.length > 0) {
+        const accessibleGroups = await prisma.wordGroup.findMany({
+            where: {
+                id: { in: groupIds },
+                OR: [
+                    { visibility: 'PUBLIC', isApproved: true },
+                    {
+                        visibility: 'SHARED',
+                        sharedWith: { some: { userId } },
+                    },
+                    { createdByUserId: userId },
+                ],
+            },
+            select: { id: true },
+        });
+        targetGroupIds = accessibleGroups.map(group => group.id);
+    }
+
+    if (targetGroupIds.length === 0) {
+        return NextResponse.json([]);
+    }
+
+    const allBaseWordIds = await resolveBaseWordIdsFromGroups(targetGroupIds);
+
+    if (allBaseWordIds.length === 0) {
+        return NextResponse.json([]);
+    }
+
+    const selectedBaseWordIds = await selectBaseWordIds(allBaseWordIds, {
+        limit,
+        random,
+        languageCode,
+    });
+
+    if (selectedBaseWordIds.length === 0) {
+        return NextResponse.json([]);
+    }
+
+    const include = getBaseWordIncludeForReview(translationLanguageCode);
+    const baseWords = await fetchBaseWordsByIds(
+        selectedBaseWordIds,
+        include,
+        languageCode,
+    );
+
+    const userWords = await prisma.word.findMany({
+        where: {
+            userId,
+            baseWordId: { in: selectedBaseWordIds },
+        },
+        select: {
+            id: true,
+            baseWordId: true,
+            statusId: true,
+        },
+    });
+
+    const userWordsMap = new Map(
+        userWords.map(word => [word.baseWordId, word]),
+    );
+
+    const wordStatusNotLearned = await prisma.wordStatus.findFirst({
+        where: { code: 'NOT_LEARNED' },
+    });
+    const wordStatusLearned = await prisma.wordStatus.findUnique({
+        where: { code: 'LEARNED' },
+    });
+
+    const words = buildReviewWordsFromBase(baseWords, {
+        userId,
+        wordStatusNotLearnedId: wordStatusNotLearned?.id || 1,
+        wordStatusLearnedId: wordStatusLearned?.id,
+        userWordsMap,
+    });
+
+    const serializedWords = words.map(word => serializeReviewWord(word));
+
+    return NextResponse.json(serializedWords);
+}
+
+async function handleUserSourceReview({
+    userId,
+    languageCode,
+    translationLanguageCode,
+    statusParam,
+    limit,
+    random,
+    groupIds,
+}: {
+    userId: number;
+    languageCode: string | null;
+    translationLanguageCode: string;
+    statusParam: string | null;
+    limit: number;
+    random: boolean;
+    groupIds: number[] | null;
+}) {
+    const where: {
+        userId: number;
+        statusId?: number;
+        languageId?: number;
+        baseWordId?: { in: number[] };
+    } = { userId };
+
+    if (statusParam && ['LEARNED', 'NOT_LEARNED'].includes(statusParam)) {
+        const wordStatus = await prisma.wordStatus.findUnique({
+            where: { code: statusParam },
+        });
+        if (wordStatus) {
+            where.statusId = wordStatus.id;
+        }
+    }
+
+    if (languageCode) {
+        const language = await prisma.language.findUnique({
+            where: { code: languageCode },
+        });
+        if (language) {
+            where.languageId = language.id;
+        }
+    }
+
+    if (groupIds && groupIds.length > 0) {
+        const baseWordIds = await resolveBaseWordIdsFromGroups(groupIds);
+
+        if (baseWordIds.length > 0) {
+            where.baseWordId = { in: baseWordIds };
+        } else {
+            return NextResponse.json([]);
+        }
+    }
+
+    const selectedWordIds = await selectWordIds(where, { limit, random });
+
+    if (selectedWordIds.length === 0) {
+        return NextResponse.json([]);
+    }
+
+    const include = getWordIncludeForTraining(userId, translationLanguageCode);
+    const words = await fetchWordsByIds(userId, selectedWordIds, include);
+    const serializedWords = words.map(word =>
+        serializeUserReviewWord(word, userId),
+    );
+
+    return NextResponse.json(serializedWords);
 }

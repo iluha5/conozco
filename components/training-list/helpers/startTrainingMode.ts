@@ -1,6 +1,4 @@
 import { TrainingModeId, TrainingModeConfig } from '../types/typing';
-import { Word } from '@/types/training.types';
-import { getLastAddedWords } from './prepareTrainingWords';
 import {
     saveEnabledStages,
     saveStage1Settings,
@@ -10,6 +8,8 @@ import {
 import { STORAGE_KEYS } from '@/config/storage-keys';
 import { FlashCardsReviewParams } from '@/components/flash-cards-review/typing';
 import { tServerSync } from '@/lib/i18n/utils/tServerSync';
+import { trainingApi } from '@/lib/api/training.api';
+import { saveTrainingWordsCache } from '@/lib/training-words-cache';
 
 // IMPORTANT: this function is responsible for persisting training config to
 // localStorage. When a training is paused these settings are picked up by
@@ -18,8 +18,7 @@ export async function startTrainingMode(
     modeId: TrainingModeId,
     config: TrainingModeConfig,
     userId: string,
-    currentLanguageId: number,
-    allWords: Word[],
+    languageCode: string,
     router: any,
     setSelectedWords: (_words: Set<string>) => void,
     toast: (_options: any) => void,
@@ -110,18 +109,12 @@ export async function startTrainingMode(
     const wordStatus =
         config.wordSource === 'learned' ? 'LEARNED' : 'NOT_LEARNED';
 
-    const filteredWords = allWords.filter(
-        word =>
-            Number(word.languageId) === currentLanguageId &&
-            word.status === wordStatus,
-    );
-
-    const selectedWordsList = getLastAddedWords(
-        filteredWords,
-        currentLanguageId,
-        config.wordCount,
-        wordStatus,
-    );
+    const selectedWordsList = await trainingApi.fetchTrainingWords({
+        limit: config.wordCount,
+        status: wordStatus,
+        selection: 'latest',
+        languageCode,
+    });
 
     if (selectedWordsList.length === 0) {
         return { success: false, noWords: true };
@@ -144,6 +137,7 @@ export async function startTrainingMode(
 
     const wordIds = selectedWordsList.map(word => String(word.id));
     setSelectedWords(new Set(wordIds));
+    saveTrainingWordsCache(selectedWordsList);
 
     saveEnabledStages(userId, config.enabledStages);
 
@@ -157,7 +151,6 @@ export async function startTrainingMode(
         saveStage5Settings(userId, config.settings.stage5);
     }
 
-    // Save word source for training page
     sessionStorage.setItem(STORAGE_KEYS.TRAINING_WORD_SOURCE, wordStatus);
     sessionStorage.setItem(STORAGE_KEYS.TRAINING_FROM_SETUP, 'true');
 

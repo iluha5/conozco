@@ -12,7 +12,7 @@ import { startTrainingMode } from '../helpers/startTrainingMode';
 import { FlashCardsReviewParams } from '@/components/flash-cards-review/typing';
 import { getTrainingModeConfig } from '../helpers/getTrainingModeConfig';
 import { useTranslation, useI18n } from '@/lib/i18n';
-import { useTrainingListWords } from '@/hooks/training-list/use-training-list-words';
+import { useTrainingListStats } from '@/hooks/training-list/use-training-list-stats';
 
 export function useTrainingModes() {
     const { t } = useTranslation();
@@ -28,7 +28,7 @@ export function useTrainingModes() {
         useHashDialog('new-training-confirm');
 
     const languageCode = userSettings?.learnLanguage?.code || null;
-    const { words: allWords, isLoading } = useTrainingListWords(languageCode);
+    const { stats, isLoading } = useTrainingListStats(languageCode);
 
     const [isStarting, setIsStarting] = useState(false);
     const [showNoWordsDialog, setShowNoWordsDialog] = useState(false);
@@ -43,11 +43,10 @@ export function useTrainingModes() {
     const [showFlashCardsReview, setShowFlashCardsReview] = useState(false);
     const [showGroupReviewSetup, setShowGroupReviewSetup] = useState(false);
 
-    const { learnedWords, notLearnedWords } = useMemo(() => {
-        const learned = allWords.filter(word => word.status === 'LEARNED');
-        const notLearned = allWords.filter(word => word.status !== 'LEARNED');
-        return { learnedWords: learned, notLearnedWords: notLearned };
-    }, [allWords]);
+    const hasLearnedWords = useMemo(
+        () => stats.learnedCount > 0,
+        [stats.learnedCount],
+    );
 
     const handleFlashCardsOpen = (params: FlashCardsReviewParams) => {
         const returnUrl =
@@ -67,7 +66,7 @@ export function useTrainingModes() {
     };
 
     const handleStartMode = async (modeId: TrainingModeId) => {
-        if (!userSettings?.learnLanguage?.id) {
+        if (!userSettings?.learnLanguage?.code) {
             toast({
                 title: t('Error'),
                 description: t('Failed to get user settings'),
@@ -108,8 +107,7 @@ export function useTrainingModes() {
                 modeId,
                 config,
                 session?.user?.id || 'guest',
-                userSettings.learnLanguage.id,
-                allWords,
+                userSettings.learnLanguage.code,
                 router,
                 setSelectedWords,
                 toast,
@@ -149,7 +147,7 @@ export function useTrainingModes() {
         if (
             !pendingModeId ||
             !session?.user?.id ||
-            !userSettings?.learnLanguage?.id
+            !userSettings?.learnLanguage?.code
         ) {
             return;
         }
@@ -174,8 +172,7 @@ export function useTrainingModes() {
                 modeIdToStart,
                 config,
                 session.user.id,
-                userSettings.learnLanguage.id,
-                allWords,
+                userSettings.learnLanguage.code,
                 router,
                 setSelectedWords,
                 toast,
@@ -231,9 +228,8 @@ export function useTrainingModes() {
         isContinueLoading,
         activeTab,
         setActiveTab,
-        learnedWords,
-        notLearnedWords,
-        allWords,
+        hasLearnedWords,
+        stats,
         flashCardsParams,
         showFlashCardsReview,
         setShowFlashCardsReview,

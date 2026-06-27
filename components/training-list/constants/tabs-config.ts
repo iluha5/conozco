@@ -1,5 +1,5 @@
 import { TrainingModeGroupId } from '../types/typing';
-import { Word } from '@/types/training.types';
+import { TrainingStats } from '@/lib/api/training.api';
 
 export interface TabColorScheme {
     active: {
@@ -34,7 +34,7 @@ export interface TabConfig {
     hash: string;
     colorScheme: TabColorScheme;
     showBadge: boolean;
-    getBadgeCount?: (_words: Word[]) => number;
+    getBadgeCount?: (_stats: TrainingStats) => number;
 }
 
 export const getTabsConfig = (
@@ -71,8 +71,7 @@ export const getTabsConfig = (
                 },
             },
         },
-        getBadgeCount: (_words: Word[]) =>
-            _words.filter(w => w.status === 'NOT_LEARNED').length,
+        getBadgeCount: (stats: TrainingStats) => stats.notLearnedCount,
     },
     {
         id: 'learned',
@@ -105,8 +104,7 @@ export const getTabsConfig = (
                 },
             },
         },
-        getBadgeCount: (_words: Word[]) =>
-            _words.filter(w => w.status === 'LEARNED').length,
+        getBadgeCount: (stats: TrainingStats) => stats.learnedCount,
     },
     {
         id: 'tests',

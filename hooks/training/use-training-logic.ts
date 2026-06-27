@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/shared';
 import { useTranslation } from '@/lib/i18n';
 import { trainingApi } from '@/lib/api/training.api';
+import { clearTrainingWordsCache } from '@/lib/training-words-cache';
 import {
     Word,
     StageCompletionResult,
@@ -41,28 +42,30 @@ export function useTrainingLogic() {
                         queryKey: ['words'],
                     });
                     await queryClient.invalidateQueries({
+                        queryKey: ['words-list'],
+                    });
+                    await queryClient.invalidateQueries({
+                        queryKey: ['training-stats'],
+                    });
+                    await queryClient.invalidateQueries({
                         queryKey: [
                             'words',
                             { status: 'NOT_LEARNED', limit: 120 },
                         ],
                     });
 
-                    const allWords = await trainingApi.fetchWords();
-                    const trainedWordIds = trainingWords.map(word => word.id);
-                    const learnedWords = allWords.filter(word =>
-                        trainedWordIds.includes(word.id),
-                    );
+                    clearTrainingWordsCache();
 
                     toast({
                         description: t('Words learned: {{count}}', {
-                            count: learnedWords.length,
+                            count: trainingWords.length,
                         }),
                         variant: 'success',
                     });
 
                     return {
                         completed: true,
-                        learnedWords,
+                        learnedWords: trainingWords,
                     };
                 } catch (error) {
                     console.error('Error marking words as learned:', error);

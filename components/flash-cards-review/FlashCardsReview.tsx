@@ -45,7 +45,7 @@ export function FlashCardsReview({ params, onClose }: FlashCardsReviewProps) {
         const languageCode = userSettings?.learnLanguage?.code || null;
         if (languageCode) {
             queryClient.invalidateQueries({
-                queryKey: ['training-list-words', languageCode],
+                queryKey: ['training-stats', languageCode],
             });
         }
     }, [queryClient, userSettings?.learnLanguage?.code]);

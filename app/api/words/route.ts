@@ -113,12 +113,6 @@ export async function GET(request: NextRequest) {
                     },
                     take: 1,
                 },
-                trainingSessions: {
-                    orderBy: {
-                        createdAt: 'desc',
-                    },
-                    take: 5,
-                },
             },
         });
 

@@ -48,7 +48,12 @@ export function useWordStatus({
             });
 
             if (response.ok) {
-                // Successfully updated, do nothing (already updated optimistically)
+                await onWordsChange?.();
+                setOptimisticWords(prev => {
+                    const newMap = new Map(prev);
+                    newMap.delete(word.id);
+                    return newMap;
+                });
             } else {
                 // Error - rollback state
                 if (onWordUpdate) {
@@ -124,6 +129,7 @@ export function useWordStatus({
                 return false;
             }
 
+            await onWordsChange?.();
             return true;
         } catch (error) {
             console.error('Error updating words status:', error);
