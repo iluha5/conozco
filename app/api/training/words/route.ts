@@ -4,6 +4,8 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { getWordIncludeForTraining } from '@/lib/words/getWordIncludeForTraining';
 import { serializeWord } from '@/lib/words/serializeWord';
+import { selectWordIds } from '@/lib/words/selectWordIds';
+import { fetchWordsByIds } from '@/lib/words/fetchWordsByIds';
 
 const MAX_WORDS = 50;
 
@@ -17,18 +19,6 @@ function parseWordIds(wordIdsParam: string | null): number[] {
         .map(id => parseInt(id.trim(), 10))
         .filter(id => !isNaN(id))
         .slice(0, MAX_WORDS);
-}
-
-function shuffleArray<T>(items: T[]): T[] {
-    const shuffled = [...items];
-    for (let index = shuffled.length - 1; index > 0; index--) {
-        const randomIndex = Math.floor(Math.random() * (index + 1));
-        [shuffled[index], shuffled[randomIndex]] = [
-            shuffled[randomIndex],
-            shuffled[index],
-        ];
-    }
-    return shuffled;
 }
 
 /**
@@ -120,38 +110,21 @@ export async function GET(request: NextRequest) {
                 }
             }
 
-            const idRows = await prisma.word.findMany({
-                where,
-                orderBy: { createdAt: 'desc' },
-                select: { id: true },
+            targetWordIds = await selectWordIds(where, {
+                limit,
+                random: selection === 'random',
             });
-
-            let selectedIds = idRows.map(row => row.id);
-
-            if (selection === 'random') {
-                selectedIds = shuffleArray(selectedIds);
-            }
-
-            targetWordIds = selectedIds.slice(0, limit);
         }
 
         if (targetWordIds.length === 0) {
             return NextResponse.json([]);
         }
 
-        const words = await prisma.word.findMany({
-            where: {
-                userId,
-                id: { in: targetWordIds },
-            },
+        const orderedWords = await fetchWordsByIds(
+            userId,
+            targetWordIds,
             include,
-        });
-
-        const wordsById = new Map(words.map(word => [word.id, word]));
-        const orderedWords = targetWordIds
-            .map(id => wordsById.get(id))
-            .filter((word): word is NonNullable<typeof word> => word != null);
-
+        );
         const serializedWords = orderedWords.map(word => serializeWord(word));
 
         return NextResponse.json(serializedWords);

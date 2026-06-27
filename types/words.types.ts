@@ -63,3 +63,19 @@ export type WordsStats = {
     notLearned: number;
     learned: number;
 };
+
+export type SetupWord = {
+    id: number;
+    createdAt: string;
+    status: 'NOT_LEARNED';
+    customWord?: string;
+    language: {
+        code: string;
+    };
+    baseWord?: {
+        word: string;
+        translations: Array<{ translation: string }>;
+        wordGroups: Array<{ wordGroupId: number }>;
+    };
+    customTranslations?: Array<{ translation: string }>;
+};

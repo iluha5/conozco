@@ -1,13 +1,13 @@
 import { useCallback, useMemo, useState } from 'react';
 import { I18n, useTranslation } from '@/lib/i18n';
-import { Word } from '@/types/words.types';
+import { SetupWord } from '@/types/words.types';
 import { useTrainingWords } from '@/contexts/training-words-context';
 
 export type SelectionState = 'none' | 'partial' | 'all';
 
 const getSelectionState = (
     selectedWords: Set<string>,
-    visibleWords: Word[],
+    visibleWords: SetupWord[],
 ): SelectionState => {
     const visibleWordIds = visibleWords.map(w => String(w.id));
     const selectedVisibleCount = visibleWordIds.filter(id =>
@@ -25,7 +25,7 @@ const getBulkSelectText = (selectionState: SelectionState, t: I18n['t']) => {
     return selectionState === 'all' ? t('Deselect all') : t('Select all');
 };
 
-export const useWordsSelection = (filteredWords: Word[]) => {
+export const useWordsSelection = (filteredWords: SetupWord[]) => {
     const { t } = useTranslation();
     const { selectedWords, setSelectedWords } = useTrainingWords();
     const [visibleWordsCount, setVisibleWordsCount] = useState(10);

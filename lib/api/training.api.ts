@@ -1,4 +1,5 @@
 import { Word, SavedTrainingState } from '@/types/training.types';
+import { SetupWord } from '@/types/words.types';
 
 export interface TrainingStats {
     notLearnedCount: number;
@@ -20,6 +21,12 @@ export interface FetchTrainingWordsByIdsParams {
 export type FetchTrainingWordsParams =
     | FetchTrainingWordsBySelectionParams
     | FetchTrainingWordsByIdsParams;
+
+export interface FetchSetupWordsParams {
+    languageCode: string;
+    groupIds?: number[];
+    limit?: number;
+}
 
 function isByIdsParams(
     params: FetchTrainingWordsParams,
@@ -73,6 +80,29 @@ export const trainingApi = {
 
         if (!response.ok) {
             throw new Error('Failed to fetch training words');
+        }
+
+        return response.json();
+    },
+
+    fetchSetupWords: async (
+        params: FetchSetupWordsParams,
+    ): Promise<SetupWord[]> => {
+        const searchParams = new URLSearchParams();
+        searchParams.set('languageCode', params.languageCode);
+        if (params.groupIds && params.groupIds.length > 0) {
+            searchParams.set('groupIds', params.groupIds.join(','));
+        }
+        if (params.limit) {
+            searchParams.set('limit', String(params.limit));
+        }
+
+        const response = await fetch(
+            `/api/training/setup-words?${searchParams.toString()}`,
+        );
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch setup words');
         }
 
         return response.json();
