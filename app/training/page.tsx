@@ -86,6 +86,8 @@ export default function TrainingPage() {
     useTrainingData(
         isStorageChecked && !shouldRedirect && settingsLoaded,
         isStorageChecked && !shouldRedirect && selectionLoaded,
+        selectedWords,
+        storage.savedState?.selectedWordIds,
         state.setWords,
         state.setIsLoading,
     );
@@ -225,16 +227,7 @@ export default function TrainingPage() {
     };
 
     const handleReloadWords = async () => {
-        try {
-            const allWords = await trainingApi.fetchWords();
-            const trainedWordIds = state.trainingWords.map(w => String(w.id));
-            const learnedWords = allWords.filter(w =>
-                trainedWordIds.includes(String(w.id)),
-            );
-            state.setCompletedWords(learnedWords);
-        } catch (error) {
-            console.error('Error reloading words:', error);
-        }
+        state.setCompletedWords(state.trainingWords);
     };
 
     // Manual stage switching handler

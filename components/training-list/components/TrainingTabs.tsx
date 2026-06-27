@@ -6,13 +6,13 @@ import { cn } from '@/lib/utils';
 import { TrainingModeGroupId } from '../types/typing';
 import { getTabsConfig } from '../constants/tabs-config';
 import { TabTriggerWithBadge } from './TabTriggerWithBadge';
-import { Word } from '@/types/training.types';
+import { TrainingStats } from '@/lib/api/training.api';
 import { useTranslation } from '@/lib/i18n';
 
 interface TrainingTabsProps {
     activeTab: TrainingModeGroupId;
     onTabChange: (_value: string) => void;
-    words?: Word[];
+    stats?: TrainingStats;
     isLoading?: boolean;
     children: Record<TrainingModeGroupId, React.ReactNode>;
 }
@@ -20,7 +20,7 @@ interface TrainingTabsProps {
 export function TrainingTabs({
     activeTab,
     onTabChange,
-    words,
+    stats,
     isLoading,
     children,
 }: TrainingTabsProps) {
@@ -40,8 +40,8 @@ export function TrainingTabs({
             >
                 {tabsConfig.map(tabConfig => {
                     const badgeCount =
-                        tabConfig.getBadgeCount && words
-                            ? tabConfig.getBadgeCount(words)
+                        tabConfig.getBadgeCount && stats
+                            ? tabConfig.getBadgeCount(stats)
                             : undefined;
 
                     return (
