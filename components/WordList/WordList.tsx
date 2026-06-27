@@ -11,6 +11,7 @@ import { useWordStatus } from './hooks/useWordStatus';
 import { useWordDeletion } from './hooks/useWordDeletion';
 
 import type { Word, WordsListProps } from './typing';
+import { WordsListInfiniteScroll } from './components/WordsListInfiniteScroll';
 
 import { EmptyState } from './components/EmptyState';
 import { BulkActions } from './components/BulkActions';
@@ -28,6 +29,9 @@ export function WordsList({
     emptyMessage,
     externalSelection,
     hideSelectAllButton = false,
+    hasMore = false,
+    isFetchingMore = false,
+    onLoadMore,
 }: WordsListProps) {
     const { t } = useTranslation();
     const defaultEmptyMessage = emptyMessage || t('No words found');
@@ -177,42 +181,57 @@ export function WordsList({
                 />
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-1 max-h-[400px] overflow-y-auto p-2">
-                {words.map(word => {
-                    const isLoading = loading.isWordLoading(word.id);
-                    const hasError = loading.hasWordError(word.id);
-                    const optimisticWord = status.optimisticWords.get(word.id);
+            <div className="max-h-[400px] overflow-y-auto p-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
+                    {words.map(word => {
+                        const isLoading = loading.isWordLoading(word.id);
+                        const hasError = loading.hasWordError(word.id);
+                        const optimisticWord = status.optimisticWords.get(
+                            word.id,
+                        );
 
-                    return (
-                        <WordItem
-                            key={word.id}
-                            word={word}
-                            isSelected={selection.isWordSelected(word.id)}
-                            isLoading={isLoading}
-                            hasError={hasError}
-                            optimisticWord={optimisticWord}
-                            isClient={isClient}
-                            translationDialogOpen={
-                                translation.translationDialogOpen
-                            }
-                            selectedWordForTranslation={
-                                translation.selectedWordForTranslation
-                            }
-                            partsOfSpeech={partsOfSpeech}
-                            onToggleSelection={selection.toggleWordSelection}
-                            onToggleStatus={handleToggleStatus}
-                            onDelete={handleDeleteWord}
-                            onOpenTranslation={
-                                translation.openTranslationDialog
-                            }
-                            onCloseTranslation={translation.handleDialogClose}
-                            onTranslationSave={async () => {
-                                await onWordsChange?.();
-                            }}
-                            readOnly={readOnly}
-                        />
-                    );
-                })}
+                        return (
+                            <WordItem
+                                key={word.id}
+                                word={word}
+                                isSelected={selection.isWordSelected(word.id)}
+                                isLoading={isLoading}
+                                hasError={hasError}
+                                optimisticWord={optimisticWord}
+                                isClient={isClient}
+                                translationDialogOpen={
+                                    translation.translationDialogOpen
+                                }
+                                selectedWordForTranslation={
+                                    translation.selectedWordForTranslation
+                                }
+                                partsOfSpeech={partsOfSpeech}
+                                onToggleSelection={
+                                    selection.toggleWordSelection
+                                }
+                                onToggleStatus={handleToggleStatus}
+                                onDelete={handleDeleteWord}
+                                onOpenTranslation={
+                                    translation.openTranslationDialog
+                                }
+                                onCloseTranslation={
+                                    translation.handleDialogClose
+                                }
+                                onTranslationSave={async () => {
+                                    await onWordsChange?.();
+                                }}
+                                readOnly={readOnly}
+                            />
+                        );
+                    })}
+                </div>
+                {onLoadMore && (
+                    <WordsListInfiniteScroll
+                        hasMore={hasMore}
+                        isFetchingMore={isFetchingMore}
+                        onLoadMore={onLoadMore}
+                    />
+                )}
             </div>
 
             <ConfirmationDialogs

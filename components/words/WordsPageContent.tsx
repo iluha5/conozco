@@ -1,7 +1,15 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import {
+    useState,
+    useEffect,
+    useMemo,
+    useCallback,
+    useRef,
+    type KeyboardEvent,
+} from 'react';
 import Link from 'next/link';
+import { useQueryClient, InfiniteData } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -13,8 +21,13 @@ import { WordsList } from '@/components/WordList/WordList';
 import { WordGroupsFilter } from '@/components/word-groups/WordGroupsFilter';
 import { BulkActions } from '@/components/WordList/components/BulkActions';
 import { ConfirmationDialogs } from '@/components/WordList/components/ConfirmationDialogs';
+import {
+    Popover,
+    PopoverAnchor,
+    PopoverContent,
+} from '@/components/ui/popover';
 import { useUserSettings } from '@/hooks/settings';
-import { useWordsData, useWordsFilter, useWordsStats } from '@/hooks/words';
+import { useWordsList, useWordsPageStats } from '@/hooks/words';
 import { useWordGroupsFilter } from '@/hooks/word-groups/use-word-groups-filter';
 import { useWordSelection } from '@/components/WordList/hooks/useWordSelection';
 import { useConfirmationDialogs } from '@/components/WordList/hooks/useConfirmationDialogs';
@@ -25,57 +38,239 @@ import {
     getSelectionState,
     getBulkSelectText,
 } from '@/components/WordList/helpers/selectionHelpers';
-import { WordsFilter, Word } from '@/types/words.types';
+import { WordsListStatus, WordsListResponse } from '@/types/words.types';
 import { useTranslation } from '@/lib/i18n';
+import { fetchWordsListPage, getWordsListQueryKey } from '@/lib/api/words.api';
+import type { Word } from '@/components/WordList/typing';
 
 export function WordsPageContent() {
     const { settings: userSettings } = useUserSettings();
-    const [selectedStatus, setSelectedStatus] = useState<string>('NOT_LEARNED');
+    const [selectedStatus, setSelectedStatus] =
+        useState<WordsListStatus>('NOT_LEARNED');
     const [isClient, setIsClient] = useState(false);
+    const [counterHintOpen, setCounterHintOpen] = useState(false);
+    const [supportsHover, setSupportsHover] = useState(true);
     const [isDeleting, setIsDeleting] = useState(false);
     const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+    const hasPrefetchedAll = useRef(false);
 
-    const { words, loading, refetch, updateWord, removeWord } = useWordsData();
+    const queryClient = useQueryClient();
+    const { toast } = useToast();
+    const { t } = useTranslation();
+
+    const learnLanguageCode = useMemo(() => {
+        return userSettings?.learnLanguage?.code || null;
+    }, [userSettings?.learnLanguage?.code]);
 
     const { selectedGroupIds, toggleGroup, toggleAll } =
         useWordGroupsFilter('myWords');
 
-    const learnLanguageCode = useMemo(() => {
-        return userSettings?.learnLanguage?.code || 'ALL';
-    }, [userSettings?.learnLanguage?.code]);
-
-    const filter: WordsFilter = {
-        language: learnLanguageCode,
-        status: selectedStatus,
-        groupIds: selectedGroupIds.length > 0 ? selectedGroupIds : undefined,
-    };
-
-    const filteredWords = useWordsFilter(words, filter);
-    const stats = useWordsStats(words, learnLanguageCode);
-    const wordSelection = useWordSelection(filteredWords);
-    const selectionState = getSelectionState(
-        wordSelection.selectedWords,
-        filteredWords,
+    const normalizedGroupIds = useMemo(
+        () => [...selectedGroupIds].sort((a, b) => a - b),
+        [selectedGroupIds],
     );
 
-    const confirmations = useConfirmationDialogs();
-    const status = useWordStatus({
-        onWordUpdate: (wordId, updates) => {
-            const typedUpdates = updates as Partial<Word>;
-            updateWord(Number(wordId), typedUpdates);
+    const hasGroupFilter = normalizedGroupIds.length > 0;
+
+    const { stats, isLoading: statsLoading } =
+        useWordsPageStats(learnLanguageCode);
+
+    const {
+        words,
+        totalCount,
+        loadedCount,
+        isLoading: listLoading,
+        isFetchingNextPage,
+        hasNextPage,
+        fetchNextPage,
+        refetch,
+    } = useWordsList(
+        learnLanguageCode,
+        selectedStatus,
+        normalizedGroupIds,
+        true,
+    );
+
+    const loading = statsLoading || listLoading;
+
+    const invalidateWordsQueries = useCallback(async () => {
+        await queryClient.invalidateQueries({ queryKey: ['words-list'] });
+        if (learnLanguageCode) {
+            await queryClient.invalidateQueries({
+                queryKey: ['training-stats', learnLanguageCode],
+            });
+        }
+    }, [queryClient, learnLanguageCode]);
+
+    const handleWordsChange = useCallback(async () => {
+        await invalidateWordsQueries();
+    }, [invalidateWordsQueries]);
+
+    const handleWordRemove = useCallback(
+        (wordId: string | number) => {
+            queryClient.setQueriesData<InfiniteData<WordsListResponse, number>>(
+                { queryKey: ['words-list'] },
+                oldData => {
+                    if (!oldData) {
+                        return oldData;
+                    }
+
+                    return {
+                        ...oldData,
+                        pages: oldData.pages.map(page => ({
+                            ...page,
+                            items: page.items.filter(
+                                word => String(word.id) !== String(wordId),
+                            ),
+                            totalCount: Math.max(0, page.totalCount - 1),
+                        })),
+                    };
+                },
+            );
         },
-        onWordsChange: refetch,
-    });
-    const deletion = useWordDeletion({
-        onWordRemove: wordId => removeWord(Number(wordId)),
-        onWordsChange: refetch,
-    });
-    const { toast } = useToast();
-    const { t } = useTranslation();
+        [queryClient],
+    );
 
     useEffect(() => {
         setIsClient(true);
     }, []);
+
+    useEffect(() => {
+        const mediaQuery = window.matchMedia(
+            '(hover: hover) and (pointer: fine)',
+        );
+        const updateSupportsHover = () => {
+            setSupportsHover(mediaQuery.matches);
+        };
+
+        updateSupportsHover();
+        mediaQuery.addEventListener('change', updateSupportsHover);
+
+        return () => {
+            mediaQuery.removeEventListener('change', updateSupportsHover);
+        };
+    }, []);
+
+    const handleCounterHintMouseEnter = useCallback(() => {
+        if (supportsHover) {
+            setCounterHintOpen(true);
+        }
+    }, [supportsHover]);
+
+    const handleCounterHintMouseLeave = useCallback(() => {
+        if (supportsHover) {
+            setCounterHintOpen(false);
+        }
+    }, [supportsHover]);
+
+    const handleCounterHintClick = useCallback(() => {
+        if (!supportsHover) {
+            setCounterHintOpen(open => !open);
+        }
+    }, [supportsHover]);
+
+    const handleCounterHintKeyDown = useCallback(
+        (event: KeyboardEvent<HTMLDivElement>) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                setCounterHintOpen(open => !open);
+            }
+        },
+        [],
+    );
+
+    const handleCounterHintContentClick = useCallback(() => {
+        setCounterHintOpen(false);
+    }, []);
+
+    useEffect(() => {
+        if (!learnLanguageCode) {
+            return;
+        }
+
+        const prefetchStatus = (status: WordsListStatus) => {
+            void queryClient.prefetchInfiniteQuery({
+                queryKey: getWordsListQueryKey({
+                    languageCode: learnLanguageCode,
+                    status,
+                    groupIds: normalizedGroupIds,
+                }),
+                queryFn: ({ pageParam }) =>
+                    fetchWordsListPage({
+                        languageCode: learnLanguageCode,
+                        status,
+                        groupIds: normalizedGroupIds,
+                        pageParam: pageParam as number,
+                    }),
+                initialPageParam: 0,
+            });
+        };
+
+        prefetchStatus('NOT_LEARNED');
+        prefetchStatus('LEARNED');
+    }, [learnLanguageCode, normalizedGroupIds, queryClient]);
+
+    const handleStatusTabChange = (status: WordsListStatus) => {
+        setSelectedStatus(status);
+
+        if (
+            status === 'ALL' &&
+            !hasPrefetchedAll.current &&
+            learnLanguageCode
+        ) {
+            hasPrefetchedAll.current = true;
+            void queryClient.prefetchInfiniteQuery({
+                queryKey: getWordsListQueryKey({
+                    languageCode: learnLanguageCode,
+                    status: 'ALL',
+                    groupIds: normalizedGroupIds,
+                }),
+                queryFn: ({ pageParam }) =>
+                    fetchWordsListPage({
+                        languageCode: learnLanguageCode,
+                        status: 'ALL',
+                        groupIds: normalizedGroupIds,
+                        pageParam: pageParam as number,
+                    }),
+                initialPageParam: 0,
+            });
+        }
+    };
+
+    const wordSelection = useWordSelection(words as Word[]);
+    const selectionState = getSelectionState(
+        wordSelection.selectedWords,
+        words as Word[],
+    );
+
+    const confirmations = useConfirmationDialogs();
+    const status = useWordStatus({ onWordsChange: handleWordsChange });
+    const deletion = useWordDeletion({
+        onWordRemove: handleWordRemove,
+        onWordsChange: handleWordsChange,
+    });
+
+    const totalForBadge = useMemo(() => {
+        if (hasGroupFilter) {
+            return totalCount;
+        }
+
+        if (selectedStatus === 'ALL') {
+            return stats.total;
+        }
+
+        if (selectedStatus === 'NOT_LEARNED') {
+            return stats.notLearned;
+        }
+
+        return stats.learned;
+    }, [hasGroupFilter, totalCount, selectedStatus, stats]);
+
+    const handleLoadMore = useCallback(() => {
+        if (hasNextPage && !isFetchingNextPage) {
+            void fetchNextPage();
+        }
+    }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
     const handleMarkAsLearned = () => {
         confirmations.openStatusConfirmation('LEARNED');
@@ -104,11 +299,8 @@ export function WordsPageContent() {
         const success = await status.executeBulkStatusChange(
             wordSelection.selectedWords,
             newStatus,
-            (wordId, updates) => {
-                const typedUpdates = updates as Partial<Word>;
-                updateWord(Number(wordId), typedUpdates);
-            },
-            refetch,
+            undefined,
+            handleWordsChange,
             errorMessage => {
                 toast({
                     title: t('Error'),
@@ -130,6 +322,7 @@ export function WordsPageContent() {
                 description: `${successCount} ${t('words')} ${statusText}`,
                 variant: 'success',
             });
+            await handleWordsChange();
         }
 
         wordSelection.clearSelection();
@@ -155,8 +348,8 @@ export function WordsPageContent() {
 
         const success = await deletion.executeBulkDelete(
             wordSelection.selectedWords,
-            wordId => removeWord(Number(wordId)),
-            refetch,
+            handleWordRemove,
+            handleWordsChange,
             errorMessage => {
                 toast({
                     title: t('Error'),
@@ -174,6 +367,7 @@ export function WordsPageContent() {
                 description: `${successCount} ${t('words')} ${t('deleted')}`,
                 variant: 'success',
             });
+            await handleWordsChange();
         }
 
         wordSelection.clearSelection();
@@ -181,6 +375,7 @@ export function WordsPageContent() {
     };
 
     const handleAddWord = async () => {
+        await handleWordsChange();
         await refetch();
     };
 
@@ -228,7 +423,7 @@ export function WordsPageContent() {
                                 ? 'ring-2 ring-black shadow-md'
                                 : ''
                         }`}
-                        onClick={() => setSelectedStatus('ALL')}
+                        onClick={() => handleStatusTabChange('ALL')}
                     >
                         <CardHeader className="pb-2">
                             <CardTitle className="text-sm font-medium">
@@ -248,7 +443,7 @@ export function WordsPageContent() {
                                 ? 'ring-2 ring-orange-500 shadow-md'
                                 : ''
                         }`}
-                        onClick={() => setSelectedStatus('NOT_LEARNED')}
+                        onClick={() => handleStatusTabChange('NOT_LEARNED')}
                     >
                         <CardHeader className="pb-2">
                             <CardTitle className="text-sm font-medium">
@@ -268,7 +463,7 @@ export function WordsPageContent() {
                                 ? 'ring-2 ring-green-500 shadow-md'
                                 : ''
                         }`}
-                        onClick={() => setSelectedStatus('LEARNED')}
+                        onClick={() => handleStatusTabChange('LEARNED')}
                     >
                         <CardHeader className="pb-2">
                             <CardTitle className="text-sm font-medium">
@@ -286,7 +481,7 @@ export function WordsPageContent() {
                 {!loading && (
                     <div className="mb-6">
                         <BulkActions
-                            words={filteredWords}
+                            words={words as Word[]}
                             selectedWords={wordSelection.selectedWords}
                             onToggleAllSelection={
                                 wordSelection.toggleAllWordsSelection
@@ -326,29 +521,75 @@ export function WordsPageContent() {
                             onToggleGroup={toggleGroup}
                             onToggleAll={toggleAll}
                         />
-                        <div className="flex items-center gap-2">
-                            <span className="hidden sm:inline text-sm text-gray-600">
-                                {t('Shown:')}{' '}
-                            </span>
-                            <Badge
-                                variant="outline"
-                                className="gap-1.5 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 shadow-sm text-sm"
-                            >
-                                <span className="text-gray-900 dark:text-gray-100">
-                                    {filteredWords.length}
-                                </span>
-                                {wordSelection.selectedWords.length > 0 && (
-                                    <>
+                        <Popover
+                            open={counterHintOpen}
+                            onOpenChange={setCounterHintOpen}
+                        >
+                            <PopoverAnchor asChild>
+                                <div
+                                    className="flex items-center gap-2 cursor-help"
+                                    role="button"
+                                    tabIndex={0}
+                                    onClick={handleCounterHintClick}
+                                    onMouseEnter={handleCounterHintMouseEnter}
+                                    onMouseLeave={handleCounterHintMouseLeave}
+                                    onKeyDown={handleCounterHintKeyDown}
+                                >
+                                    <span className="text-sm text-gray-600">
+                                        {t('Shown:')}
+                                    </span>
+                                    <Badge
+                                        variant="outline"
+                                        className="gap-1.5 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 shadow-sm text-sm"
+                                    >
+                                        <span className="text-gray-900 dark:text-gray-100">
+                                            {loadedCount}
+                                        </span>
                                         <span className="text-gray-300 dark:text-gray-600">
                                             |
                                         </span>
-                                        <span className="text-orange-600 dark:text-orange-500">
-                                            {wordSelection.selectedWords.length}
+                                        <span className="text-gray-900 dark:text-gray-100">
+                                            {totalForBadge}
                                         </span>
-                                    </>
-                                )}
-                            </Badge>
-                        </div>
+                                        {wordSelection.selectedWords.length >
+                                            0 && (
+                                            <>
+                                                <span className="text-gray-300 dark:text-gray-600">
+                                                    |
+                                                </span>
+                                                <span className="text-orange-600 dark:text-orange-500">
+                                                    {
+                                                        wordSelection
+                                                            .selectedWords
+                                                            .length
+                                                    }
+                                                </span>
+                                            </>
+                                        )}
+                                    </Badge>
+                                </div>
+                            </PopoverAnchor>
+                            <PopoverContent
+                                className="max-w-xs w-auto px-3 py-1.5 text-sm"
+                                onClick={handleCounterHintContentClick}
+                                onOpenAutoFocus={event =>
+                                    event.preventDefault()
+                                }
+                            >
+                                <p>
+                                    {t(
+                                        'Shown {{shown}} of {{total}} words. Scroll down the list to load more. {{selected}} selected.',
+                                        {
+                                            shown: loadedCount,
+                                            total: totalForBadge,
+                                            selected:
+                                                wordSelection.selectedWords
+                                                    .length,
+                                        },
+                                    )}
+                                </p>
+                            </PopoverContent>
+                        </Popover>
                     </div>
                 )}
 
@@ -358,20 +599,15 @@ export function WordsPageContent() {
                     </div>
                 ) : (
                     <WordsList
-                        words={filteredWords}
-                        onWordsChange={refetch}
-                        onWordUpdate={(wordId, updates) => {
-                            updateWord(
-                                Number(wordId),
-                                updates as Partial<Word>,
-                            );
-                        }}
-                        onWordRemove={wordId => {
-                            removeWord(Number(wordId));
-                        }}
+                        words={words as Word[]}
+                        onWordsChange={handleWordsChange}
+                        onWordRemove={handleWordRemove}
                         showBulkActions={false}
                         emptyMessage={t('No words found. Add a new word!')}
                         externalSelection={wordSelection}
+                        hasMore={hasNextPage}
+                        isFetchingMore={isFetchingNextPage}
+                        onLoadMore={handleLoadMore}
                     />
                 )}
 

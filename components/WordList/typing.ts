@@ -70,4 +70,7 @@ export type WordsListProps = {
     emptyMessage?: string;
     externalSelection?: WordSelection;
     hideSelectAllButton?: boolean;
+    hasMore?: boolean;
+    isFetchingMore?: boolean;
+    onLoadMore?: () => void;
 };

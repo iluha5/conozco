@@ -93,6 +93,8 @@ export function useFlashCardsMutations(params: FlashCardsReviewParams) {
         },
         onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ['words'] });
+            queryClient.invalidateQueries({ queryKey: ['words-list'] });
+            queryClient.invalidateQueries({ queryKey: ['training-stats'] });
         },
     });
 
@@ -137,6 +139,8 @@ export function useFlashCardsMutations(params: FlashCardsReviewParams) {
         },
         onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ['words'] });
+            queryClient.invalidateQueries({ queryKey: ['words-list'] });
+            queryClient.invalidateQueries({ queryKey: ['training-stats'] });
         },
     });
 

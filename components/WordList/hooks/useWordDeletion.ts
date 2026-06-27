@@ -43,12 +43,12 @@ export function useWordDeletion({
             });
 
             if (response.ok) {
-                // Successfully deleted - remove from saved for rollback
                 setDeletedWords(prev => {
                     const newMap = new Map(prev);
                     newMap.delete(id);
                     return newMap;
                 });
+                await onWordsChange?.();
             } else {
                 // Error - rollback state
                 const _deletedWord = deletedWords.get(id) || wordToDelete;
@@ -122,6 +122,7 @@ export function useWordDeletion({
                 return false;
             }
 
+            await onWordsChange?.();
             return true;
         } catch (error) {
             console.error('Error deleting words:', error);

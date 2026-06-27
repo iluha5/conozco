@@ -42,6 +42,9 @@ export function useTrainingLogic() {
                         queryKey: ['words'],
                     });
                     await queryClient.invalidateQueries({
+                        queryKey: ['words-list'],
+                    });
+                    await queryClient.invalidateQueries({
                         queryKey: ['training-stats'],
                     });
                     await queryClient.invalidateQueries({
