@@ -41,9 +41,16 @@ export function useWordManagement({
             });
 
             if (response.ok) {
+                const createdWord = await response.json();
                 setAvailableWords(prev =>
                     prev.map(w =>
-                        w.id === baseWordId ? { ...w, isAddedByUser: true } : w,
+                        w.id === baseWordId
+                            ? {
+                                  ...w,
+                                  isAddedByUser: true,
+                                  userWordId: createdWord.id,
+                              }
+                            : w,
                     ),
                 );
                 setSelectedWords(prev => [...prev, baseWordId]);
@@ -70,33 +77,37 @@ export function useWordManagement({
 
     const removeWord = async (baseWordId: string) => {
         try {
-            const userWordsResponse = await fetch('/api/words');
-            if (userWordsResponse.ok) {
-                const userWords = await userWordsResponse.json();
-                const userWord = userWords.find(
-                    (w: any) => w.baseWordId === baseWordId,
+            const word = availableWords.find(w => w.id === baseWordId);
+            const userWordId = word?.userWordId;
+
+            if (!userWordId) {
+                toast({
+                    title: t('Error'),
+                    description: t('Failed to delete word'),
+                    variant: 'destructive',
+                });
+                return false;
+            }
+
+            const response = await fetch(`/api/words/${userWordId}`, {
+                method: 'DELETE',
+            });
+
+            if (response.ok) {
+                setAvailableWords(prev =>
+                    prev.map(w =>
+                        w.id === baseWordId
+                            ? {
+                                  ...w,
+                                  isAddedByUser: false,
+                                  userWordId: null,
+                              }
+                            : w,
+                    ),
                 );
-
-                if (userWord) {
-                    const response = await fetch(`/api/words/${userWord.id}`, {
-                        method: 'DELETE',
-                    });
-
-                    if (response.ok) {
-                        setAvailableWords(prev =>
-                            prev.map(w =>
-                                w.id === baseWordId
-                                    ? { ...w, isAddedByUser: false }
-                                    : w,
-                            ),
-                        );
-                        setSelectedWords(prev =>
-                            prev.filter(id => id !== baseWordId),
-                        );
-                        onWordAdded();
-                        return true;
-                    }
-                }
+                setSelectedWords(prev => prev.filter(id => id !== baseWordId));
+                onWordAdded();
+                return true;
             }
 
             toast({

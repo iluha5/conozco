@@ -159,36 +159,35 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
     const convertBaseWordToWord = async (
         baseWord: BaseWord,
     ): Promise<any | null> => {
-        try {
-            const userWordsResponse = await fetch('/api/words');
-            if (userWordsResponse.ok) {
-                const userWords = await userWordsResponse.json();
-                const userWord = userWords.find(
-                    (w: any) => w.baseWordId === baseWord.id,
-                );
-
-                if (userWord) {
-                    return {
-                        id: userWord.id,
-                        userId: userWord.userId,
-                        baseWordId: baseWord.id,
-                        languageId: baseWord.language.code,
-                        language: baseWord.language,
-                        status: userWord.status,
-                        createdAt: userWord.createdAt,
-                        updatedAt: userWord.updatedAt,
-                        baseWord: {
-                            id: baseWord.id,
-                            word: baseWord.word,
-                            languageId: baseWord.language.code,
-                            translations: baseWord.translations,
-                            examples: baseWord.examples,
-                        },
-                        customTranslations: userWord.customTranslations || [],
-                    };
-                }
-            }
+        if (!baseWord.userWordId) {
             return null;
+        }
+
+        try {
+            const response = await fetch(`/api/words/${baseWord.userWordId}`);
+            if (!response.ok) {
+                return null;
+            }
+
+            const userWord = await response.json();
+            return {
+                id: userWord.id,
+                userId: userWord.userId,
+                baseWordId: baseWord.id,
+                languageId: baseWord.language.code,
+                language: baseWord.language,
+                status: userWord.status,
+                createdAt: userWord.createdAt,
+                updatedAt: userWord.updatedAt,
+                baseWord: {
+                    id: baseWord.id,
+                    word: baseWord.word,
+                    languageId: baseWord.language.code,
+                    translations: baseWord.translations,
+                    examples: baseWord.examples,
+                },
+                customTranslations: userWord.customTranslations || [],
+            };
         } catch (error) {
             console.error('Error converting BaseWord to Word:', error);
             return null;

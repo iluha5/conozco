@@ -156,6 +156,7 @@ export async function GET(request: NextRequest) {
                 },
             },
             select: {
+                id: true,
                 baseWordId: true,
                 customTranslations: {
                     where: {
@@ -179,6 +180,7 @@ export async function GET(request: NextRequest) {
             return {
                 ...baseWord,
                 isAddedByUser: !!userWord,
+                userWordId: userWord?.id ?? null,
                 customTranslations: userWord?.customTranslations || [],
             };
         });
