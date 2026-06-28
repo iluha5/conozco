@@ -2,17 +2,18 @@ import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/shared';
 import { useTranslation } from '@/lib/i18n';
 import type { BaseWord, SelectedWord } from '@/types/add-word-dialog.types';
+import type { WordChangedEvent, WordListItem } from '@/types/words.types';
 
 type UseWordManagementProps = {
     availableWords: BaseWord[];
     setAvailableWords: React.Dispatch<React.SetStateAction<BaseWord[]>>;
-    onWordAdded: () => void;
+    onWordChanged: (_change: WordChangedEvent) => void;
 };
 
 export function useWordManagement({
     availableWords,
     setAvailableWords,
-    onWordAdded,
+    onWordChanged,
 }: UseWordManagementProps) {
     const [selectedWords, setSelectedWords] = useState<SelectedWord[]>([]);
     const { toast } = useToast();
@@ -41,7 +42,8 @@ export function useWordManagement({
             });
 
             if (response.ok) {
-                const createdWord = await response.json();
+                const createdWord = (await response.json()) as WordListItem;
+                const baseWord = availableWords.find(w => w.id === baseWordId);
                 setAvailableWords(prev =>
                     prev.map(w =>
                         w.id === baseWordId
@@ -54,7 +56,13 @@ export function useWordManagement({
                     ),
                 );
                 setSelectedWords(prev => [...prev, baseWordId]);
-                onWordAdded();
+                onWordChanged({
+                    action: 'add',
+                    item: createdWord,
+                    wordGroupIds: baseWord?.wordGroups?.map(
+                        group => group.wordGroupId,
+                    ),
+                });
                 return true;
             } else {
                 toast({
@@ -106,7 +114,7 @@ export function useWordManagement({
                     ),
                 );
                 setSelectedWords(prev => prev.filter(id => id !== baseWordId));
-                onWordAdded();
+                onWordChanged({ action: 'remove', wordId: userWordId });
                 return true;
             }
 

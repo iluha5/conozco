@@ -30,11 +30,13 @@ import {
     isLearnLanguageAvailable,
 } from '@/config/learn-languages';
 
+import type { WordChangedEvent } from '@/types/words.types';
+
 type AddWordDialogProps = {
-    onWordAdded: () => void;
+    onWordChanged: (_change: WordChangedEvent) => void;
 };
 
-export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
+export function AddWordDialog({ onWordChanged }: AddWordDialogProps) {
     const { t } = useTranslation();
     const { open, setOpen } = useHashDialog('add-word-dialog');
     const [needsScroll, setNeedsScroll] = useState(false);
@@ -100,7 +102,7 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
     } = useWordManagement({
         availableWords,
         setAvailableWords,
-        onWordAdded,
+        onWordChanged,
     });
 
     const { aiSearching, handleAiSearch } = useAiSearch({

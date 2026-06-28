@@ -142,8 +142,11 @@ export function WordItem({
                                 ) && (
                                     <span className="text-xs text-gray-400 shrink-0">
                                         {getTranslationsCountText(
-                                            displayWord.baseWord?.translations
-                                                ?.length || 0,
+                                            displayWord.baseWord
+                                                ?.translationsCount ??
+                                                displayWord.baseWord
+                                                    ?.translations?.length ??
+                                                0,
                                             !!(
                                                 displayWord.customTranslations &&
                                                 displayWord.customTranslations

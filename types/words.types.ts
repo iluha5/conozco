@@ -76,6 +76,7 @@ export type WordListItem = {
             priority?: number;
             partOfSpeech?: { name: string };
         }>;
+        translationsCount?: number;
         wordGroups?: Array<{ wordGroupId: number }>;
     };
     customTranslations?: Array<{
@@ -94,6 +95,14 @@ export type WordsListResponse = {
 };
 
 export type WordsListStatus = 'ALL' | 'NOT_LEARNED' | 'LEARNED';
+
+export type WordChangedEvent =
+    | {
+          action: 'add';
+          item: WordListItem;
+          wordGroupIds?: number[];
+      }
+    | { action: 'remove'; wordId: number };
 
 export type SetupWord = {
     id: number;

@@ -38,9 +38,14 @@ import {
     getSelectionState,
     getBulkSelectText,
 } from '@/components/WordList/helpers/selectionHelpers';
-import { WordsListStatus, WordsListResponse } from '@/types/words.types';
+import {
+    WordsListStatus,
+    WordsListResponse,
+    WordChangedEvent,
+} from '@/types/words.types';
 import { useTranslation } from '@/lib/i18n';
 import { fetchWordsListPage, getWordsListQueryKey } from '@/lib/api/words.api';
+import { TrainingStats } from '@/lib/api/training.api';
 import type { Word } from '@/components/WordList/typing';
 
 export function WordsPageContent() {
@@ -83,7 +88,6 @@ export function WordsPageContent() {
         isFetchingNextPage,
         hasNextPage,
         fetchNextPage,
-        refetch,
     } = useWordsList(
         learnLanguageCode,
         selectedStatus,
@@ -115,20 +119,168 @@ export function WordsPageContent() {
                         return oldData;
                     }
 
+                    const wordInQuery = oldData.pages.some(page =>
+                        page.items.some(
+                            word => String(word.id) === String(wordId),
+                        ),
+                    );
+
                     return {
                         ...oldData,
-                        pages: oldData.pages.map(page => ({
+                        pages: oldData.pages.map((page, pageIndex) => ({
                             ...page,
                             items: page.items.filter(
                                 word => String(word.id) !== String(wordId),
                             ),
-                            totalCount: Math.max(0, page.totalCount - 1),
+                            totalCount:
+                                wordInQuery && pageIndex === 0
+                                    ? Math.max(0, page.totalCount - 1)
+                                    : page.totalCount,
                         })),
                     };
                 },
             );
         },
         [queryClient],
+    );
+
+    const updateTrainingStats = useCallback(
+        (update: (_stats: TrainingStats) => TrainingStats) => {
+            if (!learnLanguageCode) {
+                return;
+            }
+
+            queryClient.setQueryData<TrainingStats>(
+                ['training-stats', learnLanguageCode],
+                oldData => {
+                    if (!oldData) {
+                        return oldData;
+                    }
+
+                    return update(oldData);
+                },
+            );
+        },
+        [queryClient, learnLanguageCode],
+    );
+
+    const handleWordChanged = useCallback(
+        (change: WordChangedEvent) => {
+            if (change.action === 'add') {
+                const matchesGroupFilter =
+                    !hasGroupFilter ||
+                    (change.wordGroupIds?.some(groupId =>
+                        normalizedGroupIds.includes(groupId),
+                    ) ??
+                        false);
+
+                if (
+                    matchesGroupFilter &&
+                    learnLanguageCode &&
+                    change.item.status === 'NOT_LEARNED'
+                ) {
+                    const queryKey = getWordsListQueryKey({
+                        languageCode: learnLanguageCode,
+                        status: 'NOT_LEARNED',
+                        groupIds: normalizedGroupIds,
+                    });
+
+                    queryClient.setQueryData<
+                        InfiniteData<WordsListResponse, number>
+                    >(queryKey, oldData => {
+                        if (!oldData?.pages[0]) {
+                            return oldData;
+                        }
+
+                        const alreadyExists = oldData.pages.some(page =>
+                            page.items.some(word => word.id === change.item.id),
+                        );
+
+                        if (alreadyExists) {
+                            return oldData;
+                        }
+
+                        return {
+                            ...oldData,
+                            pages: oldData.pages.map((page, pageIndex) =>
+                                pageIndex === 0
+                                    ? {
+                                          ...page,
+                                          items: [change.item, ...page.items],
+                                          totalCount: page.totalCount + 1,
+                                      }
+                                    : page,
+                            ),
+                        };
+                    });
+                }
+
+                updateTrainingStats(stats => ({
+                    notLearnedCount: stats.notLearnedCount + 1,
+                    learnedCount: stats.learnedCount,
+                    totalCount: stats.totalCount + 1,
+                }));
+                return;
+            }
+
+            let removedStatus: 'LEARNED' | 'NOT_LEARNED' | null = null;
+
+            queryClient.setQueriesData<InfiniteData<WordsListResponse, number>>(
+                { queryKey: ['words-list'] },
+                oldData => {
+                    if (!oldData) {
+                        return oldData;
+                    }
+
+                    for (const page of oldData.pages) {
+                        const found = page.items.find(
+                            word => word.id === change.wordId,
+                        );
+                        if (found) {
+                            removedStatus = found.status;
+                            break;
+                        }
+                    }
+
+                    const wordInQuery = oldData.pages.some(page =>
+                        page.items.some(word => word.id === change.wordId),
+                    );
+
+                    return {
+                        ...oldData,
+                        pages: oldData.pages.map((page, pageIndex) => ({
+                            ...page,
+                            items: page.items.filter(
+                                word => word.id !== change.wordId,
+                            ),
+                            totalCount:
+                                wordInQuery && pageIndex === 0
+                                    ? Math.max(0, page.totalCount - 1)
+                                    : page.totalCount,
+                        })),
+                    };
+                },
+            );
+
+            updateTrainingStats(stats => ({
+                notLearnedCount:
+                    removedStatus === 'LEARNED'
+                        ? stats.notLearnedCount
+                        : Math.max(0, stats.notLearnedCount - 1),
+                learnedCount:
+                    removedStatus === 'LEARNED'
+                        ? Math.max(0, stats.learnedCount - 1)
+                        : stats.learnedCount,
+                totalCount: Math.max(0, stats.totalCount - 1),
+            }));
+        },
+        [
+            hasGroupFilter,
+            learnLanguageCode,
+            normalizedGroupIds,
+            queryClient,
+            updateTrainingStats,
+        ],
     );
 
     useEffect(() => {
@@ -374,11 +526,6 @@ export function WordsPageContent() {
         confirmations.handleCloseDeleteDialog();
     };
 
-    const handleAddWord = async () => {
-        await handleWordsChange();
-        await refetch();
-    };
-
     if (!isClient) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -411,7 +558,7 @@ export function WordsPageContent() {
                     </h1>
                     <div className="flex flex-row gap-2 w-auto">
                         <div className="flex-none min-w-0">
-                            <AddWordDialog onWordAdded={handleAddWord} />
+                            <AddWordDialog onWordChanged={handleWordChanged} />
                         </div>
                     </div>
                 </div>

@@ -19,9 +19,10 @@ export function serializeWordListItem(word: any) {
                           ? { name: t.partOfSpeech.name }
                           : undefined,
                   })),
-                  wordGroups: baseWord.wordGroups.map((wg: any) => ({
-                      wordGroupId: wg.wordGroupId,
-                  })),
+                  translationsCount:
+                      baseWord._count?.translations ??
+                      baseWord.translations?.length ??
+                      0,
               }
             : undefined,
         customTranslations: Array.isArray(customTranslations)
