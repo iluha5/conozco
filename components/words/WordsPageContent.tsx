@@ -418,7 +418,7 @@ export function WordsPageContent() {
 
                 <div className="flex gap-4 mb-6">
                     <Card
-                        className={`flex-1 max-w-[140px] cursor-pointer transition-all hover:shadow-md ${
+                        className={`flex flex-col justify-between flex-1 max-w-[140px] cursor-pointer transition-all hover:shadow-md ${
                             selectedStatus === 'ALL'
                                 ? 'ring-2 ring-black shadow-md'
                                 : ''
@@ -438,7 +438,7 @@ export function WordsPageContent() {
                     </Card>
 
                     <Card
-                        className={`flex-1 max-w-[140px] cursor-pointer transition-all hover:shadow-md ${
+                        className={`flex flex-col justify-between flex-1 max-w-[140px] cursor-pointer transition-all hover:shadow-md ${
                             selectedStatus === 'NOT_LEARNED'
                                 ? 'ring-2 ring-orange-500 shadow-md'
                                 : ''
@@ -458,7 +458,7 @@ export function WordsPageContent() {
                     </Card>
 
                     <Card
-                        className={`flex-1 max-w-[140px] cursor-pointer transition-all hover:shadow-md ${
+                        className={`flex flex-col justify-between flex-1 max-w-[140px] cursor-pointer transition-all hover:shadow-md ${
                             selectedStatus === 'LEARNED'
                                 ? 'ring-2 ring-green-500 shadow-md'
                                 : ''
@@ -535,9 +535,6 @@ export function WordsPageContent() {
                                     onMouseLeave={handleCounterHintMouseLeave}
                                     onKeyDown={handleCounterHintKeyDown}
                                 >
-                                    <span className="text-sm text-gray-600">
-                                        {t('Shown:')}
-                                    </span>
                                     <Badge
                                         variant="outline"
                                         className="gap-1.5 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 shadow-sm text-sm"
