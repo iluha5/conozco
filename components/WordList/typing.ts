@@ -27,6 +27,7 @@ export type Word = {
                 displayName: string;
             };
         }>;
+        translationsCount?: number;
         examples?: Array<any>;
         grammaticalExamples?: Array<any>;
     };

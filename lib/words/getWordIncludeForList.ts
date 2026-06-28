@@ -18,7 +18,7 @@ export function getWordIncludeForList(
                         language: { code: translationLanguageCode },
                     },
                     orderBy: { priority: 'asc' as const },
-                    take: 3,
+                    take: 1,
                     select: {
                         translation: true,
                         priority: true,
@@ -29,9 +29,13 @@ export function getWordIncludeForList(
                         },
                     },
                 },
-                wordGroups: {
+                _count: {
                     select: {
-                        wordGroupId: true,
+                        translations: {
+                            where: {
+                                language: { code: translationLanguageCode },
+                            },
+                        },
                     },
                 },
             },

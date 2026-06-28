@@ -1,4 +1,9 @@
-import { WordsListResponse, WordsListStatus } from '@/types/words.types';
+import {
+    WordsListResponse,
+    WordsListStatus,
+    BulkAddWordsResponse,
+    BulkRemoveWordsResponse,
+} from '@/types/words.types';
 
 export interface FetchWordsListParams {
     languageCode: string;
@@ -37,6 +42,42 @@ export const wordsApi = {
 
         if (!response.ok) {
             throw new Error('Failed to fetch words list');
+        }
+
+        return response.json();
+    },
+
+    bulkAddWordsFromDictionary: async (
+        baseWordIds: number[],
+    ): Promise<BulkAddWordsResponse> => {
+        const response = await fetch('/api/words/bulk', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ baseWordIds }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to bulk add words');
+        }
+
+        return response.json();
+    },
+
+    bulkRemoveWords: async (
+        wordIds: number[],
+    ): Promise<BulkRemoveWordsResponse> => {
+        const response = await fetch('/api/words/bulk', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ wordIds }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to bulk remove words');
         }
 
         return response.json();

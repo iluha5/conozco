@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { getWordIncludeForList } from '@/lib/words/getWordIncludeForList';
+import { serializeWordListItem } from '@/lib/words/serializeWordListItem';
 
 export async function GET(request: NextRequest) {
     try {
@@ -265,85 +267,22 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        const userId = parseInt(session.user.id);
+        const listInclude = getWordIncludeForList(
+            userId,
+            translationLanguageCode,
+        );
+
         const word = await prisma.word.create({
             data: {
-                userId: parseInt(session.user.id),
+                userId,
                 baseWordId: baseWord.id,
                 languageId: baseWord.languageId,
             },
-            include: {
-                status: true,
-                language: true,
-                baseWord: {
-                    include: {
-                        translations: {
-                            where: {
-                                language: { code: translationLanguageCode },
-                            },
-                            orderBy: { priority: 'asc' },
-                            include: {
-                                partOfSpeech: true,
-                            },
-                        },
-                        examples: {
-                            where: {
-                                translationLanguage: {
-                                    code: translationLanguageCode,
-                                },
-                            },
-                            include: {
-                                pronoun: true,
-                                sentenceType: true,
-                                translationLanguage: true,
-                            },
-                        },
-                        grammaticalExamples: {
-                            where: {
-                                translationLanguage: {
-                                    code: translationLanguageCode,
-                                },
-                            },
-                            include: {
-                                pronoun: true,
-                                tense: true,
-                                sentenceType: true,
-                            },
-                        },
-                    },
-                },
-            },
+            include: listInclude,
         });
 
-        const { status, ...rest } = word as any;
-        const normalized = {
-            ...rest,
-            status: status.code,
-            baseWord: rest.baseWord
-                ? {
-                      ...rest.baseWord,
-                      examples: rest.baseWord.examples.map((example: any) => ({
-                          ...example,
-                          sentenceType: example.sentenceType,
-                          translationLanguage: example.translationLanguage
-                              ? {
-                                    id: example.translationLanguage.id,
-                                    code: example.translationLanguage.code,
-                                    name: example.translationLanguage.name,
-                                }
-                              : null,
-                      })),
-                      grammaticalExamples:
-                          rest.baseWord.grammaticalExamples.map(
-                              (example: any) => ({
-                                  ...example,
-                                  sentenceType: example.sentenceType,
-                              }),
-                          ),
-                  }
-                : undefined,
-        };
-
-        return NextResponse.json(normalized, { status: 201 });
+        return NextResponse.json(serializeWordListItem(word), { status: 201 });
     } catch (error: any) {
         console.error('Error creating word:', error);
 

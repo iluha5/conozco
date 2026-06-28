@@ -30,11 +30,13 @@ import {
     isLearnLanguageAvailable,
 } from '@/config/learn-languages';
 
+import type { WordChangedEvent } from '@/types/words.types';
+
 type AddWordDialogProps = {
-    onWordAdded: () => void;
+    onWordChanged: (_change: WordChangedEvent) => void;
 };
 
-export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
+export function AddWordDialog({ onWordChanged }: AddWordDialogProps) {
     const { t } = useTranslation();
     const { open, setOpen } = useHashDialog('add-word-dialog');
     const [needsScroll, setNeedsScroll] = useState(false);
@@ -97,10 +99,11 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
         toggleAllWordsSelection,
         isWordSelected,
         resetSelection,
+        isBulkProcessing,
     } = useWordManagement({
         availableWords,
         setAvailableWords,
-        onWordAdded,
+        onWordChanged,
     });
 
     const { aiSearching, handleAiSearch } = useAiSearch({
@@ -159,36 +162,35 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
     const convertBaseWordToWord = async (
         baseWord: BaseWord,
     ): Promise<any | null> => {
-        try {
-            const userWordsResponse = await fetch('/api/words');
-            if (userWordsResponse.ok) {
-                const userWords = await userWordsResponse.json();
-                const userWord = userWords.find(
-                    (w: any) => w.baseWordId === baseWord.id,
-                );
-
-                if (userWord) {
-                    return {
-                        id: userWord.id,
-                        userId: userWord.userId,
-                        baseWordId: baseWord.id,
-                        languageId: baseWord.language.code,
-                        language: baseWord.language,
-                        status: userWord.status,
-                        createdAt: userWord.createdAt,
-                        updatedAt: userWord.updatedAt,
-                        baseWord: {
-                            id: baseWord.id,
-                            word: baseWord.word,
-                            languageId: baseWord.language.code,
-                            translations: baseWord.translations,
-                            examples: baseWord.examples,
-                        },
-                        customTranslations: userWord.customTranslations || [],
-                    };
-                }
-            }
+        if (!baseWord.userWordId) {
             return null;
+        }
+
+        try {
+            const response = await fetch(`/api/words/${baseWord.userWordId}`);
+            if (!response.ok) {
+                return null;
+            }
+
+            const userWord = await response.json();
+            return {
+                id: userWord.id,
+                userId: userWord.userId,
+                baseWordId: baseWord.id,
+                languageId: baseWord.language.code,
+                language: baseWord.language,
+                status: userWord.status,
+                createdAt: userWord.createdAt,
+                updatedAt: userWord.updatedAt,
+                baseWord: {
+                    id: baseWord.id,
+                    word: baseWord.word,
+                    languageId: baseWord.language.code,
+                    translations: baseWord.translations,
+                    examples: baseWord.examples,
+                },
+                customTranslations: userWord.customTranslations || [],
+            };
         } catch (error) {
             console.error('Error converting BaseWord to Word:', error);
             return null;
@@ -257,17 +259,13 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
     };
 
     const selectionState = useMemo(() => {
-        const allSelected = filteredWords.every(word =>
-            selectedWords.includes(word.id),
-        );
-        const hasSelection = filteredWords.some(word =>
-            selectedWords.includes(word.id),
-        );
+        const allSelected = filteredWords.every(word => word.isAddedByUser);
+        const hasSelection = filteredWords.some(word => word.isAddedByUser);
 
         if (!hasSelection) return 'none';
         if (allSelected) return 'all';
         return 'partial';
-    }, [filteredWords, selectedWords]);
+    }, [filteredWords]);
 
     const wordsToProcessCount = useMemo(() => {
         if (!pendingToggleAllWords) return 0;
@@ -323,7 +321,6 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                             onToggleGroup={toggleGroup}
                             onToggleAllGroups={toggleAll}
                             words={filteredWords}
-                            selectedWords={selectedWords}
                             onToggleAllSelection={handleToggleAllSelectionClick}
                             searching={searching}
                             filteredWordsCount={filteredWords.length}
@@ -397,10 +394,14 @@ export function AddWordDialog({ onWordAdded }: AddWordDialogProps) {
                         <Button
                             variant="outline"
                             onClick={handleCloseToggleAllDialog}
+                            disabled={isBulkProcessing}
                         >
                             {t('Cancel')}
                         </Button>
-                        <Button onClick={handleConfirmToggleAll}>
+                        <Button
+                            onClick={handleConfirmToggleAll}
+                            disabled={isBulkProcessing}
+                        >
                             {t('Confirm')}
                         </Button>
                     </DialogFooter>

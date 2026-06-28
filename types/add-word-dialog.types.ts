@@ -33,6 +33,7 @@ export type BaseWord = {
         wordGroupId: number;
     }>;
     isAddedByUser: boolean;
+    userWordId?: number | null;
     customTranslations?: Array<{
         id: number;
         translation: string;

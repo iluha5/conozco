@@ -66,6 +66,7 @@ export type WordsStats = {
 
 export type WordListItem = {
     id: number;
+    baseWordId?: number;
     status: WordStatus;
     language: { code: string; name: string };
     customWord?: string;
@@ -76,6 +77,7 @@ export type WordListItem = {
             priority?: number;
             partOfSpeech?: { name: string };
         }>;
+        translationsCount?: number;
         wordGroups?: Array<{ wordGroupId: number }>;
     };
     customTranslations?: Array<{
@@ -94,6 +96,30 @@ export type WordsListResponse = {
 };
 
 export type WordsListStatus = 'ALL' | 'NOT_LEARNED' | 'LEARNED';
+
+export type WordChangedEvent =
+    | {
+          action: 'add';
+          item: WordListItem;
+          wordGroupIds?: number[];
+      }
+    | { action: 'remove'; wordId: number }
+    | {
+          action: 'add-bulk';
+          items: WordListItem[];
+          wordGroupIdsByBaseWordId?: Record<string, number[]>;
+      }
+    | { action: 'remove-bulk'; wordIds: number[] };
+
+export type BulkAddWordsResponse = {
+    created: number;
+    skipped: number;
+    items: WordListItem[];
+};
+
+export type BulkRemoveWordsResponse = {
+    deleted: number;
+};
 
 export type SetupWord = {
     id: number;

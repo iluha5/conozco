@@ -38,9 +38,14 @@ import {
     getSelectionState,
     getBulkSelectText,
 } from '@/components/WordList/helpers/selectionHelpers';
-import { WordsListStatus, WordsListResponse } from '@/types/words.types';
+import {
+    WordsListStatus,
+    WordsListResponse,
+    WordChangedEvent,
+} from '@/types/words.types';
 import { useTranslation } from '@/lib/i18n';
 import { fetchWordsListPage, getWordsListQueryKey } from '@/lib/api/words.api';
+import { TrainingStats } from '@/lib/api/training.api';
 import type { Word } from '@/components/WordList/typing';
 
 export function WordsPageContent() {
@@ -83,7 +88,6 @@ export function WordsPageContent() {
         isFetchingNextPage,
         hasNextPage,
         fetchNextPage,
-        refetch,
     } = useWordsList(
         learnLanguageCode,
         selectedStatus,
@@ -115,20 +119,337 @@ export function WordsPageContent() {
                         return oldData;
                     }
 
+                    const wordInQuery = oldData.pages.some(page =>
+                        page.items.some(
+                            word => String(word.id) === String(wordId),
+                        ),
+                    );
+
                     return {
                         ...oldData,
-                        pages: oldData.pages.map(page => ({
+                        pages: oldData.pages.map((page, pageIndex) => ({
                             ...page,
                             items: page.items.filter(
                                 word => String(word.id) !== String(wordId),
                             ),
-                            totalCount: Math.max(0, page.totalCount - 1),
+                            totalCount:
+                                wordInQuery && pageIndex === 0
+                                    ? Math.max(0, page.totalCount - 1)
+                                    : page.totalCount,
                         })),
                     };
                 },
             );
         },
         [queryClient],
+    );
+
+    const updateTrainingStats = useCallback(
+        (update: (_stats: TrainingStats) => TrainingStats) => {
+            if (!learnLanguageCode) {
+                return;
+            }
+
+            queryClient.setQueryData<TrainingStats>(
+                ['training-stats', learnLanguageCode],
+                oldData => {
+                    if (!oldData) {
+                        return oldData;
+                    }
+
+                    return update(oldData);
+                },
+            );
+        },
+        [queryClient, learnLanguageCode],
+    );
+
+    const handleWordChanged = useCallback(
+        (change: WordChangedEvent) => {
+            if (change.action === 'add') {
+                const matchesGroupFilter =
+                    !hasGroupFilter ||
+                    (change.wordGroupIds?.some(groupId =>
+                        normalizedGroupIds.includes(groupId),
+                    ) ??
+                        false);
+
+                if (
+                    matchesGroupFilter &&
+                    learnLanguageCode &&
+                    change.item.status === 'NOT_LEARNED'
+                ) {
+                    const queryKey = getWordsListQueryKey({
+                        languageCode: learnLanguageCode,
+                        status: 'NOT_LEARNED',
+                        groupIds: normalizedGroupIds,
+                    });
+
+                    queryClient.setQueryData<
+                        InfiniteData<WordsListResponse, number>
+                    >(queryKey, oldData => {
+                        if (!oldData?.pages[0]) {
+                            return oldData;
+                        }
+
+                        const alreadyExists = oldData.pages.some(page =>
+                            page.items.some(word => word.id === change.item.id),
+                        );
+
+                        if (alreadyExists) {
+                            return oldData;
+                        }
+
+                        return {
+                            ...oldData,
+                            pages: oldData.pages.map((page, pageIndex) =>
+                                pageIndex === 0
+                                    ? {
+                                          ...page,
+                                          items: [change.item, ...page.items],
+                                          totalCount: page.totalCount + 1,
+                                      }
+                                    : page,
+                            ),
+                        };
+                    });
+                }
+
+                updateTrainingStats(stats => ({
+                    notLearnedCount: stats.notLearnedCount + 1,
+                    learnedCount: stats.learnedCount,
+                    totalCount: stats.totalCount + 1,
+                }));
+                return;
+            }
+
+            if (change.action === 'add-bulk') {
+                const itemsToAdd = change.items.filter(item => {
+                    if (item.status !== 'NOT_LEARNED') {
+                        return false;
+                    }
+
+                    if (!hasGroupFilter) {
+                        return true;
+                    }
+
+                    const baseWordId = item.baseWordId
+                        ? String(item.baseWordId)
+                        : null;
+                    if (!baseWordId) {
+                        return false;
+                    }
+
+                    const wordGroupIds =
+                        change.wordGroupIdsByBaseWordId?.[baseWordId];
+
+                    return (
+                        wordGroupIds?.some(groupId =>
+                            normalizedGroupIds.includes(groupId),
+                        ) ?? false
+                    );
+                });
+
+                if (itemsToAdd.length > 0 && learnLanguageCode) {
+                    const queryKey = getWordsListQueryKey({
+                        languageCode: learnLanguageCode,
+                        status: 'NOT_LEARNED',
+                        groupIds: normalizedGroupIds,
+                    });
+
+                    queryClient.setQueryData<
+                        InfiniteData<WordsListResponse, number>
+                    >(queryKey, oldData => {
+                        if (!oldData?.pages[0]) {
+                            return oldData;
+                        }
+
+                        const existingIds = new Set(
+                            oldData.pages.flatMap(page =>
+                                page.items.map(item => item.id),
+                            ),
+                        );
+                        const newItems = itemsToAdd.filter(
+                            item => !existingIds.has(item.id),
+                        );
+
+                        if (newItems.length === 0) {
+                            return oldData;
+                        }
+
+                        return {
+                            ...oldData,
+                            pages: oldData.pages.map((page, pageIndex) =>
+                                pageIndex === 0
+                                    ? {
+                                          ...page,
+                                          items: [...newItems, ...page.items],
+                                          totalCount:
+                                              page.totalCount + newItems.length,
+                                      }
+                                    : page,
+                            ),
+                        };
+                    });
+                }
+
+                updateTrainingStats(stats => ({
+                    notLearnedCount: stats.notLearnedCount + itemsToAdd.length,
+                    learnedCount: stats.learnedCount,
+                    totalCount: stats.totalCount + itemsToAdd.length,
+                }));
+                return;
+            }
+
+            if (change.action === 'remove') {
+                let removedStatus: 'LEARNED' | 'NOT_LEARNED' | null = null;
+
+                queryClient.setQueriesData<
+                    InfiniteData<WordsListResponse, number>
+                >({ queryKey: ['words-list'] }, oldData => {
+                    if (!oldData) {
+                        return oldData;
+                    }
+
+                    for (const page of oldData.pages) {
+                        const found = page.items.find(
+                            word => word.id === change.wordId,
+                        );
+                        if (found) {
+                            removedStatus = found.status;
+                            break;
+                        }
+                    }
+
+                    const wordInQuery = oldData.pages.some(page =>
+                        page.items.some(word => word.id === change.wordId),
+                    );
+
+                    return {
+                        ...oldData,
+                        pages: oldData.pages.map((page, pageIndex) => ({
+                            ...page,
+                            items: page.items.filter(
+                                word => word.id !== change.wordId,
+                            ),
+                            totalCount:
+                                wordInQuery && pageIndex === 0
+                                    ? Math.max(0, page.totalCount - 1)
+                                    : page.totalCount,
+                        })),
+                    };
+                });
+
+                updateTrainingStats(stats => ({
+                    notLearnedCount:
+                        removedStatus === 'LEARNED'
+                            ? stats.notLearnedCount
+                            : Math.max(0, stats.notLearnedCount - 1),
+                    learnedCount:
+                        removedStatus === 'LEARNED'
+                            ? Math.max(0, stats.learnedCount - 1)
+                            : stats.learnedCount,
+                    totalCount: Math.max(0, stats.totalCount - 1),
+                }));
+                return;
+            }
+
+            if (change.action === 'remove-bulk') {
+                const wordIdsToRemove = new Set(change.wordIds);
+                const countedWordIds = new Set<number>();
+                let removedNotLearnedCount = 0;
+                let removedLearnedCount = 0;
+
+                for (const query of queryClient.getQueryCache().findAll({
+                    queryKey: ['words-list'],
+                })) {
+                    const data = query.state.data as
+                        | InfiniteData<WordsListResponse, number>
+                        | undefined;
+
+                    if (!data) {
+                        continue;
+                    }
+
+                    for (const page of data.pages) {
+                        for (const word of page.items) {
+                            if (
+                                wordIdsToRemove.has(word.id) &&
+                                !countedWordIds.has(word.id)
+                            ) {
+                                countedWordIds.add(word.id);
+                                if (word.status === 'LEARNED') {
+                                    removedLearnedCount += 1;
+                                } else {
+                                    removedNotLearnedCount += 1;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                queryClient.setQueriesData<
+                    InfiniteData<WordsListResponse, number>
+                >({ queryKey: ['words-list'] }, oldData => {
+                    if (!oldData) {
+                        return oldData;
+                    }
+
+                    const removedInQuery = oldData.pages.reduce(
+                        (count, page) =>
+                            count +
+                            page.items.filter(word =>
+                                wordIdsToRemove.has(word.id),
+                            ).length,
+                        0,
+                    );
+
+                    return {
+                        ...oldData,
+                        pages: oldData.pages.map((page, pageIndex) => ({
+                            ...page,
+                            items: page.items.filter(
+                                word => !wordIdsToRemove.has(word.id),
+                            ),
+                            totalCount:
+                                removedInQuery > 0 && pageIndex === 0
+                                    ? Math.max(
+                                          0,
+                                          page.totalCount - removedInQuery,
+                                      )
+                                    : page.totalCount,
+                        })),
+                    };
+                });
+
+                const removedCount =
+                    removedNotLearnedCount + removedLearnedCount;
+
+                if (removedCount > 0) {
+                    updateTrainingStats(stats => ({
+                        notLearnedCount: Math.max(
+                            0,
+                            stats.notLearnedCount - removedNotLearnedCount,
+                        ),
+                        learnedCount: Math.max(
+                            0,
+                            stats.learnedCount - removedLearnedCount,
+                        ),
+                        totalCount: Math.max(
+                            0,
+                            stats.totalCount - removedCount,
+                        ),
+                    }));
+                }
+            }
+        },
+        [
+            hasGroupFilter,
+            learnLanguageCode,
+            normalizedGroupIds,
+            queryClient,
+            updateTrainingStats,
+        ],
     );
 
     useEffect(() => {
@@ -374,11 +695,6 @@ export function WordsPageContent() {
         confirmations.handleCloseDeleteDialog();
     };
 
-    const handleAddWord = async () => {
-        await handleWordsChange();
-        await refetch();
-    };
-
     if (!isClient) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -411,14 +727,14 @@ export function WordsPageContent() {
                     </h1>
                     <div className="flex flex-row gap-2 w-auto">
                         <div className="flex-none min-w-0">
-                            <AddWordDialog onWordAdded={handleAddWord} />
+                            <AddWordDialog onWordChanged={handleWordChanged} />
                         </div>
                     </div>
                 </div>
 
                 <div className="flex gap-4 mb-6">
                     <Card
-                        className={`flex-1 max-w-[140px] cursor-pointer transition-all hover:shadow-md ${
+                        className={`flex flex-col justify-between flex-1 max-w-[140px] cursor-pointer transition-all hover:shadow-md ${
                             selectedStatus === 'ALL'
                                 ? 'ring-2 ring-black shadow-md'
                                 : ''
@@ -438,7 +754,7 @@ export function WordsPageContent() {
                     </Card>
 
                     <Card
-                        className={`flex-1 max-w-[140px] cursor-pointer transition-all hover:shadow-md ${
+                        className={`flex flex-col justify-between flex-1 max-w-[140px] cursor-pointer transition-all hover:shadow-md ${
                             selectedStatus === 'NOT_LEARNED'
                                 ? 'ring-2 ring-orange-500 shadow-md'
                                 : ''
@@ -458,7 +774,7 @@ export function WordsPageContent() {
                     </Card>
 
                     <Card
-                        className={`flex-1 max-w-[140px] cursor-pointer transition-all hover:shadow-md ${
+                        className={`flex flex-col justify-between flex-1 max-w-[140px] cursor-pointer transition-all hover:shadow-md ${
                             selectedStatus === 'LEARNED'
                                 ? 'ring-2 ring-green-500 shadow-md'
                                 : ''
@@ -535,9 +851,6 @@ export function WordsPageContent() {
                                     onMouseLeave={handleCounterHintMouseLeave}
                                     onKeyDown={handleCounterHintKeyDown}
                                 >
-                                    <span className="text-sm text-gray-600">
-                                        {t('Shown:')}
-                                    </span>
                                     <Badge
                                         variant="outline"
                                         className="gap-1.5 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 shadow-sm text-sm"
