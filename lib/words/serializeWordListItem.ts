@@ -3,6 +3,7 @@ export function serializeWordListItem(word: any) {
 
     return {
         id: rest.id,
+        baseWordId: rest.baseWordId ?? undefined,
         status: typeof status === 'string' ? status : status.code,
         language: {
             code: language.code,

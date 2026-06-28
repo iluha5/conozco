@@ -99,6 +99,7 @@ export function AddWordDialog({ onWordChanged }: AddWordDialogProps) {
         toggleAllWordsSelection,
         isWordSelected,
         resetSelection,
+        isBulkProcessing,
     } = useWordManagement({
         availableWords,
         setAvailableWords,
@@ -258,17 +259,13 @@ export function AddWordDialog({ onWordChanged }: AddWordDialogProps) {
     };
 
     const selectionState = useMemo(() => {
-        const allSelected = filteredWords.every(word =>
-            selectedWords.includes(word.id),
-        );
-        const hasSelection = filteredWords.some(word =>
-            selectedWords.includes(word.id),
-        );
+        const allSelected = filteredWords.every(word => word.isAddedByUser);
+        const hasSelection = filteredWords.some(word => word.isAddedByUser);
 
         if (!hasSelection) return 'none';
         if (allSelected) return 'all';
         return 'partial';
-    }, [filteredWords, selectedWords]);
+    }, [filteredWords]);
 
     const wordsToProcessCount = useMemo(() => {
         if (!pendingToggleAllWords) return 0;
@@ -324,7 +321,6 @@ export function AddWordDialog({ onWordChanged }: AddWordDialogProps) {
                             onToggleGroup={toggleGroup}
                             onToggleAllGroups={toggleAll}
                             words={filteredWords}
-                            selectedWords={selectedWords}
                             onToggleAllSelection={handleToggleAllSelectionClick}
                             searching={searching}
                             filteredWordsCount={filteredWords.length}
@@ -398,10 +394,14 @@ export function AddWordDialog({ onWordChanged }: AddWordDialogProps) {
                         <Button
                             variant="outline"
                             onClick={handleCloseToggleAllDialog}
+                            disabled={isBulkProcessing}
                         >
                             {t('Cancel')}
                         </Button>
-                        <Button onClick={handleConfirmToggleAll}>
+                        <Button
+                            onClick={handleConfirmToggleAll}
+                            disabled={isBulkProcessing}
+                        >
                             {t('Confirm')}
                         </Button>
                     </DialogFooter>

@@ -223,11 +223,90 @@ export function WordsPageContent() {
                 return;
             }
 
-            let removedStatus: 'LEARNED' | 'NOT_LEARNED' | null = null;
+            if (change.action === 'add-bulk') {
+                const itemsToAdd = change.items.filter(item => {
+                    if (item.status !== 'NOT_LEARNED') {
+                        return false;
+                    }
 
-            queryClient.setQueriesData<InfiniteData<WordsListResponse, number>>(
-                { queryKey: ['words-list'] },
-                oldData => {
+                    if (!hasGroupFilter) {
+                        return true;
+                    }
+
+                    const baseWordId = item.baseWordId
+                        ? String(item.baseWordId)
+                        : null;
+                    if (!baseWordId) {
+                        return false;
+                    }
+
+                    const wordGroupIds =
+                        change.wordGroupIdsByBaseWordId?.[baseWordId];
+
+                    return (
+                        wordGroupIds?.some(groupId =>
+                            normalizedGroupIds.includes(groupId),
+                        ) ?? false
+                    );
+                });
+
+                if (itemsToAdd.length > 0 && learnLanguageCode) {
+                    const queryKey = getWordsListQueryKey({
+                        languageCode: learnLanguageCode,
+                        status: 'NOT_LEARNED',
+                        groupIds: normalizedGroupIds,
+                    });
+
+                    queryClient.setQueryData<
+                        InfiniteData<WordsListResponse, number>
+                    >(queryKey, oldData => {
+                        if (!oldData?.pages[0]) {
+                            return oldData;
+                        }
+
+                        const existingIds = new Set(
+                            oldData.pages.flatMap(page =>
+                                page.items.map(item => item.id),
+                            ),
+                        );
+                        const newItems = itemsToAdd.filter(
+                            item => !existingIds.has(item.id),
+                        );
+
+                        if (newItems.length === 0) {
+                            return oldData;
+                        }
+
+                        return {
+                            ...oldData,
+                            pages: oldData.pages.map((page, pageIndex) =>
+                                pageIndex === 0
+                                    ? {
+                                          ...page,
+                                          items: [...newItems, ...page.items],
+                                          totalCount:
+                                              page.totalCount + newItems.length,
+                                      }
+                                    : page,
+                            ),
+                        };
+                    });
+                }
+
+                updateTrainingStats(stats => ({
+                    notLearnedCount: stats.notLearnedCount + itemsToAdd.length,
+                    learnedCount: stats.learnedCount,
+                    totalCount: stats.totalCount + itemsToAdd.length,
+                }));
+                return;
+            }
+
+            if (change.action === 'remove') {
+                let removedStatus: 'LEARNED' | 'NOT_LEARNED' | null = null;
+
+                queryClient.setQueriesData<
+                    InfiniteData<WordsListResponse, number>
+                >({ queryKey: ['words-list'] }, oldData => {
                     if (!oldData) {
                         return oldData;
                     }
@@ -259,20 +338,110 @@ export function WordsPageContent() {
                                     : page.totalCount,
                         })),
                     };
-                },
-            );
+                });
 
-            updateTrainingStats(stats => ({
-                notLearnedCount:
-                    removedStatus === 'LEARNED'
-                        ? stats.notLearnedCount
-                        : Math.max(0, stats.notLearnedCount - 1),
-                learnedCount:
-                    removedStatus === 'LEARNED'
-                        ? Math.max(0, stats.learnedCount - 1)
-                        : stats.learnedCount,
-                totalCount: Math.max(0, stats.totalCount - 1),
-            }));
+                updateTrainingStats(stats => ({
+                    notLearnedCount:
+                        removedStatus === 'LEARNED'
+                            ? stats.notLearnedCount
+                            : Math.max(0, stats.notLearnedCount - 1),
+                    learnedCount:
+                        removedStatus === 'LEARNED'
+                            ? Math.max(0, stats.learnedCount - 1)
+                            : stats.learnedCount,
+                    totalCount: Math.max(0, stats.totalCount - 1),
+                }));
+                return;
+            }
+
+            if (change.action === 'remove-bulk') {
+                const wordIdsToRemove = new Set(change.wordIds);
+                const countedWordIds = new Set<number>();
+                let removedNotLearnedCount = 0;
+                let removedLearnedCount = 0;
+
+                for (const query of queryClient.getQueryCache().findAll({
+                    queryKey: ['words-list'],
+                })) {
+                    const data = query.state.data as
+                        | InfiniteData<WordsListResponse, number>
+                        | undefined;
+
+                    if (!data) {
+                        continue;
+                    }
+
+                    for (const page of data.pages) {
+                        for (const word of page.items) {
+                            if (
+                                wordIdsToRemove.has(word.id) &&
+                                !countedWordIds.has(word.id)
+                            ) {
+                                countedWordIds.add(word.id);
+                                if (word.status === 'LEARNED') {
+                                    removedLearnedCount += 1;
+                                } else {
+                                    removedNotLearnedCount += 1;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                queryClient.setQueriesData<
+                    InfiniteData<WordsListResponse, number>
+                >({ queryKey: ['words-list'] }, oldData => {
+                    if (!oldData) {
+                        return oldData;
+                    }
+
+                    const removedInQuery = oldData.pages.reduce(
+                        (count, page) =>
+                            count +
+                            page.items.filter(word =>
+                                wordIdsToRemove.has(word.id),
+                            ).length,
+                        0,
+                    );
+
+                    return {
+                        ...oldData,
+                        pages: oldData.pages.map((page, pageIndex) => ({
+                            ...page,
+                            items: page.items.filter(
+                                word => !wordIdsToRemove.has(word.id),
+                            ),
+                            totalCount:
+                                removedInQuery > 0 && pageIndex === 0
+                                    ? Math.max(
+                                          0,
+                                          page.totalCount - removedInQuery,
+                                      )
+                                    : page.totalCount,
+                        })),
+                    };
+                });
+
+                const removedCount =
+                    removedNotLearnedCount + removedLearnedCount;
+
+                if (removedCount > 0) {
+                    updateTrainingStats(stats => ({
+                        notLearnedCount: Math.max(
+                            0,
+                            stats.notLearnedCount - removedNotLearnedCount,
+                        ),
+                        learnedCount: Math.max(
+                            0,
+                            stats.learnedCount - removedLearnedCount,
+                        ),
+                        totalCount: Math.max(
+                            0,
+                            stats.totalCount - removedCount,
+                        ),
+                    }));
+                }
+            }
         },
         [
             hasGroupFilter,

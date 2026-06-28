@@ -23,8 +23,7 @@ type AddWordDialogFiltersProps = {
     selectedGroupIds: number[];
     onToggleGroup: (_groupId: number) => void;
     onToggleAllGroups: (_groupIds: number[]) => void;
-    words: Array<{ id: string }>;
-    selectedWords: string[];
+    words: Array<{ id: string | number; isAddedByUser: boolean }>;
     onToggleAllSelection: () => void;
     searching: boolean;
     filteredWordsCount: number;
@@ -58,7 +57,6 @@ export function AddWordDialogFilters({
     onToggleGroup,
     onToggleAllGroups,
     words,
-    selectedWords,
     onToggleAllSelection,
     searching,
     filteredWordsCount,
@@ -176,7 +174,6 @@ export function AddWordDialogFilters({
                     </div>
                     <BulkActions
                         words={words}
-                        selectedWords={selectedWords}
                         onToggleAllSelection={onToggleAllSelection}
                         disabled={searching || words.length === 0}
                     />
@@ -192,8 +189,8 @@ export function AddWordDialogFilters({
                                 {filteredWordsCount}
                             </span>
                             {(() => {
-                                const selectedInFiltered = words.filter(word =>
-                                    selectedWords.includes(word.id),
+                                const selectedInFiltered = words.filter(
+                                    word => word.isAddedByUser,
                                 ).length;
                                 return selectedInFiltered > 0 ? (
                                     <>
