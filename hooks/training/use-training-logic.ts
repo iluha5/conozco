@@ -34,7 +34,7 @@ export function useTrainingLogic() {
 
             if (allStagesCompleted) {
                 try {
-                    await trainingApi.markWordsAsLearned(
+                    const learnedWords = await trainingApi.markWordsAsLearned(
                         trainingWords.map(word => word.id),
                     );
 
@@ -65,7 +65,7 @@ export function useTrainingLogic() {
 
                     return {
                         completed: true,
-                        learnedWords: trainingWords,
+                        learnedWords,
                     };
                 } catch (error) {
                     console.error('Error marking words as learned:', error);

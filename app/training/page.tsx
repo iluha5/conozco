@@ -1,9 +1,10 @@
 'use client';
 
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Header } from '@/components/Header';
 import { TrainingHeader } from '@/components/training/common/TrainingHeader';
 import { StageSelector } from '@/components/training/common/StageSelector';
@@ -47,7 +48,11 @@ import {
 } from '@/hooks/shared';
 import { useTrainingWords } from '@/contexts/training-words-context';
 import { trainingApi } from '@/lib/api/training.api';
-import { TrainingStage } from '@/types/training.types';
+import { TrainingStage, Word } from '@/types/training.types';
+import type {
+    WordRemoveCallback,
+    WordUpdateCallback,
+} from '@/components/WordList/typing';
 import { Card, CardContent } from '@/components/ui/card';
 import { STORAGE_KEYS } from '@/config/storage-keys';
 import { useTranslation } from '@/lib/i18n';
@@ -57,6 +62,7 @@ const STORAGE_KEY = STORAGE_KEYS.TRAINING_PROGRESS;
 export default function TrainingPage() {
     const { t } = useTranslation();
     const router = useRouter();
+    const queryClient = useQueryClient();
     const { status } = useSession();
     const { open: isExitDialogOpen, setOpen: setIsExitDialogOpen } =
         useHashDialog('exit-training-confirm');
@@ -226,9 +232,33 @@ export default function TrainingPage() {
         }
     };
 
-    const handleReloadWords = async () => {
-        state.setCompletedWords(state.trainingWords);
-    };
+    const handleWordUpdate = useCallback<WordUpdateCallback>(
+        (wordId, updates) => {
+            state.setCompletedWords(prev =>
+                prev.map(word =>
+                    String(word.id) === String(wordId)
+                        ? { ...word, ...(updates as Partial<Word>) }
+                        : word,
+                ),
+            );
+        },
+        [state.setCompletedWords],
+    );
+
+    const handleWordRemove = useCallback<WordRemoveCallback>(
+        wordId => {
+            state.setCompletedWords(prev =>
+                prev.filter(word => String(word.id) !== String(wordId)),
+            );
+        },
+        [state.setCompletedWords],
+    );
+
+    const handleCompletedWordsChange = useCallback(async () => {
+        await queryClient.invalidateQueries({
+            queryKey: ['training-stats'],
+        });
+    }, [queryClient]);
 
     // Manual stage switching handler
     const handleStageSelect = (stage: TrainingStage) => {
@@ -279,7 +309,9 @@ export default function TrainingPage() {
                 <div className="container mx-auto px-4 py-8">
                     <TrainingResults
                         completedWords={state.completedWords}
-                        onReload={handleReloadWords}
+                        onWordsChange={handleCompletedWordsChange}
+                        onWordUpdate={handleWordUpdate}
+                        onWordRemove={handleWordRemove}
                     />
                 </div>
             </div>
