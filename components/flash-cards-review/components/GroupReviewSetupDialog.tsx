@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { FlashCardsReviewParams } from '../typing';
 import { useTranslation } from '@/lib/i18n';
+import { AutoScrollText } from '@/components/ui/auto-scroll-text';
 
 interface AccessibleWordGroup {
     id: number;
@@ -192,9 +193,9 @@ export function GroupReviewSetupDialog({
                                         <CardContent className="p-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="flex-1 min-w-0">
-                                                    <div className="font-medium truncate">
+                                                    <AutoScrollText className="font-medium">
                                                         {t('All groups')}
-                                                    </div>
+                                                    </AutoScrollText>
                                                     <div className="flex items-center gap-2 text-sm text-gray-600">
                                                         <Badge
                                                             variant="outline"
@@ -226,9 +227,9 @@ export function GroupReviewSetupDialog({
                                             <CardContent className="p-4">
                                                 <div className="flex items-center gap-3">
                                                     <div className="flex-1 min-w-0">
-                                                        <div className="font-medium truncate">
+                                                        <AutoScrollText className="font-medium">
                                                             {group.name}
-                                                        </div>
+                                                        </AutoScrollText>
                                                         <div className="flex items-center gap-2 text-sm text-gray-600">
                                                             <span>
                                                                 {t(
