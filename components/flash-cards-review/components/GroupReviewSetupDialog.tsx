@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { FlashCardsReviewParams } from '../typing';
 import { useTranslation } from '@/lib/i18n';
+import { AutoScrollText } from '@/components/ui/auto-scroll-text';
 
 interface AccessibleWordGroup {
     id: number;
@@ -142,7 +143,7 @@ export function GroupReviewSetupDialog({
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent
-                className="sm:max-w-[500px] max-h-[90dvh] flex flex-col"
+                className="sm:max-w-[500px] h-[min(560px,85dvh)] max-h-[90dvh] flex flex-col"
                 onOpenAutoFocus={e => e.preventDefault()}
             >
                 <DialogHeader>
@@ -171,93 +172,103 @@ export function GroupReviewSetupDialog({
                             </Badge>
                         </div>
 
-                        {isLoading ? (
-                            <div className="flex items-center justify-center py-8">
-                                <Loader2 className="h-6 w-6 animate-spin" />
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-1 gap-1 flex-1 min-h-0 overflow-y-auto">
-                                <Card
-                                    key="all"
-                                    className={`transition-all hover:bg-gray-50 m-1 ${
-                                        selectedGroupId === 'all'
-                                            ? 'ring-2 ring-black'
-                                            : ''
-                                    }`}
-                                    onClick={() => setSelectedGroupId('all')}
-                                >
-                                    <CardContent className="p-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="flex-1 min-w-0">
-                                                <div className="font-medium truncate">
-                                                    {t('All groups')}
-                                                </div>
-                                                <div className="flex items-center gap-2 text-sm text-gray-600">
-                                                    <Badge
-                                                        variant="outline"
-                                                        className="text-xs"
-                                                    >
-                                                        {t('Mixed types')}
-                                                    </Badge>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-
-                                {filteredGroups.map(group => (
+                        <div className="flex flex-1 min-h-0 flex-col overflow-hidden">
+                            {isLoading ? (
+                                <div className="flex flex-1 items-center justify-center">
+                                    <Loader2 className="h-6 w-6 animate-spin" />
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 gap-1 flex-1 min-h-0 overflow-y-auto">
                                     <Card
-                                        key={group.id}
+                                        key="all"
                                         className={`transition-all hover:bg-gray-50 m-1 ${
-                                            selectedGroupId ===
-                                            group.id.toString()
+                                            selectedGroupId === 'all'
                                                 ? 'ring-2 ring-black'
                                                 : ''
                                         }`}
                                         onClick={() =>
-                                            setSelectedGroupId(
-                                                group.id.toString(),
-                                            )
+                                            setSelectedGroupId('all')
                                         }
                                     >
                                         <CardContent className="p-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="flex-1 min-w-0">
-                                                    <div className="font-medium truncate">
-                                                        {group.name}
-                                                    </div>
+                                                    <AutoScrollText className="font-medium">
+                                                        {t('All groups')}
+                                                    </AutoScrollText>
                                                     <div className="flex items-center gap-2 text-sm text-gray-600">
-                                                        <span>
-                                                            {t(
-                                                                '{{count}} words',
-                                                                {
-                                                                    count: group.wordsCount,
-                                                                },
-                                                            )}
-                                                        </span>
                                                         <Badge
                                                             variant="outline"
                                                             className="text-xs"
                                                         >
-                                                            {group.visibility ===
-                                                            'PUBLIC'
-                                                                ? t('Public')
-                                                                : group.visibility ===
-                                                                    'PRIVATE'
-                                                                  ? t('Private')
-                                                                  : t('Shared')}
+                                                            {t('Mixed types')}
                                                         </Badge>
-                                                        {group.isOwner && (
-                                                            <Crown className="w-3 h-3 text-amber-500" />
-                                                        )}
                                                     </div>
                                                 </div>
                                             </div>
                                         </CardContent>
                                     </Card>
-                                ))}
-                            </div>
-                        )}
+
+                                    {filteredGroups.map(group => (
+                                        <Card
+                                            key={group.id}
+                                            className={`transition-all hover:bg-gray-50 m-1 ${
+                                                selectedGroupId ===
+                                                group.id.toString()
+                                                    ? 'ring-2 ring-black'
+                                                    : ''
+                                            }`}
+                                            onClick={() =>
+                                                setSelectedGroupId(
+                                                    group.id.toString(),
+                                                )
+                                            }
+                                        >
+                                            <CardContent className="p-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="flex-1 min-w-0">
+                                                        <AutoScrollText className="font-medium">
+                                                            {group.name}
+                                                        </AutoScrollText>
+                                                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                                                            <span>
+                                                                {t(
+                                                                    '{{count}} words',
+                                                                    {
+                                                                        count: group.wordsCount,
+                                                                    },
+                                                                )}
+                                                            </span>
+                                                            <Badge
+                                                                variant="outline"
+                                                                className="text-xs"
+                                                            >
+                                                                {group.visibility ===
+                                                                'PUBLIC'
+                                                                    ? t(
+                                                                          'Public',
+                                                                      )
+                                                                    : group.visibility ===
+                                                                        'PRIVATE'
+                                                                      ? t(
+                                                                            'Private',
+                                                                        )
+                                                                      : t(
+                                                                            'Shared',
+                                                                        )}
+                                                            </Badge>
+                                                            {group.isOwner && (
+                                                                <Crown className="w-3 h-3 text-amber-500" />
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
 
                         {showWarning && (
                             <p className="text-sm text-yellow-600">
@@ -269,7 +280,7 @@ export function GroupReviewSetupDialog({
                         )}
                     </div>
 
-                    <div className="flex items-center justify-between">
+                    <div className="flex shrink-0 items-center justify-between">
                         <Label className="mr-4">
                             {t('Number of words (5 - 50)')}
                         </Label>
@@ -299,7 +310,7 @@ export function GroupReviewSetupDialog({
                     </div>
                 </div>
 
-                <div className="flex flex-row justify-end gap-2">
+                <div className="flex shrink-0 flex-row justify-end gap-2">
                     <Button
                         variant="outline"
                         onClick={() => onOpenChange(false)}

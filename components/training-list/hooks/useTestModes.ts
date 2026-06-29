@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { TrainingModeConfig } from '../types/typing';
 import { I18n } from '@/lib/i18n';
 import { getTestConfigsForLanguage } from '../constants/test-config';
-import { ListChecks } from 'lucide-react';
+import { getGroupCheckMode } from '../constants/group-check-mode';
 
 interface WordGroup {
     id: number;
@@ -88,23 +88,7 @@ export function useTestModes(
         if (!languageCode) return [];
 
         const configs = getTestConfigsForLanguage(languageCode);
-        const modes: TrainingModeConfig[] = [
-            {
-                id: 'learned-group-check',
-                title: t('Group check'),
-                shortDescription: t('Select a group to check'),
-                detailedDescription: t(
-                    'Check words from selected group through flashcards',
-                ),
-                icon: ListChecks,
-                gradient: 'from-blue-400 to-cyan-500',
-                enabledStages: [],
-                wordCount: 20,
-                settings: {},
-                wordSource: 'group',
-                modeType: 'flashCards',
-            },
-        ];
+        const modes: TrainingModeConfig[] = [getGroupCheckMode(t)];
 
         configs.forEach(config => {
             const isA2 = config.id.includes('-a2-');

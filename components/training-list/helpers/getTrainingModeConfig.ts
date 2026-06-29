@@ -2,6 +2,7 @@ import { TrainingModeId, TrainingModeConfig } from '../types/typing';
 import { getNewWordsTrainingModes } from '../constants/training-modes';
 import { getLearnedTrainingModes } from '../constants/learned-training-modes';
 import { getTestConfigById } from '../constants/test-config';
+import { getGroupCheckMode } from '../constants/group-check-mode';
 import { I18n } from '@/lib/i18n';
 
 export function getTrainingModeConfig(
@@ -12,6 +13,7 @@ export function getTrainingModeConfig(
     const allTrainingModes: TrainingModeConfig[] = [
         ...getNewWordsTrainingModes(t),
         ...getLearnedTrainingModes(t),
+        getGroupCheckMode(t),
         ...(testModes || []),
     ];
 

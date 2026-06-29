@@ -5,16 +5,24 @@ import { Button } from '@/components/ui/button';
 import { WordsList } from '@/components/WordList/WordList';
 import { ArrowLeft } from 'lucide-react';
 import { Word } from '@/types/training.types';
+import type {
+    WordRemoveCallback,
+    WordUpdateCallback,
+} from '@/components/WordList/typing';
 import { useTranslation } from '@/lib/i18n';
 
 interface TrainingResultsProps {
     completedWords: Word[];
-    onReload: () => Promise<void>;
+    onWordsChange: () => Promise<void>;
+    onWordUpdate: WordUpdateCallback;
+    onWordRemove: WordRemoveCallback;
 }
 
 export function TrainingResults({
     completedWords,
-    onReload,
+    onWordsChange,
+    onWordUpdate,
+    onWordRemove,
 }: TrainingResultsProps) {
     const { t } = useTranslation();
 
@@ -45,7 +53,9 @@ export function TrainingResults({
 
             <WordsList
                 words={completedWords}
-                onWordsChange={onReload}
+                onWordsChange={onWordsChange}
+                onWordUpdate={onWordUpdate}
+                onWordRemove={onWordRemove}
                 showBulkActions={true}
                 emptyMessage={t('No words found')}
             />
