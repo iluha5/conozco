@@ -94,6 +94,7 @@ model User {
   words               Word[]
   createdWordGroups   WordGroup[]          @relation("CreatedWordGroups")
   sharedWordGroups    WordGroupAccess[]    @relation("SharedWordGroups")
+  extensionTokens     ExtensionToken[]
 
   @@index([email])
   @@index([emailVerified])
@@ -474,6 +475,7 @@ enum RateLimitAction {
   RESEND
   FORGOT
   LOGIN
+  EXTENSION_AUTH_TOKEN
 }
 
 enum EmailType {
@@ -494,6 +496,22 @@ model EmailVerificationToken {
   @@index([token])
   @@index([email])
   @@index([expires])
+}
+
+model ExtensionToken {
+  id          Int       @id @default(autoincrement())
+  userId      Int
+  tokenHash   String    @unique
+  tokenPrefix String
+  name        String    @default("Chrome Extension")
+  createdAt   DateTime  @default(now())
+  lastUsedAt  DateTime?
+  expiresAt   DateTime?
+  revokedAt   DateTime?
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tokenHash])
 }
 
 model RateLimitLog {
