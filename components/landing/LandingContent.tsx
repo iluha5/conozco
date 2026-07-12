@@ -9,7 +9,9 @@ import { ScrollIndicator } from './ScrollIndicator';
 import { WorkflowDiagram } from './WorkflowDiagram';
 import { FeatureCard } from './FeatureCard';
 import { RegistrationCallToAction } from './RegistrationCallToAction';
+import { ChromeExtensionSection } from './ChromeExtensionSection';
 import { useTranslation } from '@/lib/i18n/commonTranslation/hooks/useTranslation';
+import { isExtensionEnabled } from '@/config/extension';
 
 const GITHUB_REPO_URL = 'https://github.com/iluha5/conozco';
 
@@ -111,6 +113,12 @@ export function LandingContent() {
                     />
                 </section>
             </ScrollAnimation>
+
+            {isExtensionEnabled() && (
+                <ScrollAnimation animation="slideUp" delay={0.35}>
+                    <ChromeExtensionSection />
+                </ScrollAnimation>
+            )}
 
             {/* Features Section */}
             <ScrollAnimation animation="slideUp" delay={0.4}>
