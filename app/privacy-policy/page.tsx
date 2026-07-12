@@ -384,8 +384,31 @@ export default function PrivacyPolicyPage() {
 
                     <Card className="mb-6">
                         <CardHeader>
+                            <CardTitle>{t('9. Chrome Extension')}</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <p className="text-gray-700">
+                                {t(
+                                    'The Conozco Chrome Extension lets you add words to your vocabulary while browsing other websites. When you use the extension, we process the text you select (up to 100 characters), your account identifier, and API requests needed to add the word to your dictionary.',
+                                )}
+                            </p>
+                            <p className="text-gray-700">
+                                {t(
+                                    'The extension stores an API token locally in your browser (chrome.storage.local) to authenticate requests. We also store token metadata on our servers (name, prefix, creation date, last use, expiry, and revocation status). The full token is shown only once when you connect the extension.',
+                                )}
+                            </p>
+                            <p className="text-gray-700">
+                                {t(
+                                    'You can revoke extension tokens at any time in Settings or by disconnecting in the extension popup. Revoked tokens stop working immediately.',
+                                )}
+                            </p>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="mb-6">
+                        <CardHeader>
                             <CardTitle>
-                                {t('9. Changes to This Privacy Policy')}
+                                {t('10. Changes to This Privacy Policy')}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
@@ -405,7 +428,7 @@ export default function PrivacyPolicyPage() {
                     <Card className="mb-6">
                         <CardHeader>
                             <CardTitle>
-                                {t('10. Contact Information')}
+                                {t('11. Contact Information')}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">

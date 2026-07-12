@@ -23,6 +23,8 @@ import { isLearnLanguageAvailable } from '@/config/learn-languages';
 import { useTrainingStorage } from '@/hooks/training/use-training-storage';
 import { LanguageChangeConfirmationDialog } from '@/components/settings/LanguageChangeConfirmationDialog';
 import { CookieConsentSection } from '@/components/settings/CookieConsentSection';
+import { ExtensionTokensSection } from '@/components/settings/ExtensionTokensSection';
+import { isExtensionEnabled } from '@/config/extension';
 
 export default function SettingsPage() {
     const { data: session } = useSession();
@@ -428,6 +430,10 @@ export default function SettingsPage() {
                             </div>
                         </CardContent>
                     </Card>
+
+                    {!isGuest && isExtensionEnabled() && (
+                        <ExtensionTokensSection />
+                    )}
 
                     {/* Privacy & Cookies */}
                     <CookieConsentSection />
