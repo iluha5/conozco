@@ -18,6 +18,12 @@ COPY prisma ./prisma
 # Explicitly copy scripts directory (needed for compilation, may be excluded by .dockerignore)
 COPY scripts ./scripts
 RUN npx prisma generate
+ARG NEXT_PUBLIC_EXTENSION_ENABLED=false
+ARG NEXT_PUBLIC_EXTENSION_STORE_URL=
+ARG NEXT_PUBLIC_EXTENSION_ID=
+ENV NEXT_PUBLIC_EXTENSION_ENABLED=$NEXT_PUBLIC_EXTENSION_ENABLED
+ENV NEXT_PUBLIC_EXTENSION_STORE_URL=$NEXT_PUBLIC_EXTENSION_STORE_URL
+ENV NEXT_PUBLIC_EXTENSION_ID=$NEXT_PUBLIC_EXTENSION_ID
 RUN npm run build
 # Compile TypeScript scripts to JavaScript
 # Debug: Check which TypeScript files are available
