@@ -37,7 +37,7 @@ export function RegistrationCallToAction({
                     <p className="text-sm font-semibold text-purple-700 mb-4">
                         {content.free}
                     </p>
-                    <Link href="/auth/register">
+                    <Link href="/auth/register-public">
                         <Button className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700">
                             {content.cta}
                         </Button>

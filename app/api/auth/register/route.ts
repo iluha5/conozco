@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { tServer } from '@/lib/i18n/server';
+import { getAdminSession } from '@/lib/auth/requireAdmin';
 
 // Admin password for registration - should be in env variable in production
 const ADMIN_REGISTRATION_PASSWORD =
@@ -9,6 +10,15 @@ const ADMIN_REGISTRATION_PASSWORD =
 
 export async function POST(request: NextRequest) {
     try {
+        const adminSession = await getAdminSession();
+
+        if (!adminSession) {
+            return NextResponse.json(
+                { error: await tServer('Unauthorized') },
+                { status: 401 },
+            );
+        }
+
         const { email, password, name, adminPassword } = await request.json();
 
         // Validate admin password
@@ -71,6 +81,7 @@ export async function POST(request: NextRequest) {
                 password: hashedPassword,
                 name: name || null,
                 roleId: defaultRole.id,
+                emailVerified: new Date(),
             },
             select: {
                 id: true,

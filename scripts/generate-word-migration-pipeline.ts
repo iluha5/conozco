@@ -10,6 +10,20 @@ import {
     calculateChecksum,
     WordData,
 } from './generate-word-migration.mjs';
+import { loadMigrationEnv } from './migration-pipeline/load-env';
+import {
+    ensureSshTunnel,
+    runTunnelOnly,
+    type SshTunnelHandle,
+} from './migration-pipeline/ssh-tunnel';
+import {
+    buildMigrationNameFromProd,
+    fetchWordsFromProd,
+    validateLanguageCode,
+    validateSourceFilter,
+    writeWordsToFile,
+    type SupportedLanguage,
+} from './migration-pipeline/fetch-words-from-prod';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -62,6 +76,27 @@ interface PipelineSession {
 
 let activeSession: PipelineSession | null = null;
 let shuttingDown = false;
+let activeTunnel: SshTunnelHandle | null = null;
+
+function getFlagValue(argv: string[], flag: string): string | undefined {
+    const index = argv.indexOf(flag);
+    if (index === -1) {
+        return undefined;
+    }
+    return argv[index + 1];
+}
+
+function hasFlag(argv: string[], flag: string): boolean {
+    return argv.includes(flag);
+}
+
+async function closeActiveTunnel(): Promise<void> {
+    if (!activeTunnel) {
+        return;
+    }
+    await activeTunnel.close();
+    activeTunnel = null;
+}
 
 function parseWordDataFromCursorOutput(
     stdout: string,
@@ -616,96 +651,122 @@ async function runGenerationLoop(session: PipelineSession): Promise<void> {
 
 function showUsage(): void {
     console.log(
-        'Usage: tsx scripts/generate-word-migration-pipeline.ts <file> [options]\n' +
+        'Usage:\n' +
+            '  tsx scripts/generate-word-migration-pipeline.ts <file> [options]\n' +
+            '  tsx scripts/generate-word-migration-pipeline.ts --from-prod [options]\n\n' +
+            'File mode:\n' +
             '  e.g. new_words.en.txt or spanish_verbs.es.txt\n\n' +
+            'Prod mode (SSH tunnel + DB fetch from .env.local):\n' +
+            '  --from-prod              Fetch words from production DB\n' +
+            '  --language en|es|ru      Required with --from-prod\n' +
+            '  --source DEEPL           Source filter (default: DEEPL)\n' +
+            '                           Also: MYMEMORY, external\n' +
+            '  --limit N                Limit number of words fetched\n' +
+            '  --no-tunnel              Use an already-open tunnel\n' +
+            '  --export-only            Fetch to .txt only, skip Cursor\n' +
+            '  --tunnel-only            Start SSH tunnel and wait (Ctrl+C to exit)\n\n' +
             'Options:\n' +
-            '  --force-restart   Ignore checkpoint and start from scratch\n' +
-            '  --finalize        Build migration.sql from checkpoint without Cursor\n' +
-            '  --check-only      Validate input file (not implemented)',
+            '  --force-restart          Ignore checkpoint and start from scratch\n' +
+            '  --finalize               Build migration.sql from checkpoint without Cursor\n' +
+            '  --check-only             Validate input file (not implemented)',
     );
 }
 
-async function main() {
-    registerShutdownHandlers();
+interface ProdFetchResult {
+    filePath: string;
+    migrationName: string;
+    languageCode: SupportedLanguage;
+    wordCount: number;
+}
 
-    try {
-        const config = await import('./cursor/config.mjs');
-        DEFAULT_AI_MODEL = config.DEFAULT_AI_MODEL || 'composer-2.5';
-        FALLBACK_AI_MODEL = config.FALLBACK_AI_MODEL || 'gpt-5-mini';
-    } catch {
-        // fall back to defaults above
+async function prepareWordsFromProd(argv: string[]): Promise<ProdFetchResult> {
+    const languageRaw = getFlagValue(argv, '--language');
+    if (!languageRaw) {
+        throw new Error('--language is required with --from-prod');
     }
 
-    const args = process.argv.slice(2).filter(arg => !arg.startsWith('--'));
-    const flags = process.argv.slice(2).filter(arg => arg.startsWith('--'));
-    const forceRestart = flags.includes('--force-restart');
-    const finalizeOnly = flags.includes('--finalize');
-    const checkOnly = flags.includes('--check-only');
+    const languageCode = validateLanguageCode(languageRaw);
+    const sourceRaw = getFlagValue(argv, '--source') ?? 'DEEPL';
+    const source = validateSourceFilter(sourceRaw);
+    const limitRaw = getFlagValue(argv, '--limit');
+    const limit = limitRaw ? Number.parseInt(limitRaw, 10) : undefined;
 
-    if (args.length === 0) {
-        showUsage();
-        process.exit(1);
+    if (limitRaw && (!limit || limit < 1)) {
+        throw new Error(`Invalid --limit value: ${limitRaw}`);
     }
 
-    const filePath = path.resolve(args[0]);
+    const skipTunnel = hasFlag(argv, '--no-tunnel');
+    activeTunnel = await ensureSshTunnel({ skipTunnel });
 
-    try {
-        const words = await readWordsFromFile(filePath);
-        const languageCode = words[0]?.languageCode || 'en';
-        const fileName = path.basename(filePath);
-        const match = fileName.match(/^(.+)\.([a-z]{2})\.txt$/);
-        const migrationName = match ? match[1] : 'migration';
+    const migrationName = buildMigrationNameFromProd(source, languageCode);
+    const outputDir = path.join(__dirname, 'temp', 'prod-word-lists');
 
-        console.log(
-            `Loaded ${words.length} ${languageCode} words. ` +
-                `Models: primary=${DEFAULT_AI_MODEL}, fallback=${FALLBACK_AI_MODEL}`,
+    console.log(
+        `Fetching words from prod: language=${languageCode}, source=${source}` +
+            (limit ? `, limit=${limit}` : ''),
+    );
+
+    const words = await fetchWordsFromProd({
+        languageCode,
+        source,
+        limit,
+    });
+
+    if (words.length === 0) {
+        throw new Error(
+            `No words found for language=${languageCode}, source=${source}`,
         );
+    }
 
-        if (checkOnly) {
-            console.log('--check-only is not implemented yet.');
-            return;
-        }
+    const filePath = await writeWordsToFile(
+        words,
+        migrationName,
+        languageCode,
+        outputDir,
+    );
 
-        const session = await initializeSession(
-            filePath,
-            migrationName,
-            languageCode,
-            words.length,
-            forceRestart,
-        );
-        activeSession = session;
+    console.log(`Exported ${words.length} words to ${filePath}`);
 
-        if (finalizeOnly) {
-            const isComplete =
-                session.completedWords.length + session.failedWords.length >=
-                session.totalRequested;
-            const migrationDir = await finalizeSession(
-                session,
-                isComplete ? 'complete' : 'partial',
-            );
-            const relativeDir = path.relative(
-                path.join(__dirname, '..'),
-                migrationDir,
-            );
-            console.log(
-                `Migration finalized from checkpoint: ${relativeDir} ` +
-                    `(${session.wordDataArray.length} words, ` +
-                    `status=${isComplete ? 'complete' : 'partial'})`,
-            );
-            return;
-        }
+    return {
+        filePath,
+        migrationName,
+        languageCode,
+        wordCount: words.length,
+    };
+}
 
-        await runGenerationLoop(session);
+async function runMigrationPipeline(
+    filePath: string,
+    migrationName: string,
+    languageCode: string,
+    options: {
+        forceRestart: boolean;
+        finalizeOnly: boolean;
+        checkOnly: boolean;
+    },
+): Promise<void> {
+    const words = await readWordsFromFile(filePath);
 
-        if (shuttingDown) {
-            return;
-        }
+    console.log(
+        `Loaded ${words.length} ${languageCode} words. ` +
+            `Models: primary=${DEFAULT_AI_MODEL}, fallback=${FALLBACK_AI_MODEL}`,
+    );
 
-        if (session.wordDataArray.length === 0) {
-            console.error('No words were successfully generated.');
-            process.exit(1);
-        }
+    if (options.checkOnly) {
+        console.log('--check-only is not implemented yet.');
+        return;
+    }
 
+    const session = await initializeSession(
+        filePath,
+        migrationName,
+        languageCode,
+        words.length,
+        options.forceRestart,
+    );
+    activeSession = session;
+
+    if (options.finalizeOnly) {
         const isComplete =
             session.completedWords.length + session.failedWords.length >=
             session.totalRequested;
@@ -717,27 +778,123 @@ async function main() {
             path.join(__dirname, '..'),
             migrationDir,
         );
-        const checksum = calculateChecksum(
-            await fs.readFile(path.join(migrationDir, 'migration.sql'), 'utf8'),
-        );
-
         console.log(
-            `Migration created: ${relativeDir} ` +
+            `Migration finalized from checkpoint: ${relativeDir} ` +
                 `(${session.wordDataArray.length} words, ` +
-                `status=${isComplete ? 'complete' : 'partial'}, ` +
-                `checksum=${checksum})`,
+                `status=${isComplete ? 'complete' : 'partial'})`,
         );
+        return;
+    }
 
-        if (session.failedWords.length > 0) {
-            console.log(`Skipped ${session.failedWords.length} failed words:`);
-            session.failedWords.forEach(word => console.log(`  ${word}`));
+    await runGenerationLoop(session);
+
+    if (shuttingDown) {
+        return;
+    }
+
+    if (session.wordDataArray.length === 0) {
+        console.error('No words were successfully generated.');
+        process.exit(1);
+    }
+
+    const isComplete =
+        session.completedWords.length + session.failedWords.length >=
+        session.totalRequested;
+    const migrationDir = await finalizeSession(
+        session,
+        isComplete ? 'complete' : 'partial',
+    );
+    const relativeDir = path.relative(path.join(__dirname, '..'), migrationDir);
+    const checksum = calculateChecksum(
+        await fs.readFile(path.join(migrationDir, 'migration.sql'), 'utf8'),
+    );
+
+    console.log(
+        `Migration created: ${relativeDir} ` +
+            `(${session.wordDataArray.length} words, ` +
+            `status=${isComplete ? 'complete' : 'partial'}, ` +
+            `checksum=${checksum})`,
+    );
+
+    if (session.failedWords.length > 0) {
+        console.log(`Skipped ${session.failedWords.length} failed words:`);
+        session.failedWords.forEach(word => console.log(`  ${word}`));
+    }
+}
+
+async function main() {
+    loadMigrationEnv();
+    registerShutdownHandlers();
+
+    try {
+        const config = await import('./cursor/config.mjs');
+        DEFAULT_AI_MODEL = config.DEFAULT_AI_MODEL || 'composer-2.5';
+        FALLBACK_AI_MODEL = config.FALLBACK_AI_MODEL || 'gpt-5-mini';
+    } catch {
+        // fall back to defaults above
+    }
+
+    const argv = process.argv.slice(2);
+    const args = argv.filter(arg => !arg.startsWith('--'));
+    const forceRestart = hasFlag(argv, '--force-restart');
+    const finalizeOnly = hasFlag(argv, '--finalize');
+    const checkOnly = hasFlag(argv, '--check-only');
+    const fromProd = hasFlag(argv, '--from-prod');
+    const exportOnly = hasFlag(argv, '--export-only');
+    const tunnelOnly = hasFlag(argv, '--tunnel-only');
+
+    if (tunnelOnly) {
+        await runTunnelOnly();
+        return;
+    }
+
+    if (exportOnly && !fromProd) {
+        console.error('--export-only requires --from-prod');
+        process.exit(1);
+    }
+
+    let filePath: string;
+    let migrationName: string;
+    let languageCode: string;
+
+    try {
+        if (fromProd) {
+            const prodResult = await prepareWordsFromProd(argv);
+            filePath = prodResult.filePath;
+            migrationName = prodResult.migrationName;
+            languageCode = prodResult.languageCode;
+
+            if (exportOnly) {
+                console.log('Export complete (--export-only).');
+                return;
+            }
+        } else {
+            if (args.length === 0) {
+                showUsage();
+                process.exit(1);
+            }
+
+            filePath = path.resolve(args[0]);
+            const words = await readWordsFromFile(filePath);
+            languageCode = words[0]?.languageCode || 'en';
+            const fileName = path.basename(filePath);
+            const match = fileName.match(/^(.+)\.([a-z]{2})\.txt$/);
+            migrationName = match ? match[1] : 'migration';
         }
+
+        await runMigrationPipeline(filePath, migrationName, languageCode, {
+            forceRestart,
+            finalizeOnly,
+            checkOnly,
+        });
     } catch (error) {
         console.error(
             'Script failed:',
             error instanceof Error ? error.message : error,
         );
         process.exit(1);
+    } finally {
+        await closeActiveTunnel();
     }
 }
 

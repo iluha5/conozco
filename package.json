@@ -36,7 +36,9 @@
         "prepare": "husky",
         "process-locales": "i18next && npm run format",
         "localize-strings": "node scripts/localize-strings/localize-strings.mjs --log",
-        "generate-migration": "npx tsx scripts/generate-word-migration-pipeline.ts"
+        "generate-migration": "dotenv -e .env.local -- npx tsx scripts/generate-word-migration-pipeline.ts",
+        "generate-migration-en": "dotenv -e .env.local -- npx tsx scripts/generate-word-migration-pipeline.ts -- --from-prod --language en --limit 50",
+        "generate-migration-es": "dotenv -e .env.local -- npx tsx scripts/generate-word-migration-pipeline.ts -- --from-prod --language es --limit 50"
     },
     "prisma": {
         "seed": "tsx prisma/seed.ts"
