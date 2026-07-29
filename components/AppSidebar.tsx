@@ -12,6 +12,7 @@ import {
     Settings,
     Activity,
     LogIn,
+    UserPlus,
 } from 'lucide-react';
 import { Session } from 'next-auth';
 import Link from 'next/link';
@@ -190,6 +191,18 @@ export function AppSidebar({
                                     {t('Settings')}
                                     <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-gray-900 transition-all duration-200 group-hover:w-full" />
                                 </Link>
+
+                                {session?.user?.role === 'ADMIN' && (
+                                    <Link
+                                        href="/auth/register"
+                                        onClick={onClose}
+                                        className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 hover:text-gray-900 relative pb-1.5 group"
+                                    >
+                                        <UserPlus className="w-4 h-4" />
+                                        {t('Create user')}
+                                        <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-gray-900 transition-all duration-200 group-hover:w-full" />
+                                    </Link>
+                                )}
                             </div>
 
                             {mode === 'authenticated' && (

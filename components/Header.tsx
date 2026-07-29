@@ -13,6 +13,7 @@ import {
     Settings,
     Activity,
     LogIn,
+    UserPlus,
 } from 'lucide-react';
 import { AppSidebar } from './AppSidebar';
 import { NavigationLink } from './Header/components/NavigationLink';
@@ -108,6 +109,14 @@ export function Header() {
                             <NavigationLink href="/settings" icon={Settings}>
                                 {t('Settings')}
                             </NavigationLink>
+                            {session?.user?.role === 'ADMIN' && (
+                                <NavigationLink
+                                    href="/auth/register"
+                                    icon={UserPlus}
+                                >
+                                    {t('Create user')}
+                                </NavigationLink>
+                            )}
                         </div>
 
                         <div className="hidden lg:flex items-center justify-end gap-6">

@@ -62,7 +62,11 @@ export function LandingContent() {
                         className="text-center"
                     >
                         <Link
-                            href={session ? '/training/list' : '/auth/register'}
+                            href={
+                                session
+                                    ? '/training/list'
+                                    : '/training/list#tests'
+                            }
                         >
                             <Button
                                 size="lg"
