@@ -1,4 +1,33 @@
 import { execSync } from 'child_process';
+import { TEST_DATABASE_URL } from './test-env';
+
+function runPrismaCommand(
+    command: string,
+    databaseUrl: string = TEST_DATABASE_URL,
+): void {
+    execSync(command, {
+        stdio: 'inherit',
+        env: {
+            ...process.env,
+            DATABASE_URL: databaseUrl,
+        },
+    });
+}
+
+function runMigrations(databaseUrl: string): void {
+    try {
+        console.log('🔄 Running database migrations...');
+        runPrismaCommand('npx prisma migrate deploy', databaseUrl);
+        console.log('✅ Database migrations completed');
+    } catch (error) {
+        console.log('⚠️  Migration deploy failed — resetting test database...');
+        runPrismaCommand(
+            'npx prisma migrate reset --force --skip-seed',
+            databaseUrl,
+        );
+        console.log('✅ Test database reset and migrations applied');
+    }
+}
 
 /**
  * Global setup for E2E tests
@@ -61,59 +90,15 @@ async function globalSetup() {
             }
         }
 
-        // Run migrations
-        console.log('🔄 Running database migrations...');
-        const testDatabaseUrl =
-            'postgresql://flashcards_test:flashcards_test_password@localhost:5434/flashcards_test';
-
-        execSync(
-            `DATABASE_URL="${testDatabaseUrl}" npx prisma migrate deploy`,
-            {
-                stdio: 'inherit',
-                env: {
-                    ...process.env,
-                    DATABASE_URL: testDatabaseUrl,
-                },
-            },
-        );
-
-        console.log('✅ Database migrations completed');
-
-        // Sync schema with DB (in case migrations did not fully apply)
-        console.log('🔄 Syncing database schema...');
-        execSync(
-            `DATABASE_URL="${testDatabaseUrl}" npx prisma db push --accept-data-loss --skip-generate`,
-            {
-                stdio: 'inherit',
-                env: {
-                    ...process.env,
-                    DATABASE_URL: testDatabaseUrl,
-                },
-            },
-        );
+        runMigrations(TEST_DATABASE_URL);
 
         // Generate Prisma Client for the test database
         console.log('🔧 Generating Prisma Client...');
-        execSync(`DATABASE_URL="${testDatabaseUrl}" npx prisma generate`, {
-            stdio: 'inherit',
-            env: {
-                ...process.env,
-                DATABASE_URL: testDatabaseUrl,
-            },
-        });
+        runPrismaCommand('npx prisma generate');
 
         // Seed reference data (roles, statuses, languages)
         console.log('🌱 Seeding reference data...');
-        execSync(
-            `DATABASE_URL="${testDatabaseUrl}" npx tsx e2e/seed-reference-data.ts`,
-            {
-                stdio: 'inherit',
-                env: {
-                    ...process.env,
-                    DATABASE_URL: testDatabaseUrl,
-                },
-            },
-        );
+        runPrismaCommand('npx tsx e2e/seed-reference-data.ts');
 
         console.log('✅ E2E test environment setup completed!');
     } catch (error) {

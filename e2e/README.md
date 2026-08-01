@@ -17,6 +17,17 @@ npm run test:e2e:debug
 npm run test:e2e:report     # open last HTML report
 ```
 
+## Test database
+
+```bash
+npm run test:db:up          # start test DB container (port 5434)
+npm run test:db:studio      # Prisma Studio for test DB
+npm run test:db:down        # stop test DB container
+npm run test:db:reset       # wipe volume and recreate container
+```
+
+`test:db:studio` fails if the test database container is not running. It does not start the main application database.
+
 ## Env vars
 
 | Variable | Default | Purpose |
@@ -24,6 +35,17 @@ npm run test:e2e:report     # open last HTML report
 | `PLAYWRIGHT_BASE_URL` | `http://localhost:8001` | App URL. |
 | `TEST_DATABASE_URL` | `postgresql://flashcards_test:flashcards_test_password@localhost:5434/flashcards_test` | Test DB URL. |
 | `CLEANUP_TEST_DB` | `false` | Stop the test DB container after the run. |
+
+## Troubleshooting
+
+**Tests fail during global setup with migration errors (P3009)**
+
+The test DB may have a stale or failed migration state (often after schema drift). `global-setup.ts` automatically runs `prisma migrate reset` when `migrate deploy` fails, but if problems persist:
+
+```bash
+npm run test:db:reset   # wipe volume and recreate container
+npm run test:e2e
+```
 
 ## Layout
 

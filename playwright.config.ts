@@ -1,4 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
+import {
+    PLAYWRIGHT_BASE_URL,
+    TEST_DATABASE_URL,
+    TEST_NEXTAUTH_URL,
+} from './e2e/test-env';
 
 /**
  * Playwright configuration for Flash Cards application E2E tests
@@ -43,7 +48,7 @@ export default defineConfig({
     use: {
         // Base URL for the application
         // Uses port 8001 for test application to avoid conflicts with main app (8000)
-        baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:8001',
+        baseURL: PLAYWRIGHT_BASE_URL,
 
         // Tracing for debugging
         trace: 'on-first-retry',
@@ -70,9 +75,8 @@ export default defineConfig({
     // Web server settings for starting application before tests
     // Uses port 8001 and test database for isolation from main application
     webServer: {
-        command:
-            'DATABASE_URL="postgresql://flashcards_test:flashcards_test_password@localhost:5434/flashcards_test" npm run dev:test',
-        url: 'http://localhost:8001',
+        command: `DATABASE_URL="${TEST_DATABASE_URL}" NEXTAUTH_URL="${TEST_NEXTAUTH_URL}" npm run dev:test`,
+        url: PLAYWRIGHT_BASE_URL,
         reuseExistingServer: !process.env.CI, // Reuse existing server locally
         timeout: 120 * 1000, // 2 minutes to start
         stdout: 'pipe',
