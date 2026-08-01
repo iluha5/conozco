@@ -5,49 +5,46 @@ import {
     createAndLoginUser,
     cleanupTestDatabase,
     createTestBaseWord,
+    createTestWord,
 } from '../../fixtures';
 import { generateUniqueEmail } from '../../utils/test-helpers';
 
 /**
- * Add word tests (simplified)
+ * Words page smoke tests
  */
-test.describe('Words - Add word', () => {
+test.describe('Words - Page', () => {
     test.beforeEach(async () => {
         await cleanupTestDatabase();
     });
 
-    test('opens dialog and searches for a word', async ({ page }) => {
-        // Create and log in user
-        await createAndLoginUser(page, {
+    test('shows seeded word on words page', async ({ page }) => {
+        const user = await createAndLoginUser(page, {
             email: generateUniqueEmail(),
             password: 'password123',
         });
 
-        // Create base word in dictionary
-        await createTestBaseWord('hello', 'en', 'привет', 'ru');
+        const baseWord = await createTestBaseWord(
+            'hello',
+            'en',
+            'привет',
+            'ru',
+        );
+        if (!baseWord) {
+            throw new Error('Failed to create base word');
+        }
+
+        await createTestWord(user.id, {
+            baseWordId: baseWord.id,
+            languageCode: 'en',
+        });
 
         const wordsPage = new WordsPage(page);
         await wordsPage.goto();
         await wordsPage.expectPageLoaded();
-
-        // Open add-word dialog
-        await wordsPage.clickAddWord();
-
-        const addWordDialog = new AddWordDialogPage(page);
-        // Simplified check: dialog opened
-        await addWordDialog.expectDialogOpen();
-
-        // Try search (result not asserted strictly)
-        try {
-            await addWordDialog.searchWord('hello');
-            await page.waitForTimeout(2000);
-        } catch (error) {
-            // Search errors are acceptable in this simplified test
-        }
+        await wordsPage.expectWordInList('hello');
     });
 
     test('opens add-word dialog', async ({ page }) => {
-        // Create and log in user
         await createAndLoginUser(page, {
             email: generateUniqueEmail(),
             password: 'password123',
@@ -56,12 +53,9 @@ test.describe('Words - Add word', () => {
         const wordsPage = new WordsPage(page);
         await wordsPage.goto();
         await wordsPage.expectPageLoaded();
-
-        // Open add-word dialog
         await wordsPage.clickAddWord();
 
         const addWordDialog = new AddWordDialogPage(page);
-        // Simplified check: dialog opened
         await addWordDialog.expectDialogOpen();
     });
 });

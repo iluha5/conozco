@@ -1,11 +1,7 @@
 import { PrismaClient } from '@prisma/client';
+import { TEST_DATABASE_URL } from '../test-env';
 
-/**
- * Test database URL
- */
-export const TEST_DATABASE_URL =
-    process.env.TEST_DATABASE_URL ||
-    'postgresql://flashcards_test:flashcards_test_password@localhost:5434/flashcards_test';
+export { TEST_DATABASE_URL };
 
 /**
  * Create a new Prisma Client instance for the test database

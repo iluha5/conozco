@@ -80,9 +80,12 @@ export async function getLanguageId(code: string): Promise<number> {
  */
 export interface CreateTestUserOptions {
     roleId?: number;
+    role?: 'USER' | 'ADMIN';
     ownLanguageId?: number;
     learnLanguageId?: number;
     interfaceLanguageId?: number;
+    emailVerified?: Date | null;
+    hasConfigured?: boolean;
 }
 
 /**
@@ -99,7 +102,8 @@ export async function createTestUser(
 
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
-        const roleId = options?.roleId || (await getRoleId('USER'));
+        const roleId =
+            options?.roleId || (await getRoleId(options?.role || 'USER'));
 
         // Create user with minimal fields (languages omitted unless provided)
         const userData: any = {
@@ -107,6 +111,11 @@ export async function createTestUser(
             password: hashedPassword,
             name: name || generateUniqueName(),
             roleId,
+            emailVerified:
+                options?.emailVerified !== undefined
+                    ? options.emailVerified
+                    : new Date(),
+            hasConfigured: options?.hasConfigured ?? false,
         };
 
         // Add language fields only when provided

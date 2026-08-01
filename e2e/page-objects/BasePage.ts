@@ -13,10 +13,32 @@ export class BasePage {
     }
 
     /**
+     * Dismiss cookie consent banner if it blocks interactions
+     */
+    async dismissCookieConsentIfVisible(): Promise<void> {
+        const acceptAllButton = this.page.getByRole('button', {
+            name: 'Accept All',
+        });
+
+        try {
+            if (await acceptAllButton.isVisible({ timeout: 500 })) {
+                await acceptAllButton.click();
+                await acceptAllButton.waitFor({
+                    state: 'hidden',
+                    timeout: 3000,
+                });
+            }
+        } catch {
+            // Banner not shown
+        }
+    }
+
+    /**
      * Navigate to a page
      */
     async goto(path: string = '') {
         await this.page.goto(path);
+        await this.dismissCookieConsentIfVisible();
     }
 
     /**
@@ -69,6 +91,7 @@ export class BasePage {
      * Click an element
      */
     async click(selector: string) {
+        await this.dismissCookieConsentIfVisible();
         await this.page.locator(selector).click();
     }
 

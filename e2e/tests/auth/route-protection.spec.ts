@@ -52,11 +52,11 @@ test.describe('Auth - Route access', () => {
         await loginPage.expectPageLoaded();
     });
 
-    test('allows registration page without authentication', async ({
+    test('redirects guest from admin registration page to login', async ({
         page,
     }) => {
         await page.goto('/auth/register');
 
-        await expect(page).toHaveURL(/\/auth\/register/);
+        await expect(page).toHaveURL(/\/auth\/login/);
     });
 });

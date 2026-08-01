@@ -10,7 +10,7 @@ export class LoginPage extends BasePage {
     private readonly emailInput = 'input[type="email"]';
     private readonly passwordInput = 'input[type="password"]';
     private readonly submitButton = 'button[type="submit"]';
-    private readonly registerLink = 'a[href="/auth/register"]';
+    private readonly registerLink = 'a[href="/auth/register-public"]';
     private readonly cardTitle = 'h3:has-text("Login")'; // More specific selector
 
     constructor(page: Page) {
@@ -60,19 +60,16 @@ export class LoginPage extends BasePage {
         await this.enterEmail(email);
         await this.enterPassword(password);
 
-        // Click submit
+        // Click submit and wait for navigation or error toast
         await this.clickSubmit();
-
-        // Wait for form handling (redirect or error)
-        // Do not wait for a specific URL here — outcome depends on result
-        await this.page.waitForLoadState('networkidle', { timeout: 5000 });
+        await this.page.waitForLoadState('domcontentloaded');
     }
 
     /**
      * Click the registration link
      */
     async clickRegisterLink() {
-        await this.click(this.registerLink);
+        await this.page.locator(this.registerLink).first().click();
         await this.waitForLoadState();
     }
 

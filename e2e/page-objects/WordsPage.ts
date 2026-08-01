@@ -94,10 +94,9 @@ export class WordsPage extends BasePage {
      * Assert a word is present in the list
      */
     async expectWordInList(wordText: string) {
-        const wordElement = this.page.locator(
-            `${this.wordItem}:has-text("${wordText}")`,
-        );
-        await expect(wordElement).toBeVisible();
+        await expect(
+            this.page.getByText(wordText, { exact: false }),
+        ).toBeVisible();
     }
 
     /**

@@ -30,7 +30,6 @@ test.describe('Auth - Login', () => {
         // Wait for successful login — redirect to training list
         // NextAuth session setup may take a moment
         await page.waitForURL('/training/list', { timeout: 10000 });
-        await page.waitForLoadState('networkidle');
 
         await loginPage.expectSuccessfulLogin();
 
@@ -97,7 +96,7 @@ test.describe('Auth - Login', () => {
         // Click registration link
         await loginPage.clickRegisterLink();
 
-        // Should navigate to registration page
-        await expect(page).toHaveURL(/\/auth\/register/);
+        // Should navigate to public registration page
+        await expect(page).toHaveURL(/\/auth\/register-public/);
     });
 });

@@ -8,12 +8,12 @@ import { TIMEOUTS, SELECTORS } from '../utils/constants';
  */
 export class HeaderPage extends BasePage {
     // Selectors
-    private readonly logo = 'a:has-text("Flash Cards")';
+    private readonly logo = 'a:has-text("conozco")';
     private readonly logoutButton = 'button:has-text("Logout")';
     private readonly userEmail =
         '[data-test="header-wrapper"] span:has-text("@")';
     private readonly trainingLink =
-        'a[href="/training/setup"]:has-text("Training")';
+        'a[href="/training/list"]:has-text("Training")';
     private readonly wordsLink = 'a[href="/words"]:has-text("Words")';
     private readonly wordGroupsLink =
         'a[href="/word-groups"]:has-text("Word groups")';

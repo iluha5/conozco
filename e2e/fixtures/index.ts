@@ -28,24 +28,11 @@ export {
     loginViaUI,
     loginViaAPI,
     createAndLoginUser,
+    createAdminAndLoginUser,
     registerAndLoginUser,
     logoutViaUI,
     type TestUserCredentials,
 } from './auth';
-
-// API helpers
-export {
-    apiGet,
-    apiPost,
-    apiPut,
-    apiDelete,
-    getWordsViaAPI,
-    createWordViaAPI,
-    updateWordViaAPI,
-    deleteWordViaAPI,
-    getWordGroupsViaAPI,
-    createWordGroupViaAPI,
-} from './api-helpers';
 
 // Training fixtures
 export {
