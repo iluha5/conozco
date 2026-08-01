@@ -1,10 +1,10 @@
-import { Page } from '@playwright/test';
+import { Page, expect } from '@playwright/test';
 import { APIRequestContext } from '@playwright/test';
 import { createTestUser } from './test-data';
 import { LoginPage } from '../page-objects/LoginPage';
 import { HeaderPage } from '../page-objects/Header';
 import { generateUniqueEmail, generateUniqueName } from '../utils/test-helpers';
-import { DEFAULT_TEST_VALUES, TIMEOUTS } from '../utils/constants';
+import { DEFAULT_TEST_VALUES, SELECTORS, TIMEOUTS } from '../utils/constants';
 
 /**
  * Admin password for registration (default from app config)
@@ -65,14 +65,14 @@ export async function loginViaUI(
     await loginPage.goto();
     await loginPage.login(credentials.email, credentials.password);
 
-    // Wait for successful login - redirect to home page
-    // May take time to establish NextAuth session
+    // Wait for successful login - redirect to training list
     await page.waitForURL('/training/list', {
         timeout: TIMEOUTS.SESSION_SETUP,
     });
 
-    // Additionally wait until page is fully loaded
-    await page.waitForLoadState('networkidle');
+    await expect(page.locator(SELECTORS.HEADER)).toBeVisible({
+        timeout: TIMEOUTS.ELEMENT,
+    });
 
     await loginPage.expectSuccessfulLogin();
 }
@@ -136,25 +136,52 @@ export async function createAndLoginUser(
         interfaceLanguageId: enLanguageId, // Use English for interface in tests
     });
 
-    // Update hasConfigured flag for user (if user exists)
+    // Mark user as configured for training/words flows
+    const { createTestPrismaClient } = await import('./db');
+    const prisma = createTestPrismaClient();
     try {
-        const { createTestPrismaClient } = await import('./db');
-        const prisma = createTestPrismaClient();
-        const existingUser = await prisma.user.findUnique({
+        await prisma.user.update({
             where: { id: user.id },
+            data: { hasConfigured: true },
         });
-        if (existingUser) {
-            await prisma.user.update({
-                where: { id: user.id },
-                data: { hasConfigured: true },
-            });
-        }
+    } finally {
         await prisma.$disconnect();
-    } catch (error) {
-        // Ignore update errors - user may already be configured
     }
 
     // Authenticate through UI
+    await loginViaUI(page, { email, password, name });
+
+    return {
+        email,
+        password,
+        name,
+        id: user.id,
+    };
+}
+
+/**
+ * Create an admin user in the DB and log in via UI
+ */
+export async function createAdminAndLoginUser(
+    page: Page,
+    credentials?: Partial<TestUserCredentials>,
+): Promise<TestUserCredentials & { id: number }> {
+    const email = credentials?.email || generateUniqueEmail();
+    const password = credentials?.password || DEFAULT_TEST_VALUES.PASSWORD;
+    const name = credentials?.name || generateUniqueName();
+
+    const { getLanguageId } = await import('./test-data');
+    const enLanguageId = await getLanguageId('en');
+    const ruLanguageId = await getLanguageId('ru');
+
+    const user = await createTestUser(email, password, name, {
+        role: 'ADMIN',
+        learnLanguageId: enLanguageId,
+        ownLanguageId: ruLanguageId,
+        interfaceLanguageId: enLanguageId,
+        hasConfigured: true,
+    });
+
     await loginViaUI(page, { email, password, name });
 
     return {

@@ -51,9 +51,17 @@ npm run test:e2e
 
 ```
 e2e/
-├── fixtures/        # auth, db, test-data, api helpers (re-exported via index.ts)
+├── fixtures/        # auth, db, test-data, training helpers (re-exported via index.ts)
 ├── page-objects/    # Page Object Model, all extend BasePage
-└── tests/           # auth, words, training, settings
+└── tests/           # auth, words, training
 ```
 
-Use `createAndLoginUser`, `registerAndLoginUser`, `cleanupTestDatabase` and the API helpers (`createWordViaAPI`, etc.) instead of driving the UI for setup. Configuration lives in `playwright.config.ts` (Chromium only, 30s test timeout, 2 retries on CI, 4 workers).
+Use `createAndLoginUser`, `createAdminAndLoginUser`, `cleanupTestDatabase`, and training helpers instead of driving the UI for setup.
+
+**Auth notes:**
+- Public registration: `/auth/register-public`
+- Admin registration: `/auth/register` (requires admin session)
+- Post-login redirect: `/training/list`
+- Most routes are guest-accessible with guest UI stubs (no middleware redirects)
+
+Configuration lives in `playwright.config.ts` (Chromium only, 30s test timeout, 2 retries on CI, 1 worker locally / 4 on CI).

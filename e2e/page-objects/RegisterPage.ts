@@ -12,7 +12,6 @@ export class RegisterPage extends BasePage {
     private readonly passwordInputs = 'input[type="password"]';
     private readonly submitButton = 'button[type="submit"]';
     private readonly loginLink = 'a[href="/auth/login"]';
-    private readonly cardTitle = 'h3:has-text("Registration")'; // More specific selector
 
     constructor(page: Page) {
         super(page);
@@ -26,11 +25,17 @@ export class RegisterPage extends BasePage {
         await this.waitForLoadState();
     }
 
+    async expectRedirectToLogin() {
+        await expect(this.page).toHaveURL(/\/auth\/login/);
+    }
+
     /**
      * Assert the page is loaded
      */
     async expectPageLoaded() {
-        await expect(this.page.locator(this.cardTitle)).toBeVisible();
+        await expect(
+            this.page.getByRole('heading', { name: 'Registration' }),
+        ).toBeVisible();
     }
 
     /**

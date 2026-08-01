@@ -11,7 +11,7 @@ export class TrainingPage extends BasePage {
     private readonly trainingHeader = 'text=Training'; // Training header
     private readonly stageSelector = '[class*="StageSelector"]'; // Stage selector
     private readonly nextButton = 'button:has-text("Next word")';
-    private readonly exitButton = 'button:has-text("Home")';
+    private readonly exitButton = 'button:has-text("Finish")';
     private readonly pauseButton = 'button:has-text("Pause")';
 
     constructor(page: Page) {
