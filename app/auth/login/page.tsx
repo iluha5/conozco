@@ -107,6 +107,7 @@ export default function LoginPage() {
                                     value={email}
                                     onChange={e => setEmail(e.target.value)}
                                     disabled={loading}
+                                    data-test-id="emailLoginInput"
                                 />
                             </div>
 
@@ -128,10 +129,12 @@ export default function LoginPage() {
                                     value={password}
                                     onChange={e => setPassword(e.target.value)}
                                     disabled={loading}
+                                    data-test-id="passwordLoginInput"
                                 />
                             </div>
 
                             <Button
+                                data-test-id="submitLoginBtn"
                                 type="submit"
                                 className="w-full"
                                 disabled={loading}
@@ -161,7 +164,10 @@ export default function LoginPage() {
                                 callbackUrl={POST_LOGIN_REDIRECT}
                             />
 
-                            <div className="text-center text-sm text-gray-600">
+                            <div
+                                data-test-id="signUpBtn"
+                                className="text-center text-sm text-gray-600"
+                            >
                                 {t("Don't have an account?")}{' '}
                                 <Link
                                     href="/auth/register-public"

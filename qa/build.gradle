@@ -1,0 +1,36 @@
+ plugins {
+    id 'java'
+}
+
+group = 'org.hopto'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+def selenideVersion = "7.17.0"
+def junitVersion = "5.14.4"
+def lombokVersion = "1.18.46"
+
+dependencies {
+    implementation "com.codeborne:selenide:$selenideVersion"
+    implementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
+    implementation "com.fasterxml.jackson.core:jackson-databind:2.22.1"
+    implementation 'org.postgresql:postgresql:42.7.13'
+    implementation 'org.apache.commons:commons-lang3:3.20.0'
+    implementation "org.aeonbits.owner:owner-java8:1.0.12"
+
+    testImplementation "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
+    testImplementation "org.junit.jupiter:junit-jupiter-params:$junitVersion"
+    compileOnly "org.projectlombok:lombok:$lombokVersion"
+    annotationProcessor "org.projectlombok:lombok:$lombokVersion"
+
+    testCompileOnly "org.projectlombok:lombok:$lombokVersion"
+    testAnnotationProcessor "org.projectlombok:lombok:$lombokVersion"
+    testImplementation "org.junit.platform:junit-platform-launcher:1.14.4"
+}
+
+test {
+    useJUnitPlatform()
+}
