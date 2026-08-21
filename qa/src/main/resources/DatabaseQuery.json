@@ -1,0 +1,12 @@
+[
+    {
+        "key": "SET_EMAIL_VERIFIED",
+        "query": "update \"User\" set \"emailVerified\"='{0}' where email='{1}';",
+        "description": "Set field emailVerified to user. Params {0} - date, {1} - userEmail"
+    },
+    {
+        "key": "DELETE_USER",
+        "query": "delete from \"User\" where email='{0}';",
+        "description": "Delete user from data base. Param {0} - userEmail"
+    }
+]

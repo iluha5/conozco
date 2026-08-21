@@ -109,7 +109,10 @@ export default function RegisterPublicPage() {
                         <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                             <CheckCircle2 className="w-8 h-8 text-green-600" />
                         </div>
-                        <CardTitle className="text-2xl font-bold text-center">
+                        <CardTitle
+                            data-test-id="registerSuccessHeader"
+                            className="text-2xl font-bold text-center"
+                        >
                             {t('Check your email')}
                         </CardTitle>
                         <CardDescription className="text-center">
@@ -119,12 +122,16 @@ export default function RegisterPublicPage() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <p className="text-sm text-gray-600 text-center">
+                        <p
+                            className="text-sm text-gray-600 text-center"
+                            data-test-id="registerSuccessText"
+                        >
                             {t(
                                 'Please check your inbox and click the link to verify your account',
                             )}
                         </p>
                         <Button
+                            data-test-id="backToLoginBtn"
                             onClick={() => router.push('/auth/login')}
                             className="w-full"
                         >
@@ -159,6 +166,7 @@ export default function RegisterPublicPage() {
                                 value={email}
                                 onChange={e => setEmail(e.target.value)}
                                 disabled={loading}
+                                data-test-id="emailRegisterInput"
                             />
                         </div>
 
@@ -172,6 +180,7 @@ export default function RegisterPublicPage() {
                                 value={name}
                                 onChange={e => setName(e.target.value)}
                                 disabled={loading}
+                                data-test-id="nameRegisterInput"
                             />
                         </div>
 
@@ -185,6 +194,7 @@ export default function RegisterPublicPage() {
                                 value={password}
                                 onChange={e => setPassword(e.target.value)}
                                 disabled={loading}
+                                data-test-id="passwordRegisterInput"
                             />
 
                             {/* Password requirements */}
@@ -221,6 +231,7 @@ export default function RegisterPublicPage() {
                             type="submit"
                             className="w-full"
                             disabled={loading || !isPasswordValid}
+                            data-test-id="createAccountBtn"
                         >
                             {loading ? (
                                 <>
@@ -248,6 +259,7 @@ export default function RegisterPublicPage() {
                         <div className="text-center text-sm text-gray-600">
                             {t('Already have an account?')}{' '}
                             <Link
+                                data-test-id="signInBtn"
                                 href="/auth/login"
                                 className="text-blue-600 hover:underline"
                             >
@@ -263,7 +275,10 @@ export default function RegisterPublicPage() {
 
 function PasswordRequirement({ met, text }: { met: boolean; text: string }) {
     return (
-        <div className="flex items-center gap-2 text-xs">
+        <div
+            data-test-id="passwordRequirementText"
+            className="flex items-center gap-2 text-xs"
+        >
             {met ? (
                 <CheckCircle2 className="w-3 h-3 text-green-600" />
             ) : (

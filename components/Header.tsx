@@ -124,7 +124,10 @@ export function Header() {
                                 <>
                                     <div className="flex items-center gap-2 text-sm">
                                         <User className="w-4 h-4 text-gray-600" />
-                                        <span className="text-gray-700">
+                                        <span
+                                            className="text-gray-700"
+                                            data-test-id="userEmailHeader"
+                                        >
                                             {session.user?.email}
                                         </span>
                                         {session.user?.role === 'ADMIN' && (
@@ -150,13 +153,20 @@ export function Header() {
                             ) : (
                                 <>
                                     <Link href="/auth/login">
-                                        <Button variant="ghost" size="sm">
+                                        <Button
+                                            data-test-id="loginHeaderBtn"
+                                            variant="ghost"
+                                            size="sm"
+                                        >
                                             <LogIn className="w-4 h-4 mr-2" />
                                             {t('Login')}
                                         </Button>
                                     </Link>
                                     <Link href="/auth/register-public">
-                                        <Button size="sm">
+                                        <Button
+                                            data-test-id="registerHeaderBtn"
+                                            size="sm"
+                                        >
                                             {t('Register')}
                                         </Button>
                                     </Link>

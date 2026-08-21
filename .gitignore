@@ -22,6 +22,8 @@ node_modules
 
 # Production
 /build
+qa/build
+qa/.gradle
 
 # Misc
 .DS_Store

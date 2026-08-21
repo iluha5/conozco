@@ -74,7 +74,10 @@ export function CookieConsent() {
 
     return (
         <>
-            <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t shadow-lg p-4">
+            <div
+                data-test-id="cookieAlert"
+                className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t shadow-lg p-4"
+            >
                 <div className="container mx-auto max-w-4xl">
                     <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                         <div className="flex-1">
@@ -108,7 +111,11 @@ export function CookieConsent() {
                             >
                                 {t('Reject All')}
                             </Button>
-                            <Button onClick={handleAcceptAll} disabled={saving}>
+                            <Button
+                                data-test-id="acceptAllCookieBtn"
+                                onClick={handleAcceptAll}
+                                disabled={saving}
+                            >
                                 {saving ? t('Saving...') : t('Accept All')}
                             </Button>
                         </div>
