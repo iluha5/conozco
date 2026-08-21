@@ -28,8 +28,7 @@ import {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const CURSOR_AGENT_BIN =
-    '/Applications/Cursor.app/Contents/Resources/app/bin/cursor agent';
+const CURSOR_BIN = '/Applications/Cursor.app/Contents/Resources/app/bin/cursor';
 
 const CHECKPOINTS_ROOT = path.join(__dirname, 'temp', 'migration-pipelines');
 
@@ -88,6 +87,86 @@ function getFlagValue(argv: string[], flag: string): string | undefined {
 
 function hasFlag(argv: string[], flag: string): boolean {
     return argv.includes(flag);
+}
+
+function getCursorAgentEnv(): NodeJS.ProcessEnv {
+    const env = { ...process.env };
+    delete env.CURSOR_API_KEY;
+    return env;
+}
+
+function runCursorCommand(
+    args: string[],
+    options: {
+        cwd?: string;
+        stdio: 'inherit' | ['pipe', 'pipe', 'pipe'];
+        extraEnv?: Record<string, string>;
+    },
+): ReturnType<typeof spawn> {
+    return spawn(CURSOR_BIN, ['agent', ...args], {
+        cwd: options.cwd,
+        stdio: options.stdio,
+        env: {
+            ...getCursorAgentEnv(),
+            ...options.extraEnv,
+        },
+    });
+}
+
+function runCursorCommandAndWait(
+    args: string[],
+    options: { ignoreFailure?: boolean } = {},
+): Promise<void> {
+    return new Promise((resolve, reject) => {
+        const childProcess = runCursorCommand(args, {
+            stdio: 'inherit',
+        });
+
+        const handleClose = (code: number | null) => {
+            if (code === 0 || options.ignoreFailure) {
+                resolve();
+                return;
+            }
+
+            reject(
+                new Error(
+                    `Cursor CLI ${args.join(' ')} failed (exit=${code}).`,
+                ),
+            );
+        };
+
+        const handleError = (error: Error) => {
+            if (options.ignoreFailure) {
+                resolve();
+                return;
+            }
+
+            reject(
+                new Error(
+                    `Failed to start Cursor CLI ${args.join(' ')}: ${error.message}`,
+                ),
+            );
+        };
+
+        childProcess.on('close', handleClose);
+        childProcess.on('error', handleError);
+    });
+}
+
+async function ensureCursorCliLogin(): Promise<void> {
+    delete process.env.CURSOR_API_KEY;
+
+    console.log('Opening Cursor CLI browser login (API keys are not used)...');
+
+    await runCursorCommandAndWait(['logout'], { ignoreFailure: true });
+
+    try {
+        await runCursorCommandAndWait(['login']);
+    } catch {
+        throw new Error(
+            'Cursor CLI login failed. Complete the browser login and retry.',
+        );
+    }
 }
 
 async function closeActiveTunnel(): Promise<void> {
@@ -400,21 +479,30 @@ async function generateWordDataWithModel(
     await fs.writeFile(promptFile, prompt, 'utf8');
 
     return new Promise<WordData>((resolve, reject) => {
-        const cursorCommand = `${CURSOR_AGENT_BIN} --print --output-format json --model ${modelSlug}`;
-        const cursorProcess = spawn(cursorCommand, {
-            cwd: tempDir,
-            stdio: ['pipe', 'pipe', 'pipe'],
-            shell: true,
-            env: {
-                ...process.env,
-                CURSOR_MODEL: modelSlug,
-                MODEL: modelSlug,
-                AI_MODEL: modelSlug,
+        const cursorProcess = runCursorCommand(
+            ['--print', '--output-format', 'json', '--model', modelSlug],
+            {
+                cwd: tempDir,
+                stdio: ['pipe', 'pipe', 'pipe'],
+                extraEnv: {
+                    CURSOR_MODEL: modelSlug,
+                    MODEL: modelSlug,
+                    AI_MODEL: modelSlug,
+                },
             },
-        });
+        );
 
         let stdout = '';
         let stderr = '';
+
+        const stdinPipe = cursorProcess.stdin;
+        const stdoutPipe = cursorProcess.stdout;
+        const stderrPipe = cursorProcess.stderr;
+
+        if (!stdinPipe || !stdoutPipe || !stderrPipe) {
+            reject(new Error('Cursor CLI process is missing stdio pipes'));
+            return;
+        }
 
         const timeout = setTimeout(() => {
             cursorProcess.kill('SIGTERM');
@@ -425,14 +513,14 @@ async function generateWordDataWithModel(
             );
         }, 60000);
 
-        cursorProcess.stdin.write(prompt);
-        cursorProcess.stdin.end();
+        stdinPipe.write(prompt);
+        stdinPipe.end();
 
-        cursorProcess.stdout.on('data', data => {
+        stdoutPipe.on('data', data => {
             stdout += data.toString();
         });
 
-        cursorProcess.stderr.on('data', data => {
+        stderrPipe.on('data', data => {
             stderr += data.toString();
         });
 
@@ -786,6 +874,7 @@ async function runMigrationPipeline(
         return;
     }
 
+    await ensureCursorCliLogin();
     await runGenerationLoop(session);
 
     if (shuttingDown) {
@@ -824,6 +913,7 @@ async function runMigrationPipeline(
 
 async function main() {
     loadMigrationEnv();
+    delete process.env.CURSOR_API_KEY;
     registerShutdownHandlers();
 
     try {

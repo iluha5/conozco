@@ -8,6 +8,7 @@ import {
     createTestWord,
 } from '../../fixtures';
 import { generateUniqueEmail } from '../../utils/test-helpers';
+import { DEFAULT_TEST_VALUES } from '../../utils/constants';
 
 /**
  * Words page smoke tests
@@ -20,7 +21,7 @@ test.describe('Words - Page', () => {
     test('shows seeded word on words page', async ({ page }) => {
         const user = await createAndLoginUser(page, {
             email: generateUniqueEmail(),
-            password: 'password123',
+            password: DEFAULT_TEST_VALUES.PASSWORD,
         });
 
         const baseWord = await createTestBaseWord(
@@ -47,7 +48,7 @@ test.describe('Words - Page', () => {
     test('opens add-word dialog', async ({ page }) => {
         await createAndLoginUser(page, {
             email: generateUniqueEmail(),
-            password: 'password123',
+            password: DEFAULT_TEST_VALUES.PASSWORD,
         });
 
         const wordsPage = new WordsPage(page);

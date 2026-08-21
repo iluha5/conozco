@@ -1,22 +1,23 @@
 import { test, expect } from '@playwright/test';
 import { LoginPage } from '../../page-objects/LoginPage';
+import { HeaderPage } from '../../page-objects/Header';
 import { createTestUser, cleanupTestDatabase } from '../../fixtures';
 import { generateUniqueEmail } from '../../utils/test-helpers';
+import { DEFAULT_TEST_VALUES } from '../../utils/constants';
 
 /**
  * Login page tests
  */
 test.describe('Auth - Login', () => {
     test.beforeEach(async () => {
-        // Clean DB before each test for isolation
         await cleanupTestDatabase();
     });
 
     test('logs in successfully with valid credentials', async ({ page }) => {
-        // Create test user with unique email
+        const password = DEFAULT_TEST_VALUES.PASSWORD;
         const user = await createTestUser(
             generateUniqueEmail(),
-            'password123',
+            password,
             'Test User',
         );
 
@@ -24,39 +25,32 @@ test.describe('Auth - Login', () => {
         await loginPage.goto();
         await loginPage.expectPageLoaded();
 
-        // Perform login
-        await loginPage.login(user.email, 'password123');
-
-        // Wait for successful login — redirect to training list
-        // NextAuth session setup may take a moment
-        await page.waitForURL('/training/list', { timeout: 10000 });
+        await loginPage.login(user.email, password);
 
         await loginPage.expectSuccessfulLogin();
 
-        // Header should be visible (user is authenticated)
-        await expect(page.getByRole('link', { name: 'conozco' })).toBeVisible();
+        const header = new HeaderPage(page);
+        await header.expectAuthenticatedState(user.email);
     });
 
     test('shows error with wrong email', async ({ page }) => {
-        // Create user with a different email
-        await createTestUser('correct@example.com', 'password123');
+        await createTestUser(
+            'correct@example.com',
+            DEFAULT_TEST_VALUES.PASSWORD,
+        );
 
         const loginPage = new LoginPage(page);
         await loginPage.goto();
 
-        // Try login with wrong email
         await loginPage.enterEmail('wrong@example.com');
-        await loginPage.enterPassword('password123');
+        await loginPage.enterPassword(DEFAULT_TEST_VALUES.PASSWORD);
         await loginPage.clickSubmit();
 
-        // Expect error
         await loginPage.expectError();
-        // Should stay on login page
         await expect(page).toHaveURL(/\/auth\/login/);
     });
 
     test('shows error with wrong password', async ({ page }) => {
-        // Create test user with unique email
         const user = await createTestUser(
             generateUniqueEmail(),
             'correctpassword',
@@ -65,14 +59,11 @@ test.describe('Auth - Login', () => {
         const loginPage = new LoginPage(page);
         await loginPage.goto();
 
-        // Try login with wrong password
         await loginPage.enterEmail(user.email);
         await loginPage.enterPassword('wrongpassword');
         await loginPage.clickSubmit();
 
-        // Expect error
         await loginPage.expectError();
-        // Should stay on login page
         await expect(page).toHaveURL(/\/auth\/login/);
     });
 
@@ -80,12 +71,9 @@ test.describe('Auth - Login', () => {
         const loginPage = new LoginPage(page);
         await loginPage.goto();
 
-        // Try login without filling fields
         await loginPage.clickSubmit();
 
-        // Expect validation error
         await loginPage.expectError();
-        // Should stay on login page
         await expect(page).toHaveURL(/\/auth\/login/);
     });
 
@@ -93,10 +81,8 @@ test.describe('Auth - Login', () => {
         const loginPage = new LoginPage(page);
         await loginPage.goto();
 
-        // Click registration link
         await loginPage.clickRegisterLink();
 
-        // Should navigate to public registration page
         await expect(page).toHaveURL(/\/auth\/register-public/);
     });
 });
