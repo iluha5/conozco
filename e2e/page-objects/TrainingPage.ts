@@ -7,9 +7,7 @@ import { BasePage } from './BasePage';
  */
 export class TrainingPage extends BasePage {
     // Selectors
-    private readonly trainingContainer = '[data-testid="training-container"]';
-    private readonly trainingHeader = 'text=Training'; // Training header
-    private readonly stageSelector = '[class*="StageSelector"]'; // Stage selector
+    private readonly trainingHeader = 'text=Training';
     private readonly nextButton = 'button:has-text("Next word")';
     private readonly exitButton = 'button:has-text("Finish")';
     private readonly pauseButton = 'button:has-text("Pause")';
@@ -30,25 +28,32 @@ export class TrainingPage extends BasePage {
      * Assert the page is loaded
      */
     async expectPageLoaded() {
-        // Check presence of training elements
-        // Use several variants for reliability
-        const container = this.page.locator(this.trainingContainer);
+        const stage1 = this.page.locator('[data-testid="stage1-word-display"]');
+        const stage2 = this.page.locator('[data-testid="stage2-word-display"]');
+        const stage3 = this.page.locator(
+            '[data-testid="stage3-foreign-words-column"]',
+        );
+        const stage4 = this.page.locator(
+            '[data-testid="stage4-translation-display"]',
+        );
+        const stage5 = this.page.locator(
+            '[data-testid="stage5-translation-display"]',
+        );
+        const stage6 = this.page.locator('[data-testid="stage6-play-button"]');
         const header = this.page.locator(this.trainingHeader);
-        const stageSelector = this.page.locator(this.stageSelector);
 
-        // Check presence of at least one element
-        const hasContainer = await container
-            .isVisible({ timeout: 2000 })
-            .catch(() => false);
-        const hasHeader = await header
-            .isVisible({ timeout: 2000 })
-            .catch(() => false);
-        const hasStageSelector = await stageSelector
-            .isVisible({ timeout: 2000 })
-            .catch(() => false);
+        const visibilityChecks = await Promise.all([
+            stage1.isVisible({ timeout: 2000 }).catch(() => false),
+            stage2.isVisible({ timeout: 2000 }).catch(() => false),
+            stage3.isVisible({ timeout: 2000 }).catch(() => false),
+            stage4.isVisible({ timeout: 2000 }).catch(() => false),
+            stage5.isVisible({ timeout: 2000 }).catch(() => false),
+            stage6.isVisible({ timeout: 2000 }).catch(() => false),
+            header.isVisible({ timeout: 2000 }).catch(() => false),
+        ]);
+        const hasStageContent = visibilityChecks.some(Boolean);
 
-        if (!hasContainer && !hasHeader && !hasStageSelector) {
-            // Fallback: check that we are not on setup page
+        if (!hasStageContent) {
             const setupPage = this.page.locator('text=Training setup');
             const isOnSetup = await setupPage
                 .isVisible({ timeout: 1000 })
@@ -56,7 +61,6 @@ export class TrainingPage extends BasePage {
             if (isOnSetup) {
                 throw new Error('Still on setup page, training did not start');
             }
-            // If we are not on setup page, consider training loaded
         }
     }
 
@@ -287,8 +291,9 @@ export class TrainingPage extends BasePage {
     }
 
     /**
-     * Match all pairs on stage 3
-     * Simplified: matches pairs in order
+     * Match all pairs on stage 3.
+     * Smoke test only: pairs foreign words with translations by column index,
+     * which works when fixture order matches the UI shuffle.
      */
     async matchAllPairsStage3() {
         const foreignWordsColumn = this.page.locator(

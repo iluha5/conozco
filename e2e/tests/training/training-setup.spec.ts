@@ -7,6 +7,7 @@ import {
     createTestBaseWord,
 } from '../../fixtures';
 import { generateUniqueEmail } from '../../utils/test-helpers';
+import { DEFAULT_TEST_VALUES } from '../../utils/constants';
 
 /**
  * Training setup tests
@@ -19,7 +20,7 @@ test.describe('Training - Setup', () => {
     test('loads training setup page', async ({ page }) => {
         const user = await createAndLoginUser(page, {
             email: generateUniqueEmail(),
-            password: 'password123',
+            password: DEFAULT_TEST_VALUES.PASSWORD,
         });
 
         const baseWord = await createTestBaseWord(

@@ -1,7 +1,9 @@
-import { test, expect } from '@playwright/test';
+import { test } from '@playwright/test';
 import { HeaderPage } from '../../page-objects/Header';
+import { WordsPage } from '../../page-objects/WordsPage';
 import { createAndLoginUser, cleanupTestDatabase } from '../../fixtures';
 import { generateUniqueEmail } from '../../utils/test-helpers';
+import { DEFAULT_TEST_VALUES } from '../../utils/constants';
 
 /**
  * Logout tests
@@ -12,20 +14,18 @@ test.describe('Auth - Logout', () => {
     });
 
     test('logs out successfully', async ({ page }) => {
+        const email = generateUniqueEmail();
         await createAndLoginUser(page, {
-            email: generateUniqueEmail(),
-            password: 'password123',
+            email,
+            password: DEFAULT_TEST_VALUES.PASSWORD,
         });
 
         const header = new HeaderPage(page);
-        await header.expectHeaderVisible();
+        await header.expectAuthenticatedState(email);
 
         await header.logout();
 
-        await expect(page).toHaveURL(/\/auth\/login/);
-
-        const headerElement = page.locator('[data-test="header-wrapper"]');
-        await expect(headerElement).not.toBeVisible();
+        await header.expectGuestState();
     });
 
     test('shows guest words page after logout', async ({ page }) => {
@@ -34,11 +34,8 @@ test.describe('Auth - Logout', () => {
         const header = new HeaderPage(page);
         await header.logout();
 
-        await page.goto('/words');
-
-        await expect(page).toHaveURL('/words');
-        await expect(
-            page.getByRole('heading', { name: 'Words' }),
-        ).toBeVisible();
+        const wordsPage = new WordsPage(page);
+        await wordsPage.goto();
+        await wordsPage.expectGuestPageLoaded();
     });
 });

@@ -1,10 +1,10 @@
-import { Page, expect } from '@playwright/test';
+import { Page } from '@playwright/test';
 import { APIRequestContext } from '@playwright/test';
 import { createTestUser } from './test-data';
 import { LoginPage } from '../page-objects/LoginPage';
 import { HeaderPage } from '../page-objects/Header';
 import { generateUniqueEmail, generateUniqueName } from '../utils/test-helpers';
-import { DEFAULT_TEST_VALUES, SELECTORS, TIMEOUTS } from '../utils/constants';
+import { DEFAULT_TEST_VALUES } from '../utils/constants';
 
 /**
  * Admin password for registration (default from app config)
@@ -64,16 +64,6 @@ export async function loginViaUI(
 
     await loginPage.goto();
     await loginPage.login(credentials.email, credentials.password);
-
-    // Wait for successful login - redirect to training list
-    await page.waitForURL('/training/list', {
-        timeout: TIMEOUTS.SESSION_SETUP,
-    });
-
-    await expect(page.locator(SELECTORS.HEADER)).toBeVisible({
-        timeout: TIMEOUTS.ELEMENT,
-    });
-
     await loginPage.expectSuccessfulLogin();
 }
 

@@ -7,7 +7,6 @@ import { TIMEOUTS } from '../utils/constants';
  */
 export class WordsPage extends BasePage {
     // Selectors
-    private readonly pageTitle = 'h1:has-text("My words")';
     private readonly addWordButton =
         'button:has-text("Add word"), button:has-text("Add")';
     private readonly backButton = 'button:has-text("Back")';
@@ -43,10 +42,35 @@ export class WordsPage extends BasePage {
     }
 
     /**
-     * Assert the page is loaded
+     * Assert the authenticated words page is loaded
      */
     async expectPageLoaded() {
-        await expect(this.page.locator(this.pageTitle)).toBeVisible();
+        await expect(
+            this.page.getByRole('heading', { name: 'My words' }),
+        ).toBeVisible();
+    }
+
+    /**
+     * Assert the guest words stub page is loaded
+     */
+    async expectGuestPageLoaded() {
+        await expect(
+            this.page.getByRole('heading', { name: 'Words', exact: true }),
+        ).toBeVisible();
+        await expect(
+            this.page.getByRole('heading', { name: 'Manage your vocabulary' }),
+        ).toBeVisible();
+
+        const stubCard = this.page
+            .getByRole('heading', { name: 'Manage your vocabulary' })
+            .locator('xpath=ancestor::*[contains(@class,"rounded-lg")]');
+
+        await expect(
+            stubCard.getByRole('button', { name: 'Register' }),
+        ).toBeVisible();
+        await expect(
+            stubCard.getByRole('button', { name: 'Login' }),
+        ).toBeVisible();
     }
 
     /**

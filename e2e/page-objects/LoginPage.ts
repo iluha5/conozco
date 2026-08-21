@@ -1,5 +1,6 @@
 import { Page, expect } from '@playwright/test';
 import { BasePage } from './BasePage';
+import { HeaderPage } from './Header';
 import { TIMEOUTS, SELECTORS } from '../utils/constants';
 
 /**
@@ -60,9 +61,20 @@ export class LoginPage extends BasePage {
         await this.enterEmail(email);
         await this.enterPassword(password);
 
-        // Click submit and wait for navigation or error toast
+        const sessionReady = this.page.waitForResponse(
+            response =>
+                response.url().includes('/api/auth/session') && response.ok(),
+            { timeout: TIMEOUTS.SESSION_SETUP },
+        );
+
         await this.clickSubmit();
-        await this.page.waitForLoadState('domcontentloaded');
+        await this.page.waitForURL('/training/list', {
+            timeout: TIMEOUTS.SESSION_SETUP,
+        });
+        await sessionReady;
+
+        const header = new HeaderPage(this.page);
+        await header.expectAuthenticatedState(email);
     }
 
     /**
@@ -100,5 +112,8 @@ export class LoginPage extends BasePage {
      */
     async expectSuccessfulLogin() {
         await this.expectUrl('/training/list');
+
+        const header = new HeaderPage(this.page);
+        await header.expectAuthenticatedState();
     }
 }

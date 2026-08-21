@@ -63,5 +63,15 @@ Use `createAndLoginUser`, `createAdminAndLoginUser`, `cleanupTestDatabase`, and 
 - Admin registration: `/auth/register` (requires admin session)
 - Post-login redirect: `/training/list`
 - Most routes are guest-accessible with guest UI stubs (no middleware redirects)
+- Header (`[data-test="header-wrapper"]`) is visible for both guests and authenticated users on pages that render `<Header />`
+- Guest header: Login + Register buttons, no email or Logout
+- Authenticated header: user email + Logout (mobile sidebar uses "Sign out")
+- After logout: redirect to `/auth/login` with guest header still visible
+
+**Assertion helpers:**
+- `HeaderPage.expectGuestState()` — guest header on any page with Header
+- `HeaderPage.expectAuthenticatedState(email?)` — authenticated header
+- `WordsPage.expectGuestPageLoaded()` — guest words stub
+- `WordsPage.expectPageLoaded()` — authenticated "My words" page
 
 Configuration lives in `playwright.config.ts` (Chromium only, 30s test timeout, 2 retries on CI, 1 worker locally / 4 on CI).

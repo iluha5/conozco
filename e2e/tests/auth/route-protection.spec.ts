@@ -1,5 +1,8 @@
 import { test, expect } from '@playwright/test';
 import { LoginPage } from '../../page-objects/LoginPage';
+import { LandingPage } from '../../page-objects/LandingPage';
+import { WordsPage } from '../../page-objects/WordsPage';
+import { HeaderPage } from '../../page-objects/Header';
 import { cleanupTestDatabase } from '../../fixtures';
 
 /**
@@ -11,22 +14,31 @@ test.describe('Auth - Route access', () => {
     });
 
     test('allows home page without authentication', async ({ page }) => {
-        await page.goto('/');
+        const landingPage = new LandingPage(page);
+        await landingPage.goto();
 
         await expect(page).toHaveURL('/');
-        await expect(page.getByRole('link', { name: 'conozco' })).toBeVisible();
+        await landingPage.expectPageLoaded();
+
+        const header = new HeaderPage(page);
+        await header.expectGuestState();
     });
 
     test('allows words page without authentication', async ({ page }) => {
-        await page.goto('/words');
+        const wordsPage = new WordsPage(page);
+        await wordsPage.goto();
 
         await expect(page).toHaveURL('/words');
+        await wordsPage.expectGuestPageLoaded();
     });
 
     test('allows training list without authentication', async ({ page }) => {
         await page.goto('/training/list');
 
         await expect(page).toHaveURL('/training/list');
+
+        const header = new HeaderPage(page);
+        await header.expectGuestState();
     });
 
     test('redirects guest from active training page to training list', async ({
@@ -41,15 +53,25 @@ test.describe('Auth - Route access', () => {
         await page.goto('/settings');
 
         await expect(page).toHaveURL('/settings');
+        await expect(
+            page.getByRole('heading', { name: 'Settings', exact: true }),
+        ).toBeVisible();
+        await expect(
+            page.getByText(
+                'to save your profile and sync settings across devices.',
+            ),
+        ).toBeVisible();
     });
 
     test('allows login page without authentication', async ({ page }) => {
-        await page.goto('/auth/login');
+        const loginPage = new LoginPage(page);
+        await loginPage.goto();
 
         await expect(page).toHaveURL(/\/auth\/login/);
-
-        const loginPage = new LoginPage(page);
         await loginPage.expectPageLoaded();
+
+        const header = new HeaderPage(page);
+        await header.expectGuestState();
     });
 
     test('redirects guest from admin registration page to login', async ({

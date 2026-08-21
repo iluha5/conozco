@@ -5,7 +5,6 @@ export { BasePage } from './BasePage';
 export { LoginPage } from './LoginPage';
 export { RegisterPage } from './RegisterPage';
 export { LandingPage } from './LandingPage';
-export { HomePage } from './HomePage';
 export { WordsPage } from './WordsPage';
 export { AddWordDialogPage } from './AddWordDialogPage';
 export { TrainingSetupPage } from './TrainingSetupPage';

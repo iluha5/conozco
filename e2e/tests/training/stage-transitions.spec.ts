@@ -61,9 +61,18 @@ test.describe('Training - Stage transitions', () => {
     });
 
     test('transitions from stage 4 to stage 5', async ({ page }) => {
-        // Create training with a single word
         const { trainingPage } = await setupTrainingWithWords(page, [
-            { word: 'hello', translation: 'привет' },
+            {
+                word: 'hello',
+                translation: 'привет',
+                examples: [
+                    {
+                        example: 'Hello world',
+                        translation: 'Привет мир',
+                        pronoun: 'I',
+                    },
+                ],
+            },
         ]);
 
         // Open stage 4
