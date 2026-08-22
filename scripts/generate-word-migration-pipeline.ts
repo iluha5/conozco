@@ -341,8 +341,8 @@ async function writeMigrationArtifacts(
                 generatedAt: new Date().toISOString(),
             },
             null,
-            2,
-        ),
+            4,
+        ) + '\n',
         'utf8',
     );
 
