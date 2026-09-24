@@ -1,0 +1,11 @@
+{
+    "name": "deepl_en",
+    "description": "Data migration for 103 words",
+    "timestamp": "20260924171514",
+    "wordsCount": 103,
+    "language": "en",
+    "status": "complete",
+    "totalRequested": 104,
+    "checksum": "66f9e9cce5bae060c25565eead94278417f69564ed1df1a95fdb56d0e4d4e65c",
+    "generatedAt": "2026-09-24T17:50:51.557Z"
+}
