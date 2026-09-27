@@ -11,6 +11,7 @@ import {
     hasTranslations,
 } from '@/lib/word-utils';
 import type { PartOfSpeech } from '@/hooks/shared';
+import { getTranslationDialogWord } from '../helpers/getTranslationDialogWord';
 import type { Word } from '../typing';
 
 interface WordItemProps {
@@ -51,6 +52,10 @@ export function WordItem({
     readOnly = false,
 }: WordItemProps) {
     const displayWord = optimisticWord || word;
+    const dialogWord = getTranslationDialogWord(
+        displayWord,
+        selectedWordForTranslation,
+    );
 
     return (
         <Card
@@ -156,27 +161,20 @@ export function WordItem({
                                     </span>
                                 )}
                             </div>
-                            {isClient &&
-                                selectedWordForTranslation &&
-                                selectedWordForTranslation.id ===
-                                    displayWord.id && (
-                                    <TranslationSelectorDialog
-                                        word={displayWord}
-                                        open={
-                                            translationDialogOpen[
-                                                displayWord.id
-                                            ] || false
-                                        }
-                                        onOpenChange={open =>
-                                            onCloseTranslation(
-                                                displayWord.id,
-                                                open,
-                                            )
-                                        }
-                                        onSave={onTranslationSave}
-                                        partsOfSpeech={partsOfSpeech}
-                                    />
-                                )}
+                            {isClient && dialogWord && (
+                                <TranslationSelectorDialog
+                                    word={dialogWord}
+                                    open={
+                                        translationDialogOpen[dialogWord.id] ||
+                                        false
+                                    }
+                                    onOpenChange={open =>
+                                        onCloseTranslation(dialogWord.id, open)
+                                    }
+                                    onSave={onTranslationSave}
+                                    partsOfSpeech={partsOfSpeech}
+                                />
+                            )}
                         </div>
                     </div>
                     {!readOnly && (
