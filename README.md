@@ -14,6 +14,8 @@ docker compose up --build
 
 App on `http://localhost:8000`, Postgres on `5433`. Migrations run automatically.
 
+Agent UI checks use that Compose stack and Chrome via the `chrome-devtools` MCP. See `.cursor/rules/browser-verification.mdc`. Put `LOCAL_UI_VERIFICATION_EMAIL` and `LOCAL_UI_VERIFICATION_PASSWORD` in `.env.local` only. Playwright uses a separate test database (`e2e/README.md`).
+
 Without Docker:
 
 ```bash

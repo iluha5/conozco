@@ -7,6 +7,8 @@ npx playwright install chromium
 
 Tests run against an isolated DB on port `5434` and an isolated app instance on port `8001` (so they don't collide with the main `5433` / `8000`). The test DB is started automatically via `global-setup.ts`; manage it manually if needed with `docker compose -f docker-compose.test.yml up -d`.
 
+Agent UI verification in Chrome uses the Compose app on `8000` / `5433`, not this test stack. See `.cursor/rules/browser-verification.mdc`.
+
 ## Run
 
 ```bash
