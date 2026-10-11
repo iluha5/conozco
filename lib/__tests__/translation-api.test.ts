@@ -7,6 +7,7 @@ import {
     isSingleWord,
     countWords,
     isSentenceWithinWordLimit,
+    pickDirectTatoebaTranslation,
     TATOEBA_MAX_SENTENCE_WORDS,
 } from '../translation-api';
 
@@ -85,6 +86,41 @@ describe('Translation API Utilities', () => {
         it('should handle single translation', () => {
             const result = filterTranslations(['кот']);
             expect(result).toEqual(['кот']);
+        });
+
+        it('should keep Latin text when the target language is English', () => {
+            const result = filterTranslations(['hello', 'привет'], 'en');
+            expect(result).toEqual(['hello']);
+        });
+
+        it('should drop Latin text when the target language is Russian', () => {
+            const result = filterTranslations(['hello', 'привет'], 'ru');
+            expect(result).toEqual(['привет']);
+        });
+    });
+
+    describe('pickDirectTatoebaTranslation', () => {
+        it('uses the direct translation when Tatoeba leaves the second list empty', () => {
+            const result = pickDirectTatoebaTranslation([
+                [
+                    {
+                        id: 1,
+                        text: 'Над водой летали стрекозы.',
+                        lang: 'rus',
+                        isDirect: true,
+                    },
+                ],
+                [],
+            ]);
+            expect(result).toBe('Над водой летали стрекозы.');
+        });
+
+        it('keeps the older shape where the direct translation is in the second list', () => {
+            const result = pickDirectTatoebaTranslation([
+                [{ id: 1, text: 'косвенный', lang: 'rus', isDirect: false }],
+                [{ id: 2, text: 'прямой', lang: 'rus' }],
+            ]);
+            expect(result).toBe('прямой');
         });
     });
 

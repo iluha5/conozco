@@ -5,6 +5,14 @@ import { useTranslation } from '@/lib/i18n';
 import type { BaseWord } from '@/types/add-word-dialog.types';
 import type { LearnLanguageCode } from '@/config/learn-languages';
 
+function matchesCatalogQuery(word: BaseWord, trimmedSearch: string): boolean {
+    if (word.word.toLowerCase() === trimmedSearch) return true;
+
+    return word.translations.some(
+        translation => translation.translation.toLowerCase() === trimmedSearch,
+    );
+}
+
 type UseWordSearchProps = {
     languageCode: LearnLanguageCode;
     ownLanguageCode?: string;
@@ -48,10 +56,10 @@ export function useWordSearch({
         }
 
         const trimmedSearch = searchTerm.trim().toLowerCase();
-        const exactMatch = availableWords.find(
-            word => word.word.toLowerCase() === trimmedSearch,
+        const exactMatch = availableWords.some(word =>
+            matchesCatalogQuery(word, trimmedSearch),
         );
-        setHasExactMatch(!!exactMatch);
+        setHasExactMatch(exactMatch);
     }, [searchTerm, availableWords]);
 
     useEffect(() => {

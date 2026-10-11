@@ -3,10 +3,39 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { getWordData } from '@/lib/translation-api';
+import { translateWithDeepL } from '@/lib/deepl-api';
+import {
+    decideInputLanguage,
+    directionAfterDeepLDetect,
+} from '@/lib/language-detect';
+import { dictionaryMembership } from '@/lib/hunspell-membership';
 import {
     createBaseWordFromExternal,
     findBaseWordByExactMatch,
 } from '@/lib/words/createBaseWordFromExternal';
+import {
+    addFromNativeInput,
+    addLearnWordFromKnownTranslation,
+    type ExternalLookupSuccess,
+} from '@/lib/words/externalWordLookup';
+
+const INPUT_ERRORS = {
+    'mixed-script': 'Enter a word in one language',
+    'outside-pair': 'This word does not match your learning or native language',
+} as const;
+
+function lookupResponse(result: ExternalLookupSuccess, status: number) {
+    return NextResponse.json(
+        {
+            success: true,
+            baseWord: result.baseWord,
+            foundExamples: result.foundExamples,
+            alreadyExists: result.alreadyExists,
+            resolvedWord: result.resolvedWord,
+        },
+        { status },
+    );
+}
 
 /**
  * POST /api/ai-search
@@ -39,7 +68,8 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const translationLanguageCode = user.ownLanguage?.code || 'en';
+        const ownLanguageCode = user.ownLanguage?.code ?? null;
+        const translationLanguageCode = ownLanguageCode || 'en';
 
         const { word, languageCode } = await request.json();
 
@@ -70,6 +100,121 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        const decision = decideInputLanguage({
+            text: trimmedWord,
+            learnLanguage: languageCode,
+            ownLanguage: ownLanguageCode,
+            membership: dictionaryMembership,
+        });
+
+        if (decision.kind === 'reject') {
+            return NextResponse.json(
+                {
+                    error: INPUT_ERRORS[decision.reason],
+                    errorCode: decision.reason,
+                },
+                { status: 400 },
+            );
+        }
+
+        if (decision.kind === 'reverse') {
+            const nativeResult = await addFromNativeInput({
+                nativeWord: trimmedWord,
+                learnLanguage: languageCode,
+                learnLanguageId: language.id,
+                ownLanguage: translationLanguageCode,
+                userId,
+            });
+
+            if ('error' in nativeResult) {
+                return NextResponse.json(
+                    { error: nativeResult.error },
+                    { status: 500 },
+                );
+            }
+
+            return lookupResponse(
+                nativeResult,
+                nativeResult.alreadyExists ? 200 : 201,
+            );
+        }
+
+        if (decision.kind === 'unknown' && ownLanguageCode) {
+            const detected = await translateWithDeepL(
+                trimmedWord,
+                null,
+                ownLanguageCode,
+                userId,
+                1,
+            );
+            const direction = directionAfterDeepLDetect({
+                detectedLanguage: detected.detectedSourceLanguage ?? null,
+                sourceEqualsTarget: detected.sourceEqualsTarget ?? false,
+                learnLanguage: languageCode,
+                ownLanguage: ownLanguageCode,
+            });
+
+            if (direction === 'reverse') {
+                const nativeResult = await addFromNativeInput({
+                    nativeWord: trimmedWord,
+                    learnLanguage: languageCode,
+                    learnLanguageId: language.id,
+                    ownLanguage: ownLanguageCode,
+                    userId,
+                });
+
+                if ('error' in nativeResult) {
+                    return NextResponse.json(
+                        { error: nativeResult.error },
+                        { status: 500 },
+                    );
+                }
+
+                return lookupResponse(
+                    nativeResult,
+                    nativeResult.alreadyExists ? 200 : 201,
+                );
+            }
+
+            if (
+                detected.detectedSourceLanguage === languageCode &&
+                detected.mainTranslation &&
+                !detected.error
+            ) {
+                const existingBaseWord = await findBaseWordByExactMatch(
+                    trimmedWord,
+                    language.id,
+                    ownLanguageCode,
+                );
+
+                if (existingBaseWord) {
+                    return lookupResponse(
+                        {
+                            baseWord: existingBaseWord,
+                            foundExamples:
+                                existingBaseWord.examples?.length ?? 0,
+                            resolvedWord: existingBaseWord.word,
+                            alreadyExists: true,
+                        },
+                        200,
+                    );
+                }
+
+                const created = await addLearnWordFromKnownTranslation({
+                    learnWord: trimmedWord,
+                    learnLanguage: languageCode,
+                    learnLanguageId: language.id,
+                    ownLanguage: ownLanguageCode,
+                    userId,
+                    mainTranslation: detected.mainTranslation,
+                    alternativeTranslations: detected.alternatives,
+                    source: 'DEEPL',
+                });
+
+                return lookupResponse(created, 201);
+            }
+        }
+
         const existingBaseWord = await findBaseWordByExactMatch(
             trimmedWord,
             language.id,
@@ -77,14 +222,14 @@ export async function POST(request: NextRequest) {
         );
 
         if (existingBaseWord) {
-            return NextResponse.json(
+            return lookupResponse(
                 {
-                    success: true,
                     baseWord: existingBaseWord,
-                    foundExamples: existingBaseWord.examples?.length || 0,
+                    foundExamples: existingBaseWord.examples?.length ?? 0,
+                    resolvedWord: existingBaseWord.word,
                     alreadyExists: true,
                 },
-                { status: 200 },
+                200,
             );
         }
 
@@ -102,20 +247,21 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const result = await createBaseWordFromExternal({
+        const created = await createBaseWordFromExternal({
             trimmedWord,
             languageId: language.id,
             translationLanguageCode,
             wordData,
         });
 
-        return NextResponse.json(
+        return lookupResponse(
             {
-                success: true,
-                baseWord: result,
+                baseWord: created,
                 foundExamples: wordData.examples.length,
+                resolvedWord: trimmedWord,
+                alreadyExists: false,
             },
-            { status: 201 },
+            201,
         );
     } catch (error: any) {
         console.error('Error in AI search:', error);

@@ -155,6 +155,13 @@ export class AddWordDialogPage extends BasePage {
         await this.waitForLoading();
     }
 
+    async expectRemoteAddDisabled() {
+        const dialog = this.page.locator('[role="dialog"]');
+        await expect(
+            dialog.getByRole('button', { name: 'Add', exact: true }),
+        ).toBeDisabled();
+    }
+
     /**
      * Close the dialog
      */

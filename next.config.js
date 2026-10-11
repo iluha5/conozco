@@ -9,6 +9,11 @@ const nextConfig = {
             allowedOrigins: ['conozco.net', 'www.conozco.net'],
         },
         optimizePackageImports: ['lucide-react', 'lodash-es'],
+        serverComponentsExternalPackages: [
+            'nspell',
+            'dictionary-en',
+            'dictionary-es',
+        ],
     },
 };
 
