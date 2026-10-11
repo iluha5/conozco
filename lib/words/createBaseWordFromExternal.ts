@@ -148,6 +148,29 @@ export async function createBaseWordFromExternal({
     });
 }
 
+export async function findBaseWordByExactTranslation(
+    translation: string,
+    languageId: number,
+    translationLanguageCode: string,
+) {
+    return prisma.baseWord.findFirst({
+        where: {
+            languageId,
+            translations: {
+                some: {
+                    translation: {
+                        equals: translation,
+                        mode: 'insensitive',
+                    },
+                    language: { code: translationLanguageCode },
+                },
+            },
+        },
+        orderBy: { id: 'asc' },
+        include: getBaseWordDetailInclude(translationLanguageCode),
+    });
+}
+
 export async function findBaseWordByExactMatch(
     trimmedWord: string,
     languageId: number,

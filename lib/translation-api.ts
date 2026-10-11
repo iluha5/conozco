@@ -7,15 +7,18 @@ interface TatoebaSearchParams {
     query: string;
 }
 
+interface TatoebaTranslation {
+    id: number;
+    text: string;
+    lang: string;
+    isDirect?: boolean;
+}
+
 interface TatoebaSentence {
     id: number;
     text: string;
     lang: string;
-    translations?: Array<{
-        id: number;
-        text: string;
-        lang: string;
-    }>;
+    translations?: Array<TatoebaTranslation[] | TatoebaTranslation>;
 }
 
 interface TatoebaSearchResponse {
@@ -163,6 +166,10 @@ export function hasLatinCharacters(text: string): boolean {
     return /[a-zA-Z]/.test(text);
 }
 
+export function hasCyrillicCharacters(text: string): boolean {
+    return /[\u0400-\u04FF]/.test(text);
+}
+
 export function removePunctuation(text: string): string {
     return text
         .replace(/[^а-яА-ЯёЁa-zA-Z0-9\s]/g, '')
@@ -170,14 +177,22 @@ export function removePunctuation(text: string): string {
         .trim();
 }
 
-// Drops translations containing Latin chars (we already get the source word in Latin) and dedupes.
+// Drops echoes of the source script and dedupes.
+// Russian targets drop Latin text. English and Spanish targets drop Cyrillic text.
 // If everything gets filtered out we keep the first original to avoid an empty result.
-export function filterTranslations(translations: string[]): string[] {
+export function filterTranslations(
+    translations: string[],
+    targetLanguage?: string,
+): string[] {
     if (translations.length === 0) return translations;
 
     const originalTranslations = [...translations];
+    const dropsSourceEcho = (translation: string) =>
+        targetLanguage === 'en' || targetLanguage === 'es'
+            ? hasCyrillicCharacters(translation)
+            : hasLatinCharacters(translation);
     let filtered = translations.filter(
-        translation => !hasLatinCharacters(translation),
+        translation => !dropsSourceEcho(translation),
     );
 
     const seen = new Set<string>();
@@ -205,6 +220,24 @@ export function isSingleWord(text: string): boolean {
 
 export function countWords(text: string): number {
     return removePunctuation(text).split(/\s+/).filter(Boolean).length;
+}
+
+// Tatoeba groups direct translations in the first list and leaves the second empty.
+// Older responses put the direct translation in the second list, so both shapes are accepted.
+export function pickDirectTatoebaTranslation(
+    translations: TatoebaSentence['translations'],
+): string | null {
+    if (!Array.isArray(translations)) return null;
+
+    const groups = translations.map(group =>
+        Array.isArray(group) ? group : [group],
+    );
+    const sentences = groups.flat().filter(sentence => sentence?.text);
+    const direct = sentences.find(sentence => sentence.isDirect);
+    if (direct?.text) return direct.text;
+
+    const legacyDirect = groups[1]?.find(sentence => sentence?.text);
+    return legacyDirect?.text ?? sentences[0]?.text ?? null;
 }
 
 export function isSentenceWithinWordLimit(
@@ -366,28 +399,21 @@ export async function searchExamples(
                 sentenceId: number;
             }> = [];
 
-            // translations[1] holds direct (1-hop) translations; translations[0] is the indirect ones we don't want.
             for (const result of data.results) {
+                const translation = pickDirectTatoebaTranslation(
+                    result.translations,
+                );
                 if (
-                    result.translations &&
-                    Array.isArray(result.translations) &&
-                    result.translations.length > 1 &&
-                    Array.isArray(result.translations[1]) &&
-                    result.translations[1].length > 0
+                    translation &&
+                    areSentencesDifferent(result.text, translation) &&
+                    isSentenceWithinWordLimit(result.text) &&
+                    isSentenceWithinWordLimit(translation)
                 ) {
-                    const translation = result.translations[1][0];
-                    if (
-                        translation?.text &&
-                        areSentencesDifferent(result.text, translation.text) &&
-                        isSentenceWithinWordLimit(result.text) &&
-                        isSentenceWithinWordLimit(translation.text)
-                    ) {
-                        examples.push({
-                            sentence: result.text,
-                            translation: translation.text,
-                            sentenceId: result.id,
-                        });
-                    }
+                    examples.push({
+                        sentence: result.text,
+                        translation,
+                        sentenceId: result.id,
+                    });
                 }
 
                 if (examples.length >= 15) break;

@@ -203,7 +203,10 @@ export async function translateWithMyMemory(
             }
         }
 
-        const filteredTranslations = filterTranslations(allTranslations);
+        const filteredTranslations = filterTranslations(
+            allTranslations,
+            targetLanguage,
+        );
 
         return {
             mainTranslation: filteredTranslations[0],

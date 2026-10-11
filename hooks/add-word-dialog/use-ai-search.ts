@@ -4,6 +4,76 @@ import { useTranslation } from '@/lib/i18n';
 import type { BaseWord } from '@/types/add-word-dialog.types';
 import type { LearnLanguageCode } from '@/config/learn-languages';
 
+type AiSearchResponse = {
+    alreadyExists?: boolean;
+    foundExamples?: number;
+    resolvedWord?: string;
+    error?: string;
+    errorCode?: string;
+};
+
+function describeAiSearchError(
+    data: AiSearchResponse,
+    translate: (_key: string) => string,
+): string {
+    if (data.errorCode === 'mixed-script') {
+        return translate('Enter a word in one language');
+    }
+    if (data.errorCode === 'outside-pair') {
+        return translate(
+            'This word does not match your learning or native language',
+        );
+    }
+    return data.error || translate('Failed to find or add word');
+}
+
+function describeAiSearchSuccess(
+    data: AiSearchResponse,
+    query: string,
+    resolvedWord: string,
+    translate: (_key: string, _values?: Record<string, string>) => string,
+): string {
+    const differs = resolvedWord.toLowerCase() !== query.toLowerCase();
+    const exampleCount = data.foundExamples ?? 0;
+    const examples =
+        exampleCount > 0
+            ? ` ${translate('with')} ${exampleCount} ${translate('examples')}`
+            : '';
+
+    if (data.alreadyExists && differs) {
+        return translate(
+            '"{{query}}" is already in the database as "{{word}}"',
+            { query, word: resolvedWord },
+        );
+    }
+
+    if (data.alreadyExists) {
+        return translate(
+            'Word "{{word}}" already exists in database{{examples}}',
+            {
+                word: resolvedWord,
+                examples:
+                    exampleCount > 0
+                        ? ` (${exampleCount} ${translate('examples')})`
+                        : '',
+            },
+        );
+    }
+
+    if (differs) {
+        return translate('Added "{{word}}" for "{{query}}"{{examples}}', {
+            word: resolvedWord,
+            query,
+            examples,
+        });
+    }
+
+    return translate('Word "{{word}}" added to database{{examples}}', {
+        word: resolvedWord,
+        examples,
+    });
+}
+
 type UseAiSearchProps = {
     searchTerm: string;
     languageCode: LearnLanguageCode;
@@ -49,28 +119,17 @@ export function useAiSearch({
                 }),
             });
 
-            const data = await response.json();
+            const data: AiSearchResponse = await response.json();
 
             if (response.ok) {
-                const addedWord = searchTerm.trim();
-                const message = data.alreadyExists
-                    ? t(
-                          'Word "{{word}}" already exists in database{{examples}}',
-                          {
-                              word: addedWord,
-                              examples:
-                                  data.foundExamples > 0
-                                      ? ` (${data.foundExamples} ${t('examples')})`
-                                      : '',
-                          },
-                      )
-                    : t('Word "{{word}}" added to database{{examples}}', {
-                          word: addedWord,
-                          examples:
-                              data.foundExamples > 0
-                                  ? ` ${t('with')} ${data.foundExamples} ${t('examples')}`
-                                  : '',
-                      });
+                const query = searchTerm.trim();
+                const resolvedWord = data.resolvedWord || query;
+                const message = describeAiSearchSuccess(
+                    data,
+                    query,
+                    resolvedWord,
+                    t,
+                );
 
                 toast({
                     title: t('Success'),
@@ -85,23 +144,22 @@ export function useAiSearch({
                         languageCode,
                         limit: '30',
                         offset: '0',
+                        search: resolvedWord,
                     });
 
-                    if (searchTerm.trim()) {
-                        params.set('search', searchTerm.trim());
-                    }
-
-                    const response = await fetch(`/api/base-words?${params}`);
-                    if (response.ok) {
-                        const words = await response.json();
+                    const listResponse = await fetch(
+                        `/api/base-words?${params}`,
+                    );
+                    if (listResponse.ok) {
+                        const words = await listResponse.json();
                         setAvailableWords(words);
                         setHasMore(words.length === 30);
                         setOffset(words.length);
 
                         const addedBaseWord = words.find(
-                            (w: BaseWord) =>
-                                w.word.toLowerCase() ===
-                                addedWord.toLowerCase(),
+                            (catalogWord: BaseWord) =>
+                                catalogWord.word.toLowerCase() ===
+                                resolvedWord.toLowerCase(),
                         );
                         if (addedBaseWord && !addedBaseWord.isAddedByUser) {
                             await addWord(addedBaseWord.id);
@@ -111,7 +169,7 @@ export function useAiSearch({
             } else {
                 toast({
                     title: t('Error'),
-                    description: data.error || t('Failed to find or add word'),
+                    description: describeAiSearchError(data, t),
                     variant: 'destructive',
                 });
             }

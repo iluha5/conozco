@@ -59,4 +59,34 @@ test.describe('Words - Page', () => {
         const addWordDialog = new AddWordDialogPage(page);
         await addWordDialog.expectDialogOpen();
     });
+
+    test('disables add when the native translation is already in the catalog', async ({
+        page,
+    }) => {
+        await createAndLoginUser(page, {
+            email: generateUniqueEmail(),
+            password: DEFAULT_TEST_VALUES.PASSWORD,
+        });
+
+        const baseWord = await createTestBaseWord(
+            'hello',
+            'en',
+            'привет',
+            'ru',
+        );
+        if (!baseWord) {
+            throw new Error('Failed to create base word');
+        }
+
+        const wordsPage = new WordsPage(page);
+        await wordsPage.goto();
+        await wordsPage.expectPageLoaded();
+        await wordsPage.clickAddWord();
+
+        const addWordDialog = new AddWordDialogPage(page);
+        await addWordDialog.expectDialogOpen();
+        await addWordDialog.searchWord('привет');
+        await addWordDialog.expectWordInList('hello');
+        await addWordDialog.expectRemoteAddDisabled();
+    });
 });

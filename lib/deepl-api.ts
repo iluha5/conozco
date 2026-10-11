@@ -126,15 +126,25 @@ async function logApiRequest(
 }
 
 // Up to `maxRetries` attempts with linear back-off (RETRY_DELAY * attempt).
+function toAppLanguageCode(deeplCode: string): string {
+    return deeplCode.split('-')[0].toLowerCase();
+}
+
+function isSourceEqualsTargetError(status: number, body: string): boolean {
+    return status === 400 && /source and target language are equal/i.test(body);
+}
+
 export async function translateWithDeepL(
     word: string,
-    sourceLanguage: string,
+    sourceLanguage: string | null,
     targetLanguage: string,
     userId: number | null = null,
     maxRetries: number = MAX_RETRIES,
 ): Promise<{
     mainTranslation: string;
     alternatives: string[];
+    detectedSourceLanguage?: string | null;
+    sourceEqualsTarget?: boolean;
     error?: string;
 }> {
     const apiKey = process.env.DEEPL_API_KEY;
@@ -145,14 +155,15 @@ export async function translateWithDeepL(
         return { mainTranslation: '', alternatives: [], error };
     }
 
-    const sourceLang =
-        LANGUAGE_CODE_MAP[sourceLanguage] || sourceLanguage.toUpperCase();
+    const sourceLang = sourceLanguage
+        ? LANGUAGE_CODE_MAP[sourceLanguage] || sourceLanguage.toUpperCase()
+        : null;
     const targetLang =
         LANGUAGE_CODE_MAP[targetLanguage] || targetLanguage.toUpperCase();
 
     const requestData = {
         text: word,
-        source_lang: sourceLang,
+        ...(sourceLang ? { source_lang: sourceLang } : {}),
         target_lang: targetLang,
     };
 
@@ -170,9 +181,11 @@ export async function translateWithDeepL(
 
             const params = new URLSearchParams({
                 text: word,
-                source_lang: sourceLang,
                 target_lang: targetLang,
             });
+            if (sourceLang) {
+                params.set('source_lang', sourceLang);
+            }
 
             const response = await fetch(DEEPL_API_URL, {
                 method: 'POST',
@@ -190,6 +203,26 @@ export async function translateWithDeepL(
 
             if (!response.ok) {
                 const errorText = await response.text();
+                if (isSourceEqualsTargetError(response.status, errorText)) {
+                    await logApiRequest(
+                        userId,
+                        'DEEPL',
+                        'translate',
+                        { ...requestData, attempt },
+                        errorText,
+                        response.status,
+                        errorText,
+                        duration,
+                        sourceLanguage ?? undefined,
+                        targetLanguage,
+                    );
+                    return {
+                        mainTranslation: '',
+                        alternatives: [],
+                        detectedSourceLanguage: targetLanguage,
+                        sourceEqualsTarget: true,
+                    };
+                }
                 throw new Error(
                     `DeepL API error: ${response.status} ${response.statusText}. ${errorText}`,
                 );
@@ -206,7 +239,7 @@ export async function translateWithDeepL(
                 response.status,
                 null,
                 duration,
-                sourceLanguage,
+                sourceLanguage ?? undefined,
                 targetLanguage,
             );
 
@@ -217,13 +250,19 @@ export async function translateWithDeepL(
             const cleanedTranslation = data.translations[0].text
                 .trim()
                 .replace(/[,.;:!?]+$/, '');
-            const filteredTranslations = filterTranslations([
-                cleanedTranslation,
-            ]);
+            const filteredTranslations = filterTranslations(
+                [cleanedTranslation],
+                targetLanguage,
+            );
+            const detectedSource =
+                data.translations[0].detected_source_language;
 
             return {
                 mainTranslation: filteredTranslations[0],
                 alternatives: filteredTranslations.slice(1),
+                detectedSourceLanguage: detectedSource
+                    ? toAppLanguageCode(detectedSource)
+                    : sourceLanguage,
             };
         } catch (error: any) {
             const duration = Date.now() - startTime;
@@ -241,7 +280,7 @@ export async function translateWithDeepL(
                 null,
                 lastError,
                 duration,
-                sourceLanguage,
+                sourceLanguage ?? undefined,
                 targetLanguage,
             );
 
